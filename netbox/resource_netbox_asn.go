@@ -22,7 +22,7 @@ func resourceNetboxAsn() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"asn": {
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Value for the AS Number record",
 			},
@@ -54,7 +54,11 @@ func resourceNetboxAsnCreate(d *schema.ResourceData, m interface{}) error {
 
 	data := models.WritableASN{}
 
-	asn := int64(d.Get("asn").(int))
+	asnStr := d.Get("asn").(string)
+	asn, err := strconv.ParseInt(asnStr, 10, 64)
+	if err != nil {
+		return err
+	}
 	data.Asn = &asn
 
 	rir := int64(d.Get("rir_id").(int))
@@ -100,7 +104,7 @@ func resourceNetboxAsnRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	asn := res.GetPayload()
-	d.Set("asn", asn.Asn)
+	d.Set("asn", strconv.FormatInt(*asn.Asn, 10))
 	d.Set("rir_id", asn.Rir.ID)
 	d.Set("description", asn.Description)
 	d.Set("comments", asn.Comments)
@@ -115,7 +119,11 @@ func resourceNetboxAsnUpdate(d *schema.ResourceData, m interface{}) error {
 	id, _ := strconv.ParseInt(d.Id(), 10, 64)
 	data := models.WritableASN{}
 
-	asn := int64(d.Get("asn").(int))
+	asnStr := d.Get("asn").(string)
+	asn, err := strconv.ParseInt(asnStr, 10, 64)
+	if err != nil {
+		return err
+	}
 	data.Asn = &asn
 
 	rir := int64(d.Get("rir_id").(int))

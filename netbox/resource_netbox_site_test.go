@@ -28,7 +28,7 @@ resource "netbox_rir" "test" {
 }
 
 resource "netbox_asn" "test" {
-  asn = 1338
+  asn = "1338"
   rir_id = netbox_rir.test.id
 }
 

@@ -3,6 +3,7 @@ package netbox
 import (
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/fbreckle/go-netbox/netbox/client/ipam"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
@@ -47,7 +48,7 @@ func dataSourceNetboxAsns() *schema.Resource {
 							Computed: true,
 						},
 						"asn": {
-							Type:     schema.TypeInt,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"rir_id": {
@@ -108,7 +109,7 @@ func dataSourceNetboxAsnsRead(d *schema.ResourceData, m interface{}) error {
 		var mapping = make(map[string]interface{})
 
 		mapping["id"] = v.ID
-		mapping["asn"] = v.Asn
+		mapping["asn"] = strconv.FormatInt(*v.Asn, 10)
 		mapping["rir_id"] = v.Rir.ID
 		mapping["tags"] = getTagListFromNestedTagList(v.Tags)
 
