@@ -18,6 +18,8 @@ From the [official documentation](https://docs.netbox.dev/en/stable/features/cir
 
 ## Example Usage
 
+### Terminating to a Site
+
 ```terraform
 resource "netbox_site" "test" {
   name   = "%[1]s"
@@ -45,6 +47,39 @@ resource "netbox_circuit_termination" "test" {
   site_id        = netbox_site.test.id
   port_speed     = 100000
   upstream_speed = 50000
+}
+```
+
+### Terminating to a Provider Network
+
+```terraform
+resource "netbox_circuit_provider" "test_provider" {
+  name = "%[1]s"
+}
+
+resource "netbox_provider_network" "test_network" {
+  name        = "%[1]s"
+  provider_id = netbox_circuit_provider.test_provider.id
+  service_id  = "SVC001"
+}
+
+resource "netbox_circuit_type" "test" {
+  name = "%[1]s"
+}
+
+resource "netbox_circuit" "test" {
+  cid         = "%[1]s"
+  status      = "active"
+  provider_id = netbox_circuit_provider.test_provider.id
+  type_id     = netbox_circuit_type.test.id
+}
+
+resource "netbox_circuit_termination" "test" {
+  circuit_id          = netbox_circuit.test.id
+  term_side           = "A"
+  provider_network_id = netbox_provider_network.test_network.id
+  port_speed          = 100000
+  upstream_speed      = 50000
 }
 ```
 
