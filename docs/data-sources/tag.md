@@ -32,6 +32,7 @@ data "netbox_tag" "dmz" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `object_types` (Set of String)
 - `slug` (String)
 
 

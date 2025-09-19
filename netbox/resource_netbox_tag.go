@@ -20,7 +20,9 @@ func resourceNetboxTag() *schema.Resource {
 		Description: `:meta:subcategory:Extras:From the [official documentation](https://docs.netbox.dev/en/stable/models/extras/tag/):
 > Tags are user-defined labels which can be applied to a variety of objects within NetBox. They can be used to establish dimensions of organization beyond the relationships built into NetBox. For example, you might create a tag to identify a particular ownership or condition across several types of objects.
 >
-> Each tag has a label, color, and a URL-friendly slug. For example, the slug for a tag named "Dunder Mifflin, Inc." would be dunder-mifflin-inc. The slug is generated automatically and makes tags easier to work with as URL parameters. Each tag can also be assigned a description indicating its purpose.`,
+> Each tag has a label, color, and a URL-friendly slug. For example, the slug for a tag named "Dunder Mifflin, Inc." would be dunder-mifflin-inc. The slug is generated automatically and makes tags easier to work with as URL parameters. Each tag can also be assigned a description indicating its purpose.
+>
+> The assignment of a tag may be limited to a prescribed set of objects. For example, it may be desirable to limit the application of a specific tag to only devices and virtual machines. If no object types are specified, the tag will be assignable to any type of object.`,
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -42,6 +44,15 @@ func resourceNetboxTag() *schema.Resource {
 			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
+			},
+			"object_types": {
+				Type: schema.TypeSet,
+				Description: "A list of object types that the tag can be applied to. If not specified, the tag can be applied to any object type. " +
+					"Should be in a form the API can accept. For example: `dcim.device`, `virtualization.virtualmachine`, etc.",
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
 			tagsKey: tagsSchema,
 		},
@@ -67,14 +78,21 @@ func resourceNetboxTagCreate(d *schema.ResourceData, m interface{}) error {
 
 	color := d.Get("color_hex").(string)
 	description := d.Get("description").(string)
-	params := extras.NewExtrasTagsCreateParams().WithData(
-		&models.Tag{
-			Name:        &name,
-			Slug:        &slug,
-			Color:       color,
-			Description: description,
-		},
-	)
+
+	data := &models.Tag{
+		Name:        &name,
+		Slug:        &slug,
+		Color:       color,
+		Description: description,
+	}
+
+	// Handle object_types if provided
+	if objectTypesData, ok := d.GetOk("object_types"); ok {
+		objectTypes := toStringList(objectTypesData)
+		data.ObjectTypes = objectTypes
+	}
+
+	params := extras.NewExtrasTagsCreateParams().WithData(data)
 
 	res, err := api.Extras.ExtrasTagsCreate(params, nil)
 	if err != nil {
@@ -109,6 +127,7 @@ func resourceNetboxTagRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("slug", res.GetPayload().Slug)
 	d.Set("color_hex", res.GetPayload().Color)
 	d.Set("description", res.GetPayload().Description)
+	d.Set("object_types", res.GetPayload().ObjectTypes)
 	return nil
 }
 
@@ -135,6 +154,12 @@ func resourceNetboxTagUpdate(d *schema.ResourceData, m interface{}) error {
 	data.Name = &name
 	data.Color = color
 	data.Description = description
+
+	// Handle object_types if provided
+	if objectTypesData, ok := d.GetOk("object_types"); ok {
+		objectTypes := toStringList(objectTypesData)
+		data.ObjectTypes = objectTypes
+	}
 
 	params := extras.NewExtrasTagsUpdateParams().WithID(id).WithData(&data)
 

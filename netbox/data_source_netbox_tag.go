@@ -11,7 +11,7 @@ import (
 func dataSourceNetboxTag() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxTagRead,
-		Description: `:meta:subcategory:Extras:`,
+		Description: `:meta:subcategory:Extras:Get information about a NetBox tag. The tag can optionally be limited to specific object types.`,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:     schema.TypeString,
@@ -24,6 +24,13 @@ func dataSourceNetboxTag() *schema.Resource {
 			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
+			},
+			"object_types": {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
 		},
 	}
@@ -55,5 +62,6 @@ func dataSourceNetboxTagRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("name", result.Name)
 	d.Set("slug", result.Slug)
 	d.Set("description", result.Description)
+	d.Set("object_types", result.ObjectTypes)
 	return nil
 }

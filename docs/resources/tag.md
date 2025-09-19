@@ -15,6 +15,8 @@ From the [official documentation](https://docs.netbox.dev/en/stable/models/extra
 > Tags are user-defined labels which can be applied to a variety of objects within NetBox. They can be used to establish dimensions of organization beyond the relationships built into NetBox. For example, you might create a tag to identify a particular ownership or condition across several types of objects.
 >
 > Each tag has a label, color, and a URL-friendly slug. For example, the slug for a tag named "Dunder Mifflin, Inc." would be dunder-mifflin-inc. The slug is generated automatically and makes tags easier to work with as URL parameters. Each tag can also be assigned a description indicating its purpose.
+>
+> The assignment of a tag may be limited to a prescribed set of objects. For example, it may be desirable to limit the application of a specific tag to only devices and virtual machines. If no object types are specified, the tag will be assignable to any type of object.
 
 ## Example Usage
 
@@ -22,6 +24,24 @@ From the [official documentation](https://docs.netbox.dev/en/stable/models/extra
 resource "netbox_tag" "dmz" {
   name      = "DMZ"
   color_hex = "ff00ff"
+}
+
+# Example with object types limitation
+resource "netbox_tag" "device_only" {
+  name         = "Device Only"
+  slug         = "device-only"
+  color_hex    = "00ff00"
+  description  = "Tag that can only be applied to devices"
+  object_types = ["dcim.device"]
+}
+
+# Example with multiple object types
+resource "netbox_tag" "network_equipment" {
+  name         = "Network Equipment"
+  slug         = "network-equipment"
+  color_hex    = "0000ff"
+  description  = "Tag for network-related equipment"
+  object_types = ["dcim.device", "virtualization.virtualmachine"]
 }
 ```
 
@@ -36,6 +56,7 @@ resource "netbox_tag" "dmz" {
 
 - `color_hex` (String) Defaults to `9e9e9e`.
 - `description` (String)
+- `object_types` (Set of String) A list of object types that the tag can be applied to. If not specified, the tag can be applied to any object type. Should be in a form the API can accept. For example: `dcim.device`, `virtualization.virtualmachine`, etc.
 - `slug` (String)
 - `tags` (Set of String)
 

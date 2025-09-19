@@ -63,6 +63,42 @@ resource "netbox_tag" "test" {
 	})
 }
 
+func TestAccNetboxTag_objectTypes(t *testing.T) {
+	testSlug := "tag_objTypes"
+	testName := testAccGetTestName(testSlug)
+	randomSlug := testAccGetTestName(testSlug)
+	resource.ParallelTest(t, resource.TestCase{
+		Providers: testAccProviders,
+		PreCheck:  func() { testAccPreCheck(t) },
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+resource "netbox_tag" "test" {
+  name = "%s"
+  slug = "%s"
+  color_hex = "112233"
+  description = "This is a test tag with object types"
+  object_types = ["dcim.device", "virtualization.virtualmachine"]
+}`, testName, randomSlug),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_tag.test", "name", testName),
+					resource.TestCheckResourceAttr("netbox_tag.test", "slug", randomSlug),
+					resource.TestCheckResourceAttr("netbox_tag.test", "color_hex", "112233"),
+					resource.TestCheckResourceAttr("netbox_tag.test", "description", "This is a test tag with object types"),
+					resource.TestCheckResourceAttr("netbox_tag.test", "object_types.#", "2"),
+					resource.TestCheckResourceAttr("netbox_tag.test", "object_types.0", "dcim.device"),
+					resource.TestCheckResourceAttr("netbox_tag.test", "object_types.1", "virtualization.virtualmachine"),
+				),
+			},
+			{
+				ResourceName:      "netbox_tag.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func init() {
 	resource.AddTestSweepers("netbox_tag", &resource.Sweeper{
 		Name:         "netbox_tag",
