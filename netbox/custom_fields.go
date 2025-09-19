@@ -1,6 +1,7 @@
 package netbox
 
 import (
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -14,12 +15,36 @@ var customFieldsSchema = &schema.Schema{
 		Type:    schema.TypeString,
 		Default: nil,
 	},
+	DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+		if old == "" && new == "0" {
+			return true // treat empty and "0" as equal? Wait, for maps it's different
+		}
+		// For maps, old and new are JSON strings
+		if old == "{}" && new == "" {
+			return true
+		}
+		if old == "" && new == "{}" {
+			return true
+		}
+		return false
+	},
 }
 
 func getCustomFields(cf interface{}) map[string]interface{} {
 	cfm, ok := cf.(map[string]interface{})
-	if !ok || len(cfm) == 0 {
+	if !ok {
 		return nil
 	}
-	return cfm
+	if len(cfm) == 0 {
+		return map[string]interface{}{}
+	}
+	result := make(map[string]interface{})
+	for k, v := range cfm {
+		if v != nil {
+			result[k] = fmt.Sprintf("%v", v)
+		} else {
+			result[k] = ""
+		}
+	}
+	return result
 }
