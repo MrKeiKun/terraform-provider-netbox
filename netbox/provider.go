@@ -166,6 +166,7 @@ func Provider() *schema.Provider {
 			"netbox_mac_address":                resourceNetboxMACAddress(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
+			"netbox_aggregates":         dataSourceNetboxAggregates(),
 			"netbox_asn":                dataSourceNetboxAsn(),
 			"netbox_asns":               dataSourceNetboxAsns(),
 			"netbox_available_prefix":   dataSourceNetboxAvailablePrefix(),
