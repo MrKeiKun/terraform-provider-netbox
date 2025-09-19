@@ -41,7 +41,16 @@ func getCustomFields(cf interface{}) map[string]interface{} {
 	result := make(map[string]interface{})
 	for k, v := range cfm {
 		if v != nil {
-			result[k] = fmt.Sprintf("%v", v)
+			if m, ok := v.(map[string]interface{}); ok {
+				// Handle object references by extracting ID
+				if id, ok := m["id"]; ok {
+					result[k] = fmt.Sprintf("%v", id)
+				} else {
+					result[k] = fmt.Sprintf("%v", v)
+				}
+			} else {
+				result[k] = fmt.Sprintf("%v", v)
+			}
 		} else {
 			result[k] = ""
 		}
