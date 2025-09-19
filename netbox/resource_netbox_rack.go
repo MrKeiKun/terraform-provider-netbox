@@ -75,6 +75,10 @@ Each rack is assigned a name and (optionally) a separate facility ID. This is he
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
+			"rack_type_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
 			"serial": {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -175,6 +179,7 @@ func resourceNetboxRackCreate(d *schema.ResourceData, m interface{}) error {
 	}
 	data.Location = getOptionalInt(d, "location_id")
 	data.Role = getOptionalInt(d, "role_id")
+	data.RackType = getOptionalInt(d, "rack_type_id")
 	data.Serial = getOptionalStr(d, "serial", false)
 	if assetTag := getOptionalStr(d, "asset_tag", false); assetTag != "" {
 		data.AssetTag = &assetTag
@@ -281,6 +286,12 @@ func resourceNetboxRackRead(d *schema.ResourceData, m interface{}) error {
 		d.Set("role_id", nil)
 	}
 
+	if rack.RackType != nil {
+		d.Set("rack_type_id", rack.RackType.ID)
+	} else {
+		d.Set("rack_type_id", nil)
+	}
+
 	d.Set("serial", rack.Serial)
 	d.Set("asset_tag", rack.AssetTag)
 
@@ -349,6 +360,7 @@ func resourceNetboxRackUpdate(d *schema.ResourceData, m interface{}) error {
 
 	data.Location = getOptionalInt(d, "location_id")
 	data.Role = getOptionalInt(d, "role_id")
+	data.RackType = getOptionalInt(d, "rack_type_id")
 	data.Serial = getOptionalStr(d, "serial", true)
 	if assetTag := getOptionalStr(d, "asset_tag", false); assetTag != "" {
 		data.AssetTag = &assetTag
