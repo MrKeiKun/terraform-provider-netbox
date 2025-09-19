@@ -43,5 +43,7 @@ data "netbox_site" "get_by_slug" {
 - `status` (String)
 - `tenant_id` (Number)
 - `time_zone` (String)
+- `latitude` (Number)
+- `longitude` (Number)
 
 

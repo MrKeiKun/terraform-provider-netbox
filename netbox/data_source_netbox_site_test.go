@@ -35,6 +35,8 @@ resource "netbox_site" "test" {
   tenant_id = netbox_tenant.test.id
   timezone = "Europe/Berlin"
   facility = "Facility"
+  latitude = 12.123456
+  longitude = -13.123456
 }`, testName)
 }
 
@@ -102,6 +104,8 @@ func TestAccNetboxSiteDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.netbox_site.test", "description", "Test"),
 					resource.TestCheckResourceAttr("data.netbox_site.test", "time_zone", "Europe/Berlin"),
 					resource.TestCheckResourceAttr("data.netbox_site.test", "status", "active"),
+					resource.TestCheckResourceAttr("data.netbox_site.test", "latitude", "12.123456"),
+					resource.TestCheckResourceAttr("data.netbox_site.test", "longitude", "-13.123456"),
 					resource.TestCheckResourceAttrPair("data.netbox_site.test", "region_id", "netbox_region.test", "id"),
 					resource.TestCheckResourceAttrPair("data.netbox_site.test", "tenant_id", "netbox_tenant.test", "id"),
 				),
