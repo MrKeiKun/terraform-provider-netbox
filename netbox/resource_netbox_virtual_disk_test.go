@@ -41,6 +41,14 @@ resource "netbox_virtual_disk" "test" {
 	tags = [netbox_tag.tag_a.name]
 }
 				`, testName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_virtual_machine.test", "virtual_disks.#", "1"),
+					resource.TestCheckResourceAttr("netbox_virtual_machine.test", "virtual_disks.0.name", testName),
+					resource.TestCheckResourceAttr("netbox_virtual_machine.test", "virtual_disks.0.description", "description"),
+					resource.TestCheckResourceAttr("netbox_virtual_machine.test", "virtual_disks.0.size_mb", "30"),
+					resource.TestCheckResourceAttr("netbox_virtual_machine.test", "virtual_disks.0.tags.#", "1"),
+					resource.TestCheckResourceAttr("netbox_virtual_machine.test", "virtual_disks.0.tags.0", "["+testName+"_a]"),
+				),
 			},
 			{
 				Config: fmt.Sprintf(`
@@ -64,6 +72,14 @@ resource "netbox_virtual_disk" "test" {
 	tags = [netbox_tag.tag_a.name]
 }
 				`, testName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_virtual_machine.test", "virtual_disks.#", "1"),
+					resource.TestCheckResourceAttr("netbox_virtual_machine.test", "virtual_disks.0.name", testName+"_updated"),
+					resource.TestCheckResourceAttr("netbox_virtual_machine.test", "virtual_disks.0.description", "description updated"),
+					resource.TestCheckResourceAttr("netbox_virtual_machine.test", "virtual_disks.0.size_mb", "60"),
+					resource.TestCheckResourceAttr("netbox_virtual_machine.test", "virtual_disks.0.tags.#", "1"),
+					resource.TestCheckResourceAttr("netbox_virtual_machine.test", "virtual_disks.0.tags.0", "["+testName+"_a]"),
+				),
 			},
 			{
 				ResourceName:      "netbox_virtual_disk.test",
@@ -101,4 +117,52 @@ func testAccCheckVirtualDiskDestroy(s *terraform.State) error {
 		return err
 	}
 	return nil
+}
+
+func TestAccNetboxVirtualMachine_virtualDisks(t *testing.T) {
+	testSlug := "vm_virtual_disks"
+	testName := testAccGetTestName(testSlug)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckVirtualMachineDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+resource "netbox_site" "test" {
+	name = "%[1]s"
+	status = "active"
+}
+resource "netbox_virtual_machine" "test" {
+	name = "%[1]s"
+	site_id = netbox_site.test.id
+}
+resource "netbox_virtual_disk" "disk1" {
+	name = "%[1]s_disk1"
+	description = "First disk"
+	size_mb = 100
+	virtual_machine_id = netbox_virtual_machine.test.id
+}
+resource "netbox_virtual_disk" "disk2" {
+	name = "%[1]s_disk2"
+	description = "Second disk"
+	size_mb = 200
+	virtual_machine_id = netbox_virtual_machine.test.id
+}
+				`, testName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_virtual_machine.test", "virtual_disks.#", "2"),
+					// Check first disk
+					resource.TestCheckResourceAttr("netbox_virtual_machine.test", "virtual_disks.0.name", testName+"_disk1"),
+					resource.TestCheckResourceAttr("netbox_virtual_machine.test", "virtual_disks.0.description", "First disk"),
+					resource.TestCheckResourceAttr("netbox_virtual_machine.test", "virtual_disks.0.size_mb", "100"),
+					// Check second disk
+					resource.TestCheckResourceAttr("netbox_virtual_machine.test", "virtual_disks.1.name", testName+"_disk2"),
+					resource.TestCheckResourceAttr("netbox_virtual_machine.test", "virtual_disks.1.description", "Second disk"),
+					resource.TestCheckResourceAttr("netbox_virtual_machine.test", "virtual_disks.1.size_mb", "200"),
+				),
+			},
+		},
+	})
 }

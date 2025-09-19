@@ -98,6 +98,40 @@ func resourceNetboxVirtualMachine() *schema.Resource {
 				Optional:    true,
 				Description: "This is best managed through the use of `jsonencode` and a map of settings.",
 			},
+			"virtual_disks": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"description": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"size_mb": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						tagsKey: {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+						},
+						customFieldsKey: {
+							Type:     schema.TypeMap,
+							Computed: true,
+						},
+					},
+				},
+				Description: "List of virtual disks associated with this virtual machine.",
+			},
 			customFieldsKey: customFieldsSchema,
 		},
 		Importer: &schema.ResourceImporter{
@@ -329,7 +363,61 @@ func resourceNetboxVirtualMachineRead(ctx context.Context, d *schema.ResourceDat
 		d.Set(customFieldsKey, cf)
 	}
 
+	// Read virtual disks associated with this virtual machine
+	virtualDisks, err := readVirtualDisksForVM(api, id)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	d.Set("virtual_disks", virtualDisks)
+
 	return diags
+}
+
+// readVirtualDisksForVM reads all virtual disks associated with a virtual machine
+func readVirtualDisksForVM(api *providerState, vmID int64) ([]map[string]interface{}, error) {
+	params := virtualization.NewVirtualizationVirtualDisksListParams()
+
+	res, err := api.Virtualization.VirtualizationVirtualDisksList(params, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var virtualDisks []map[string]interface{}
+	for _, disk := range res.GetPayload().Results {
+		// Filter disks that belong to this virtual machine
+		if disk.VirtualMachine != nil && disk.VirtualMachine.ID == vmID {
+			diskMap := make(map[string]interface{})
+
+			if disk.ID != 0 {
+				diskMap["id"] = disk.ID
+			}
+			if disk.Name != nil {
+				diskMap["name"] = *disk.Name
+			}
+			if disk.Description != "" {
+				diskMap["description"] = disk.Description
+			}
+			if disk.Size != nil {
+				diskMap["size_mb"] = *disk.Size
+			}
+			if disk.CustomFields != nil {
+				diskMap["custom_fields"] = disk.CustomFields
+			}
+			if disk.Tags != nil {
+				tags := []string{}
+				for _, t := range disk.Tags {
+					if t.Name != nil {
+						tags = append(tags, *t.Name)
+					}
+				}
+				diskMap["tags"] = tags
+			}
+
+			virtualDisks = append(virtualDisks, diskMap)
+		}
+	}
+
+	return virtualDisks, nil
 }
 
 func resourceNetboxVirtualMachineUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
