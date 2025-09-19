@@ -151,10 +151,8 @@ resource "netbox_rack" "test" {
 	})
 }
 
-/*
-Not sure if creating a rack from rack type is a sustainable process when using terraform
-func TestAccNetboxRack_fromRackType(t *testing.T) {
-	testSlug := "rack_fromType"
+func TestAccNetboxRack_withRackType(t *testing.T) {
+	testSlug := "rack_with_type"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -182,19 +180,19 @@ resource "netbox_rack_type" "test" {
 }
 
 resource "netbox_rack" "test" {
-  name = "%[1]s"
-  site_id = netbox_site.test.id
-  status = "active"
-  comments = "%[1]scomments"
+  name         = "%[1]s"
+  site_id      = netbox_site.test.id
+  status       = "active"
+  rack_type_id = netbox_rack_type.test.id
+  comments     = "%[1]scomments"
 }
 `, testName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("netbox_rack.test", "name", testName),
 					resource.TestCheckResourceAttrPair("netbox_rack.test", "site_id", "netbox_site.test", "id"),
 					resource.TestCheckResourceAttr("netbox_rack.test", "status", "active"),
-					resource.TestCheckResourceAttr("netbox_rack.test", "width", "19"),
-					resource.TestCheckResourceAttr("netbox_rack.test", "u_height", "48"),
-					resource.TestCheckResourceAttr("netbox_rack.test", "tags.#", "1"),
+					resource.TestCheckResourceAttrPair("netbox_rack.test", "rack_type_id", "netbox_rack_type.test", "id"),
+					resource.TestCheckResourceAttr("netbox_rack.test", "comments", testName+"comments"),
 				),
 			},
 			{
@@ -205,7 +203,6 @@ resource "netbox_rack" "test" {
 		},
 	})
 }
-*/
 
 func testAccCheckRackDestroy(s *terraform.State) error {
 	// retrieve the connection established in Provider configuration
