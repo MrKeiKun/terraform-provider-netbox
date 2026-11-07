@@ -80,6 +80,14 @@ func resourceNetboxPowerFeed() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"tenant_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,
 		},
@@ -105,6 +113,8 @@ type powerFeedRequest struct {
 	MarkConnected  bool               `json:"mark_connected"`
 	Description    string             `json:"description,omitempty"`
 	Comments       string             `json:"comments,omitempty"`
+	Owner          *int64             `json:"owner"`
+	Tenant         *int64             `json:"tenant"`
 	CustomFields   interface{}        `json:"custom_fields,omitempty"`
 	Tags           []netboxapi.TagRef `json:"tags"`
 }
@@ -123,6 +133,8 @@ type powerFeedResponse struct {
 	MarkConnected  bool                   `json:"mark_connected"`
 	Description    string                 `json:"description"`
 	Comments       string                 `json:"comments"`
+	Owner          *netboxapi.Ref         `json:"owner"`
+	Tenant         *netboxapi.Ref         `json:"tenant"`
 	CustomFields   map[string]interface{} `json:"custom_fields"`
 	Tags           []netboxapi.TagRef     `json:"tags"`
 }
@@ -134,6 +146,8 @@ func powerFeedRequestFromResourceData(api *providerState, d *schema.ResourceData
 		return nil, err
 	}
 	data := &powerFeedRequest{
+		Tenant:         getOptionalInt(d, "tenant_id"),
+		Owner:          getOptionalInt(d, "owner_id"),
 		Name:           name,
 		PowerPanel:     int64ToPtr(int64(d.Get("power_panel_id").(int))),
 		Status:         d.Get("status").(string),
@@ -166,6 +180,8 @@ func resourceNetboxPowerFeedCreate(d *schema.ResourceData, m interface{}) error 
 func resourceNetboxPowerFeedRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, powerFeedAPIPath, func(r *powerFeedResponse) {
+		d.Set("tenant_id", netboxapi.RefID(r.Tenant))
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("name", r.Name)
 		d.Set("power_panel_id", netboxapi.RefID(r.PowerPanel))
 		d.Set("status", netboxapi.ChoiceValue(r.Status))

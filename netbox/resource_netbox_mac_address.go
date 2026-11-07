@@ -60,6 +60,10 @@ func resourceNetboxMACAddress() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,
 		},
@@ -77,6 +81,7 @@ type macAddressRequest struct {
 	Comments           string             `json:"comments"`
 	AssignedObjectType *string            `json:"assigned_object_type,omitempty"`
 	AssignedObjectID   *int64             `json:"assigned_object_id"`
+	Owner              *int64             `json:"owner"`
 	CustomFields       interface{}        `json:"custom_fields,omitempty"`
 	Tags               []netboxapi.TagRef `json:"tags"`
 }
@@ -87,6 +92,7 @@ type macAddressResponse struct {
 	Comments           string                 `json:"comments"`
 	AssignedObjectType *string                `json:"assigned_object_type"`
 	AssignedObjectID   *int64                 `json:"assigned_object_id"`
+	Owner              *netboxapi.Ref         `json:"owner"`
 	CustomFields       map[string]interface{} `json:"custom_fields"`
 	Tags               []netboxapi.TagRef     `json:"tags"`
 }
@@ -97,6 +103,7 @@ func macAddressRequestFromResourceData(api *providerState, d *schema.ResourceDat
 		return nil, err
 	}
 	data := &macAddressRequest{
+		Owner:       getOptionalInt(d, "owner_id"),
 		MacAddress:  d.Get("mac_address").(string),
 		Description: getOptionalStr(d, "description", true),
 		Comments:    getOptionalStr(d, "comments", true),
@@ -141,6 +148,7 @@ func resourceNetboxMACAddressCreate(d *schema.ResourceData, m interface{}) error
 func resourceNetboxMACAddressRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, macAddressAPIPath, func(r *macAddressResponse) {
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("mac_address", r.MacAddress)
 		d.Set("description", r.Description)
 		d.Set("comments", r.Comments)

@@ -74,7 +74,12 @@ func resourceNetboxEventRule() *schema.Resource {
 				Type:     schema.TypeInt,
 				Required: true,
 			},
-			tagsKey: tagsSchema,
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			customFieldsKey: customFieldsSchema,
+			tagsKey:         tagsSchema,
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -94,19 +99,23 @@ type eventRuleRequest struct {
 	EventTypes       []string           `json:"event_types"`
 	ObjectTypes      []string           `json:"object_types,omitempty"`
 	Conditions       interface{}        `json:"conditions,omitempty"`
+	Owner            *int64             `json:"owner"`
+	CustomFields     interface{}        `json:"custom_fields,omitempty"`
 	Tags             []netboxapi.TagRef `json:"tags"`
 }
 
 type eventRuleResponse struct {
-	Name           string             `json:"name"`
-	ActionType     *netboxapi.Choice  `json:"action_type"`
-	Description    string             `json:"description"`
-	Enabled        bool               `json:"enabled"`
-	ActionObjectId *int64             `json:"action_object_id"`
-	ObjectTypes    []string           `json:"object_types"`
-	EventTypes     []string           `json:"event_types"`
-	Conditions     interface{}        `json:"conditions"`
-	Tags           []netboxapi.TagRef `json:"tags"`
+	Name           string                 `json:"name"`
+	ActionType     *netboxapi.Choice      `json:"action_type"`
+	Description    string                 `json:"description"`
+	Enabled        bool                   `json:"enabled"`
+	ActionObjectId *int64                 `json:"action_object_id"`
+	ObjectTypes    []string               `json:"object_types"`
+	EventTypes     []string               `json:"event_types"`
+	Conditions     interface{}            `json:"conditions"`
+	Owner          *netboxapi.Ref         `json:"owner"`
+	CustomFields   map[string]interface{} `json:"custom_fields"`
+	Tags           []netboxapi.TagRef     `json:"tags"`
 }
 
 func eventRuleRequestFromResourceData(api *providerState, d *schema.ResourceData) (*eventRuleRequest, error) {
@@ -116,6 +125,8 @@ func eventRuleRequestFromResourceData(api *providerState, d *schema.ResourceData
 		return nil, err
 	}
 	data := &eventRuleRequest{
+		CustomFields:   customFieldsRequest(d),
+		Owner:          getOptionalInt(d, "owner_id"),
 		Name:           name,
 		ActionType:     d.Get("action_type").(string),
 		Description:    getOptionalStr(d, "description", true),
@@ -161,6 +172,8 @@ func resourceNetboxEventRuleCreate(d *schema.ResourceData, m interface{}) error 
 func resourceNetboxEventRuleRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, eventRuleAPIPath, func(r *eventRuleResponse) {
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("name", r.Name)
 		d.Set("action_type", netboxapi.ChoiceValue(r.ActionType))
 		d.Set("description", r.Description)

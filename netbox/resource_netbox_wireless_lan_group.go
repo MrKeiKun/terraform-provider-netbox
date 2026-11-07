@@ -36,6 +36,14 @@ func resourceNetboxWirelessLANGroup() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"comments": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			customFieldsKey: customFieldsSchema,
 			tagsKey:         tagsSchema,
 		},
@@ -53,6 +61,8 @@ type wirelessLANGroupRequest struct {
 	Description string `json:"description,omitempty"`
 	// Parent is always sent, so a missing parent is sent as null and clears it.
 	Parent       *int64             `json:"parent"`
+	Owner        *int64             `json:"owner"`
+	Comments     string             `json:"comments,omitempty"`
 	Tags         []netboxapi.TagRef `json:"tags"`
 	CustomFields interface{}        `json:"custom_fields,omitempty"`
 }
@@ -62,6 +72,8 @@ type wirelessLANGroupResponse struct {
 	Slug         string                 `json:"slug"`
 	Description  string                 `json:"description"`
 	Parent       *netboxapi.Ref         `json:"parent"`
+	Owner        *netboxapi.Ref         `json:"owner"`
+	Comments     string                 `json:"comments"`
 	Tags         []netboxapi.TagRef     `json:"tags"`
 	CustomFields map[string]interface{} `json:"custom_fields"`
 }
@@ -75,6 +87,8 @@ func wirelessLANGroupRequestFromResourceData(api *providerState, d *schema.Resou
 	}
 
 	data := &wirelessLANGroupRequest{
+		Comments:    getOptionalStr(d, "comments", true),
+		Owner:       getOptionalInt(d, "owner_id"),
 		Name:        name,
 		Slug:        slugFromResourceData(d, name),
 		Description: getOptionalStr(d, "description", true),
@@ -100,6 +114,8 @@ func resourceNetboxWirelessLANGroupCreate(d *schema.ResourceData, m interface{})
 func resourceNetboxWirelessLANGroupRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, wirelessLANGroupAPIPath, func(group *wirelessLANGroupResponse) {
+		d.Set("comments", group.Comments)
+		d.Set("owner_id", netboxapi.RefID(group.Owner))
 		d.Set("name", group.Name)
 		d.Set("slug", group.Slug)
 		d.Set("description", group.Description)

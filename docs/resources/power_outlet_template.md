@@ -52,6 +52,7 @@ resource "netbox_power_outlet_template" "test" {
 
 ### Optional
 
+- `color_hex` (String)
 - `description` (String)
 - `device_type_id` (Number) Exactly one of `device_type_id` or `module_type_id` must be given.
 - `feed_leg` (String) One of [A, B, C].

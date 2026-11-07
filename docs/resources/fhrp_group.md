@@ -36,8 +36,10 @@ resource "netbox_fhrp_group" "test" {
 - `auth_key` (String) Authentication key.
 - `auth_type` (String) Auth type.
 - `comments` (String) Comments.
+- `custom_fields` (Map of String)
 - `description` (String) Description.
 - `name` (String) Name.
+- `owner_id` (Number)
 - `tags` (Set of String)
 
 ### Read-Only

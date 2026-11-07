@@ -31,8 +31,11 @@ resource "netbox_rir" "test" {
 
 ### Optional
 
+- `comments` (String)
+- `custom_fields` (Map of String)
 - `description` (String)
 - `is_private` (Boolean) Defaults to `false`.
+- `owner_id` (Number)
 - `slug` (String)
 
 ### Read-Only

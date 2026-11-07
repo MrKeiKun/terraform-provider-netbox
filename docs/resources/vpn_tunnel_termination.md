@@ -51,6 +51,7 @@ resource "netbox_vpn_tunnel_termination" "vm" {
 
 ### Optional
 
+- `custom_fields` (Map of String)
 - `device_interface_id` (Number) Exactly one of `virtual_machine_interface_id` or `device_interface_id` must be given.
 - `outside_ip_address_id` (Number)
 - `tags` (Set of String)

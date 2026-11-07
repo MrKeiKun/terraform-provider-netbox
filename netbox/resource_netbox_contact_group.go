@@ -36,6 +36,15 @@ func resourceNetboxContactGroup() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"comments": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			customFieldsKey: customFieldsSchema,
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -46,27 +55,36 @@ func resourceNetboxContactGroup() *schema.Resource {
 const contactGroupAPIPath = "tenancy/contact-groups/"
 
 type contactGroupRequest struct {
-	Name        string             `json:"name"`
-	Slug        string             `json:"slug"`
-	Description string             `json:"description,omitempty"`
-	Parent      *int64             `json:"parent,omitempty"`
-	Tags        []netboxapi.TagRef `json:"tags"`
+	Name         string             `json:"name"`
+	Slug         string             `json:"slug"`
+	Description  string             `json:"description,omitempty"`
+	Parent       *int64             `json:"parent,omitempty"`
+	Owner        *int64             `json:"owner"`
+	Comments     string             `json:"comments,omitempty"`
+	CustomFields interface{}        `json:"custom_fields,omitempty"`
+	Tags         []netboxapi.TagRef `json:"tags"`
 }
 
 type contactGroupResponse struct {
-	Name        string         `json:"name"`
-	Slug        string         `json:"slug"`
-	Description string         `json:"description"`
-	Parent      *netboxapi.Ref `json:"parent"`
+	Name         string                 `json:"name"`
+	Slug         string                 `json:"slug"`
+	Description  string                 `json:"description"`
+	Parent       *netboxapi.Ref         `json:"parent"`
+	Owner        *netboxapi.Ref         `json:"owner"`
+	Comments     string                 `json:"comments"`
+	CustomFields map[string]interface{} `json:"custom_fields"`
 }
 
 func contactGroupRequestFromResourceData(d *schema.ResourceData) *contactGroupRequest {
 	name := d.Get("name").(string)
 	data := &contactGroupRequest{
-		Name:        name,
-		Slug:        slugFromResourceData(d, name),
-		Description: d.Get("description").(string),
-		Tags:        []netboxapi.TagRef{},
+		CustomFields: customFieldsRequest(d),
+		Comments:     getOptionalStr(d, "comments", true),
+		Owner:        getOptionalInt(d, "owner_id"),
+		Name:         name,
+		Slug:         slugFromResourceData(d, name),
+		Description:  d.Get("description").(string),
+		Tags:         []netboxapi.TagRef{},
 	}
 	if parentID := int64(d.Get("parent_id").(int)); parentID != 0 {
 		data.Parent = &parentID
@@ -80,6 +98,9 @@ func resourceNetboxContactGroupCreate(d *schema.ResourceData, m interface{}) err
 
 func resourceNetboxContactGroupRead(d *schema.ResourceData, m interface{}) error {
 	return readObject(d, m, contactGroupAPIPath, func(res *contactGroupResponse) {
+		d.Set(customFieldsKey, getCustomFields(res.CustomFields))
+		d.Set("comments", res.Comments)
+		d.Set("owner_id", netboxapi.RefID(res.Owner))
 		d.Set("name", res.Name)
 		d.Set("slug", res.Slug)
 		d.Set("description", res.Description)

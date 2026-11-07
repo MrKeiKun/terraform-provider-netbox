@@ -30,7 +30,10 @@ resource "netbox_contact_group" "test" {
 
 ### Optional
 
+- `comments` (String)
+- `custom_fields` (Map of String)
 - `description` (String)
+- `owner_id` (Number)
 - `parent_id` (Number)
 - `slug` (String)
 

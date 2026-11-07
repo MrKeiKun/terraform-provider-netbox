@@ -42,7 +42,11 @@ resource "netbox_device_role" "web_server" {
 
 ### Optional
 
+- `comments` (String)
+- `config_template_id` (Number)
+- `custom_fields` (Map of String)
 - `description` (String)
+- `owner_id` (Number)
 - `slug` (String)
 - `tags` (Set of String)
 - `vm_role` (Boolean) Virtual machines may be assigned to this role. Defaults to `false`.

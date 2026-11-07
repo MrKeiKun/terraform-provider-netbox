@@ -32,6 +32,15 @@ func resourceNetboxVpnTunnelGroup() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"comments": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			customFieldsKey: customFieldsSchema,
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -42,25 +51,34 @@ func resourceNetboxVpnTunnelGroup() *schema.Resource {
 const vpnTunnelGroupAPIPath = "vpn/tunnel-groups/"
 
 type vpnTunnelGroupRequest struct {
-	Name        string             `json:"name"`
-	Slug        string             `json:"slug"`
-	Description string             `json:"description,omitempty"`
-	Tags        []netboxapi.TagRef `json:"tags"`
+	Name         string             `json:"name"`
+	Slug         string             `json:"slug"`
+	Description  string             `json:"description,omitempty"`
+	Owner        *int64             `json:"owner"`
+	Comments     string             `json:"comments,omitempty"`
+	CustomFields interface{}        `json:"custom_fields,omitempty"`
+	Tags         []netboxapi.TagRef `json:"tags"`
 }
 
 type vpnTunnelGroupResponse struct {
-	Name        string `json:"name"`
-	Slug        string `json:"slug"`
-	Description string `json:"description"`
+	Name         string                 `json:"name"`
+	Slug         string                 `json:"slug"`
+	Description  string                 `json:"description"`
+	Owner        *netboxapi.Ref         `json:"owner"`
+	Comments     string                 `json:"comments"`
+	CustomFields map[string]interface{} `json:"custom_fields"`
 }
 
 func vpnTunnelGroupRequestFromResourceData(d *schema.ResourceData) *vpnTunnelGroupRequest {
 	name := d.Get("name").(string)
 	data := &vpnTunnelGroupRequest{
-		Name:        name,
-		Slug:        slugFromResourceData(d, name),
-		Description: getOptionalStr(d, "description", true),
-		Tags:        []netboxapi.TagRef{},
+		CustomFields: customFieldsRequest(d),
+		Comments:     getOptionalStr(d, "comments", true),
+		Owner:        getOptionalInt(d, "owner_id"),
+		Name:         name,
+		Slug:         slugFromResourceData(d, name),
+		Description:  getOptionalStr(d, "description", true),
+		Tags:         []netboxapi.TagRef{},
 	}
 	return data
 }
@@ -71,6 +89,9 @@ func resourceNetboxVpnTunnelGroupCreate(d *schema.ResourceData, m interface{}) e
 
 func resourceNetboxVpnTunnelGroupRead(d *schema.ResourceData, m interface{}) error {
 	return readObject(d, m, vpnTunnelGroupAPIPath, func(r *vpnTunnelGroupResponse) {
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
+		d.Set("comments", r.Comments)
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("name", r.Name)
 		d.Set("slug", r.Slug)
 		d.Set("description", r.Description)

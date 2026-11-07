@@ -36,10 +36,16 @@ resource "netbox_module_type" "test" {
 
 ### Optional
 
+- `airflow` (String) One of [front-to-rear, rear-to-front, left-to-right, right-to-left, side-to-rear, passive].
 - `comments` (String)
+- `cooling_method` (String) One of [air, liquid, hybrid, immersion].
 - `custom_fields` (Map of String)
 - `description` (String)
+- `end_of_life` (String) The date after which this module type is no longer supported by the manufacturer.
+- `module_bay_type_ids` (Set of Number)
+- `owner_id` (Number)
 - `part_number` (String)
+- `profile_id` (Number)
 - `tags` (Set of String)
 - `weight` (Number)
 - `weight_unit` (String) One of [kg, g, lb, oz]. Required when `weight` is set.

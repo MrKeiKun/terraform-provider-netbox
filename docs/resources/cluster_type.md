@@ -30,6 +30,10 @@ resource "netbox_cluster_type" "vmw_vsphere" {
 
 ### Optional
 
+- `comments` (String)
+- `custom_fields` (Map of String)
+- `description` (String)
+- `owner_id` (Number)
 - `slug` (String)
 
 ### Read-Only

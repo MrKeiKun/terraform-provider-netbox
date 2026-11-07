@@ -58,6 +58,24 @@ func resourceNetboxVlan() *schema.Resource {
 				Optional: true,
 				Default:  "",
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"comments": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"qinq_role": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "One of [svlan, cvlan]",
+				ValidateFunc: validation.StringInSlice([]string{"svlan", "cvlan"}, false),
+			},
+			"qinq_svlan": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
 			customFieldsKey: customFieldsSchema,
 			tagsKey:         tagsSchema,
 		},
@@ -78,6 +96,10 @@ type vlanRequest struct {
 	Site         *int64             `json:"site,omitempty"`
 	Tenant       *int64             `json:"tenant,omitempty"`
 	Role         *int64             `json:"role,omitempty"`
+	Owner        *int64             `json:"owner"`
+	Comments     string             `json:"comments,omitempty"`
+	QinqRole     *string            `json:"qinq_role,omitempty"`
+	QinqSvlan    *int64             `json:"qinq_svlan"`
 	CustomFields interface{}        `json:"custom_fields,omitempty"`
 	Tags         []netboxapi.TagRef `json:"tags"`
 }
@@ -91,6 +113,10 @@ type vlanResponse struct {
 	Site         *netboxapi.Ref         `json:"site"`
 	Tenant       *netboxapi.Ref         `json:"tenant"`
 	Role         *netboxapi.Ref         `json:"role"`
+	Owner        *netboxapi.Ref         `json:"owner"`
+	Comments     string                 `json:"comments"`
+	QinqRole     *netboxapi.Choice      `json:"qinq_role"`
+	QinqSvlan    *int64                 `json:"qinq_svlan"`
 	CustomFields map[string]interface{} `json:"custom_fields"`
 	Tags         []netboxapi.TagRef     `json:"tags"`
 }
@@ -102,6 +128,10 @@ func vlanRequestFromResourceData(api *providerState, d *schema.ResourceData) (*v
 		return nil, err
 	}
 	data := &vlanRequest{
+		QinqSvlan:   getOptionalInt(d, "qinq_svlan"),
+		QinqRole:    getOptionalStrClear(d, "qinq_role"),
+		Comments:    getOptionalStr(d, "comments", true),
+		Owner:       getOptionalInt(d, "owner_id"),
 		Name:        name,
 		Vid:         int64ToPtr(int64(d.Get("vid").(int))),
 		Status:      d.Get("status").(string),
@@ -137,6 +167,10 @@ func resourceNetboxVlanCreate(d *schema.ResourceData, m interface{}) error {
 func resourceNetboxVlanRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, vlanAPIPath, func(r *vlanResponse) {
+		d.Set("qinq_svlan", r.QinqSvlan)
+		d.Set("qinq_role", netboxapi.ChoiceValue(r.QinqRole))
+		d.Set("comments", r.Comments)
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("name", r.Name)
 		d.Set("vid", r.Vid)
 		d.Set("status", netboxapi.ChoiceValue(r.Status))

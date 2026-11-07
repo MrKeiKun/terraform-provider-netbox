@@ -47,6 +47,7 @@ resource "netbox_virtual_disk" "example" {
 
 - `custom_fields` (Map of String)
 - `description` (String)
+- `owner_id` (Number)
 - `tags` (Set of String)
 
 ### Read-Only

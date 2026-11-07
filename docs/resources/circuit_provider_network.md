@@ -40,6 +40,7 @@ resource "netbox_circuit_provider_network" "networka" {
 - `comments` (String)
 - `custom_fields` (Map of String)
 - `description` (String)
+- `owner_id` (Number)
 - `service_id` (String)
 - `tags` (Set of String)
 

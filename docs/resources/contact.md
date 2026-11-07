@@ -34,13 +34,18 @@ resource "netbox_contact" "test" {
 
 ### Optional
 
+- `address` (String)
+- `comments` (String)
+- `custom_fields` (Map of String)
 - `description` (String)
 - `email` (String)
 - `group_id` (Number, Deprecated)
 - `group_ids` (List of Number)
 - `link` (String)
+- `owner_id` (Number)
 - `phone` (String)
 - `tags` (Set of String)
+- `title` (String)
 
 ### Read-Only
 

@@ -81,6 +81,14 @@ func resourceNetboxPrefix() *schema.Resource {
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"comments": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			customFieldsKey: customFieldsSchema,
 			tagsKey:         tagsSchema,
 		},
@@ -104,6 +112,8 @@ type prefixRequest struct {
 	Role         *int64             `json:"role"`
 	ScopeType    *string            `json:"scope_type"`
 	ScopeID      *int64             `json:"scope_id"`
+	Owner        *int64             `json:"owner"`
+	Comments     string             `json:"comments,omitempty"`
 	CustomFields interface{}        `json:"custom_fields,omitempty"`
 	Tags         []netboxapi.TagRef `json:"tags"`
 }
@@ -120,6 +130,8 @@ type prefixResponse struct {
 	Role         *netboxapi.Ref         `json:"role"`
 	ScopeType    *string                `json:"scope_type"`
 	ScopeID      *int64                 `json:"scope_id"`
+	Owner        *netboxapi.Ref         `json:"owner"`
+	Comments     string                 `json:"comments"`
 	CustomFields map[string]interface{} `json:"custom_fields"`
 	Tags         []netboxapi.TagRef     `json:"tags"`
 }
@@ -130,6 +142,8 @@ func prefixRequestFromResourceData(api *providerState, d *schema.ResourceData) (
 		return nil, err
 	}
 	data := &prefixRequest{
+		Comments:     getOptionalStr(d, "comments", true),
+		Owner:        getOptionalInt(d, "owner_id"),
 		Prefix:       d.Get("prefix").(string),
 		Status:       d.Get("status").(string),
 		Description:  getOptionalStr(d, "description", true),
@@ -190,6 +204,8 @@ func resourceNetboxPrefixCreate(d *schema.ResourceData, m interface{}) error {
 func resourceNetboxPrefixRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, prefixAPIPath, func(r *prefixResponse) {
+		d.Set("comments", r.Comments)
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("prefix", r.Prefix)
 		d.Set("status", netboxapi.ChoiceValue(r.Status))
 		d.Set("description", r.Description)

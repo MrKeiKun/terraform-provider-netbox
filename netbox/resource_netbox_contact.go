@@ -23,7 +23,24 @@ func resourceNetboxContact() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			tagsKey: tagsSchema,
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"comments": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"title": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"address": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			customFieldsKey: customFieldsSchema,
+			tagsKey:         tagsSchema,
 			"group_id": {
 				Type:       schema.TypeInt,
 				Optional:   true,
@@ -62,22 +79,32 @@ func resourceNetboxContact() *schema.Resource {
 const contactAPIPath = "tenancy/contacts/"
 
 type contactRequest struct {
-	Name        string             `json:"name"`
-	Phone       string             `json:"phone,omitempty"`
-	Email       string             `json:"email,omitempty"`
-	Link        string             `json:"link,omitempty"`
-	Description string             `json:"description,omitempty"`
-	Groups      []int64            `json:"groups"`
-	Tags        []netboxapi.TagRef `json:"tags"`
+	Name         string             `json:"name"`
+	Phone        string             `json:"phone,omitempty"`
+	Email        string             `json:"email,omitempty"`
+	Link         string             `json:"link,omitempty"`
+	Description  string             `json:"description,omitempty"`
+	Groups       []int64            `json:"groups"`
+	Owner        *int64             `json:"owner"`
+	Comments     string             `json:"comments,omitempty"`
+	Title        string             `json:"title,omitempty"`
+	Address      string             `json:"address,omitempty"`
+	CustomFields interface{}        `json:"custom_fields,omitempty"`
+	Tags         []netboxapi.TagRef `json:"tags"`
 }
 
 type contactResponse struct {
-	Name        string          `json:"name"`
-	Phone       string          `json:"phone"`
-	Email       string          `json:"email"`
-	Link        string          `json:"link"`
-	Description string          `json:"description"`
-	Groups      []netboxapi.Ref `json:"groups"`
+	Name         string                 `json:"name"`
+	Phone        string                 `json:"phone"`
+	Email        string                 `json:"email"`
+	Link         string                 `json:"link"`
+	Description  string                 `json:"description"`
+	Groups       []netboxapi.Ref        `json:"groups"`
+	Owner        *netboxapi.Ref         `json:"owner"`
+	Comments     string                 `json:"comments"`
+	Title        string                 `json:"title"`
+	Address      string                 `json:"address"`
+	CustomFields map[string]interface{} `json:"custom_fields"`
 }
 
 func contactRequestFromResourceData(api *providerState, d *schema.ResourceData) (*contactRequest, error) {
@@ -94,13 +121,18 @@ func contactRequestFromResourceData(api *providerState, d *schema.ResourceData) 
 	}
 
 	return &contactRequest{
-		Name:        d.Get("name").(string),
-		Phone:       d.Get("phone").(string),
-		Email:       d.Get("email").(string),
-		Link:        d.Get("link").(string),
-		Description: d.Get("description").(string),
-		Groups:      groups,
-		Tags:        tags,
+		CustomFields: customFieldsRequest(d),
+		Address:      getOptionalStr(d, "address", true),
+		Title:        getOptionalStr(d, "title", true),
+		Comments:     getOptionalStr(d, "comments", true),
+		Owner:        getOptionalInt(d, "owner_id"),
+		Name:         d.Get("name").(string),
+		Phone:        d.Get("phone").(string),
+		Email:        d.Get("email").(string),
+		Link:         d.Get("link").(string),
+		Description:  d.Get("description").(string),
+		Groups:       groups,
+		Tags:         tags,
 	}, nil
 }
 
@@ -114,6 +146,11 @@ func resourceNetboxContactCreate(d *schema.ResourceData, m interface{}) error {
 
 func resourceNetboxContactRead(d *schema.ResourceData, m interface{}) error {
 	return readObject(d, m, contactAPIPath, func(contact *contactResponse) {
+		d.Set(customFieldsKey, getCustomFields(contact.CustomFields))
+		d.Set("address", contact.Address)
+		d.Set("title", contact.Title)
+		d.Set("comments", contact.Comments)
+		d.Set("owner_id", netboxapi.RefID(contact.Owner))
 		d.Set("name", contact.Name)
 		d.Set("phone", contact.Phone)
 		d.Set("email", contact.Email)

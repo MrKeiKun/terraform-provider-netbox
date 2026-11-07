@@ -38,7 +38,20 @@ func resourceNetboxAsn() *schema.Resource {
 				Optional:    true,
 				Description: "Comments field for the AS Number record",
 			},
-			tagsKey: tagsSchema,
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"role_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"tenant_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			customFieldsKey: customFieldsSchema,
+			tagsKey:         tagsSchema,
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -49,19 +62,27 @@ func resourceNetboxAsn() *schema.Resource {
 const asnAPIPath = "ipam/asns/"
 
 type asnRequest struct {
-	Asn         *int64             `json:"asn"`
-	Rir         *int64             `json:"rir"`
-	Description string             `json:"description,omitempty"`
-	Comments    string             `json:"comments,omitempty"`
-	Tags        []netboxapi.TagRef `json:"tags"`
+	Asn          *int64             `json:"asn"`
+	Rir          *int64             `json:"rir"`
+	Description  string             `json:"description,omitempty"`
+	Comments     string             `json:"comments,omitempty"`
+	Owner        *int64             `json:"owner"`
+	Role         *int64             `json:"role"`
+	Tenant       *int64             `json:"tenant"`
+	CustomFields interface{}        `json:"custom_fields,omitempty"`
+	Tags         []netboxapi.TagRef `json:"tags"`
 }
 
 type asnResponse struct {
-	Asn         *int64             `json:"asn"`
-	Rir         *netboxapi.Ref     `json:"rir"`
-	Description string             `json:"description"`
-	Comments    string             `json:"comments"`
-	Tags        []netboxapi.TagRef `json:"tags"`
+	Asn          *int64                 `json:"asn"`
+	Rir          *netboxapi.Ref         `json:"rir"`
+	Description  string                 `json:"description"`
+	Comments     string                 `json:"comments"`
+	Owner        *netboxapi.Ref         `json:"owner"`
+	Role         *netboxapi.Ref         `json:"role"`
+	Tenant       *netboxapi.Ref         `json:"tenant"`
+	CustomFields map[string]interface{} `json:"custom_fields"`
+	Tags         []netboxapi.TagRef     `json:"tags"`
 }
 
 func asnRequestFromResourceData(api *providerState, d *schema.ResourceData) (*asnRequest, error) {
@@ -70,11 +91,15 @@ func asnRequestFromResourceData(api *providerState, d *schema.ResourceData) (*as
 		return nil, err
 	}
 	data := &asnRequest{
-		Asn:         int64ToPtr(int64(d.Get("asn").(int))),
-		Rir:         int64ToPtr(int64(d.Get("rir_id").(int))),
-		Description: d.Get("description").(string),
-		Comments:    d.Get("comments").(string),
-		Tags:        tags,
+		CustomFields: customFieldsRequest(d),
+		Tenant:       getOptionalInt(d, "tenant_id"),
+		Role:         getOptionalInt(d, "role_id"),
+		Owner:        getOptionalInt(d, "owner_id"),
+		Asn:          int64ToPtr(int64(d.Get("asn").(int))),
+		Rir:          int64ToPtr(int64(d.Get("rir_id").(int))),
+		Description:  d.Get("description").(string),
+		Comments:     d.Get("comments").(string),
+		Tags:         tags,
 	}
 	return data, nil
 }
@@ -90,6 +115,10 @@ func resourceNetboxAsnCreate(d *schema.ResourceData, m interface{}) error {
 func resourceNetboxAsnRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, asnAPIPath, func(r *asnResponse) {
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
+		d.Set("tenant_id", netboxapi.RefID(r.Tenant))
+		d.Set("role_id", netboxapi.RefID(r.Role))
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("asn", r.Asn)
 		d.Set("rir_id", netboxapi.RefID(r.Rir))
 		d.Set("description", r.Description)

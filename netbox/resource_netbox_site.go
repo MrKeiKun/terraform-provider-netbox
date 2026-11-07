@@ -98,6 +98,10 @@ func resourceNetboxSite() *schema.Resource {
 					Type: schema.TypeInt,
 				},
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
 			customFieldsKey: customFieldsSchema,
 		},
 		Importer: &schema.ResourceImporter{
@@ -115,6 +119,7 @@ type siteRequest struct {
 	Status          string             `json:"status,omitempty"`
 	Description     string             `json:"description,omitempty"`
 	Comments        string             `json:"comments,omitempty"`
+	Owner           *int64             `json:"owner"`
 	Facility        string             `json:"facility,omitempty"`
 	Latitude        *float64           `json:"latitude"`
 	Longitude       *float64           `json:"longitude"`
@@ -137,6 +142,7 @@ type siteResponse struct {
 	Status          *netboxapi.Choice      `json:"status"`
 	Description     string                 `json:"description"`
 	Comments        string                 `json:"comments"`
+	Owner           *netboxapi.Ref         `json:"owner"`
 	Facility        string                 `json:"facility"`
 	Latitude        *float64               `json:"latitude"`
 	Longitude       *float64               `json:"longitude"`
@@ -201,6 +207,8 @@ func siteRequestFromResourceData(api *providerState, d *schema.ResourceData, isU
 		data.TimeZone = strToPtr(v.(string))
 	}
 
+	data.Owner = getOptionalInt(d, "owner_id")
+
 	data.Asns = []int64{}
 	if v, ok := d.GetOk("asn_ids"); ok {
 		data.Asns = toInt64List(v)
@@ -256,6 +264,7 @@ func resourceNetboxSiteRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("status", netboxapi.ChoiceValue(site.Status))
 	d.Set("description", site.Description)
 	d.Set("comments", site.Comments)
+	d.Set("owner_id", netboxapi.RefID(site.Owner))
 	d.Set("facility", site.Facility)
 	d.Set("longitude", site.Longitude)
 	d.Set("latitude", site.Latitude)

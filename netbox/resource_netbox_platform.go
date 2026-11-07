@@ -36,7 +36,20 @@ func resourceNetboxPlatform() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			tagsKey: tagsSchema,
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"comments": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"config_template_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			customFieldsKey: customFieldsSchema,
+			tagsKey:         tagsSchema,
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -47,19 +60,27 @@ func resourceNetboxPlatform() *schema.Resource {
 const platformAPIPath = "dcim/platforms/"
 
 type platformRequest struct {
-	Name         string             `json:"name"`
-	Slug         string             `json:"slug"`
-	Description  string             `json:"description,omitempty"`
-	Manufacturer *int64             `json:"manufacturer,omitempty"`
-	Tags         []netboxapi.TagRef `json:"tags"`
+	Name           string             `json:"name"`
+	Slug           string             `json:"slug"`
+	Description    string             `json:"description,omitempty"`
+	Manufacturer   *int64             `json:"manufacturer,omitempty"`
+	Owner          *int64             `json:"owner"`
+	Comments       string             `json:"comments,omitempty"`
+	ConfigTemplate *int64             `json:"config_template"`
+	CustomFields   interface{}        `json:"custom_fields,omitempty"`
+	Tags           []netboxapi.TagRef `json:"tags"`
 }
 
 type platformResponse struct {
-	Name         string             `json:"name"`
-	Slug         string             `json:"slug"`
-	Description  string             `json:"description"`
-	Manufacturer *netboxapi.Ref     `json:"manufacturer"`
-	Tags         []netboxapi.TagRef `json:"tags"`
+	Name           string                 `json:"name"`
+	Slug           string                 `json:"slug"`
+	Description    string                 `json:"description"`
+	Manufacturer   *netboxapi.Ref         `json:"manufacturer"`
+	Owner          *netboxapi.Ref         `json:"owner"`
+	Comments       string                 `json:"comments"`
+	ConfigTemplate *netboxapi.Ref         `json:"config_template"`
+	CustomFields   map[string]interface{} `json:"custom_fields"`
+	Tags           []netboxapi.TagRef     `json:"tags"`
 }
 
 func platformRequestFromResourceData(api *providerState, d *schema.ResourceData) (*platformRequest, error) {
@@ -69,10 +90,14 @@ func platformRequestFromResourceData(api *providerState, d *schema.ResourceData)
 		return nil, err
 	}
 	data := &platformRequest{
-		Name:        name,
-		Slug:        slugFromResourceData(d, name),
-		Description: d.Get("description").(string),
-		Tags:        tags,
+		CustomFields:   customFieldsRequest(d),
+		ConfigTemplate: getOptionalInt(d, "config_template_id"),
+		Comments:       getOptionalStr(d, "comments", true),
+		Owner:          getOptionalInt(d, "owner_id"),
+		Name:           name,
+		Slug:           slugFromResourceData(d, name),
+		Description:    d.Get("description").(string),
+		Tags:           tags,
 	}
 	if v, ok := d.GetOk("manufacturer_id"); ok {
 		data.Manufacturer = int64ToPtr(int64(v.(int)))
@@ -91,6 +116,10 @@ func resourceNetboxPlatformCreate(d *schema.ResourceData, m interface{}) error {
 func resourceNetboxPlatformRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, platformAPIPath, func(r *platformResponse) {
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
+		d.Set("config_template_id", netboxapi.RefID(r.ConfigTemplate))
+		d.Set("comments", r.Comments)
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("name", r.Name)
 		d.Set("slug", r.Slug)
 		d.Set("description", r.Description)

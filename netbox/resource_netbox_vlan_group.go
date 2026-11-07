@@ -55,7 +55,20 @@ func resourceNetboxVlanGroup() *schema.Resource {
 				},
 				Required: true,
 			},
-			tagsKey: tagsSchema,
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"comments": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"tenant_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			customFieldsKey: customFieldsSchema,
+			tagsKey:         tagsSchema,
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -66,23 +79,31 @@ func resourceNetboxVlanGroup() *schema.Resource {
 const vlanGroupAPIPath = "ipam/vlan-groups/"
 
 type vlanGroupRequest struct {
-	Name        string             `json:"name"`
-	Slug        string             `json:"slug"`
-	Description string             `json:"description,omitempty"`
-	VidRanges   [][]int64          `json:"vid_ranges"`
-	ScopeType   *string            `json:"scope_type,omitempty"`
-	ScopeID     *int64             `json:"scope_id,omitempty"`
-	Tags        []netboxapi.TagRef `json:"tags"`
+	Name         string             `json:"name"`
+	Slug         string             `json:"slug"`
+	Description  string             `json:"description,omitempty"`
+	VidRanges    [][]int64          `json:"vid_ranges"`
+	ScopeType    *string            `json:"scope_type,omitempty"`
+	ScopeID      *int64             `json:"scope_id,omitempty"`
+	Owner        *int64             `json:"owner"`
+	Comments     string             `json:"comments,omitempty"`
+	Tenant       *int64             `json:"tenant"`
+	CustomFields interface{}        `json:"custom_fields,omitempty"`
+	Tags         []netboxapi.TagRef `json:"tags"`
 }
 
 type vlanGroupResponse struct {
-	Name        string             `json:"name"`
-	Slug        string             `json:"slug"`
-	Description string             `json:"description"`
-	VidRanges   [][]int64          `json:"vid_ranges"`
-	ScopeType   *string            `json:"scope_type"`
-	ScopeID     *int64             `json:"scope_id"`
-	Tags        []netboxapi.TagRef `json:"tags"`
+	Name         string                 `json:"name"`
+	Slug         string                 `json:"slug"`
+	Description  string                 `json:"description"`
+	VidRanges    [][]int64              `json:"vid_ranges"`
+	ScopeType    *string                `json:"scope_type"`
+	ScopeID      *int64                 `json:"scope_id"`
+	Owner        *netboxapi.Ref         `json:"owner"`
+	Comments     string                 `json:"comments"`
+	Tenant       *netboxapi.Ref         `json:"tenant"`
+	CustomFields map[string]interface{} `json:"custom_fields"`
+	Tags         []netboxapi.TagRef     `json:"tags"`
 }
 
 func vlanGroupRequestFromResourceData(api *providerState, d *schema.ResourceData) (*vlanGroupRequest, error) {
@@ -98,11 +119,15 @@ func vlanGroupRequestFromResourceData(api *providerState, d *schema.ResourceData
 	}
 
 	data := &vlanGroupRequest{
-		Name:        d.Get("name").(string),
-		Slug:        d.Get("slug").(string),
-		Description: d.Get("description").(string),
-		VidRanges:   vidRanges,
-		Tags:        tags,
+		CustomFields: customFieldsRequest(d),
+		Tenant:       getOptionalInt(d, "tenant_id"),
+		Comments:     getOptionalStr(d, "comments", true),
+		Owner:        getOptionalInt(d, "owner_id"),
+		Name:         d.Get("name").(string),
+		Slug:         d.Get("slug").(string),
+		Description:  d.Get("description").(string),
+		VidRanges:    vidRanges,
+		Tags:         tags,
 	}
 	if scopeType, ok := d.GetOk("scope_type"); ok {
 		data.ScopeType = strToPtr(scopeType.(string))
@@ -124,6 +149,10 @@ func resourceNetboxVlanGroupCreate(d *schema.ResourceData, m interface{}) error 
 func resourceNetboxVlanGroupRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, vlanGroupAPIPath, func(vlanGroup *vlanGroupResponse) {
+		d.Set(customFieldsKey, getCustomFields(vlanGroup.CustomFields))
+		d.Set("tenant_id", netboxapi.RefID(vlanGroup.Tenant))
+		d.Set("comments", vlanGroup.Comments)
+		d.Set("owner_id", netboxapi.RefID(vlanGroup.Owner))
 		d.Set("name", vlanGroup.Name)
 		d.Set("slug", vlanGroup.Slug)
 		d.Set("description", vlanGroup.Description)

@@ -35,6 +35,14 @@ func resourceNetboxInventoryItemRole() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"comments": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,
 		},
@@ -51,6 +59,8 @@ type inventoryItemRoleRequest struct {
 	Slug         string             `json:"slug"`
 	Description  string             `json:"description,omitempty"`
 	Color        string             `json:"color"`
+	Owner        *int64             `json:"owner"`
+	Comments     string             `json:"comments,omitempty"`
 	CustomFields interface{}        `json:"custom_fields,omitempty"`
 	Tags         []netboxapi.TagRef `json:"tags"`
 }
@@ -60,6 +70,8 @@ type inventoryItemRoleResponse struct {
 	Slug         string                 `json:"slug"`
 	Description  string                 `json:"description"`
 	Color        string                 `json:"color"`
+	Owner        *netboxapi.Ref         `json:"owner"`
+	Comments     string                 `json:"comments"`
 	CustomFields map[string]interface{} `json:"custom_fields"`
 	Tags         []netboxapi.TagRef     `json:"tags"`
 }
@@ -71,6 +83,8 @@ func inventoryItemRoleRequestFromResourceData(api *providerState, d *schema.Reso
 		return nil, err
 	}
 	data := &inventoryItemRoleRequest{
+		Comments:    getOptionalStr(d, "comments", true),
+		Owner:       getOptionalInt(d, "owner_id"),
 		Name:        name,
 		Slug:        slugFromResourceData(d, name),
 		Description: getOptionalStr(d, "description", true),
@@ -94,6 +108,8 @@ func resourceNetboxInventoryItemRoleCreate(d *schema.ResourceData, m interface{}
 func resourceNetboxInventoryItemRoleRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, inventoryItemRoleAPIPath, func(r *inventoryItemRoleResponse) {
+		d.Set("comments", r.Comments)
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("name", r.Name)
 		d.Set("slug", r.Slug)
 		d.Set("description", r.Description)

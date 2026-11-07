@@ -46,6 +46,7 @@ resource "netbox_contact_assignment" "test" {
 
 ### Optional
 
+- `custom_fields` (Map of String)
 - `priority` (String) Valid values are `primary`, `secondary`, `tertiary` and `inactive`.
 
 ### Read-Only

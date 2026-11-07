@@ -43,11 +43,14 @@ resource "netbox_cluster" "vmw_cluster_01" {
 
 - `cluster_group_id` (Number)
 - `comments` (String)
+- `custom_fields` (Map of String)
 - `description` (String)
 - `location_id` (Number) Conflicts with `site_id`, `site_group_id` and `region_id`.
+- `owner_id` (Number)
 - `region_id` (Number) Conflicts with `location_id`, `site_id` and `site_group_id`.
 - `site_group_id` (Number) Conflicts with `location_id`, `site_id` and `region_id`.
 - `site_id` (Number) Conflicts with `location_id`, `site_group_id` and `region_id`.
+- `status` (String) One of [planned, staging, active, decommissioning, offline].
 - `tags` (Set of String)
 - `tenant_id` (Number)
 

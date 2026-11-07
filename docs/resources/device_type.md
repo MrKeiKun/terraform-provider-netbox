@@ -37,15 +37,23 @@ resource "netbox_device_type" "test" {
 
 ### Optional
 
+- `airflow` (String) One of [front-to-rear, rear-to-front, left-to-right, right-to-left, side-to-rear, rear-to-side, bottom-to-top, top-to-bottom, passive, mixed].
 - `comments` (String)
+- `cooling_method` (String) One of [air, liquid, hybrid, immersion].
 - `custom_fields` (Map of String)
+- `default_platform_id` (Number)
 - `description` (String)
+- `end_of_life` (String) The date after which this device type is no longer supported by the manufacturer.
+- `exclude_from_utilization` (Boolean) Devices of this type are excluded when calculating rack utilization.
 - `is_full_depth` (Boolean)
+- `owner_id` (Number)
 - `part_number` (String)
 - `slug` (String)
 - `subdevice_role` (String)
 - `tags` (Set of String)
 - `u_height` (Number) Defaults to `1.0`.
+- `weight` (Number)
+- `weight_unit` (String) One of [kg, g, lb, oz].
 
 ### Read-Only
 

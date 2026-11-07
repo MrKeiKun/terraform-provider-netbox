@@ -45,9 +45,13 @@ resource "netbox_vlan" "example2" {
 
 ### Optional
 
+- `comments` (String)
 - `custom_fields` (Map of String)
 - `description` (String) Defaults to `""`.
 - `group_id` (Number)
+- `owner_id` (Number)
+- `qinq_role` (String) One of [svlan, cvlan].
+- `qinq_svlan` (Number)
 - `role_id` (Number)
 - `site_id` (Number)
 - `status` (String) Valid values are `active`, `reserved` and `deprecated`. Defaults to `active`.

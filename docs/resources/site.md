@@ -46,6 +46,7 @@ resource "netbox_site" "example1" {
 - `group_id` (Number)
 - `latitude` (Number)
 - `longitude` (Number)
+- `owner_id` (Number)
 - `physical_address` (String)
 - `region_id` (Number)
 - `shipping_address` (String)

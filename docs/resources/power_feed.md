@@ -66,8 +66,10 @@ resource "netbox_power_feed" "test" {
 - `custom_fields` (Map of String)
 - `description` (String)
 - `mark_connected` (Boolean) Defaults to `false`.
+- `owner_id` (Number)
 - `rack_id` (Number)
 - `tags` (Set of String)
+- `tenant_id` (Number)
 
 ### Read-Only
 

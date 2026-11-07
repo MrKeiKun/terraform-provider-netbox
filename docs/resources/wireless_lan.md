@@ -38,6 +38,9 @@ resource "netbox_wireless_lan" "guest" {
 - `custom_fields` (Map of String)
 - `description` (String)
 - `group_id` (Number)
+- `owner_id` (Number)
+- `scope_id` (Number)
+- `scope_type` (String)
 - `status` (String) Valid values are `active`, `reserved`, `disabled` and `deprecated`. Defaults to `active`.
 - `tags` (Set of String)
 - `tenant_id` (Number)

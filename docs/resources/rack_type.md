@@ -53,13 +53,19 @@ resource "netbox_rack_type" "test" {
 ### Optional
 
 - `comments` (String)
+- `cooling_capability` (String) One of [air-only, hybrid, liquid-only].
+- `cooling_capacity` (Number) Cooling capacity (kW).
+- `custom_fields` (Map of String)
+- `desc_units` (Boolean) Units are numbered top-to-bottom.
 - `description` (String)
 - `manufacturer_id` (Number)
 - `max_weight` (Number)
 - `mounting_depth_mm` (Number)
 - `outer_depth` (Number)
+- `outer_height` (Number) Outer dimension of rack (height).
 - `outer_unit` (String) Valid values are `mm` and `in`. Required when `outer_width` and `outer_depth` is set.
 - `outer_width` (Number)
+- `owner_id` (Number)
 - `slug` (String)
 - `tags` (Set of String)
 - `weight` (Number)

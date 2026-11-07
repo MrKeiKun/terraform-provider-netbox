@@ -43,6 +43,7 @@ resource "netbox_custom_field_choice_set" "test" {
 - `description` (String)
 - `extra_choices` (List of List of String) This length of the inner lists must be exactly two, where the first value is the value of a choice and the second value is the label of the choice. At least one of `base_choices` or `extra_choices` must be given.
 - `order_alphabetically` (Boolean) experimental. Defaults to `false`.
+- `owner_id` (Number)
 
 ### Read-Only
 

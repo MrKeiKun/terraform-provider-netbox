@@ -47,22 +47,29 @@ resource "netbox_rack" "test" {
 
 ### Optional
 
+- `airflow` (String) One of [front-to-rear, rear-to-front].
 - `asset_tag` (String)
 - `comments` (String)
+- `cooling_capability` (String) One of [air-only, hybrid, liquid-only].
+- `cooling_capacity` (Number) Cooling capacity (kW).
 - `custom_fields` (Map of String)
 - `desc_units` (Boolean) If rack units are descending. Defaults to `false`.
 - `description` (String)
 - `facility_id` (String)
 - `form_factor` (String) Valid values are `2-post-frame`, `4-post-frame`, `4-post-cabinet`, `wall-frame`, `wall-frame-vertical`, `wall-cabinet` and `wall-cabinet-vertical`. Conflicts with `rack_type_id`.
+- `group_id` (Number)
 - `location_id` (Number)
 - `max_weight` (Number)
 - `mounting_depth` (Number)
 - `outer_depth` (Number)
+- `outer_height` (Number) Outer dimension of rack (height).
 - `outer_unit` (String) Valid values are `mm` and `in`. Required when `outer_width` and `outer_depth` is set.
 - `outer_width` (Number)
+- `owner_id` (Number)
 - `rack_type_id` (Number) Reference to a `netbox_rack_type`. When set, the rack's physical dimensions (such as `width`, `u_height` and `form_factor`) are inherited from the rack type. Conflicts with `width`, `u_height` and `form_factor`.
 - `role_id` (Number)
 - `serial` (String)
+- `starting_unit` (Number) Starting unit for rack.
 - `tags` (Set of String)
 - `tenant_id` (Number)
 - `u_height` (Number) Conflicts with `rack_type_id`.

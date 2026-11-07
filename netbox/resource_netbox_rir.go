@@ -37,6 +37,15 @@ func resourceNetboxRir() *schema.Resource {
 				Optional: true,
 				Default:  false,
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"comments": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			customFieldsKey: customFieldsSchema,
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -47,28 +56,37 @@ func resourceNetboxRir() *schema.Resource {
 const rirAPIPath = "ipam/rirs/"
 
 type rirRequest struct {
-	Name        string             `json:"name"`
-	Slug        string             `json:"slug"`
-	Description string             `json:"description,omitempty"`
-	IsPrivate   bool               `json:"is_private"`
-	Tags        []netboxapi.TagRef `json:"tags"`
+	Name         string             `json:"name"`
+	Slug         string             `json:"slug"`
+	Description  string             `json:"description,omitempty"`
+	IsPrivate    bool               `json:"is_private"`
+	Owner        *int64             `json:"owner"`
+	Comments     string             `json:"comments,omitempty"`
+	CustomFields interface{}        `json:"custom_fields,omitempty"`
+	Tags         []netboxapi.TagRef `json:"tags"`
 }
 
 type rirResponse struct {
-	Name        string `json:"name"`
-	Slug        string `json:"slug"`
-	Description string `json:"description"`
-	IsPrivate   bool   `json:"is_private"`
+	Name         string                 `json:"name"`
+	Slug         string                 `json:"slug"`
+	Description  string                 `json:"description"`
+	IsPrivate    bool                   `json:"is_private"`
+	Owner        *netboxapi.Ref         `json:"owner"`
+	Comments     string                 `json:"comments"`
+	CustomFields map[string]interface{} `json:"custom_fields"`
 }
 
 func rirRequestFromResourceData(d *schema.ResourceData) *rirRequest {
 	name := d.Get("name").(string)
 	return &rirRequest{
-		Name:        name,
-		Slug:        slugFromResourceData(d, name),
-		Description: getOptionalStr(d, "description", true),
-		IsPrivate:   d.Get("is_private").(bool),
-		Tags:        []netboxapi.TagRef{},
+		CustomFields: customFieldsRequest(d),
+		Comments:     getOptionalStr(d, "comments", true),
+		Owner:        getOptionalInt(d, "owner_id"),
+		Name:         name,
+		Slug:         slugFromResourceData(d, name),
+		Description:  getOptionalStr(d, "description", true),
+		IsPrivate:    d.Get("is_private").(bool),
+		Tags:         []netboxapi.TagRef{},
 	}
 }
 
@@ -78,6 +96,9 @@ func resourceNetboxRirCreate(d *schema.ResourceData, m interface{}) error {
 
 func resourceNetboxRirRead(d *schema.ResourceData, m interface{}) error {
 	return readObject(d, m, rirAPIPath, func(rir *rirResponse) {
+		d.Set(customFieldsKey, getCustomFields(rir.CustomFields))
+		d.Set("comments", rir.Comments)
+		d.Set("owner_id", netboxapi.RefID(rir.Owner))
 		d.Set("name", rir.Name)
 		d.Set("slug", rir.Slug)
 		d.Set("description", rir.Description)

@@ -148,3 +148,99 @@ func extractSemanticVersionFromString(s string) (version string, err error) {
 	}
 	return matches[1], nil
 }
+
+// getOptionalStrPtr returns the string of an optional attribute, or nil when it
+// is not set. The nil is sent as null, which clears the value in NetBox.
+func getOptionalStrPtr(d *schema.ResourceData, key string) *string {
+	if v, ok := d.GetOk(key); ok {
+		s := v.(string)
+		return &s
+	}
+	return nil
+}
+
+// getIDSet returns the IDs in a set of numbers. The result is never nil, so an
+// empty set is sent as an empty list and clears the relation.
+func getIDSet(d *schema.ResourceData, key string) []int64 {
+	ids := []int64{}
+	if set, ok := d.Get(key).(*schema.Set); ok {
+		for _, v := range set.List() {
+			ids = append(ids, int64(v.(int)))
+		}
+	}
+	return ids
+}
+
+// getStringSet returns the strings in a set of strings. The result is never
+// nil, so an empty set is sent as an empty list.
+func getStringSet(d *schema.ResourceData, key string) []string {
+	out := []string{}
+	if set, ok := d.Get(key).(*schema.Set); ok {
+		for _, v := range set.List() {
+			out = append(out, v.(string))
+		}
+	}
+	return out
+}
+
+// suppressEquivalentJSON hides differences between JSON strings that only
+// differ in formatting.
+func suppressEquivalentJSON(_, oldValue, newValue string, _ *schema.ResourceData) bool {
+	equal, _ := jsonSemanticCompare(oldValue, newValue)
+	return equal
+}
+
+// jsonRawFromResourceData returns the JSON in a string attribute. An empty
+// attribute gives nil, which is sent as null and clears the value.
+func jsonRawFromResourceData(d *schema.ResourceData, key string) (*json.RawMessage, error) {
+	v, ok := d.GetOk(key)
+	if !ok || v.(string) == "" {
+		return nil, nil
+	}
+	raw := json.RawMessage(v.(string))
+	return &raw, nil
+}
+
+// jsonString turns a JSON value of a response into the string that is stored in
+// the state. A missing or null value gives an empty string.
+func jsonString(raw json.RawMessage) string {
+	if len(raw) == 0 || string(raw) == "null" {
+		return ""
+	}
+	return string(raw)
+}
+
+// getOptionalStrClear returns the string of an optional attribute. It returns
+// nil when the attribute is not set and did not change, so that the field is
+// left out of the request, and a pointer to an empty string when the attribute
+// was removed, which clears the value.
+func getOptionalStrClear(d *schema.ResourceData, key string) *string {
+	if v, ok := d.GetOk(key); ok {
+		s := v.(string)
+		return &s
+	}
+	if d.HasChange(key) {
+		s := ""
+		return &s
+	}
+	return nil
+}
+
+// setBodyStr adds a string attribute to a request body that is a map. The key
+// is left out when the attribute is not set and did not change; when the
+// attribute was removed it is sent as an empty string to clear the value.
+func setBodyStr(body map[string]interface{}, d *schema.ResourceData, key, apiKey string) {
+	if v := getOptionalStrClear(d, key); v != nil {
+		body[apiKey] = *v
+	}
+}
+
+// getOptionalBool returns the value of an optional boolean attribute, or nil
+// when it is not set, so that NetBox applies its own default.
+func getOptionalBool(d *schema.ResourceData, key string) *bool {
+	if v, ok := d.GetOkExists(key); ok { //nolint:staticcheck // no other way to tell false from unset
+		b := v.(bool)
+		return &b
+	}
+	return nil
+}

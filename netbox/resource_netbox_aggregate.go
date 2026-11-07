@@ -35,7 +35,20 @@ func resourceNetboxAggregate() *schema.Resource {
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
-			tagsKey: tagsSchema,
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"comments": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"date_added": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			customFieldsKey: customFieldsSchema,
+			tagsKey:         tagsSchema,
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -46,19 +59,27 @@ func resourceNetboxAggregate() *schema.Resource {
 const aggregateAPIPath = "ipam/aggregates/"
 
 type aggregateRequest struct {
-	Prefix      string             `json:"prefix"`
-	Description string             `json:"description,omitempty"`
-	Tenant      *int64             `json:"tenant,omitempty"`
-	Rir         *int64             `json:"rir,omitempty"`
-	Tags        []netboxapi.TagRef `json:"tags"`
+	Prefix       string             `json:"prefix"`
+	Description  string             `json:"description,omitempty"`
+	Tenant       *int64             `json:"tenant,omitempty"`
+	Rir          *int64             `json:"rir,omitempty"`
+	Owner        *int64             `json:"owner"`
+	Comments     string             `json:"comments,omitempty"`
+	DateAdded    string             `json:"date_added,omitempty"`
+	CustomFields interface{}        `json:"custom_fields,omitempty"`
+	Tags         []netboxapi.TagRef `json:"tags"`
 }
 
 type aggregateResponse struct {
-	Prefix      string             `json:"prefix"`
-	Description string             `json:"description"`
-	Tenant      *netboxapi.Ref     `json:"tenant"`
-	Rir         *netboxapi.Ref     `json:"rir"`
-	Tags        []netboxapi.TagRef `json:"tags"`
+	Prefix       string                 `json:"prefix"`
+	Description  string                 `json:"description"`
+	Tenant       *netboxapi.Ref         `json:"tenant"`
+	Rir          *netboxapi.Ref         `json:"rir"`
+	Owner        *netboxapi.Ref         `json:"owner"`
+	Comments     string                 `json:"comments"`
+	DateAdded    string                 `json:"date_added"`
+	CustomFields map[string]interface{} `json:"custom_fields"`
+	Tags         []netboxapi.TagRef     `json:"tags"`
 }
 
 func aggregateRequestFromResourceData(api *providerState, d *schema.ResourceData) (*aggregateRequest, error) {
@@ -67,9 +88,13 @@ func aggregateRequestFromResourceData(api *providerState, d *schema.ResourceData
 		return nil, err
 	}
 	data := &aggregateRequest{
-		Prefix:      d.Get("prefix").(string),
-		Description: d.Get("description").(string),
-		Tags:        tags,
+		CustomFields: customFieldsRequest(d),
+		DateAdded:    getOptionalStr(d, "date_added", true),
+		Comments:     getOptionalStr(d, "comments", true),
+		Owner:        getOptionalInt(d, "owner_id"),
+		Prefix:       d.Get("prefix").(string),
+		Description:  d.Get("description").(string),
+		Tags:         tags,
 	}
 	if v, ok := d.GetOk("tenant_id"); ok {
 		data.Tenant = int64ToPtr(int64(v.(int)))
@@ -91,6 +116,10 @@ func resourceNetboxAggregateCreate(d *schema.ResourceData, m interface{}) error 
 func resourceNetboxAggregateRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, aggregateAPIPath, func(r *aggregateResponse) {
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
+		d.Set("date_added", r.DateAdded)
+		d.Set("comments", r.Comments)
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("prefix", r.Prefix)
 		d.Set("description", r.Description)
 		d.Set("tenant_id", netboxapi.RefID(r.Tenant))

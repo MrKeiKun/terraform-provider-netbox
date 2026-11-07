@@ -44,7 +44,11 @@ resource "netbox_vpn_tunnel" "test" {
 
 ### Optional
 
+- `comments` (String)
+- `custom_fields` (Map of String)
 - `description` (String)
+- `ipsec_profile_id` (Number)
+- `owner_id` (Number)
 - `tags` (Set of String)
 - `tenant_id` (Number)
 - `tunnel_id` (Number)

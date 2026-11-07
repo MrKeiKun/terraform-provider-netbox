@@ -37,15 +37,18 @@ resource "netbox_service" "ssh" {
 ### Required
 
 - `name` (String)
-- `protocol` (String) Valid values are `tcp`, `udp` and `sctp`.
 
 ### Optional
 
+- `comments` (String)
 - `custom_fields` (Map of String)
 - `description` (String)
 - `device_id` (Number) Exactly one of `virtual_machine_id` or `device_id` must be given.
-- `port` (Number, Deprecated) Exactly one of `port` or `ports` must be given.
-- `ports` (Set of Number) Exactly one of `port` or `ports` must be given.
+- `owner_id` (Number)
+- `port` (Number, Deprecated) Exactly one of `port`, `ports` or `port_mappings` must be given.
+- `port_mappings` (Set of String) The ports of the service as `protocol/port` strings, for example `tcp/80`. Use this for a service that spans more than one protocol. Needs NetBox 4.6 or newer. Exactly one of `port`, `ports` or `port_mappings` must be given. Conflicts with `protocol`.
+- `ports` (Set of Number) Exactly one of `port`, `ports` or `port_mappings` must be given.
+- `protocol` (String) Valid values are `tcp`, `udp` and `sctp`. Conflicts with `port_mappings`.
 - `tags` (Set of String)
 - `virtual_machine_id` (Number) Exactly one of `virtual_machine_id` or `device_id` must be given.
 

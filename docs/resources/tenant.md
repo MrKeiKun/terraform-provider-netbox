@@ -32,8 +32,11 @@ resource "netbox_tenant" "customer_a" {
 
 ### Optional
 
+- `comments` (String)
+- `custom_fields` (Map of String)
 - `description` (String)
 - `group_id` (Number)
+- `owner_id` (Number)
 - `slug` (String)
 - `tags` (Set of String)
 

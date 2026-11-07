@@ -37,8 +37,15 @@ resource "netbox_config_template" "test" {
 
 ### Optional
 
+- `as_attachment` (Boolean) Download file as attachment.
+- `auto_sync_enabled` (Boolean) Enable automatic synchronization of data when the data file is updated.
+- `debug` (Boolean) Enable verbose error output when rendering this template. Not recommended for production use.
 - `description` (String)
 - `environment_params` (String) Defaults to `{}`.
+- `file_extension` (String) Extension to append to the rendered filename.
+- `file_name` (String) Filename to give to the rendered export file.
+- `mime_type` (String) Defaults to <code>text/plain; charset=utf-8</code>.
+- `owner_id` (Number)
 - `tags` (Set of String)
 
 ### Read-Only

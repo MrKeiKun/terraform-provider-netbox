@@ -61,6 +61,10 @@ func resourceNetboxPowerOutletTemplate() *schema.Resource {
 				ExactlyOneOf: []string{"device_type_id", "module_type_id"},
 				ForceNew:     true,
 			},
+			"color_hex": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -79,6 +83,7 @@ type powerOutletTemplateRequest struct {
 	FeedLeg     string `json:"feed_leg,omitempty"`
 	DeviceType  *int64 `json:"device_type"`
 	ModuleType  *int64 `json:"module_type"`
+	Color       string `json:"color,omitempty"`
 }
 
 type powerOutletTemplateResponse struct {
@@ -90,11 +95,13 @@ type powerOutletTemplateResponse struct {
 	FeedLeg     *netboxapi.Choice `json:"feed_leg"`
 	DeviceType  *netboxapi.Ref    `json:"device_type"`
 	ModuleType  *netboxapi.Ref    `json:"module_type"`
+	Color       string            `json:"color"`
 }
 
 func powerOutletTemplateRequestFromResourceData(d *schema.ResourceData) *powerOutletTemplateRequest {
 	name := d.Get("name").(string)
 	data := &powerOutletTemplateRequest{
+		Color:       getOptionalStr(d, "color_hex", true),
 		Name:        name,
 		Description: d.Get("description").(string),
 		Label:       d.Get("label").(string),
@@ -117,6 +124,7 @@ func resourceNetboxPowerOutletTemplateCreate(ctx context.Context, d *schema.Reso
 
 func resourceNetboxPowerOutletTemplateRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	return readObjectCtx(ctx, d, m, powerOutletTemplateAPIPath, func(r *powerOutletTemplateResponse) {
+		d.Set("color_hex", r.Color)
 		d.Set("name", r.Name)
 		d.Set("description", r.Description)
 		d.Set("label", r.Label)

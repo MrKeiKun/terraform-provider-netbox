@@ -37,6 +37,15 @@ func resourceNetboxIpamRole() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"comments": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			customFieldsKey: customFieldsSchema,
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -47,29 +56,38 @@ func resourceNetboxIpamRole() *schema.Resource {
 const ipamRoleAPIPath = "ipam/roles/"
 
 type ipamRoleRequest struct {
-	Name        string             `json:"name"`
-	Slug        string             `json:"slug"`
-	Weight      *int64             `json:"weight,omitempty"`
-	Description string             `json:"description,omitempty"`
-	Tags        []netboxapi.TagRef `json:"tags"`
+	Name         string             `json:"name"`
+	Slug         string             `json:"slug"`
+	Weight       *int64             `json:"weight,omitempty"`
+	Description  string             `json:"description,omitempty"`
+	Owner        *int64             `json:"owner"`
+	Comments     string             `json:"comments,omitempty"`
+	CustomFields interface{}        `json:"custom_fields,omitempty"`
+	Tags         []netboxapi.TagRef `json:"tags"`
 }
 
 type ipamRoleResponse struct {
-	Name        *string `json:"name"`
-	Slug        *string `json:"slug"`
-	Weight      *int64  `json:"weight"`
-	Description string  `json:"description"`
+	Name         *string                `json:"name"`
+	Slug         *string                `json:"slug"`
+	Weight       *int64                 `json:"weight"`
+	Description  string                 `json:"description"`
+	Owner        *netboxapi.Ref         `json:"owner"`
+	Comments     string                 `json:"comments"`
+	CustomFields map[string]interface{} `json:"custom_fields"`
 }
 
 func ipamRoleRequestFromResourceData(d *schema.ResourceData) *ipamRoleRequest {
 	name := d.Get("name").(string)
 	weight := int64(d.Get("weight").(int))
 	return &ipamRoleRequest{
-		Name:        name,
-		Slug:        slugFromResourceData(d, name),
-		Weight:      &weight,
-		Description: d.Get("description").(string),
-		Tags:        []netboxapi.TagRef{},
+		CustomFields: customFieldsRequest(d),
+		Comments:     getOptionalStr(d, "comments", true),
+		Owner:        getOptionalInt(d, "owner_id"),
+		Name:         name,
+		Slug:         slugFromResourceData(d, name),
+		Weight:       &weight,
+		Description:  d.Get("description").(string),
+		Tags:         []netboxapi.TagRef{},
 	}
 }
 
@@ -79,6 +97,9 @@ func resourceNetboxIpamRoleCreate(d *schema.ResourceData, m interface{}) error {
 
 func resourceNetboxIpamRoleRead(d *schema.ResourceData, m interface{}) error {
 	return readObject(d, m, ipamRoleAPIPath, func(res *ipamRoleResponse) {
+		d.Set(customFieldsKey, getCustomFields(res.CustomFields))
+		d.Set("comments", res.Comments)
+		d.Set("owner_id", netboxapi.RefID(res.Owner))
 		if res.Name != nil {
 			d.Set("name", res.Name)
 		}

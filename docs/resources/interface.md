@@ -54,10 +54,15 @@ resource "netbox_interface" "myvm_eth1" {
 - `enabled` (Boolean) Defaults to `true`.
 - `mode` (String) Valid values are `access`, `tagged` and `tagged-all`.
 - `mtu` (Number)
+- `owner_id` (Number)
+- `parent` (Number)
+- `qinq_svlan_id` (Number)
 - `tagged_vlans` (Set of Number)
 - `tags` (Set of String)
 - `type` (String, Deprecated)
 - `untagged_vlan` (Number)
+- `vlan_translation_policy_id` (Number)
+- `vrf_id` (Number)
 
 ### Read-Only
 

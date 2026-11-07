@@ -43,7 +43,11 @@ resource "netbox_device_module_bay" "test" {
 
 - `custom_fields` (Map of String)
 - `description` (String)
+- `enabled` (Boolean)
 - `label` (String)
+- `module_bay_type_ids` (Set of Number)
+- `module_id` (Number)
+- `owner_id` (Number)
 - `position` (String)
 - `tags` (Set of String)
 

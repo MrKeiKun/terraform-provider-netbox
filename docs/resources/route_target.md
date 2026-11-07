@@ -35,7 +35,10 @@ resource "netbox_route_target" "test" {
 
 ### Optional
 
+- `comments` (String)
+- `custom_fields` (Map of String)
 - `description` (String)
+- `owner_id` (Number)
 - `tags` (Set of String)
 - `tenant_id` (Number)
 

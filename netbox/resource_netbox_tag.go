@@ -43,6 +43,19 @@ func resourceNetboxTag() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"weight": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.IntBetween(0, 32767),
+				Description:  "Weight of the tag. Tags with a higher weight are shown after tags with a lower weight.",
+			},
+			"object_types": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "Restricts the tag to these object types, for example `dcim.site`. The tag can be used on every object type when this is empty.",
+			},
 			tagsKey: tagsSchema,
 		},
 		Importer: &schema.ResourceImporter{
@@ -56,11 +69,13 @@ const tagAPIPath = "extras/tags/"
 
 // netboxTag is the subset of the NetBox tag object this resource uses.
 type netboxTag struct {
-	ID          int64  `json:"id,omitempty"`
-	Name        string `json:"name"`
-	Slug        string `json:"slug"`
-	Color       string `json:"color"`
-	Description string `json:"description"`
+	ID          int64    `json:"id,omitempty"`
+	Name        string   `json:"name"`
+	Slug        string   `json:"slug"`
+	Color       string   `json:"color"`
+	Description string   `json:"description"`
+	Weight      *int64   `json:"weight,omitempty"`
+	ObjectTypes []string `json:"object_types"`
 }
 
 func tagFromResourceData(d *schema.ResourceData) *netboxTag {
@@ -77,6 +92,8 @@ func tagFromResourceData(d *schema.ResourceData) *netboxTag {
 		Slug:        slug,
 		Color:       d.Get("color_hex").(string),
 		Description: d.Get("description").(string),
+		Weight:      getOptionalInt(d, "weight"),
+		ObjectTypes: getStringSet(d, "object_types"),
 	}
 }
 
@@ -111,6 +128,8 @@ func resourceNetboxTagRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("slug", res.Slug)
 	d.Set("color_hex", res.Color)
 	d.Set("description", res.Description)
+	d.Set("weight", res.Weight)
+	d.Set("object_types", res.ObjectTypes)
 	return nil
 }
 

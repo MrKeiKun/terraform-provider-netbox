@@ -32,7 +32,10 @@ resource "netbox_vpn_tunnel_group" "test" {
 
 ### Optional
 
+- `comments` (String)
+- `custom_fields` (Map of String)
 - `description` (String)
+- `owner_id` (Number)
 - `slug` (String)
 
 ### Read-Only

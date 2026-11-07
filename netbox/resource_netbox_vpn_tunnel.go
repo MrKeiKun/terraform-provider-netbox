@@ -50,7 +50,20 @@ func resourceNetboxVpnTunnel() *schema.Resource {
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
-			tagsKey: tagsSchema,
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"comments": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"ipsec_profile_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			customFieldsKey: customFieldsSchema,
+			tagsKey:         tagsSchema,
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -68,18 +81,26 @@ type vpnTunnelRequest struct {
 	Description   string             `json:"description,omitempty"`
 	Tenant        *int64             `json:"tenant,omitempty"`
 	TunnelId      *int64             `json:"tunnel_id,omitempty"`
+	Owner         *int64             `json:"owner"`
+	Comments      string             `json:"comments,omitempty"`
+	IpsecProfile  *int64             `json:"ipsec_profile"`
+	CustomFields  interface{}        `json:"custom_fields,omitempty"`
 	Tags          []netboxapi.TagRef `json:"tags"`
 }
 
 type vpnTunnelResponse struct {
-	Name          string             `json:"name"`
-	Encapsulation *netboxapi.Choice  `json:"encapsulation"`
-	Status        *netboxapi.Choice  `json:"status"`
-	Group         *netboxapi.Ref     `json:"group"`
-	Description   string             `json:"description"`
-	Tenant        *netboxapi.Ref     `json:"tenant"`
-	TunnelId      *int64             `json:"tunnel_id"`
-	Tags          []netboxapi.TagRef `json:"tags"`
+	Name          string                 `json:"name"`
+	Encapsulation *netboxapi.Choice      `json:"encapsulation"`
+	Status        *netboxapi.Choice      `json:"status"`
+	Group         *netboxapi.Ref         `json:"group"`
+	Description   string                 `json:"description"`
+	Tenant        *netboxapi.Ref         `json:"tenant"`
+	TunnelId      *int64                 `json:"tunnel_id"`
+	Owner         *netboxapi.Ref         `json:"owner"`
+	Comments      string                 `json:"comments"`
+	IpsecProfile  *netboxapi.Ref         `json:"ipsec_profile"`
+	CustomFields  map[string]interface{} `json:"custom_fields"`
+	Tags          []netboxapi.TagRef     `json:"tags"`
 }
 
 func vpnTunnelRequestFromResourceData(api *providerState, d *schema.ResourceData) (*vpnTunnelRequest, error) {
@@ -89,6 +110,10 @@ func vpnTunnelRequestFromResourceData(api *providerState, d *schema.ResourceData
 		return nil, err
 	}
 	data := &vpnTunnelRequest{
+		CustomFields:  customFieldsRequest(d),
+		IpsecProfile:  getOptionalInt(d, "ipsec_profile_id"),
+		Comments:      getOptionalStr(d, "comments", true),
+		Owner:         getOptionalInt(d, "owner_id"),
 		Name:          name,
 		Encapsulation: d.Get("encapsulation").(string),
 		Status:        d.Get("status").(string),
@@ -112,6 +137,10 @@ func resourceNetboxVpnTunnelCreate(d *schema.ResourceData, m interface{}) error 
 func resourceNetboxVpnTunnelRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, vpnTunnelAPIPath, func(r *vpnTunnelResponse) {
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
+		d.Set("ipsec_profile_id", netboxapi.RefID(r.IpsecProfile))
+		d.Set("comments", r.Comments)
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("name", r.Name)
 		d.Set("encapsulation", netboxapi.ChoiceValue(r.Encapsulation))
 		d.Set("status", netboxapi.ChoiceValue(r.Status))

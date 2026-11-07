@@ -142,6 +142,19 @@ func resourceNetboxConfigContext() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"profile_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"is_active": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Computed: true,
+			},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -167,6 +180,9 @@ type configContextRequest struct {
 	Sites         []int64     `json:"sites"`
 	TenantGroups  []int64     `json:"tenant_groups"`
 	Tenants       []int64     `json:"tenants"`
+	Owner         *int64      `json:"owner"`
+	Profile       *int64      `json:"profile"`
+	IsActive      *bool       `json:"is_active,omitempty"`
 	Tags          []string    `json:"tags"`
 	Weight        *int64      `json:"weight,omitempty"`
 }
@@ -188,11 +204,17 @@ type configContextResponse struct {
 	Sites         []netboxapi.Ref `json:"sites"`
 	TenantGroups  []netboxapi.Ref `json:"tenant_groups"`
 	Tenants       []netboxapi.Ref `json:"tenants"`
+	Owner         *netboxapi.Ref  `json:"owner"`
+	Profile       *netboxapi.Ref  `json:"profile"`
+	IsActive      bool            `json:"is_active"`
 	Tags          []string        `json:"tags"`
 }
 
 func configContextRequestFromResourceData(d *schema.ResourceData) *configContextRequest {
 	data := &configContextRequest{
+		IsActive:      getOptionalBool(d, "is_active"),
+		Profile:       getOptionalInt(d, "profile_id"),
+		Owner:         getOptionalInt(d, "owner_id"),
 		Name:          d.Get("name").(string),
 		Description:   d.Get("description").(string),
 		ClusterGroups: toInt64List(d.Get("cluster_groups")),
@@ -227,6 +249,9 @@ func resourceNetboxConfigContextCreate(d *schema.ResourceData, m interface{}) er
 func resourceNetboxConfigContextRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, configContextAPIPath, func(cc *configContextResponse) {
+		d.Set("is_active", cc.IsActive)
+		d.Set("profile_id", netboxapi.RefID(cc.Profile))
+		d.Set("owner_id", netboxapi.RefID(cc.Owner))
 		d.Set("name", cc.Name)
 		d.Set("description", cc.Description)
 		d.Set("weight", cc.Weight)

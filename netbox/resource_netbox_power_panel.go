@@ -37,6 +37,10 @@ func resourceNetboxPowerPanel() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,
 		},
@@ -54,6 +58,7 @@ type powerPanelRequest struct {
 	Location     *int64             `json:"location"`
 	Description  string             `json:"description,omitempty"`
 	Comments     string             `json:"comments,omitempty"`
+	Owner        *int64             `json:"owner"`
 	CustomFields interface{}        `json:"custom_fields,omitempty"`
 	Tags         []netboxapi.TagRef `json:"tags"`
 }
@@ -64,6 +69,7 @@ type powerPanelResponse struct {
 	Location     *netboxapi.Ref         `json:"location"`
 	Description  string                 `json:"description"`
 	Comments     string                 `json:"comments"`
+	Owner        *netboxapi.Ref         `json:"owner"`
 	CustomFields map[string]interface{} `json:"custom_fields"`
 	Tags         []netboxapi.TagRef     `json:"tags"`
 }
@@ -75,6 +81,7 @@ func powerPanelRequestFromResourceData(api *providerState, d *schema.ResourceDat
 		return nil, err
 	}
 	data := &powerPanelRequest{
+		Owner:       getOptionalInt(d, "owner_id"),
 		Name:        name,
 		Site:        int64ToPtr(int64(d.Get("site_id").(int))),
 		Location:    getOptionalInt(d, "location_id"),
@@ -99,6 +106,7 @@ func resourceNetboxPowerPanelCreate(d *schema.ResourceData, m interface{}) error
 func resourceNetboxPowerPanelRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, powerPanelAPIPath, func(r *powerPanelResponse) {
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("name", r.Name)
 		d.Set("site_id", netboxapi.RefID(r.Site))
 		d.Set("location_id", netboxapi.RefID(r.Location))

@@ -75,6 +75,14 @@ func resourceNetboxIPAddress() *schema.Resource {
 					return strings.EqualFold(old, new)
 				},
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"comments": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			tagsKey: tagsSchema,
 			"description": {
 				Type:     schema.TypeString,
@@ -131,6 +139,8 @@ type ipAddressRequest struct {
 	NatInside          *int64             `json:"nat_inside"`
 	AssignedObjectType *string            `json:"assigned_object_type,omitempty"`
 	AssignedObjectID   *int64             `json:"assigned_object_id"`
+	Owner              *int64             `json:"owner"`
+	Comments           string             `json:"comments,omitempty"`
 	CustomFields       interface{}        `json:"custom_fields,omitempty"`
 	Tags               []netboxapi.TagRef `json:"tags"`
 }
@@ -151,6 +161,8 @@ type ipAddressResponse struct {
 		Address string `json:"address"`
 		Family  int64  `json:"family"`
 	} `json:"nat_outside"`
+	Owner        *netboxapi.Ref         `json:"owner"`
+	Comments     string                 `json:"comments"`
 	CustomFields map[string]interface{} `json:"custom_fields"`
 	Tags         []netboxapi.TagRef     `json:"tags"`
 }
@@ -161,6 +173,8 @@ func ipAddressRequestFromResourceData(api *providerState, d *schema.ResourceData
 		return nil, err
 	}
 	data := &ipAddressRequest{
+		Comments:    getOptionalStr(d, "comments", true),
+		Owner:       getOptionalInt(d, "owner_id"),
 		Address:     d.Get("ip_address").(string),
 		Status:      d.Get("status").(string),
 		Description: getOptionalStr(d, "description", true),
@@ -210,6 +224,8 @@ func resourceNetboxIPAddressCreate(d *schema.ResourceData, m interface{}) error 
 func resourceNetboxIPAddressRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, ipAddressAPIPath, func(r *ipAddressResponse) {
+		d.Set("comments", r.Comments)
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("ip_address", r.Address)
 		d.Set("status", netboxapi.ChoiceValue(r.Status))
 		d.Set("description", r.Description)

@@ -35,7 +35,11 @@ resource "netbox_aggregate" "test" {
 
 ### Optional
 
+- `comments` (String)
+- `custom_fields` (Map of String)
+- `date_added` (String)
 - `description` (String)
+- `owner_id` (Number)
 - `rir_id` (Number)
 - `tags` (Set of String)
 - `tenant_id` (Number)

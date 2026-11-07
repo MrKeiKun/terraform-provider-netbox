@@ -35,11 +35,13 @@ resource "netbox_available_prefix" "test" {
 
 ### Optional
 
+- `comments` (String)
 - `custom_fields` (Map of String)
 - `description` (String)
 - `is_pool` (Boolean)
 - `location_id` (Number) Conflicts with `site_id`, `site_group_id` and `region_id`.
 - `mark_utilized` (Boolean)
+- `owner_id` (Number)
 - `region_id` (Number) Conflicts with `location_id`, `site_id` and `site_group_id`.
 - `role_id` (Number)
 - `site_group_id` (Number) Conflicts with `location_id`, `site_id` and `region_id`.

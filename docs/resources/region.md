@@ -33,7 +33,10 @@ resource "netbox_region" "test" {
 
 ### Optional
 
+- `comments` (String)
+- `custom_fields` (Map of String)
 - `description` (String)
+- `owner_id` (Number)
 - `parent_region_id` (Number)
 - `slug` (String)
 

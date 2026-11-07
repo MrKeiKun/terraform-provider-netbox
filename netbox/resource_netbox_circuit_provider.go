@@ -34,6 +34,15 @@ func resourceNetboxCircuitProvider() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"comments": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			customFieldsKey: customFieldsSchema,
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -44,27 +53,36 @@ func resourceNetboxCircuitProvider() *schema.Resource {
 const circuitProviderAPIPath = "circuits/providers/"
 
 type circuitProviderRequest struct {
-	Name        string             `json:"name"`
-	Slug        string             `json:"slug"`
-	Description string             `json:"description,omitempty"`
-	Asns        []int64            `json:"asns"`
-	Tags        []netboxapi.TagRef `json:"tags"`
+	Name         string             `json:"name"`
+	Slug         string             `json:"slug"`
+	Description  string             `json:"description,omitempty"`
+	Asns         []int64            `json:"asns"`
+	Owner        *int64             `json:"owner"`
+	Comments     string             `json:"comments,omitempty"`
+	CustomFields interface{}        `json:"custom_fields,omitempty"`
+	Tags         []netboxapi.TagRef `json:"tags"`
 }
 
 type circuitProviderResponse struct {
-	Name        string `json:"name"`
-	Slug        string `json:"slug"`
-	Description string `json:"description"`
+	Name         string                 `json:"name"`
+	Slug         string                 `json:"slug"`
+	Description  string                 `json:"description"`
+	Owner        *netboxapi.Ref         `json:"owner"`
+	Comments     string                 `json:"comments"`
+	CustomFields map[string]interface{} `json:"custom_fields"`
 }
 
 func circuitProviderRequestFromResourceData(d *schema.ResourceData) *circuitProviderRequest {
 	name := d.Get("name").(string)
 	data := &circuitProviderRequest{
-		Name:        name,
-		Slug:        slugFromResourceData(d, name),
-		Description: d.Get("description").(string),
-		Asns:        []int64{},
-		Tags:        []netboxapi.TagRef{},
+		CustomFields: customFieldsRequest(d),
+		Comments:     getOptionalStr(d, "comments", true),
+		Owner:        getOptionalInt(d, "owner_id"),
+		Name:         name,
+		Slug:         slugFromResourceData(d, name),
+		Description:  d.Get("description").(string),
+		Asns:         []int64{},
+		Tags:         []netboxapi.TagRef{},
 	}
 	return data
 }
@@ -75,6 +93,9 @@ func resourceNetboxCircuitProviderCreate(d *schema.ResourceData, m interface{}) 
 
 func resourceNetboxCircuitProviderRead(d *schema.ResourceData, m interface{}) error {
 	return readObject(d, m, circuitProviderAPIPath, func(r *circuitProviderResponse) {
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
+		d.Set("comments", r.Comments)
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("name", r.Name)
 		d.Set("slug", r.Slug)
 		d.Set("description", r.Description)

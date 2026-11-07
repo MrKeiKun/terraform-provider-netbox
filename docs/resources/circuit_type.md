@@ -30,7 +30,11 @@ resource "netbox_circuit_type" "test" {
 
 ### Optional
 
+- `color_hex` (String)
+- `comments` (String)
+- `custom_fields` (Map of String)
 - `description` (String)
+- `owner_id` (Number)
 - `slug` (String)
 
 ### Read-Only

@@ -31,8 +31,11 @@ resource "netbox_vrf" "cust_a_prod" {
 
 ### Optional
 
+- `comments` (String)
+- `custom_fields` (Map of String)
 - `description` (String)
 - `enforce_unique` (Boolean) Defaults to `true`.
+- `owner_id` (Number)
 - `rd` (String)
 - `tags` (Set of String)
 - `tenant_id` (Number)
