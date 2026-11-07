@@ -146,6 +146,9 @@ func deviceFrontPortRequestFromResourceData(api *providerState, d *schema.Resour
 	if ct, ok := managedCustomFields(d); ok {
 		data.CustomFields = ct
 	}
+	if raw := d.GetRawConfig(); data.RearPorts == nil || (!raw.IsNull() && !raw.GetAttr("rear_port_id").IsNull()) {
+		data.RearPorts = legacyPortMapping(d, "rear_port")
+	}
 	return data, nil
 }
 

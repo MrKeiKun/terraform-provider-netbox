@@ -120,6 +120,9 @@ func frontPortTemplateRequestFromResourceData(api *providerState, d *schema.Reso
 		Positions:        int64(d.Get("positions").(int)),
 		Description:      getOptionalStr(d, "description", true),
 	}
+	if raw := d.GetRawConfig(); data.RearPorts == nil || (!raw.IsNull() && !raw.GetAttr("rear_port_id").IsNull()) {
+		data.RearPorts = legacyPortMapping(d, "rear_port")
+	}
 	return data, nil
 }
 
@@ -134,8 +137,16 @@ func resourceNetboxFrontPortTemplateCreate(d *schema.ResourceData, m interface{}
 func resourceNetboxFrontPortTemplateRead(d *schema.ResourceData, m interface{}) error {
 	return readObject(d, m, frontPortTemplateAPIPath, func(r *frontPortTemplateResponse) {
 		d.Set("rear_ports", portMappingsState(r.RearPorts, "rear_port"))
-		d.Set("rear_port_id", netboxapi.RefID(r.RearPort))
-		d.Set("rear_port_position", r.RearPortPosition)
+		rearPortID := netboxapi.RefID(r.RearPort)
+		rearPortPosition := r.RearPortPosition
+		if r.RearPort == nil && len(r.RearPorts) == 1 {
+			// NetBox 4.5 and later no longer return the single rear port, only
+			// the list of mappings.
+			rearPortID = jInt(r.RearPorts[0], "rear_port")
+			rearPortPosition = jInt(r.RearPorts[0], "rear_port_position")
+		}
+		d.Set("rear_port_id", rearPortID)
+		d.Set("rear_port_position", rearPortPosition)
 		d.Set("device_type_id", netboxapi.RefID(r.DeviceType))
 		d.Set("module_type_id", netboxapi.RefID(r.ModuleType))
 		d.Set("name", r.Name)

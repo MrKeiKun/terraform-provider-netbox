@@ -76,3 +76,22 @@ func portMappingsState(mappings []map[string]interface{}, portKey string) []inte
 	}
 	return out
 }
+
+// legacyPortMapping turns the single port attributes (for example rear_port_id
+// and rear_port_position) into a list with one mapping. NetBox 4.5 and later
+// ignore the single port fields, and only store the list.
+func legacyPortMapping(d *schema.ResourceData, portKey string) []map[string]int64 {
+	id := d.Get(portKey + "_id").(int)
+	if id == 0 {
+		return nil
+	}
+	position := d.Get(portKey + "_position").(int)
+	if position == 0 {
+		position = 1
+	}
+	return []map[string]int64{{
+		"position":            1,
+		portKey:               int64(id),
+		portKey + "_position": int64(position),
+	}}
+}
