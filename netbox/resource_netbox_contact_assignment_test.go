@@ -2,10 +2,8 @@ package netbox
 
 import (
 	"fmt"
-	"log"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/tenancy"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
@@ -75,25 +73,7 @@ func init() {
 		Name:         "netbox_contact_assignment",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := tenancy.NewTenancyContactAssignmentsListParams()
-			res, err := api.Tenancy.TenancyContactAssignmentsList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, contactassignment := range res.GetPayload().Results {
-				deleteParams := tenancy.NewTenancyContactAssignmentsDeleteParams().WithID(contactassignment.ID)
-				_, err := api.Tenancy.TenancyContactAssignmentsDelete(deleteParams, nil)
-				if err != nil {
-					return err
-				}
-				log.Print("[DEBUG] Deleted a contact assignment")
-			}
-			return nil
+			return sweepAll(region, "tenancy/contact-assignments/")
 		},
 	})
 }

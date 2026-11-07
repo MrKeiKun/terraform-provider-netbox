@@ -1,10 +1,10 @@
 package netbox
 
 import (
-	"errors"
+	"net/url"
 	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -44,41 +44,30 @@ for more information on available lookup expressions.`,
 	}
 }
 
+type asnDataSourceResponse struct {
+	ID          int64              `json:"id"`
+	Asn         *int64             `json:"asn"`
+	Description string             `json:"description"`
+	Tags        []netboxapi.TagRef `json:"tags"`
+}
+
 func dataSourceNetboxAsnRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+	query := url.Values{}
+	addStrQuery(query, d, "asn", "asn")
+	addStrQuery(query, d, "tag", "tag")
+	addStrQuery(query, d, "tag__n", "tag__n")
 
-	params := ipam.NewIpamAsnsListParams()
-
-	limit := int64(2) // Limit of 2 is enough
-	params.Limit = &limit
-
-	if asn, ok := d.Get("asn").(string); ok && asn != "" {
-		params.Asn = &asn
-	}
-
-	if tag, ok := d.Get("tag").(string); ok && tag != "" {
-		params.Tag = []string{tag} //TODO: switch schema to list?
-	}
-	if tagn, ok := d.Get("tag__n").(string); ok && tagn != "" {
-		params.Tagn = &tagn
-	}
-
-	res, err := api.Ipam.IpamAsnsList(params, nil)
+	r, err := findOne[asnDataSourceResponse](m, "ipam/asns/", query, "asn")
 	if err != nil {
 		return err
 	}
 
-	if *res.GetPayload().Count > int64(1) {
-		return errors.New("more than one asn returned, specify a more narrow filter")
+	d.SetId(strconv.FormatInt(r.ID, 10))
+	d.Set("id", r.ID)
+	if r.Asn != nil {
+		d.Set("asn", strconv.FormatInt(*r.Asn, 10))
 	}
-	if *res.GetPayload().Count == int64(0) {
-		return errors.New("no asn found matching filter")
-	}
-	result := res.GetPayload().Results[0]
-	d.Set("id", result.ID)
-	d.Set("asn", strconv.FormatInt(*result.Asn, 10))
-	d.Set("description", result.Description)
-	d.Set("tags", getTagListFromNestedTagList(result.Tags))
-	d.SetId(strconv.FormatInt(result.ID, 10))
+	d.Set("description", r.Description)
+	d.Set("tags", tagNames(r.Tags))
 	return nil
 }

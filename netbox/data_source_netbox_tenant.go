@@ -1,10 +1,10 @@
 package netbox
 
 import (
-	"errors"
+	"net/url"
 	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/tenancy"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -37,39 +37,29 @@ func dataSourceNetboxTenant() *schema.Resource {
 	}
 }
 
+type tenantDataSourceResponse struct {
+	ID          int64          `json:"id"`
+	Name        string         `json:"name"`
+	Slug        string         `json:"slug"`
+	Description string         `json:"description"`
+	Group       *netboxapi.Ref `json:"group"`
+}
+
 func dataSourceNetboxTenantRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	params := tenancy.NewTenancyTenantsListParams()
-
-	if name, ok := d.Get("name").(string); ok && name != "" {
-		params.Name = &name
-	}
-
-	if slug, ok := d.Get("slug").(string); ok && slug != "" {
-		params.Slug = &slug
-	}
-
-	limit := int64(2) // Limit of 2 is enough
-	params.Limit = &limit
-
-	res, err := api.Tenancy.TenancyTenantsList(params, nil)
+	query := url.Values{}
+	addStrQuery(query, d, "name", "name")
+	addStrQuery(query, d, "slug", "slug")
+	r, err := findOne[tenantDataSourceResponse](m, "tenancy/tenants/", query, "tenant")
 	if err != nil {
 		return err
 	}
 
-	if *res.GetPayload().Count > int64(1) {
-		return errors.New("more than one tenant returned, specify a more narrow filter")
-	}
-	if *res.GetPayload().Count == int64(0) {
-		return errors.New("no tenant found matching filter")
-	}
-	result := res.GetPayload().Results[0]
-	d.SetId(strconv.FormatInt(result.ID, 10))
-	d.Set("name", result.Name)
-	d.Set("slug", result.Slug)
-	d.Set("description", result.Description)
-	if result.Group != nil {
-		d.Set("group_id", result.Group.ID)
+	d.SetId(strconv.FormatInt(r.ID, 10))
+	d.Set("name", r.Name)
+	d.Set("slug", r.Slug)
+	d.Set("description", r.Description)
+	if r.Group != nil {
+		d.Set("group_id", r.Group.ID)
 	}
 	return nil
 }

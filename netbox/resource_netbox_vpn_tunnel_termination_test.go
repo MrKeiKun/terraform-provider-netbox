@@ -2,10 +2,8 @@ package netbox
 
 import (
 	"fmt"
-	"log"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/vpn"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
@@ -154,25 +152,7 @@ func init() {
 		Name:         "netbox_vpn_tunnel_termination",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := vpn.NewVpnTunnelTerminationsListParams()
-			res, err := api.Vpn.VpnTunnelTerminationsList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, vpnTunnelTermination := range res.GetPayload().Results {
-				deleteParams := vpn.NewVpnTunnelTerminationsDeleteParams().WithID(vpnTunnelTermination.ID)
-				_, err := api.Vpn.VpnTunnelTerminationsDelete(deleteParams, nil)
-				if err != nil {
-					return err
-				}
-				log.Print("[DEBUG] Deleted a vpn tunnel termination")
-			}
-			return nil
+			return sweepAll(region, "vpn/tunnel-terminations/")
 		},
 	})
 }

@@ -1,10 +1,10 @@
 package netbox
 
 import (
-	"errors"
+	"net/url"
 	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -56,50 +56,40 @@ func dataSourceNetboxVlan() *schema.Resource {
 	}
 }
 
+type vlanDataSourceResponse struct {
+	ID           int64                  `json:"id"`
+	Vid          *int64                 `json:"vid"`
+	Name         string                 `json:"name"`
+	Status       *netboxapi.Choice      `json:"status"`
+	Description  string                 `json:"description"`
+	Group        *netboxapi.Ref         `json:"group"`
+	Role         *netboxapi.Ref         `json:"role"`
+	Site         *netboxapi.Ref         `json:"site"`
+	Tenant       *netboxapi.Ref         `json:"tenant"`
+	CustomFields map[string]interface{} `json:"custom_fields"`
+}
+
 func dataSourceNetboxVlanRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	params := ipam.NewIpamVlansListParams()
-	var opts []ipam.ClientOption
-
-	params.Limit = int64ToPtr(2)
-	if name, ok := d.Get("name").(string); ok && name != "" {
-		params.Name = &name
-	}
-	if vid, ok := d.Get("vid").(int); ok && vid != 0 {
-		params.Vid = strToPtr(strconv.Itoa(vid))
-	}
-	if groupID, ok := d.Get("group_id").(int); ok && groupID != 0 {
-		params.GroupID = strToPtr(strconv.Itoa(groupID))
-	}
-	if roleID, ok := d.Get("role").(int); ok && roleID != 0 {
-		params.RoleID = strToPtr(strconv.Itoa(roleID))
-	}
-	if tenantID, ok := d.Get("tenant").(int); ok && tenantID != 0 {
-		params.TenantID = strToPtr(strconv.Itoa(tenantID))
-	}
+	query := url.Values{}
+	addStrQuery(query, d, "name", "name")
+	addIntQuery(query, d, "vid", "vid")
+	addIntQuery(query, d, "group_id", "group_id")
+	addIntQuery(query, d, "role", "role_id")
+	addIntQuery(query, d, "tenant", "tenant_id")
 	if cfm, ok := d.Get(customFieldsKey).(map[string]interface{}); ok {
-		opts = append(opts, WithCustomFieldParamsOption(cfm))
+		addCustomFieldQuery(query, cfm)
 	}
 
-	res, err := api.Ipam.IpamVlansList(params, nil, opts...)
+	vlan, err := findOne[vlanDataSourceResponse](m, "ipam/vlans/", query, "vlan")
 	if err != nil {
 		return err
 	}
-	if *res.GetPayload().Count > int64(1) {
-		return errors.New("more than one vlan returned, specify a more narrow filter")
-	}
-	if *res.GetPayload().Count == int64(0) {
-		return errors.New("no vlan found matching filter")
-	}
-
-	vlan := res.GetPayload().Results[0]
 
 	d.SetId(strconv.FormatInt(vlan.ID, 10))
 	d.Set("vid", vlan.Vid)
 	d.Set("name", vlan.Name)
-	d.Set("status", vlan.Status.Value)
+	d.Set("status", netboxapi.ChoiceValue(vlan.Status))
 	d.Set("description", vlan.Description)
-
 	if vlan.Group != nil {
 		d.Set("group_id", vlan.Group.ID)
 	}
@@ -112,10 +102,8 @@ func dataSourceNetboxVlanRead(d *schema.ResourceData, m interface{}) error {
 	if vlan.Tenant != nil {
 		d.Set("tenant", vlan.Tenant.ID)
 	}
-	cf := getCustomFields(vlan.CustomFields)
-	if cf != nil {
+	if cf := getCustomFields(vlan.CustomFields); cf != nil {
 		d.Set(customFieldsKey, cf)
 	}
-
 	return nil
 }

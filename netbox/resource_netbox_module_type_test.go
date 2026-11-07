@@ -2,14 +2,10 @@ package netbox
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	log "github.com/sirupsen/logrus"
 )
 
 func testAccNetboxModuleTypeFullDependencies(testName string) string {
@@ -86,36 +82,7 @@ resource "netbox_module_type" "test" {
 }
 
 func testAccCheckModuleTypeDestroy(s *terraform.State) error {
-	// retrieve the connection established in Provider configuration
-	conn := testAccProvider.Meta().(*providerState)
-
-	// loop through the resources in state, verifying each module type
-	// is destroyed
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "netbox_module_type" {
-			continue
-		}
-
-		// Retrieve our device by referencing it's state ID for API lookup
-		stateID, _ := strconv.ParseInt(rs.Primary.ID, 10, 64)
-		params := dcim.NewDcimModuleTypesReadParams().WithID(stateID)
-		_, err := conn.Dcim.DcimModuleTypesRead(params, nil)
-
-		if err == nil {
-			return fmt.Errorf("module type (%s) still exists", rs.Primary.ID)
-		}
-
-		if err != nil {
-			if errresp, ok := err.(*dcim.DcimModuleTypesReadDefault); ok {
-				errorcode := errresp.Code()
-				if errorcode == 404 {
-					return nil
-				}
-			}
-			return err
-		}
-	}
-	return nil
+	return testAccCheckObjectsDestroyed(s, "netbox_module_type", "dcim/module-types/")
 }
 
 func init() {
@@ -123,27 +90,7 @@ func init() {
 		Name:         "netbox_module_type",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := dcim.NewDcimModuleTypesListParams()
-			res, err := api.Dcim.DcimModuleTypesList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, moduleType := range res.GetPayload().Results {
-				if strings.HasPrefix(*moduleType.Model, testPrefix) {
-					deleteParams := dcim.NewDcimModuleTypesDeleteParams().WithID(moduleType.ID)
-					_, err := api.Dcim.DcimModuleTypesDelete(deleteParams, nil)
-					if err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted a module_type")
-				}
-			}
-			return nil
+			return sweepByName(region, "dcim/module-types/", "model")
 		},
 	})
 }

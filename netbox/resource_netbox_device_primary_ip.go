@@ -1,10 +1,10 @@
 package netbox
 
 import (
+	"context"
 	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -40,6 +40,25 @@ func resourceNetboxDevicePrimaryIP() *schema.Resource {
 	}
 }
 
+const deviceAPIPath = "dcim/devices/"
+
+// primaryIPResponse holds the IP assignments of a device or virtual machine.
+type primaryIPResponse struct {
+	ID         int64          `json:"id"`
+	OobIP      *netboxapi.Ref `json:"oob_ip"`
+	PrimaryIp4 *netboxapi.Ref `json:"primary_ip4"`
+	PrimaryIp6 *netboxapi.Ref `json:"primary_ip6"`
+}
+
+// ipAssignment returns the value to send for an IP field: nil clears it when
+// the ID is -1, which is how delete asks for the assignment to be removed.
+func ipAssignment(ipAddressID int64) interface{} {
+	if ipAddressID == -1 {
+		return nil
+	}
+	return ipAddressID
+}
+
 func resourceNetboxDevicePrimaryIPCreate(d *schema.ResourceData, m interface{}) error {
 	d.SetId(strconv.Itoa(d.Get("device_id").(int)))
 
@@ -49,34 +68,29 @@ func resourceNetboxDevicePrimaryIPCreate(d *schema.ResourceData, m interface{}) 
 func resourceNetboxDevicePrimaryIPRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimDevicesReadParams().WithID(id)
 
-	res, err := api.Dcim.DcimDevicesRead(params, nil)
+	device, err := netboxapi.Get[primaryIPResponse](context.Background(), api.rest, deviceAPIPath, id)
 	if err != nil {
-		if errresp, ok := err.(*dcim.DcimDevicesReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
+		if netboxapi.IsNotFound(err) {
+			// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
+			d.SetId("")
+			return nil
 		}
 		return err
 	}
 
 	IPAddressVersion := d.Get("ip_address_version")
 	d.Set("ip_address_version", IPAddressVersion)
-
-	if IPAddressVersion == 4 && res.GetPayload().PrimaryIp4 != nil {
-		d.Set("ip_address_id", res.GetPayload().PrimaryIp4.ID)
-	} else if IPAddressVersion == 6 && res.GetPayload().PrimaryIp6 != nil {
-		d.Set("ip_address_id", res.GetPayload().PrimaryIp6.ID)
+	if IPAddressVersion == 4 && device.PrimaryIp4 != nil {
+		d.Set("ip_address_id", device.PrimaryIp4.ID)
+	} else if IPAddressVersion == 6 && device.PrimaryIp6 != nil {
+		d.Set("ip_address_id", device.PrimaryIp6.ID)
 	} else {
 		// if the device exists, but has no primary ip, consider this element deleted
 		d.SetId("")
 		return nil
 	}
-	d.Set("device_id", res.GetPayload().ID)
+	d.Set("device_id", device.ID)
 	return nil
 }
 
@@ -87,71 +101,17 @@ func resourceNetboxDevicePrimaryIPUpdate(d *schema.ResourceData, m interface{}) 
 	IPAddressID := int64(d.Get("ip_address_id").(int))
 	IPAddressVersion := int64(d.Get("ip_address_version").(int))
 
-	// because the go-netbox library does not have patch support atm, we have to get the whole object and re-put it
+	field := "primary_ip6"
+	if IPAddressVersion == 4 {
+		field = "primary_ip4"
+	}
 
-	// first, get the device
-	readParams := dcim.NewDcimDevicesReadParams().WithID(deviceID)
-	res, err := api.Dcim.DcimDevicesRead(readParams, nil)
-	if err != nil {
+	// Only send the one field, so everything else on the device is left alone.
+	body := map[string]interface{}{field: ipAssignment(IPAddressID)}
+	if _, err := netboxapi.Patch[netboxapi.Ref](context.Background(), api.rest, deviceAPIPath, deviceID, body); err != nil {
 		return err
 	}
 
-	device := res.GetPayload()
-
-	// then update the FULL device with ALL tracked attributes
-	data := models.WritableDeviceWithConfigContext{}
-
-	data.Name = device.Name
-	data.Tags = device.Tags
-	// the netbox API sends the URL property as part of NestedTag, but it does not accept the URL property when we send it back
-	// so set it to empty
-	// display too
-	for _, tag := range data.Tags {
-		tag.URL = ""
-		tag.Display = ""
-	}
-
-	if device.DeviceType != nil {
-		data.DeviceType = &device.DeviceType.ID
-	}
-
-	if device.Site != nil {
-		data.Site = &device.Site.ID
-	}
-
-	if device.Role != nil {
-		data.Role = &device.Role.ID
-	}
-
-	if device.PrimaryIp4 != nil {
-		data.PrimaryIp4 = &device.PrimaryIp4.ID
-	}
-
-	if device.PrimaryIp6 != nil {
-		data.PrimaryIp6 = &device.PrimaryIp6.ID
-	}
-
-	// unset primary ip address if -1 is passed as id
-	if IPAddressID == -1 {
-		if IPAddressVersion == 4 {
-			data.PrimaryIp4 = nil
-		} else {
-			data.PrimaryIp6 = nil
-		}
-	} else {
-		if IPAddressVersion == 4 {
-			data.PrimaryIp4 = &IPAddressID
-		} else {
-			data.PrimaryIp6 = &IPAddressID
-		}
-	}
-
-	updateParams := dcim.NewDcimDevicesPartialUpdateParams().WithID(deviceID).WithData(&data)
-
-	_, err = api.Dcim.DcimDevicesPartialUpdate(updateParams, nil)
-	if err != nil {
-		return err
-	}
 	return resourceNetboxDevicePrimaryIPRead(d, m)
 }
 

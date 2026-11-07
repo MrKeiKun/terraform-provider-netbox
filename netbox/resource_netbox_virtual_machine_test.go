@@ -2,12 +2,8 @@ package netbox
 
 import (
 	"fmt"
-	"log"
-	"strconv"
-	"strings"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/virtualization"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
@@ -320,36 +316,7 @@ resource "netbox_virtual_machine" "test" {
 }
 
 func testAccCheckVirtualMachineDestroy(s *terraform.State) error {
-	// retrieve the connection established in Provider configuration
-	conn := testAccProvider.Meta().(*providerState)
-
-	// loop through the resources in state, verifying each virtual machine
-	// is destroyed
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "netbox_virtual_machine" {
-			continue
-		}
-
-		// Retrieve our virtual machine by referencing it's state ID for API lookup
-		stateID, _ := strconv.ParseInt(rs.Primary.ID, 10, 64)
-		params := virtualization.NewVirtualizationVirtualMachinesReadParams().WithID(stateID)
-		_, err := conn.Virtualization.VirtualizationVirtualMachinesRead(params, nil)
-
-		if err == nil {
-			return fmt.Errorf("virtual machine (%s) still exists", rs.Primary.ID)
-		}
-
-		if err != nil {
-			if errresp, ok := err.(*virtualization.VirtualizationVirtualMachinesReadDefault); ok {
-				errorcode := errresp.Code()
-				if errorcode == 404 {
-					return nil
-				}
-			}
-			return err
-		}
-	}
-	return nil
+	return testAccCheckObjectsDestroyed(s, "netbox_virtual_machine", "virtualization/virtual-machines/")
 }
 
 func TestAccNetboxVirtualMachine_tags(t *testing.T) {
@@ -654,27 +621,7 @@ func init() {
 		Name:         "netbox_virtual_machine",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := virtualization.NewVirtualizationVirtualMachinesListParams()
-			res, err := api.Virtualization.VirtualizationVirtualMachinesList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, virtualMachine := range res.GetPayload().Results {
-				if strings.HasPrefix(*virtualMachine.Name, testPrefix) {
-					deleteParams := virtualization.NewVirtualizationVirtualMachinesDeleteParams().WithID(virtualMachine.ID)
-					_, err := api.Virtualization.VirtualizationVirtualMachinesDelete(deleteParams, nil)
-					if err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted a virtual machine")
-				}
-			}
-			return nil
+			return sweepByName(region, "virtualization/virtual-machines/", "name")
 		},
 	})
 }

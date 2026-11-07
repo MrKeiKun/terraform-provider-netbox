@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -47,125 +44,56 @@ func resourceNetboxRackRole() *schema.Resource {
 	}
 }
 
-func resourceNetboxRackRoleCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const rackRoleAPIPath = "dcim/rack-roles/"
 
+type rackRoleRequest struct {
+	Name        string             `json:"name"`
+	Slug        string             `json:"slug"`
+	Color       string             `json:"color,omitempty"`
+	Description string             `json:"description,omitempty"`
+	Tags        []netboxapi.TagRef `json:"tags"`
+}
+
+type rackRoleResponse struct {
+	Name        string             `json:"name"`
+	Slug        string             `json:"slug"`
+	Color       string             `json:"color"`
+	Description string             `json:"description"`
+	Tags        []netboxapi.TagRef `json:"tags"`
+}
+
+func rackRoleRequestFromResourceData(api *providerState, d *schema.ResourceData) *rackRoleRequest {
 	name := d.Get("name").(string)
-	slugValue, slugOk := d.GetOk("slug")
-	var slug string
-
-	// Default slug to generated slug if not given
-	if !slugOk {
-		slug = getSlug(name)
-	} else {
-		slug = slugValue.(string)
+	// A failed tag lookup leaves the tags empty, same as before.
+	tags, _ := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
+	return &rackRoleRequest{
+		Name:        name,
+		Slug:        slugFromResourceData(d, name),
+		Color:       d.Get("color_hex").(string),
+		Description: getOptionalStr(d, "description", true),
+		Tags:        tags,
 	}
+}
 
-	color := d.Get("color_hex").(string)
-	description := getOptionalStr(d, "description", false)
-
-	tags, _ := getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
-
-	params := dcim.NewDcimRackRolesCreateParams().WithData(
-		&models.RackRole{
-			Name:        &name,
-			Slug:        &slug,
-			Color:       color,
-			Description: description,
-			Tags:        tags,
-		},
-	)
-
-	res, err := api.Dcim.DcimRackRolesCreate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxRackRoleRead(d, m)
+func resourceNetboxRackRoleCreate(d *schema.ResourceData, m interface{}) error {
+	return createObject(d, m, rackRoleAPIPath, rackRoleRequestFromResourceData(m.(*providerState), d), resourceNetboxRackRoleRead)
 }
 
 func resourceNetboxRackRoleRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimRackRolesReadParams().WithID(id)
-
-	res, err := api.Dcim.DcimRackRolesRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimRackRolesReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-
-	rackRole := res.GetPayload()
-
-	d.Set("name", rackRole.Name)
-	d.Set("slug", rackRole.Slug)
-	d.Set("description", rackRole.Description)
-	d.Set("color_hex", rackRole.Color)
-	api.readTags(d, res.GetPayload().Tags)
-	return nil
+	return readObject(d, m, rackRoleAPIPath, func(rackRole *rackRoleResponse) {
+		d.Set("name", rackRole.Name)
+		d.Set("slug", rackRole.Slug)
+		d.Set("description", rackRole.Description)
+		d.Set("color_hex", rackRole.Color)
+		api.readTagRefs(d, rackRole.Tags)
+	})
 }
 
 func resourceNetboxRackRoleUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.RackRole{}
-
-	name := d.Get("name").(string)
-	color := d.Get("color_hex").(string)
-
-	slugValue, slugOk := d.GetOk("slug")
-	var slug string
-
-	// Default slug to generated slug if not given
-	if !slugOk {
-		slug = getSlug(name)
-	} else {
-		slug = slugValue.(string)
-	}
-
-	data.Slug = &slug
-	data.Name = &name
-	data.Description = getOptionalStr(d, "description", true)
-	data.Color = color
-
-	tags, _ := getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
-	data.Tags = tags
-
-	params := dcim.NewDcimRackRolesPartialUpdateParams().WithID(id).WithData(&data)
-
-	_, err := api.Dcim.DcimRackRolesPartialUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	return resourceNetboxRackRoleRead(d, m)
+	return patchObject(d, m, rackRoleAPIPath, rackRoleRequestFromResourceData(m.(*providerState), d), resourceNetboxRackRoleRead)
 }
 
 func resourceNetboxRackRoleDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimRackRolesDeleteParams().WithID(id)
-
-	_, err := api.Dcim.DcimRackRolesDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimRackRolesDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	return nil
+	return deleteObject(d, m, rackRoleAPIPath)
 }

@@ -1,10 +1,10 @@
 package netbox
 
 import (
-	"errors"
+	"net/url"
 	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/circuits"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -49,45 +49,39 @@ func dataSourceNetboxCircuitProviderNetwork() *schema.Resource {
 	}
 }
 
+type circuitProviderNetworkDataSourceResponse struct {
+	ID           int64                  `json:"id"`
+	Comments     string                 `json:"comments"`
+	Description  string                 `json:"description"`
+	Name         string                 `json:"name"`
+	Provider     *netboxapi.Ref         `json:"provider"`
+	ServiceID    string                 `json:"service_id"`
+	CustomFields map[string]interface{} `json:"custom_fields"`
+	Tags         []netboxapi.TagRef     `json:"tags"`
+}
+
 func dataSourceNetboxCircuitProviderNetworkRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+	query := url.Values{}
+	addStrQuery(query, d, "name", "name")
+	addStrQuery(query, d, "id", "id")
 
-	params := circuits.NewCircuitsProviderNetworksListParams()
-
-	if name, ok := d.Get("name").(string); ok && name != "" {
-		params.Name = &name
-	}
-
-	if id, ok := d.Get("id").(string); ok && id != "0" {
-		params.SetID(&id)
-	}
-
-	limit := int64(2) // Limit of 2 is enough
-	params.Limit = &limit
-
-	res, err := api.Circuits.CircuitsProviderNetworksList(params, nil)
+	result, err := findOneWith[circuitProviderNetworkDataSourceResponse](m, "circuits/provider-networks/", query,
+		"more than one result, specify a more narrow filter", "no Provider Network found")
 	if err != nil {
 		return err
 	}
 
-	if *res.GetPayload().Count > int64(1) {
-		return errors.New("more than one result, specify a more narrow filter")
-	}
-	if *res.GetPayload().Count == int64(0) {
-		return errors.New("no Provider Network found")
-	}
-	result := res.GetPayload().Results[0]
+	d.SetId(strconv.FormatInt(result.ID, 10))
 	d.Set("comments", result.Comments)
 	d.Set("description", result.Description)
-	d.SetId(strconv.FormatInt(result.ID, 10))
 	d.Set("name", result.Name)
-	d.Set("provider_id", result.Provider.ID)
-	d.Set("service_id", result.ServiceID)
-
-	if result.CustomFields != nil {
-		d.Set("custom_fields", flattenCustomFields((result.CustomFields)))
+	if result.Provider != nil {
+		d.Set("provider_id", result.Provider.ID)
 	}
-
-	d.Set(tagsKey, getTagListFromNestedTagList(result.Tags))
+	d.Set("service_id", result.ServiceID)
+	if result.CustomFields != nil {
+		d.Set("custom_fields", flattenCustomFields(result.CustomFields))
+	}
+	d.Set(tagsKey, tagNames(result.Tags))
 	return nil
 }

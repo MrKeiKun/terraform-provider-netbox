@@ -2,12 +2,9 @@ package netbox
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	log "github.com/sirupsen/logrus"
 )
 
 func TestAccNetboxDeviceBayTemplate_basic(t *testing.T) {
@@ -121,27 +118,7 @@ func init() {
 		Name:         "netbox_device_bay_template",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := dcim.NewDcimDeviceBayTemplatesListParams()
-			res, err := api.Dcim.DcimDeviceBayTemplatesList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, tmpl := range res.GetPayload().Results {
-				if strings.HasPrefix(*tmpl.Name, testPrefix) {
-					deleteParams := dcim.NewDcimDeviceBayTemplatesDeleteParams().WithID(tmpl.ID)
-					_, err := api.Dcim.DcimDeviceBayTemplatesDelete(deleteParams, nil)
-					if err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted a device bay template")
-				}
-			}
-			return nil
+			return sweepByName(region, "dcim/device-bay-templates/", "name")
 		},
 	})
 }

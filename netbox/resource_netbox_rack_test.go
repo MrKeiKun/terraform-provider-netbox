@@ -2,12 +2,8 @@ package netbox
 
 import (
 	"fmt"
-	"log"
-	"strconv"
-	"strings"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
@@ -266,36 +262,7 @@ resource "netbox_rack" "test" {
 */
 
 func testAccCheckRackDestroy(s *terraform.State) error {
-	// retrieve the connection established in Provider configuration
-	conn := testAccProvider.Meta().(*providerState)
-
-	// loop through the resources in state, verifying each rack
-	// is destroyed
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "netbox_rack" {
-			continue
-		}
-
-		// Retrieve our rack by referencing it's state ID for API lookup
-		stateID, _ := strconv.ParseInt(rs.Primary.ID, 10, 64)
-		params := dcim.NewDcimRacksReadParams().WithID(stateID)
-		_, err := conn.Dcim.DcimRacksRead(params, nil)
-
-		if err == nil {
-			return fmt.Errorf("rack (%s) still exists", rs.Primary.ID)
-		}
-
-		if err != nil {
-			if errresp, ok := err.(*dcim.DcimRacksReadDefault); ok {
-				errorcode := errresp.Code()
-				if errorcode == 404 {
-					return nil
-				}
-			}
-			return err
-		}
-	}
-	return nil
+	return testAccCheckObjectsDestroyed(s, "netbox_rack", "dcim/racks/")
 }
 
 func init() {
@@ -303,27 +270,7 @@ func init() {
 		Name:         "netbox_rack",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := dcim.NewDcimRacksListParams()
-			res, err := api.Dcim.DcimRacksList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, Rack := range res.GetPayload().Results {
-				if strings.HasPrefix(*Rack.Name, testPrefix) {
-					deleteParams := dcim.NewDcimRacksDeleteParams().WithID(Rack.ID)
-					_, err := api.Dcim.DcimRacksDelete(deleteParams, nil)
-					if err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted a rack")
-				}
-			}
-			return nil
+			return sweepByName(region, "dcim/racks/", "name")
 		},
 	})
 }

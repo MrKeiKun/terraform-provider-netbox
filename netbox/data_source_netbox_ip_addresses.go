@@ -1,10 +1,8 @@
 package netbox
 
 import (
-	"fmt"
+	"net/url"
 
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
-	"github.com/fbreckle/go-netbox/netbox/models"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -137,124 +135,54 @@ func dataSourceNetboxIPAddresses() *schema.Resource {
 }
 
 func dataSourceNetboxIPAddressesRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	params := ipam.NewIpamIPAddressesListParams()
-	var opts []ipam.ClientOption
-
-	// Get user limit
-	var userLimit int64 = 0
-	if limitValue, ok := d.GetOk("limit"); ok {
-		userLimit = int64(limitValue.(int))
+	// filter name in the data source -> query parameter sent to Netbox
+	allowed := map[string]string{
+		"dns_name":        "dns_name",
+		"interface_id":    "interface_id",
+		"device_id":       "device_id",
+		"ip_address":      "address",
+		"vm_interface_id": "vminterface_id",
+		"role":            "role",
+		"status":          "status",
+		"vrf":             "vrf",
+		"tenant":          "tenant",
+		"parent_prefix":   "parent",
+		"tag":             "tag",
+		"description":     "description",
 	}
 
-	if filter, ok := d.GetOk("filter"); ok {
-		var filterParams = filter.(*schema.Set)
-		var tags []string
-		for _, f := range filterParams.List() {
-			k := f.(map[string]interface{})["name"]
-			v := f.(map[string]interface{})["value"]
-			vString := v.(string)
-			switch k {
-			case "dns_name":
-				params.DNSName = &vString
-			case "interface_id":
-				params.InterfaceID = &vString
-			case "device_id":
-				params.DeviceID = &vString
-			case "ip_address":
-				params.Address = &vString
-			case "vm_interface_id":
-				params.VminterfaceID = &vString
-			case "role":
-				params.Role = &vString
-			case "status":
-				params.Status = &vString
-			case "vrf":
-				params.Vrf = &vString
-			case "tenant":
-				params.Tenant = &vString
-			case "parent_prefix":
-				params.Parent = &vString
-			case "tag":
-				tags = append(tags, vString)
-				params.Tag = tags
-			case "description":
-				params.Description = &vString
-			default:
-				return fmt.Errorf("'%s' is not a supported filter parameter", k)
-			}
-		}
-	}
-
-	// Fetch all pages with pagination
-	paginationHelper := NewPaginationHelper(userLimit)
-	var allIPAddresses []*models.IPAddress
-
+	extra := url.Values{}
 	if cfm, ok := d.Get(customFieldsKey).(map[string]interface{}); ok {
-		opts = append(opts, WithCustomFieldParamsOption(cfm))
+		addCustomFieldQuery(extra, cfm)
 	}
 
-	pageSize := paginationHelper.GetPageSize()
-	for {
-		currentOffset := paginationHelper.CurrentOffset()
-		params.Limit = &pageSize
-		params.Offset = &currentOffset
-
-		res, err := api.Ipam.IpamIPAddressesList(params, nil, opts...)
-		if err != nil {
-			return fmt.Errorf("failed to fetch IP addresses at offset %d: %w", currentOffset, err)
-		}
-
-		payload := res.GetPayload()
-		allIPAddresses = append(allIPAddresses, payload.Results...)
-
-		if len(payload.Results) == 0 {
-			break
-		}
-
-		if !paginationHelper.ShouldContinuePaging(int64(len(allIPAddresses)), payload.Next) {
-			break
-		}
-
-		paginationHelper.Advance(int64(len(payload.Results)))
+	results, err := listFiltered[map[string]interface{}](d, m, "ipam/ip-addresses/", "IP addresses", allowed, extra)
+	if err != nil {
+		return err
 	}
 
-	// Trim to user limit if specified
-	trimmedCount := paginationHelper.TrimToLimit(len(allIPAddresses))
-	filteredIPAddresses := allIPAddresses[:trimmedCount]
-
-	// No error on zero matches: a caller filtering by e.g. interface_id needs to
-	// tell "nothing has this IP yet" apart from a real failure, which erroring
-	// here made impossible - every filtered read had to assume at least one
-	// match exists.
 	var s []map[string]interface{}
-	for _, v := range filteredIPAddresses {
-		var mapping = make(map[string]interface{})
+	for _, v := range results {
+		mapping := make(map[string]interface{})
 
-		mapping["id"] = v.ID
-		mapping["description"] = v.Description
-		mapping["created"] = v.Created.String()
-		mapping["last_updated"] = v.LastUpdated.String()
-		mapping["custom_fields"] = flattenCustomFields(v.CustomFields)
+		mapping["id"] = jInt(v, "id")
+		mapping["description"] = jStr(v, "description")
+		mapping["created"] = jTime(v, "created")
+		mapping["last_updated"] = jTime(v, "last_updated")
+		mapping["custom_fields"] = flattenCustomFields(v["custom_fields"])
+		mapping["ip_address"] = jStr(v, "address")
+		mapping["address_family"] = jNested(v, "family", "label")
+		mapping["status"] = jChoice(v, "status")
+		mapping["dns_name"] = jStr(v, "dns_name")
+		mapping["tenant"] = jObjectList(v, "tenant", "id", "name", "slug")
+		mapping["tags"] = jObjectsList(v, "tags", "name", "display", "slug", "id")
+		mapping["role"] = jChoice(v, "role")
 
-		mapping["ip_address"] = v.Address
-		mapping["address_family"] = v.Family.Label
-		mapping["status"] = v.Status.Value
-		mapping["dns_name"] = v.DNSName
-		mapping["tenant"] = flattenTenant(v.Tenant)
-		var stags []map[string]interface{}
-		for _, t := range v.Tags {
-			var tagmapping = make(map[string]interface{})
-			tagmapping["name"] = t.Name
-			tagmapping["display"] = t.Display
-			tagmapping["slug"] = t.Slug
-			tagmapping["id"] = t.ID
-			stags = append(stags, tagmapping)
-		}
-		mapping["tags"] = stags
-		if v.Role != nil {
-			mapping["role"] = v.Role.Value
+		// fields that are missing in the response are left out of the state
+		for k, val := range mapping {
+			if val == nil {
+				delete(mapping, k)
+			}
 		}
 
 		s = append(s, mapping)
@@ -262,16 +190,4 @@ func dataSourceNetboxIPAddressesRead(d *schema.ResourceData, m interface{}) erro
 
 	d.SetId(id.UniqueId())
 	return d.Set("ip_addresses", s)
-}
-
-func flattenTenant(tenant *models.NestedTenant) []map[string]interface{} {
-	var s []map[string]interface{}
-	if tenant != nil {
-		var mapping = make(map[string]interface{})
-		mapping["id"] = tenant.ID
-		mapping["name"] = tenant.Name
-		mapping["slug"] = tenant.Slug
-		s = append(s, mapping)
-	}
-	return s
 }

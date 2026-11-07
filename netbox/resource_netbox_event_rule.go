@@ -2,10 +2,8 @@ package netbox
 
 import (
 	"encoding/json"
-	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/extras"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -84,172 +82,110 @@ func resourceNetboxEventRule() *schema.Resource {
 	}
 }
 
-func resourceNetboxEventRuleCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const eventRuleAPIPath = "extras/event-rules/"
 
-	data := &models.WritableEventRule{}
+type eventRuleRequest struct {
+	Name             string             `json:"name"`
+	ActionType       string             `json:"action_type,omitempty"`
+	Description      string             `json:"description,omitempty"`
+	Enabled          bool               `json:"enabled"`
+	ActionObjectId   *int64             `json:"action_object_id"`
+	ActionObjectType *string            `json:"action_object_type"`
+	EventTypes       []string           `json:"event_types"`
+	ObjectTypes      []string           `json:"object_types,omitempty"`
+	Conditions       interface{}        `json:"conditions,omitempty"`
+	Tags             []netboxapi.TagRef `json:"tags"`
+}
 
+type eventRuleResponse struct {
+	Name           string             `json:"name"`
+	ActionType     *netboxapi.Choice  `json:"action_type"`
+	Description    string             `json:"description"`
+	Enabled        bool               `json:"enabled"`
+	ActionObjectId *int64             `json:"action_object_id"`
+	ObjectTypes    []string           `json:"object_types"`
+	EventTypes     []string           `json:"event_types"`
+	Conditions     interface{}        `json:"conditions"`
+	Tags           []netboxapi.TagRef `json:"tags"`
+}
+
+func eventRuleRequestFromResourceData(api *providerState, d *schema.ResourceData) (*eventRuleRequest, error) {
 	name := d.Get("name").(string)
-	data.Name = &name
-	actionType := d.Get("action_type").(string)
-	data.ActionType = actionType
-	data.Description = getOptionalStr(d, "description", false)
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
+	if err != nil {
+		return nil, err
+	}
+	data := &eventRuleRequest{
+		Name:           name,
+		ActionType:     d.Get("action_type").(string),
+		Description:    getOptionalStr(d, "description", true),
+		Enabled:        d.Get("enabled").(bool),
+		ActionObjectId: getOptionalInt(d, "action_object_id"),
 
-	if objectType, ok := resourceNetboxEventRuleActionTypeToObjectType[actionType]; ok {
+		Tags: tags,
+	}
+
+	if objectType, ok := resourceNetboxEventRuleActionTypeToObjectType[data.ActionType]; ok {
 		data.ActionObjectType = strToPtr(objectType)
 	}
 
-	eventTypes := make([]string, 0)
+	data.EventTypes = make([]string, 0)
 	for _, eventType := range d.Get("event_types").(*schema.Set).List() {
-		eventTypes = append(eventTypes, eventType.(string))
+		data.EventTypes = append(data.EventTypes, eventType.(string))
 	}
-	data.EventTypes = eventTypes
 
-	enabled := d.Get("enabled").(bool)
-	data.Enabled = enabled
-	data.ActionObjectID = getOptionalInt(d, "action_object_id")
-
-	tags, _ := getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
-	data.Tags = tags
-
-	ctypes := d.Get("content_types").(*schema.Set).List()
-	objectTypes := make([]string, 0, len(ctypes))
-	for _, contentType := range d.Get("content_types").(*schema.Set).List() {
-		objectTypes = append(objectTypes, contentType.(string))
+	contentTypes := d.Get("content_types").(*schema.Set).List()
+	data.ObjectTypes = make([]string, 0, len(contentTypes))
+	for _, contentType := range contentTypes {
+		data.ObjectTypes = append(data.ObjectTypes, contentType.(string))
 	}
-	data.ObjectTypes = objectTypes
 
 	if conditionsData, ok := d.GetOk("conditions"); ok {
 		var conditions any
-		err := json.Unmarshal([]byte(conditionsData.(string)), &conditions)
-		if err != nil {
-			return err
+		if err := json.Unmarshal([]byte(conditionsData.(string)), &conditions); err != nil {
+			return nil, err
 		}
 		data.Conditions = conditions
 	}
+	return data, nil
+}
 
-	params := extras.NewExtrasEventRulesCreateParams().WithData(data)
-
-	res, err := api.Extras.ExtrasEventRulesCreate(params, nil)
+func resourceNetboxEventRuleCreate(d *schema.ResourceData, m interface{}) error {
+	data, err := eventRuleRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxEventRuleRead(d, m)
+	return createObject(d, m, eventRuleAPIPath, data, resourceNetboxEventRuleRead)
 }
 
 func resourceNetboxEventRuleRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := extras.NewExtrasEventRulesReadParams().WithID(id)
+	return readObject(d, m, eventRuleAPIPath, func(r *eventRuleResponse) {
+		d.Set("name", r.Name)
+		d.Set("action_type", netboxapi.ChoiceValue(r.ActionType))
+		d.Set("description", r.Description)
+		d.Set("enabled", r.Enabled)
+		d.Set("action_object_id", r.ActionObjectId)
 
-	res, err := api.Extras.ExtrasEventRulesRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*extras.ExtrasEventRulesReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				d.SetId("")
-				return nil
+		d.Set("content_types", r.ObjectTypes)
+		d.Set("event_types", r.EventTypes)
+		if r.Conditions != nil {
+			if conditions, err := json.Marshal(r.Conditions); err == nil {
+				d.Set("conditions", string(conditions))
 			}
 		}
-		return err
-	}
-
-	eventRule := res.GetPayload()
-	d.Set("name", eventRule.Name)
-	d.Set("description", eventRule.Description)
-	d.Set("action_type", eventRule.ActionType.Value)
-	d.Set("content_types", eventRule.ObjectTypes)
-	d.Set("event_types", eventRule.EventTypes)
-
-	d.Set("enabled", eventRule.Enabled)
-	d.Set("action_object_id", eventRule.ActionObjectID)
-
-	if eventRule.Conditions != nil {
-		conditions, err := json.Marshal(eventRule.Conditions)
-		if err != nil {
-			return err
-		}
-		d.Set("conditions", string(conditions))
-	}
-
-	api.readTags(d, eventRule.Tags)
-
-	return nil
+		api.readTagRefs(d, r.Tags)
+	})
 }
 
 func resourceNetboxEventRuleUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.WritableEventRule{}
-
-	name := d.Get("name").(string)
-	data.Name = &name
-	actionType := d.Get("action_type").(string)
-	data.ActionType = actionType
-	data.Description = getOptionalStr(d, "description", true)
-
-	if objectType, ok := resourceNetboxEventRuleActionTypeToObjectType[actionType]; ok {
-		data.ActionObjectType = strToPtr(objectType)
-	}
-
-	eventTypes := make([]string, 0)
-	for _, eventType := range d.Get("event_types").(*schema.Set).List() {
-		eventTypes = append(eventTypes, eventType.(string))
-	}
-	data.EventTypes = eventTypes
-
-	enabled := d.Get("enabled").(bool)
-	data.Enabled = enabled
-	data.ActionObjectID = getOptionalInt(d, "action_object_id")
-
-	if conditionsData, ok := d.GetOk("conditions"); ok {
-		var conditions any
-		err := json.Unmarshal([]byte(conditionsData.(string)), &conditions)
-		if err != nil {
-			return err
-		}
-		data.Conditions = conditions
-	}
-
-	tags, _ := getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
-	data.Tags = tags
-
-	ctypes := d.Get("content_types").(*schema.Set).List()
-	objectTypes := make([]string, 0, len(ctypes))
-	for _, contentType := range d.Get("content_types").(*schema.Set).List() {
-		objectTypes = append(objectTypes, contentType.(string))
-	}
-	data.ObjectTypes = objectTypes
-
-	params := extras.NewExtrasEventRulesUpdateParams().WithID(id).WithData(&data)
-
-	_, err := api.Extras.ExtrasEventRulesUpdate(params, nil)
+	data, err := eventRuleRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	return resourceNetboxEventRuleRead(d, m)
+	return putObject(d, m, eventRuleAPIPath, data, resourceNetboxEventRuleRead)
 }
 
 func resourceNetboxEventRuleDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := extras.NewExtrasEventRulesDeleteParams().WithID(id)
-
-	_, err := api.Extras.ExtrasEventRulesDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*extras.ExtrasEventRulesDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	return nil
+	return deleteObject(d, m, eventRuleAPIPath)
 }

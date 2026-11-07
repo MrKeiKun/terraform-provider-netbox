@@ -1,12 +1,8 @@
 package netbox
 
 import (
-	"encoding/json"
-	"fmt"
 	"regexp"
 
-	"github.com/fbreckle/go-netbox/netbox/client/virtualization"
-	"github.com/fbreckle/go-netbox/netbox/models"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -156,180 +152,70 @@ func dataSourceNetboxVirtualMachine() *schema.Resource {
 }
 
 func dataSourceNetboxVirtualMachineRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	params := virtualization.NewVirtualizationVirtualMachinesListParams()
-
-	// Get user limit (0 = fetch all)
-	var userLimit int64 = 0
-	if limitValue, ok := d.GetOk("limit"); ok {
-		userLimit = int64(limitValue.(int))
+	// filter name in the data source -> query parameter sent to Netbox
+	allowed := map[string]string{
+		"cluster_id":    "cluster_id",
+		"cluster_group": "cluster_group",
+		"device_id":     "name",
+		"device":        "name",
+		"name":          "name",
+		"region":        "region",
+		"role":          "role",
+		"site":          "site",
+		"tenant_id":     "tenant_id",
+		"tag":           "tag",
+		"status":        "status",
+		"platform":      "platform",
+		"platform_id":   "platform_id",
 	}
 
-	if filter, ok := d.GetOk("filter"); ok {
-		var filterParams = filter.(*schema.Set)
-		var tags []string
-		for _, f := range filterParams.List() {
-			k := f.(map[string]interface{})["name"]
-			v := f.(map[string]interface{})["value"]
-			vString := v.(string)
-			switch k {
-			case "cluster_id":
-				params.ClusterID = &vString
-			case "cluster_group":
-				params.ClusterGroup = &vString
-			case "device_id":
-				params.Name = &vString
-			case "device":
-				params.Name = &vString
-			case "name":
-				params.Name = &vString
-			case "region":
-				params.Region = &vString
-			case "role":
-				params.Role = &vString
-			case "site":
-				params.Site = &vString
-			case "tenant_id":
-				params.TenantID = &vString
-			case "tag":
-				tags = append(tags, vString)
-				params.Tag = tags
-			case "status":
-				params.Status = &vString
-			case "platform":
-				params.Platform = &vString
-			case "platform_id":
-				params.PlatformID = &vString
-			default:
-				return fmt.Errorf("'%s' is not a supported filter parameter", k)
-			}
-		}
-	}
-
-	// Fetch all pages with pagination (fetch all when name_regex is used)
-	paginationHelper := NewPaginationHelper(FetchAll)
-	var allVms []*models.VirtualMachineWithConfigContext
-
-	pageSize := paginationHelper.GetPageSize()
-	for {
-		currentOffset := paginationHelper.CurrentOffset()
-		params.Limit = &pageSize
-		params.Offset = &currentOffset
-
-		res, err := api.Virtualization.VirtualizationVirtualMachinesList(params, nil)
-		if err != nil {
-			return fmt.Errorf("failed to fetch virtual machines at offset %d: %w", currentOffset, err)
-		}
-
-		payload := res.GetPayload()
-		allVms = append(allVms, payload.Results...)
-
-		if len(payload.Results) == 0 {
-			break
-		}
-
-		if !paginationHelper.ShouldContinuePaging(int64(len(allVms)), payload.Next) {
-			break
-		}
-
-		paginationHelper.Advance(int64(len(payload.Results)))
-	}
-
-	// Apply name_regex filter
-	var filteredVms []*models.VirtualMachineWithConfigContext
+	// Fetch everything and apply the regular expression before the limit
+	var keep func(map[string]interface{}) bool
 	if nameRegex, ok := d.GetOk("name_regex"); ok {
 		r := regexp.MustCompile(nameRegex.(string))
-		for _, vm := range allVms {
-			if r.MatchString(*vm.Name) {
-				filteredVms = append(filteredVms, vm)
-			}
-		}
-	} else {
-		filteredVms = allVms
+		keep = func(o map[string]interface{}) bool { return r.MatchString(jStr(o, "name")) }
 	}
 
-	// Apply user limit to filtered results
-	if userLimit > 0 && int64(len(filteredVms)) > userLimit {
-		filteredVms = filteredVms[:userLimit]
+	results, err := listFilteredWith[map[string]interface{}](d, m, "virtualization/virtual-machines/", "virtual machines", allowed, nil, keep)
+	if err != nil {
+		return err
 	}
 
 	var s []map[string]interface{}
-	for _, v := range filteredVms {
-		var mapping = make(map[string]interface{})
-		if v.Cluster != nil {
-			mapping["cluster_id"] = v.Cluster.ID
-		}
-		if v.Comments != "" {
-			mapping["comments"] = v.Comments
-		}
-		if v.Description != "" {
-			mapping["description"] = v.Description
-		}
-		if v.Device != nil {
-			mapping["device_id"] = v.Device.ID
-			mapping["device_name"] = v.Device.Name
-		}
-		if v.ConfigContext != nil {
-			if configContext, err := json.Marshal(v.ConfigContext); err == nil {
-				mapping["config_context"] = string(configContext)
-			}
-		}
-		if v.CustomFields != nil {
-			mapping["custom_fields"] = flattenCustomFields(v.CustomFields)
-		}
-		if v.Disk != nil {
-			mapping["disk_size_mb"] = *v.Disk
-		}
-		if v.LocalContextData != nil {
-			if localContextData, err := json.Marshal(v.LocalContextData); err == nil {
-				mapping["local_context_data"] = string(localContextData)
-			}
-		}
-		if v.Memory != nil {
-			mapping["memory_mb"] = *v.Memory
-		}
-		if v.Name != nil {
-			mapping["name"] = *v.Name
-		}
-		if v.Platform != nil {
-			mapping["platform_id"] = v.Platform.ID
-			mapping["platform_slug"] = v.Platform.Slug
-			mapping["platform_name"] = v.Platform.Name
-		}
-		if v.PrimaryIP != nil {
-			mapping["primary_ip"] = v.PrimaryIP.Address
-		}
-		if v.PrimaryIp4 != nil {
-			mapping["primary_ip4"] = v.PrimaryIp4.Address
-		}
-		if v.PrimaryIp6 != nil {
-			mapping["primary_ip6"] = v.PrimaryIp6.Address
-		}
-		if v.Role != nil {
-			mapping["role_id"] = v.Role.ID
-		}
-		if v.Site != nil {
-			mapping["site_id"] = v.Site.ID
-		}
-		if v.Status != nil {
-			mapping["status"] = v.Status.Value
-		}
-		if v.Tags != nil {
-			var tags []int64
-			for _, t := range v.Tags {
-				tags = append(tags, t.ID)
-			}
-			mapping["tag_ids"] = tags
-		}
-		if v.Tenant != nil {
-			mapping["tenant_id"] = v.Tenant.ID
-		}
-		if v.Vcpus != nil {
-			mapping["vcpus"] = *v.Vcpus
-		}
+	for _, v := range results {
+		mapping := make(map[string]interface{})
 
-		mapping["vm_id"] = v.ID
+		mapping["cluster_id"] = jID(v, "cluster")
+		mapping["comments"] = jStr(v, "comments")
+		mapping["description"] = jStr(v, "description")
+		mapping["device_id"] = jID(v, "device")
+		mapping["device_name"] = jNested(v, "device", "name")
+		mapping["config_context"] = jJSON(v, "config_context")
+		mapping["custom_fields"] = flattenCustomFields(v["custom_fields"])
+		mapping["disk_size_mb"] = jIntP(v, "disk")
+		mapping["local_context_data"] = jJSON(v, "local_context_data")
+		mapping["memory_mb"] = jIntP(v, "memory")
+		mapping["name"] = jStr(v, "name")
+		mapping["platform_id"] = jID(v, "platform")
+		mapping["platform_slug"] = jNested(v, "platform", "slug")
+		mapping["platform_name"] = jNested(v, "platform", "name")
+		mapping["primary_ip"] = jNested(v, "primary_ip", "address")
+		mapping["primary_ip4"] = jNested(v, "primary_ip4", "address")
+		mapping["primary_ip6"] = jNested(v, "primary_ip6", "address")
+		mapping["role_id"] = jID(v, "role")
+		mapping["site_id"] = jID(v, "site")
+		mapping["status"] = jChoice(v, "status")
+		mapping["tag_ids"] = jTagIDs(v)
+		mapping["tenant_id"] = jID(v, "tenant")
+		mapping["vcpus"] = jFloatP(v, "vcpus")
+		mapping["vm_id"] = jInt(v, "id")
+
+		// fields that are missing in the response are left out of the state
+		for k, val := range mapping {
+			if val == nil {
+				delete(mapping, k)
+			}
+		}
 
 		s = append(s, mapping)
 	}

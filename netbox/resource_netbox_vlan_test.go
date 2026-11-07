@@ -2,11 +2,8 @@ package netbox
 
 import (
 	"fmt"
-	"log"
-	"strings"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
@@ -166,27 +163,7 @@ func init() {
 		Name:         "netbox_vlan",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := ipam.NewIpamVlansListParams()
-			res, err := api.Ipam.IpamVlansList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, vlan := range res.GetPayload().Results {
-				if strings.HasPrefix(*vlan.Name, testPrefix) {
-					deleteParams := ipam.NewIpamVlansDeleteParams().WithID(vlan.ID)
-					_, err := api.Ipam.IpamVlansDelete(deleteParams, nil)
-					if err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted a vlan")
-				}
-			}
-			return nil
+			return sweepByName(region, "ipam/vlans/", "name")
 		},
 	})
 }

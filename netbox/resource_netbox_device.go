@@ -5,8 +5,7 @@ import (
 	"encoding/json"
 	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -141,128 +140,165 @@ func resourceNetboxDevice() *schema.Resource {
 	}
 }
 
+type deviceResponse struct {
+	ID             int64             `json:"id"`
+	Name           string            `json:"name"`
+	DeviceType     *netboxapi.Ref    `json:"device_type"`
+	PrimaryIp4     *netboxapi.Ref    `json:"primary_ip4"`
+	PrimaryIp6     *netboxapi.Ref    `json:"primary_ip6"`
+	Tenant         *netboxapi.Ref    `json:"tenant"`
+	Platform       *netboxapi.Ref    `json:"platform"`
+	Location       *netboxapi.Ref    `json:"location"`
+	Cluster        *netboxapi.Ref    `json:"cluster"`
+	Role           *netboxapi.Ref    `json:"role"`
+	Site           *netboxapi.Ref    `json:"site"`
+	ConfigTemplate *netboxapi.Ref    `json:"config_template"`
+	Rack           *netboxapi.Ref    `json:"rack"`
+	AssetTag       *string           `json:"asset_tag"`
+	Comments       string            `json:"comments"`
+	Description    string            `json:"description"`
+	Serial         string            `json:"serial"`
+	Status         *netboxapi.Choice `json:"status"`
+	Face           *netboxapi.Choice `json:"face"`
+	Position       *float64          `json:"position"`
+	VirtualChassis *struct {
+		ID     int64          `json:"id"`
+		Master *netboxapi.Ref `json:"master"`
+	} `json:"virtual_chassis"`
+	VcPosition       *int64                 `json:"vc_position"`
+	VcPriority       *int64                 `json:"vc_priority"`
+	LocalContextData interface{}            `json:"local_context_data"`
+	Tags             []netboxapi.TagRef     `json:"tags"`
+	CustomFields     map[string]interface{} `json:"custom_fields"`
+}
+
+// deviceBody builds the request for create and update. Optional values that are
+// not set are left out.
+func deviceBody(api *providerState, d *schema.ResourceData, isUpdate bool) (map[string]interface{}, error) {
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
+	if err != nil {
+		return nil, err
+	}
+
+	body := map[string]interface{}{
+		"name": d.Get("name").(string),
+		"tags": tags,
+		// these three are required by NetBox, so they are always sent
+		"device_type": nullableID(d.Get("device_type_id").(int)),
+		"role":        nullableID(d.Get("role_id").(int)),
+		"site":        nullableID(d.Get("site_id").(int)),
+	}
+
+	if status := d.Get("status").(string); status != "" {
+		body["status"] = status
+	}
+
+	for key, field := range map[string]string{
+		"tenant_id":          "tenant",
+		"platform_id":        "platform",
+		"location_id":        "location",
+		"cluster_id":         "cluster",
+		"config_template_id": "config_template",
+	} {
+		if v, ok := d.GetOk(key); ok {
+			body[field] = int64(v.(int))
+		}
+	}
+
+	if rack := getOptionalInt(d, "rack_id"); rack != nil {
+		body["rack"] = *rack
+	}
+	if face := getOptionalStr(d, "rack_face", false); face != "" {
+		body["face"] = face
+	}
+	if vc := getOptionalInt(d, "virtual_chassis_id"); vc != nil {
+		body["virtual_chassis"] = *vc
+	}
+	if pos := getOptionalInt(d, "virtual_chassis_position"); pos != nil {
+		body["vc_position"] = *pos
+	}
+	if priority := getOptionalInt(d, "virtual_chassis_priority"); priority != nil {
+		body["vc_priority"] = *priority
+	}
+
+	if localContext, ok := d.GetOk("local_context_data"); ok {
+		var jsonObj any
+		if err := json.Unmarshal([]byte(localContext.(string)), &jsonObj); err == nil {
+			body["local_context_data"] = jsonObj
+		}
+	}
+	if cf, ok := d.GetOk(customFieldsKey); ok {
+		body["custom_fields"] = cf
+	}
+
+	if isUpdate {
+		if position := getOptionalFloat(d, "rack_position"); position != nil {
+			body["position"] = *position
+		}
+
+		// A value that is cleared has to be sent as a space, to make NetBox clear it.
+		if d.HasChanges("asset_tag") {
+			if assetTag, ok := d.GetOk("asset_tag"); ok {
+				body["asset_tag"] = assetTag.(string)
+			} else {
+				body["asset_tag"] = " "
+			}
+		}
+		if comments := getOptionalStr(d, "comments", true); comments != "" {
+			body["comments"] = comments
+		}
+		if description := getOptionalStr(d, "description", true); description != "" {
+			body["description"] = description
+		}
+		if serial := getOptionalStr(d, "serial", true); serial != "" {
+			body["serial"] = serial
+		}
+	} else {
+		if assetTag, ok := d.GetOk("asset_tag"); ok {
+			body["asset_tag"] = assetTag.(string)
+		}
+		if comments := d.Get("comments").(string); comments != "" {
+			body["comments"] = comments
+		}
+		if description := d.Get("description").(string); description != "" {
+			body["description"] = description
+		}
+		if serial := d.Get("serial").(string); serial != "" {
+			body["serial"] = serial
+		}
+		if rackPosition, ok := d.GetOk("rack_position"); ok && rackPosition.(float64) > 0 {
+			body["position"] = rackPosition.(float64)
+		}
+	}
+
+	return body, nil
+}
+
 func resourceNetboxDeviceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*providerState)
 
-	name := d.Get("name").(string)
-
-	data := models.WritableDeviceWithConfigContext{
-		Name: &name,
-	}
-
-	typeIDValue, ok := d.GetOk("device_type_id")
-	if ok {
-		typeID := int64(typeIDValue.(int))
-		data.DeviceType = &typeID
-	}
-
-	if assetTagValue, ok := d.GetOk("asset_tag"); ok {
-		assetTag := string(assetTagValue.(string))
-		data.AssetTag = &assetTag
-	}
-
-	data.Comments = d.Get("comments").(string)
-
-	data.Description = d.Get("description").(string)
-
-	data.Serial = d.Get("serial").(string)
-
-	data.Status = d.Get("status").(string)
-
-	tenantIDValue, ok := d.GetOk("tenant_id")
-	if ok {
-		tenantID := int64(tenantIDValue.(int))
-		data.Tenant = &tenantID
-	}
-
-	platformIDValue, ok := d.GetOk("platform_id")
-	if ok {
-		platformID := int64(platformIDValue.(int))
-		data.Platform = &platformID
-	}
-
-	locationIDValue, ok := d.GetOk("location_id")
-	if ok {
-		locationID := int64(locationIDValue.(int))
-		data.Location = &locationID
-	}
-
-	clusterIDValue, ok := d.GetOk("cluster_id")
-	if ok {
-		clusterID := int64(clusterIDValue.(int))
-		data.Cluster = &clusterID
-	}
-
-	roleIDValue, ok := d.GetOk("role_id")
-	if ok {
-		roleID := int64(roleIDValue.(int))
-		data.Role = &roleID
-	}
-
-	siteIDValue, ok := d.GetOk("site_id")
-	if ok {
-		siteID := int64(siteIDValue.(int))
-		data.Site = &siteID
-	}
-
-	configTemplateIDValue, ok := d.GetOk("config_template_id")
-	if ok {
-		configTemplateID := int64(configTemplateIDValue.(int))
-		data.ConfigTemplate = &configTemplateID
-	}
-
-	data.Rack = getOptionalInt(d, "rack_id")
-	data.Face = getOptionalStr(d, "rack_face", false)
-
-	rackPosition, ok := d.GetOk("rack_position")
-	if ok && rackPosition.(float64) > 0 {
-		data.Position = float64ToPtr(rackPosition.(float64))
-	} else {
-		data.Position = nil
-	}
-
-	data.VirtualChassis = getOptionalInt(d, "virtual_chassis_id")
-	data.VcPosition = getOptionalInt(d, "virtual_chassis_position")
-	data.VcPriority = getOptionalInt(d, "virtual_chassis_priority")
-
-	localContextValue, ok := d.GetOk("local_context_data")
-	if ok {
-		var jsonObj any
-		localContextBA := []byte(localContextValue.(string))
-		if err := json.Unmarshal(localContextBA, &jsonObj); err == nil {
-			data.LocalContextData = jsonObj
-		}
-	}
-
-	ct, ok := d.GetOk(customFieldsKey)
-	if ok {
-		data.CustomFields = ct
-	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+	body, err := deviceBody(api, d, false)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	params := dcim.NewDcimDevicesCreateParams().WithData(&data)
-
-	res, err := api.Dcim.DcimDevicesCreate(params, nil)
+	res, err := netboxapi.Create[netboxapi.Ref](ctx, api.rest, deviceAPIPath, body)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
+	d.SetId(strconv.FormatInt(res.ID, 10))
 
 	if vcMaster, ok := d.GetOk("virtual_chassis_master"); ok {
-		var err error
-		if vcMaster.(bool) {
-			err = virtualChassisUpdateMaster(api, *data.VirtualChassis, &(res.GetPayload().ID))
-		} else {
-			err = virtualChassisUpdateMaster(api, *data.VirtualChassis, nil)
-		}
-		if err != nil {
-			return diag.FromErr(err)
+		if vcID := getOptionalInt(d, "virtual_chassis_id"); vcID != nil {
+			var err error
+			if vcMaster.(bool) {
+				err = virtualChassisUpdateMaster(api, *vcID, &res.ID)
+			} else {
+				err = virtualChassisUpdateMaster(api, *vcID, nil)
+			}
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
@@ -271,288 +307,83 @@ func resourceNetboxDeviceCreate(ctx context.Context, d *schema.ResourceData, m i
 
 func resourceNetboxDeviceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*providerState)
+	return readObjectCtx(ctx, d, m, deviceAPIPath, func(device *deviceResponse) {
+		d.Set("name", device.Name)
+		if device.DeviceType != nil {
+			d.Set("device_type_id", device.DeviceType.ID)
+		}
+		d.Set("primary_ipv4", netboxapi.RefID(device.PrimaryIp4))
+		d.Set("primary_ipv6", netboxapi.RefID(device.PrimaryIp6))
+		d.Set("tenant_id", netboxapi.RefID(device.Tenant))
+		d.Set("platform_id", netboxapi.RefID(device.Platform))
+		d.Set("location_id", netboxapi.RefID(device.Location))
+		d.Set("cluster_id", netboxapi.RefID(device.Cluster))
+		d.Set("role_id", netboxapi.RefID(device.Role))
+		d.Set("site_id", netboxapi.RefID(device.Site))
+		d.Set("config_template_id", netboxapi.RefID(device.ConfigTemplate))
 
-	var diags diag.Diagnostics
+		if cf := getCustomFields(device.CustomFields); cf != nil {
+			d.Set(customFieldsKey, cf)
+		}
 
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
+		d.Set("asset_tag", device.AssetTag)
+		d.Set("comments", device.Comments)
+		d.Set("description", device.Description)
+		d.Set("serial", device.Serial)
+		d.Set("status", netboxapi.ChoiceValue(device.Status))
+		d.Set("rack_id", netboxapi.RefID(device.Rack))
+		if device.Face != nil {
+			d.Set("rack_face", device.Face.Value)
+		} else {
+			d.Set("rack_face", nil)
+		}
+		d.Set("rack_position", device.Position)
 
-	params := dcim.NewDcimDevicesReadParams().WithID(id)
+		if device.VirtualChassis != nil {
+			d.Set("virtual_chassis_id", device.VirtualChassis.ID)
+			d.Set(
+				"virtual_chassis_master",
+				device.VirtualChassis.Master != nil && device.VirtualChassis.Master.ID == device.ID,
+			)
+		} else {
+			d.Set("virtual_chassis_id", 0)
+			d.Set("virtual_chassis_master", false)
+		}
+		d.Set("virtual_chassis_position", device.VcPosition)
+		d.Set("virtual_chassis_priority", device.VcPriority)
 
-	res, err := api.Dcim.DcimDevicesRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimDevicesReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
+		if device.LocalContextData != nil {
+			if jsonArr, err := json.Marshal(device.LocalContextData); err == nil {
+				d.Set("local_context_data", string(jsonArr))
 			}
+		} else {
+			d.Set("local_context_data", nil)
 		}
-		return diag.FromErr(err)
-	}
 
-	device := res.GetPayload()
-
-	d.Set("name", device.Name)
-
-	if device.DeviceType != nil {
-		d.Set("device_type_id", device.DeviceType.ID)
-	}
-
-	if device.PrimaryIp4 != nil {
-		d.Set("primary_ipv4", device.PrimaryIp4.ID)
-	} else {
-		d.Set("primary_ipv4", nil)
-	}
-
-	if device.PrimaryIp6 != nil {
-		d.Set("primary_ipv6", device.PrimaryIp6.ID)
-	} else {
-		d.Set("primary_ipv6", nil)
-	}
-
-	if device.Tenant != nil {
-		d.Set("tenant_id", device.Tenant.ID)
-	} else {
-		d.Set("tenant_id", nil)
-	}
-
-	if device.Platform != nil {
-		d.Set("platform_id", device.Platform.ID)
-	} else {
-		d.Set("platform_id", nil)
-	}
-
-	if device.Location != nil {
-		d.Set("location_id", device.Location.ID)
-	} else {
-		d.Set("location_id", nil)
-	}
-
-	if device.Cluster != nil {
-		d.Set("cluster_id", device.Cluster.ID)
-	} else {
-		d.Set("cluster_id", nil)
-	}
-
-	if device.Role != nil {
-		d.Set("role_id", device.Role.ID)
-	} else {
-		d.Set("role_id", nil)
-	}
-
-	if device.Site != nil {
-		d.Set("site_id", device.Site.ID)
-	} else {
-		d.Set("site_id", nil)
-	}
-
-	if device.ConfigTemplate != nil {
-		d.Set("config_template_id", device.ConfigTemplate.ID)
-	} else {
-		d.Set("config_template_id", nil)
-	}
-
-	cf := getCustomFields(res.GetPayload().CustomFields)
-	if cf != nil {
-		d.Set(customFieldsKey, cf)
-	}
-
-	d.Set("asset_tag", device.AssetTag)
-
-	d.Set("comments", device.Comments)
-
-	d.Set("description", device.Description)
-
-	d.Set("serial", device.Serial)
-
-	d.Set("status", device.Status.Value)
-
-	if device.Rack != nil {
-		d.Set("rack_id", device.Rack.ID)
-	} else {
-		d.Set("rack_id", nil)
-	}
-
-	if device.Face != nil {
-		d.Set("rack_face", device.Face.Value)
-	} else {
-		d.Set("rack_face", nil)
-	}
-
-	d.Set("rack_position", device.Position)
-
-	if device.VirtualChassis != nil {
-		d.Set("virtual_chassis_id", device.VirtualChassis.ID)
-		d.Set(
-			"virtual_chassis_master",
-			device.VirtualChassis.Master != nil && device.VirtualChassis.Master.ID == device.ID,
-		)
-	} else {
-		d.Set("virtual_chassis_id", 0)
-		d.Set("virtual_chassis_master", false)
-	}
-	d.Set("virtual_chassis_position", device.VcPosition)
-	d.Set("virtual_chassis_priority", device.VcPriority)
-
-	if device.LocalContextData != nil {
-		if jsonArr, err := json.Marshal(device.LocalContextData); err == nil {
-			d.Set("local_context_data", string(jsonArr))
-		}
-	} else {
-		d.Set("local_context_data", nil)
-	}
-
-	api.readTags(d, device.Tags)
-	return diags
+		api.readTagRefs(d, device.Tags)
+	})
 }
 
 func resourceNetboxDeviceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*providerState)
-
 	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.WritableDeviceWithConfigContext{}
 
-	name := d.Get("name").(string)
-	data.Name = &name
-
-	status := d.Get("status").(string)
-	data.Status = status
-
-	typeIDValue, ok := d.GetOk("device_type_id")
-	if ok {
-		typeID := int64(typeIDValue.(int))
-		data.DeviceType = &typeID
-	}
-
-	tenantIDValue, ok := d.GetOk("tenant_id")
-	if ok {
-		tenantID := int64(tenantIDValue.(int))
-		data.Tenant = &tenantID
-	}
-
-	platformIDValue, ok := d.GetOk("platform_id")
-	if ok {
-		platformID := int64(platformIDValue.(int))
-		data.Platform = &platformID
-	}
-
-	locationIDValue, ok := d.GetOk("location_id")
-	if ok {
-		locationID := int64(locationIDValue.(int))
-		data.Location = &locationID
-	}
-
-	clusterIDValue, ok := d.GetOk("cluster_id")
-	if ok {
-		clusterID := int64(clusterIDValue.(int))
-		data.Cluster = &clusterID
-	}
-
-	roleIDValue, ok := d.GetOk("role_id")
-	if ok {
-		roleID := int64(roleIDValue.(int))
-		data.Role = &roleID
-	}
-
-	siteIDValue, ok := d.GetOk("site_id")
-	if ok {
-		siteID := int64(siteIDValue.(int))
-		data.Site = &siteID
-	}
-
-	configTemplateIDValue, ok := d.GetOk("config_template_id")
-	if ok {
-		configTemplateID := int64(configTemplateIDValue.(int))
-		data.ConfigTemplate = &configTemplateID
-	}
-
-	data.Rack = getOptionalInt(d, "rack_id")
-	data.Face = getOptionalStr(d, "rack_face", false)
-	data.Position = getOptionalFloat(d, "rack_position")
-
-	data.VirtualChassis = getOptionalInt(d, "virtual_chassis_id")
-	data.VcPosition = getOptionalInt(d, "virtual_chassis_position")
-	data.VcPriority = getOptionalInt(d, "virtual_chassis_priority")
-
-	localContextValue, ok := d.GetOk("local_context_data")
-	if ok {
-		var jsonObj any
-		localContextBA := []byte(localContextValue.(string))
-		if err := json.Unmarshal(localContextBA, &jsonObj); err == nil {
-			data.LocalContextData = jsonObj
-		}
-	}
-
-	cf, ok := d.GetOk(customFieldsKey)
-	if ok {
-		data.CustomFields = cf
-	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+	body, err := deviceBody(api, d, true)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if d.HasChanges("asset_tag") {
-		if assetTagValue, ok := d.GetOk("asset_tag"); ok {
-			assetTag := assetTagValue.(string)
-			data.AssetTag = &assetTag
-		} else {
-			assetTag := " "
-			data.AssetTag = &assetTag
-		}
-	}
-
-	if d.HasChanges("comments") {
-		// check if comment is set
-		if commentsValue, ok := d.GetOk("comments"); ok {
-			data.Comments = commentsValue.(string)
-		} else {
-			data.Comments = " "
-		}
-	}
-	if d.HasChanges("description") {
-		// check if description is set
-		if descriptionValue, ok := d.GetOk("description"); ok {
-			data.Description = descriptionValue.(string)
-		} else {
-			data.Description = " "
-		}
-	}
-
-	if d.HasChanges("serial") {
-		// check if serial is set
-		serialValue, ok := d.GetOk("serial")
-		serial := ""
-		if !ok {
-			// Setting an space string deletes the serial
-			serial = " "
-		} else {
-			serial = serialValue.(string)
-		}
-		data.Serial = serial
-	}
-
-	params := dcim.NewDcimDevicesUpdateParams().WithID(id).WithData(&data)
-
-	_, err = api.Dcim.DcimDevicesUpdate(params, nil)
-	if err != nil {
+	if _, err := netboxapi.Update[netboxapi.Ref](ctx, api.rest, deviceAPIPath, id, body); err != nil {
 		return diag.FromErr(err)
 	}
 
-	if d.HasChange("virtual_chassis_master") && data.VirtualChassis != nil {
+	if vcID := getOptionalInt(d, "virtual_chassis_id"); vcID != nil && d.HasChange("virtual_chassis_master") {
 		var err error
-		if vcMaster, ok := d.GetOk("virtual_chassis_master"); ok {
-			if vcMaster.(bool) {
-				err = virtualChassisUpdateMaster(api, *data.VirtualChassis, &id)
-			} else {
-				err = virtualChassisUpdateMaster(api, *data.VirtualChassis, nil)
-			}
+		if vcMaster, ok := d.GetOk("virtual_chassis_master"); ok && vcMaster.(bool) {
+			err = virtualChassisUpdateMaster(api, *vcID, &id)
 		} else {
 			// It was set before, but no longer set, remove it as master
-			err = virtualChassisUpdateMaster(api, *data.VirtualChassis, nil)
+			err = virtualChassisUpdateMaster(api, *vcID, nil)
 		}
 		if err != nil {
 			return diag.FromErr(err)
@@ -565,33 +396,15 @@ func resourceNetboxDeviceUpdate(ctx context.Context, d *schema.ResourceData, m i
 func resourceNetboxDeviceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*providerState)
 
-	var diags diag.Diagnostics
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-
 	// If the device is member of a virtual chassis and it's the master, we cannot
 	// delete it directly. We first need to update it to not be the master.
 	if virtualChassisIDValue, ok := d.GetOk("virtual_chassis_id"); ok {
 		if d.Get("virtual_chassis_master").(bool) {
-			virtualChassisID := int64(virtualChassisIDValue.(int))
-			err := virtualChassisUpdateMaster(api, virtualChassisID, nil)
-			if err != nil {
+			if err := virtualChassisUpdateMaster(api, int64(virtualChassisIDValue.(int)), nil); err != nil {
 				return diag.FromErr(err)
 			}
 		}
 	}
 
-	params := dcim.NewDcimDevicesDeleteParams().WithID(id)
-
-	_, err := api.Dcim.DcimDevicesDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimDevicesDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return diag.FromErr(err)
-	}
-	return diags
+	return deleteObjectCtx(ctx, d, m, deviceAPIPath)
 }

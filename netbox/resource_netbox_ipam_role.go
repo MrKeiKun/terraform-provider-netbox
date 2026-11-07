@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -46,122 +43,61 @@ func resourceNetboxIpamRole() *schema.Resource {
 		},
 	}
 }
-func resourceNetboxIpamRoleCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	data := models.Role{}
 
+const ipamRoleAPIPath = "ipam/roles/"
+
+type ipamRoleRequest struct {
+	Name        string             `json:"name"`
+	Slug        string             `json:"slug"`
+	Weight      *int64             `json:"weight,omitempty"`
+	Description string             `json:"description,omitempty"`
+	Tags        []netboxapi.TagRef `json:"tags"`
+}
+
+type ipamRoleResponse struct {
+	Name        *string `json:"name"`
+	Slug        *string `json:"slug"`
+	Weight      *int64  `json:"weight"`
+	Description string  `json:"description"`
+}
+
+func ipamRoleRequestFromResourceData(d *schema.ResourceData) *ipamRoleRequest {
 	name := d.Get("name").(string)
-	slugValue, slugOk := d.GetOk("slug")
-	var slug string
-	// Default slug to generated slug if not given
-	if !slugOk {
-		slug = getSlug(name)
-	} else {
-		slug = slugValue.(string)
-	}
 	weight := int64(d.Get("weight").(int))
-	description := d.Get("description").(string)
-
-	data.Name = &name
-	data.Slug = &slug
-
-	data.Weight = &weight
-	data.Description = description
-	data.Tags = []*models.NestedTag{}
-
-	params := ipam.NewIpamRolesCreateParams().WithData(&data)
-	res, err := api.Ipam.IpamRolesCreate(params, nil)
-	if err != nil {
-		return err
+	return &ipamRoleRequest{
+		Name:        name,
+		Slug:        slugFromResourceData(d, name),
+		Weight:      &weight,
+		Description: d.Get("description").(string),
+		Tags:        []netboxapi.TagRef{},
 	}
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
+}
 
-	return resourceNetboxIpamRoleUpdate(d, m)
+func resourceNetboxIpamRoleCreate(d *schema.ResourceData, m interface{}) error {
+	return createObject(d, m, ipamRoleAPIPath, ipamRoleRequestFromResourceData(d), resourceNetboxIpamRoleUpdate)
 }
 
 func resourceNetboxIpamRoleRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := ipam.NewIpamRolesReadParams().WithID(id)
-
-	res, err := api.Ipam.IpamRolesRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*ipam.IpamRolesReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
+	return readObject(d, m, ipamRoleAPIPath, func(res *ipamRoleResponse) {
+		if res.Name != nil {
+			d.Set("name", res.Name)
 		}
-		return err
-	}
-
-	if res.GetPayload().Name != nil {
-		d.Set("name", res.GetPayload().Name)
-	}
-
-	if res.GetPayload().Slug != nil {
-		d.Set("slug", res.GetPayload().Slug)
-	}
-
-	if res.GetPayload().Weight != nil {
-		d.Set("weight", res.GetPayload().Weight)
-	}
-
-	if res.GetPayload().Description != "" {
-		d.Set("description", res.GetPayload().Description)
-	}
-
-	return nil
+		if res.Slug != nil {
+			d.Set("slug", res.Slug)
+		}
+		if res.Weight != nil {
+			d.Set("weight", res.Weight)
+		}
+		if res.Description != "" {
+			d.Set("description", res.Description)
+		}
+	})
 }
 
 func resourceNetboxIpamRoleUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.Role{}
-
-	name := d.Get("name").(string)
-	slugValue, slugOk := d.GetOk("slug")
-	var slug string
-	// Default slug to generated slug if not given
-	if !slugOk {
-		slug = getSlug(name)
-	} else {
-		slug = slugValue.(string)
-	}
-	weight := int64(d.Get("weight").(int))
-	description := d.Get("description").(string)
-
-	data.Name = &name
-	data.Slug = &slug
-
-	data.Weight = &weight
-	data.Description = description
-	data.Tags = []*models.NestedTag{}
-
-	params := ipam.NewIpamRolesUpdateParams().WithID(id).WithData(&data)
-	_, err := api.Ipam.IpamRolesUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-	return resourceNetboxIpamRoleRead(d, m)
+	return putObject(d, m, ipamRoleAPIPath, ipamRoleRequestFromResourceData(d), resourceNetboxIpamRoleRead)
 }
 
 func resourceNetboxIpamRoleDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := ipam.NewIpamRolesDeleteParams().WithID(id)
-	_, err := api.Ipam.IpamRolesDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*ipam.IpamRolesDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	d.SetId("")
-	return nil
+	return deleteObject(d, m, ipamRoleAPIPath)
 }

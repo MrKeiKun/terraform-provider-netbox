@@ -2,11 +2,8 @@ package netbox
 
 import (
 	"fmt"
-	"log"
-	"strings"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/extras"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
@@ -68,27 +65,7 @@ func init() {
 		Name:         "netbox_tag",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := extras.NewExtrasTagsListParams()
-			res, err := api.Extras.ExtrasTagsList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, tag := range res.GetPayload().Results {
-				if strings.HasPrefix(*tag.Name, testPrefix) {
-					deleteParams := extras.NewExtrasTagsDeleteParams().WithID(tag.ID)
-					_, err := api.Extras.ExtrasTagsDelete(deleteParams, nil)
-					if err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted a tag")
-				}
-			}
-			return nil
+			return sweepByName(region, "extras/tags/", "name")
 		},
 	})
 }

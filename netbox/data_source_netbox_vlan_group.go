@@ -1,10 +1,9 @@
 package netbox
 
 import (
-	"errors"
+	"net/url"
 	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -56,52 +55,40 @@ func dataSourceNetboxVlanGroup() *schema.Resource {
 	}
 }
 
+type vlanGroupDataSourceResponse struct {
+	ID          int64   `json:"id"`
+	Name        string  `json:"name"`
+	Slug        string  `json:"slug"`
+	VlanCount   int64   `json:"vlan_count"`
+	Description string  `json:"description"`
+	ScopeID     *int64  `json:"scope_id"`
+	ScopeType   *string `json:"scope_type"`
+}
+
 func dataSourceNetboxVlanGroupRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	params := ipam.NewIpamVlanGroupsListParams()
+	query := url.Values{}
+	addStrQuery(query, d, "id", "id")
+	addStrQuery(query, d, "name", "name")
+	addStrQuery(query, d, "slug", "slug")
+	addStrQuery(query, d, "scope_type", "scope_type")
+	addStrQuery(query, d, "scope_id", "scope_id")
 
-	params.Limit = int64ToPtr(2)
-
-	if id, ok := d.Get("id").(string); ok && id != "" {
-		params.ID = strToPtr(id)
-	}
-	if name, ok := d.Get("name").(string); ok && name != "" {
-		params.Name = strToPtr(name)
-	}
-	if slug, ok := d.Get("slug").(string); ok && slug != "" {
-		params.Slug = strToPtr(slug)
-	}
-	if scopeType, ok := d.Get("scope_type").(string); ok && scopeType != "" {
-		params.ScopeType = strToPtr(scopeType)
-	}
-	if scopeID, ok := d.Get("scope_id").(string); ok && scopeID != "" {
-		params.ScopeID = strToPtr(scopeID)
-	}
-
-	res, err := api.Ipam.IpamVlanGroupsList(params, nil)
+	r, err := findOne[vlanGroupDataSourceResponse](m, "ipam/vlan-groups/", query, "vlan group")
 	if err != nil {
 		return err
 	}
 
-	if *res.GetPayload().Count > int64(1) {
-		return errors.New("more than one vlan group returned, specify a more narrow filter")
+	d.SetId(strconv.FormatInt(r.ID, 10))
+	d.Set("id", strconv.FormatInt(r.ID, 10))
+	d.Set("name", r.Name)
+	d.Set("slug", r.Slug)
+	d.Set("vlan_count", r.VlanCount)
+	d.Set("description", r.Description)
+	if r.ScopeID != nil {
+		d.Set("scope_id", strconv.FormatInt(*r.ScopeID, 10))
 	}
-	if *res.GetPayload().Count == int64(0) {
-		return errors.New("no vlan group found matching filter")
-	}
-
-	result := res.GetPayload().Results[0]
-	d.SetId(strconv.FormatInt(result.ID, 10))
-	d.Set("id", strconv.FormatInt(result.ID, 10))
-	d.Set("name", result.Name)
-	d.Set("slug", result.Slug)
-	d.Set("vlan_count", result.VlanCount)
-	d.Set("description", result.Description)
-	if result.ScopeID != nil {
-		d.Set("scope_id", strconv.FormatInt(*result.ScopeID, 10))
-	}
-	if result.ScopeType != nil {
-		d.Set("scope_type", *result.ScopeType)
+	if r.ScopeType != nil {
+		d.Set("scope_type", *r.ScopeType)
 	}
 	return nil
 }

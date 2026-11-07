@@ -1,10 +1,9 @@
 package netbox
 
 import (
-	"errors"
+	"net/url"
 	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/extras"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -29,31 +28,24 @@ func dataSourceNetboxTag() *schema.Resource {
 	}
 }
 
+type tagDataSourceResponse struct {
+	ID          int64  `json:"id"`
+	Name        string `json:"name"`
+	Slug        string `json:"slug"`
+	Description string `json:"description"`
+}
+
 func dataSourceNetboxTagRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	name := d.Get("name").(string)
-	params := extras.NewExtrasTagsListParams()
-	params.Name = &name
-	limit := int64(2) // Limit of 2 is enough
-	params.Limit = &limit
-
-	res, err := api.Extras.ExtrasTagsList(params, nil)
+	query := url.Values{}
+	addStrQuery(query, d, "name", "name")
+	r, err := findOne[tagDataSourceResponse](m, "extras/tags/", query, "tag")
 	if err != nil {
 		return err
 	}
 
-	if *res.GetPayload().Count > int64(1) {
-		return errors.New("more than one tag returned, specify a more narrow filter")
-	}
-	if *res.GetPayload().Count == int64(0) {
-		return errors.New("no tag found matching filter")
-	}
-
-	result := res.GetPayload().Results[0]
-	d.SetId(strconv.FormatInt(result.ID, 10))
-	d.Set("name", result.Name)
-	d.Set("slug", result.Slug)
-	d.Set("description", result.Description)
+	d.SetId(strconv.FormatInt(r.ID, 10))
+	d.Set("name", r.Name)
+	d.Set("slug", r.Slug)
+	d.Set("description", r.Description)
 	return nil
 }

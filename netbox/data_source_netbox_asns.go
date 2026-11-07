@@ -1,10 +1,6 @@
 package netbox
 
 import (
-	"fmt"
-
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
-	"github.com/fbreckle/go-netbox/netbox/models"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -63,78 +59,34 @@ func dataSourceNetboxAsns() *schema.Resource {
 }
 
 func dataSourceNetboxAsnsRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	params := ipam.NewIpamAsnsListParams()
-
-	// Get user limit
-	var userLimit int64 = 0
-	if limitValue, ok := d.GetOk("limit"); ok {
-		userLimit = int64(limitValue.(int))
+	// filter name in the data source -> query parameter sent to Netbox
+	allowed := map[string]string{
+		"asn":      "asn",
+		"asn__gte": "asn__gte",
+		"asn__lte": "asn__lte",
+		"asn__n":   "asn__n",
 	}
 
-	if filter, ok := d.GetOk("filter"); ok {
-		var filterParams = filter.(*schema.Set)
-		for _, f := range filterParams.List() {
-			k := f.(map[string]interface{})["name"]
-			v := f.(map[string]interface{})["value"]
-			vString := v.(string)
-			switch k {
-			case "asn":
-				params.Asn = &vString
-			case "asn__gte":
-				params.AsnGte = &vString
-			case "asn__lte":
-				params.AsnLte = &vString
-			case "asn__n":
-				params.Asnn = &vString
-			default:
-				return fmt.Errorf("'%s' is not a supported filter parameter", k)
-			}
-		}
+	results, err := listFiltered[map[string]interface{}](d, m, "ipam/asns/", "ASNs", allowed, nil)
+	if err != nil {
+		return err
 	}
-
-	// Fetch all pages with pagination
-	paginationHelper := NewPaginationHelper(userLimit)
-	var allAsns []*models.ASN
-
-	pageSize := paginationHelper.GetPageSize()
-	for {
-		currentOffset := paginationHelper.CurrentOffset()
-		params.Limit = &pageSize
-		params.Offset = &currentOffset
-
-		res, err := api.Ipam.IpamAsnsList(params, nil)
-		if err != nil {
-			return fmt.Errorf("failed to fetch ASNs at offset %d: %w", currentOffset, err)
-		}
-
-		payload := res.GetPayload()
-		allAsns = append(allAsns, payload.Results...)
-
-		if len(payload.Results) == 0 {
-			break
-		}
-
-		if !paginationHelper.ShouldContinuePaging(int64(len(allAsns)), payload.Next) {
-			break
-		}
-
-		paginationHelper.Advance(int64(len(payload.Results)))
-	}
-
-	// Trim to user limit if specified
-	trimmedCount := paginationHelper.TrimToLimit(len(allAsns))
-	filteredAsns := allAsns[:trimmedCount]
 
 	var s []map[string]interface{}
-	for _, v := range filteredAsns {
-		var mapping = make(map[string]interface{})
+	for _, v := range results {
+		mapping := make(map[string]interface{})
 
-		mapping["id"] = v.ID
-		mapping["asn"] = v.Asn
-		mapping["rir_id"] = v.Rir.ID
-		mapping["tags"] = getTagListFromNestedTagList(v.Tags)
+		mapping["id"] = jInt(v, "id")
+		mapping["asn"] = jIntP(v, "asn")
+		mapping["rir_id"] = jID(v, "rir")
+		mapping["tags"] = jTags(v)
+
+		// fields that are missing in the response are left out of the state
+		for k, val := range mapping {
+			if val == nil {
+				delete(mapping, k)
+			}
+		}
 
 		s = append(s, mapping)
 	}

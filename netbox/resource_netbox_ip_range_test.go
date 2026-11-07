@@ -2,11 +2,8 @@ package netbox
 
 import (
 	"fmt"
-	"log"
-	"strings"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
@@ -255,27 +252,7 @@ func init() {
 		Name:         "netbox_ip_range",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := ipam.NewIpamIPRangesListParams()
-			res, err := api.Ipam.IpamIPRangesList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, r := range res.GetPayload().Results {
-				if strings.HasPrefix(*r.StartAddress, testPrefix) {
-					deleteParams := ipam.NewIpamIPRangesDeleteParams().WithID(r.ID)
-					_, err := api.Ipam.IpamIPRangesDelete(deleteParams, nil)
-					if err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted a range")
-				}
-			}
-			return nil
+			return sweepByName(region, "ipam/ip-ranges/", "start_address")
 		},
 	})
 }

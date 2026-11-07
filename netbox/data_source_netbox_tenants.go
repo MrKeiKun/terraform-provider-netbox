@@ -1,10 +1,6 @@
 package netbox
 
 import (
-	"fmt"
-
-	"github.com/fbreckle/go-netbox/netbox/client/tenancy"
-	"github.com/fbreckle/go-netbox/netbox/models"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -147,107 +143,51 @@ func dataSourceNetboxTenants() *schema.Resource {
 }
 
 func dataSourceNetboxTenantsRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	params := tenancy.NewTenancyTenantsListParams()
-
-	// Get user limit
-	var userLimit int64 = 0
-	if limitValue, ok := d.GetOk("limit"); ok {
-		userLimit = int64(limitValue.(int))
+	// filter name in the data source -> query parameter sent to Netbox
+	allowed := map[string]string{
+		"name": "name",
+		"slug": "slug",
 	}
 
-	if filter, ok := d.GetOk("filter"); ok {
-		var filterParams = filter.(*schema.Set)
-		for _, f := range filterParams.List() {
-			k := f.(map[string]interface{})["name"]
-			v := f.(map[string]interface{})["value"]
-			vString := v.(string)
-			switch k {
-			case "name":
-				params.Name = &vString
-			case "slug":
-				params.Slug = &vString
-			default:
-				return fmt.Errorf("'%s' is not a supported filter parameter", k)
-			}
-		}
+	results, err := listFiltered[map[string]interface{}](d, m, "tenancy/tenants/", "tenants", allowed, nil)
+	if err != nil {
+		return err
 	}
-
-	// Fetch all pages with pagination
-	paginationHelper := NewPaginationHelper(userLimit)
-	var allTenants []*models.Tenant
-
-	pageSize := paginationHelper.GetPageSize()
-	for {
-		currentOffset := paginationHelper.CurrentOffset()
-		params.Limit = &pageSize
-		params.Offset = &currentOffset
-
-		res, err := api.Tenancy.TenancyTenantsList(params, nil)
-		if err != nil {
-			return fmt.Errorf("failed to fetch tenants at offset %d: %w", currentOffset, err)
-		}
-
-		payload := res.GetPayload()
-		allTenants = append(allTenants, payload.Results...)
-
-		if len(payload.Results) == 0 {
-			break
-		}
-
-		if !paginationHelper.ShouldContinuePaging(int64(len(allTenants)), payload.Next) {
-			break
-		}
-
-		paginationHelper.Advance(int64(len(payload.Results)))
-	}
-
-	// Trim to user limit if specified
-	trimmedCount := paginationHelper.TrimToLimit(len(allTenants))
-	filteredTenants := allTenants[:trimmedCount]
 
 	var s []map[string]interface{}
-	for _, v := range filteredTenants {
-		var mapping = make(map[string]interface{})
+	for _, v := range results {
+		mapping := make(map[string]interface{})
 
-		mapping["id"] = v.ID
-		mapping["name"] = v.Name
-		mapping["slug"] = v.Slug
-		mapping["description"] = v.Description
-		mapping["created"] = v.Created.String()
-		mapping["last_updated"] = v.LastUpdated.String()
-		mapping["comments"] = v.Comments
-		mapping["custom_fields"] = flattenCustomFields(v.CustomFields)
+		mapping["id"] = jInt(v, "id")
+		mapping["name"] = jStr(v, "name")
+		mapping["slug"] = jStr(v, "slug")
+		mapping["description"] = jStr(v, "description")
+		mapping["created"] = jTime(v, "created")
+		mapping["last_updated"] = jTime(v, "last_updated")
+		mapping["comments"] = jStr(v, "comments")
+		mapping["custom_fields"] = flattenCustomFields(v["custom_fields"])
+		mapping["site_count"] = jInt(v, "site_count")
+		mapping["rack_count"] = jInt(v, "rack_count")
+		mapping["device_count"] = jInt(v, "device_count")
+		mapping["vrf_count"] = jInt(v, "vrf_count")
+		mapping["prefix_count"] = jInt(v, "prefix_count")
+		mapping["ip_address_count"] = jInt(v, "ipaddress_count")
+		mapping["vlan_count"] = jInt(v, "vlan_count")
+		mapping["vm_count"] = jInt(v, "virtualmachine_count")
+		mapping["circuit_count"] = jInt(v, "circuit_count")
+		mapping["cluster_count"] = jInt(v, "cluster_count")
+		mapping["tenant_group"] = jObjectList(v, "group", "id", "name", "slug", "tenant_count")
 
-		mapping["site_count"] = v.SiteCount
-		mapping["rack_count"] = v.RackCount
-		mapping["device_count"] = v.DeviceCount
-		mapping["vrf_count"] = v.VrfCount
-		mapping["prefix_count"] = v.PrefixCount
-		mapping["ip_address_count"] = v.IpaddressCount
-		mapping["vlan_count"] = v.VlanCount
-		mapping["vm_count"] = v.VirtualmachineCount
-		mapping["circuit_count"] = v.CircuitCount
-		mapping["cluster_count"] = v.ClusterCount
+		// fields that are missing in the response are left out of the state
+		for k, val := range mapping {
+			if val == nil {
+				delete(mapping, k)
+			}
+		}
 
-		mapping["tenant_group"] = flattenTenantGroup(v.Group)
 		s = append(s, mapping)
 	}
 
 	d.SetId(id.UniqueId())
 	return d.Set("tenants", s)
-}
-
-func flattenTenantGroup(group *models.NestedTenantGroup) []map[string]interface{} {
-	var s []map[string]interface{}
-	if group != nil {
-		var mapping = make(map[string]interface{})
-		mapping["id"] = group.ID
-		mapping["name"] = group.Name
-		mapping["slug"] = group.Slug
-		mapping["tenant_count"] = group.TenantCount
-		s = append(s, mapping)
-	}
-	return s
 }

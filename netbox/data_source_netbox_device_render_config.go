@@ -1,9 +1,12 @@
 package netbox
 
 import (
+	"context"
+	"fmt"
+	"net/http"
 	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -36,27 +39,31 @@ func dataSourceNetboxDeviceRenderConfig() *schema.Resource {
 	}
 }
 
+type deviceRenderConfigResponse struct {
+	Content        string `json:"content"`
+	Configtemplate *struct {
+		ID   int64  `json:"id"`
+		Name string `json:"name"`
+	} `json:"configtemplate"`
+}
+
 func dataSourceNetboxDeviceRenderConfigRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 
 	deviceID := int64(d.Get("device_id").(int))
 
-	params := dcim.NewDcimDevicesRenderConfigParams().WithID(deviceID)
-
-	res, err := api.Dcim.DcimDevicesRenderConfig(params, nil)
+	// Rendering a config is an action on the device, NetBox wants a POST for it.
+	path := fmt.Sprintf("dcim/devices/%d/render-config/", deviceID)
+	result, err := netboxapi.Request[deviceRenderConfigResponse](context.Background(), api.rest, http.MethodPost, path, nil, map[string]interface{}{})
 	if err != nil {
 		return err
 	}
 
-	result := res.GetPayload()
-
 	d.SetId(strconv.FormatInt(deviceID, 10))
 	d.Set("content", result.Content)
-
 	if result.Configtemplate != nil {
 		d.Set("config_template_id", result.Configtemplate.ID)
 		d.Set("config_template_name", result.Configtemplate.Name)
 	}
-
 	return nil
 }

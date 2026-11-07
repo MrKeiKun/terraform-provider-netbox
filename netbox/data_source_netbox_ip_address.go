@@ -1,9 +1,10 @@
 package netbox
 
 import (
+	"context"
 	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -103,57 +104,76 @@ func dataSourceNetboxIPAddress() *schema.Resource {
 	}
 }
 
+type ipAddressDataSourceResponse struct {
+	ID           int64                  `json:"id"`
+	Address      string                 `json:"address"`
+	Description  string                 `json:"description"`
+	Created      string                 `json:"created"`
+	LastUpdated  string                 `json:"last_updated"`
+	CustomFields map[string]interface{} `json:"custom_fields"`
+	Family       *struct {
+		Label string `json:"label"`
+	} `json:"family"`
+	Status  *netboxapi.Choice `json:"status"`
+	DNSName string            `json:"dns_name"`
+	Role    *netboxapi.Choice `json:"role"`
+	Tenant  *struct {
+		ID   int64  `json:"id"`
+		Name string `json:"name"`
+		Slug string `json:"slug"`
+	} `json:"tenant"`
+	Tags []struct {
+		ID      int64  `json:"id"`
+		Name    string `json:"name"`
+		Display string `json:"display"`
+		Slug    string `json:"slug"`
+	} `json:"tags"`
+}
+
 func dataSourceNetboxIPAddressRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 
 	id := d.Get("id").(int)
-
-	params := ipam.NewIpamIPAddressesReadParams()
-	params.SetID(int64(id))
-
-	res, err := api.Ipam.IpamIPAddressesRead(params, nil)
+	result, err := netboxapi.Get[ipAddressDataSourceResponse](context.Background(), api.rest, "ipam/ip-addresses/", int64(id))
 	if err != nil {
 		return err
 	}
 
-	result := res.GetPayload()
-
 	d.SetId(strconv.FormatInt(result.ID, 10))
-
 	d.Set("id", result.ID)
 	d.Set("ip_address", result.Address)
 	d.Set("description", result.Description)
-	d.Set("created", result.Created.String())
-	d.Set("last_updated", result.LastUpdated.String())
+	d.Set("created", jTime(map[string]interface{}{"created": result.Created}, "created"))
+	d.Set("last_updated", jTime(map[string]interface{}{"last_updated": result.LastUpdated}, "last_updated"))
 	d.Set("custom_fields", flattenCustomFields(result.CustomFields))
-	d.Set("address_family", result.Family.Label)
-	d.Set("status", result.Status.Value)
+	if result.Family != nil {
+		d.Set("address_family", result.Family.Label)
+	}
+	d.Set("status", netboxapi.ChoiceValue(result.Status))
 	d.Set("dns_name", result.DNSName)
-
 	if result.Role != nil {
 		d.Set("role", result.Role.Value)
 	}
 
 	var tenant []map[string]interface{}
 	if result.Tenant != nil {
-		var mapping = make(map[string]interface{})
-		mapping["id"] = result.Tenant.ID
-		mapping["name"] = result.Tenant.Name
-		mapping["slug"] = result.Tenant.Slug
-		tenant = append(tenant, mapping)
+		tenant = append(tenant, map[string]interface{}{
+			"id":   result.Tenant.ID,
+			"name": result.Tenant.Name,
+			"slug": result.Tenant.Slug,
+		})
 	}
 	d.Set("tenant", tenant)
 
 	var tags []map[string]interface{}
 	for _, t := range result.Tags {
-		var tagmapping = make(map[string]interface{})
-		tagmapping["name"] = t.Name
-		tagmapping["display"] = t.Display
-		tagmapping["slug"] = t.Slug
-		tagmapping["id"] = t.ID
-		tags = append(tags, tagmapping)
+		tags = append(tags, map[string]interface{}{
+			"name":    t.Name,
+			"display": t.Display,
+			"slug":    t.Slug,
+			"id":      t.ID,
+		})
 	}
 	d.Set("tags", tags)
-
 	return nil
 }

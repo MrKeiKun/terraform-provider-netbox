@@ -1,11 +1,10 @@
 package netbox
 
 import (
-	"errors"
-	"fmt"
+	"net/url"
 	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -54,48 +53,37 @@ func dataSourceNetboxLocation() *schema.Resource {
 	}
 }
 
+type locationDataSourceResponse struct {
+	ID          int64             `json:"id"`
+	Description string            `json:"description"`
+	Name        string            `json:"name"`
+	Slug        string            `json:"slug"`
+	Site        *netboxapi.Ref    `json:"site"`
+	Parent      *netboxapi.Ref    `json:"parent"`
+	Status      *netboxapi.Choice `json:"status"`
+	Tenant      *netboxapi.Ref    `json:"tenant"`
+}
+
 func dataSourceNetboxLocationRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	params := dcim.NewDcimLocationsListParams()
+	query := url.Values{}
+	addStrQuery(query, d, "name", "name")
+	addStrQuery(query, d, "slug", "slug")
+	addStrQuery(query, d, "id", "id")
+	addIntQuery(query, d, "site_id", "site_id")
+	addIntQuery(query, d, "parent_id", "parent_id")
 
-	params.Limit = int64ToPtr(2)
-	if name, ok := d.Get("name").(string); ok && name != "" {
-		params.SetName(&name)
-	}
-	if slug, ok := d.Get("slug").(string); ok && slug != "" {
-		params.SetSlug(&slug)
-	}
-	if id, ok := d.Get("id").(string); ok && id != "0" {
-		params.SetID(&id)
-	}
-	if site, ok := d.Get("site_id").(int); ok && site != 0 {
-		siteID := fmt.Sprintf("%v", site)
-		params.SetSiteID(&siteID)
-	}
-	if parent, ok := d.Get("parent_id").(int); ok && parent != 0 {
-		parentID := fmt.Sprintf("%v", parent)
-		params.SetParentID(&parentID)
-	}
-	res, err := api.Dcim.DcimLocationsList(params, nil)
-
+	location, err := findOne[locationDataSourceResponse](m, "dcim/locations/", query, "location")
 	if err != nil {
 		return err
 	}
-	if *res.GetPayload().Count > int64(1) {
-		return errors.New("more than one location returned, specify a more narrow filter")
-	}
-	if *res.GetPayload().Count == int64(0) {
-		return errors.New("no location found matching filter")
-	}
-
-	location := res.GetPayload().Results[0]
 
 	d.SetId(strconv.FormatInt(location.ID, 10))
 	d.Set("description", location.Description)
 	d.Set("name", location.Name)
-	d.Set("site_id", location.Site.ID)
+	if location.Site != nil {
+		d.Set("site_id", location.Site.ID)
+	}
 	d.Set("slug", location.Slug)
-
 	if location.Parent != nil {
 		d.Set("parent_id", location.Parent.ID)
 	}
@@ -105,6 +93,5 @@ func dataSourceNetboxLocationRead(d *schema.ResourceData, m interface{}) error {
 	if location.Tenant != nil {
 		d.Set("tenant_id", location.Tenant.ID)
 	}
-
 	return nil
 }

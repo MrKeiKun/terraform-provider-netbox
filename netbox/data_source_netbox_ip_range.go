@@ -1,10 +1,10 @@
 package netbox
 
 import (
-	"errors"
+	"net/url"
 	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -96,73 +96,46 @@ for more information on available lookup expressions.`,
 	}
 }
 
+type ipRangeDataSourceResponse struct {
+	ID           int64                `json:"id"`
+	StartAddress string               `json:"start_address"`
+	EndAddress   string               `json:"end_address"`
+	Status       *netboxapi.Choice    `json:"status"`
+	Description  string               `json:"description"`
+	Family       *netboxapi.IntChoice `json:"family"`
+	Tags         []netboxapi.TagRef   `json:"tags"`
+	Role         *netboxapi.Ref       `json:"role"`
+	Vrf          *netboxapi.Ref       `json:"vrf"`
+	Tenant       *netboxapi.Ref       `json:"tenant"`
+}
+
 func dataSourceNetboxIPRangeRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+	query := url.Values{}
+	addStrQuery(query, d, "contains", "contains")
+	addIntQuery(query, d, "family", "family")
+	addIntQuery(query, d, "vrf_id", "vrf_id")
+	addIntQuery(query, d, "tenant_id", "tenant_id")
+	addStrQuery(query, d, "status", "status")
+	addIntQuery(query, d, "role_id", "role_id")
+	addStrQuery(query, d, "description", "description")
+	addStrQuery(query, d, "tag", "tag")
+	addStrQuery(query, d, "tag__n", "tag__n")
 
-	params := ipam.NewIpamIPRangesListParams()
-
-	limit := int64(2) // Limit of 2 is enough
-	params.Limit = &limit
-
-	if contains, ok := d.Get("contains").(string); ok && contains != "" {
-		params.Contains = &contains
-	}
-
-	if family, ok := d.Get("family").(int); ok && family != 0 {
-		familyFloat := float64(family)
-		params.Family = &familyFloat
-	}
-
-	if vrfID, ok := d.Get("vrf_id").(int); ok && vrfID != 0 {
-		// Note that vrf_id is a string pointer in the netbox filter, but we use a number in the provider
-		params.VrfID = strToPtr(strconv.Itoa(vrfID))
-	}
-
-	if tenantID, ok := d.Get("tenant_id").(int); ok && tenantID != 0 {
-		// Note that tenant_id is a string pointer in the netbox filter, but we use a number in the provider
-		params.TenantID = strToPtr(strconv.Itoa(tenantID))
-	}
-
-	if status, ok := d.Get("status").(string); ok && status != "" {
-		params.Status = &status
-	}
-
-	if roleID, ok := d.Get("role_id").(int); ok && roleID != 0 {
-		params.RoleID = strToPtr(strconv.Itoa(roleID))
-	}
-
-	if description, ok := d.Get("description").(string); ok && description != "" {
-		params.Description = &description
-	}
-
-	if tag, ok := d.Get("tag").(string); ok && tag != "" {
-		params.Tag = []string{tag} //TODO: switch schema to list
-	}
-	if tagn, ok := d.Get("tag__n").(string); ok && tagn != "" {
-		params.Tagn = &tagn
-	}
-
-	res, err := api.Ipam.IpamIPRangesList(params, nil)
+	result, err := findOne[ipRangeDataSourceResponse](m, "ipam/ip-ranges/", query, "IP range")
 	if err != nil {
 		return err
 	}
 
-	if *res.GetPayload().Count > int64(1) {
-		return errors.New("more than IP range returned, specify a more narrow filter")
-	}
-	if *res.GetPayload().Count == int64(0) {
-		return errors.New("no IP range found matching filter")
-	}
-
-	result := res.GetPayload().Results[0]
+	d.SetId(strconv.FormatInt(result.ID, 10))
 	d.Set("id", result.ID)
 	d.Set("start_address", result.StartAddress)
 	d.Set("end_address", result.EndAddress)
-	d.Set("status", result.Status.Value)
+	d.Set("status", netboxapi.ChoiceValue(result.Status))
 	d.Set("description", result.Description)
-	d.Set("family", int(*result.Family.Value))
-	d.Set("tags", getTagListFromNestedTagList(result.Tags))
-
+	if result.Family != nil {
+		d.Set("family", int(result.Family.Value))
+	}
+	d.Set("tags", tagNames(result.Tags))
 	if result.Role != nil {
 		d.Set("role_id", result.Role.ID)
 	}
@@ -172,7 +145,5 @@ func dataSourceNetboxIPRangeRead(d *schema.ResourceData, m interface{}) error {
 	if result.Tenant != nil {
 		d.Set("tenant_id", result.Tenant.ID)
 	}
-
-	d.SetId(strconv.FormatInt(result.ID, 10))
 	return nil
 }

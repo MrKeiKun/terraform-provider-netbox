@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/circuits"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -44,104 +41,50 @@ func resourceNetboxCircuitProvider() *schema.Resource {
 	}
 }
 
-func resourceNetboxCircuitProviderCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const circuitProviderAPIPath = "circuits/providers/"
 
-	data := models.WritableProvider{}
+type circuitProviderRequest struct {
+	Name        string             `json:"name"`
+	Slug        string             `json:"slug"`
+	Description string             `json:"description,omitempty"`
+	Asns        []int64            `json:"asns"`
+	Tags        []netboxapi.TagRef `json:"tags"`
+}
 
+type circuitProviderResponse struct {
+	Name        string `json:"name"`
+	Slug        string `json:"slug"`
+	Description string `json:"description"`
+}
+
+func circuitProviderRequestFromResourceData(d *schema.ResourceData) *circuitProviderRequest {
 	name := d.Get("name").(string)
-	data.Name = &name
-	data.Description = d.Get("description").(string)
-
-	slugValue, slugOk := d.GetOk("slug")
-	// Default slug to generated slug if not given
-	if !slugOk {
-		data.Slug = strToPtr(getSlug(name))
-	} else {
-		data.Slug = strToPtr(slugValue.(string))
+	data := &circuitProviderRequest{
+		Name:        name,
+		Slug:        slugFromResourceData(d, name),
+		Description: d.Get("description").(string),
+		Asns:        []int64{},
+		Tags:        []netboxapi.TagRef{},
 	}
+	return data
+}
 
-	data.Tags = []*models.NestedTag{}
-	data.Asns = []int64{}
-
-	params := circuits.NewCircuitsProvidersCreateParams().WithData(&data)
-
-	res, err := api.Circuits.CircuitsProvidersCreate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxCircuitProviderRead(d, m)
+func resourceNetboxCircuitProviderCreate(d *schema.ResourceData, m interface{}) error {
+	return createObject(d, m, circuitProviderAPIPath, circuitProviderRequestFromResourceData(d), resourceNetboxCircuitProviderRead)
 }
 
 func resourceNetboxCircuitProviderRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := circuits.NewCircuitsProvidersReadParams().WithID(id)
-
-	res, err := api.Circuits.CircuitsProvidersRead(params, nil)
-
-	if err != nil {
-		if errresp, ok := err.(*circuits.CircuitsProvidersReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-
-	d.Set("name", res.GetPayload().Name)
-	d.Set("slug", res.GetPayload().Slug)
-	d.Set("description", res.GetPayload().Description)
-
-	return nil
+	return readObject(d, m, circuitProviderAPIPath, func(r *circuitProviderResponse) {
+		d.Set("name", r.Name)
+		d.Set("slug", r.Slug)
+		d.Set("description", r.Description)
+	})
 }
 
 func resourceNetboxCircuitProviderUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.WritableProvider{}
-
-	name := d.Get("name").(string)
-	data.Name = &name
-	data.Description = d.Get("description").(string)
-
-	slugValue, slugOk := d.GetOk("slug")
-	// Default slug to generated slug if not given
-	if !slugOk {
-		data.Slug = strToPtr(getSlug(name))
-	} else {
-		data.Slug = strToPtr(slugValue.(string))
-	}
-
-	data.Tags = []*models.NestedTag{}
-	data.Asns = []int64{}
-
-	params := circuits.NewCircuitsProvidersPartialUpdateParams().WithID(id).WithData(&data)
-
-	_, err := api.Circuits.CircuitsProvidersPartialUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	return resourceNetboxCircuitProviderRead(d, m)
+	return patchObject(d, m, circuitProviderAPIPath, circuitProviderRequestFromResourceData(d), resourceNetboxCircuitProviderRead)
 }
 
 func resourceNetboxCircuitProviderDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := circuits.NewCircuitsProvidersDeleteParams().WithID(id)
-
-	_, err := api.Circuits.CircuitsProvidersDelete(params, nil)
-	if err != nil {
-		return err
-	}
-	return nil
+	return deleteObject(d, m, circuitProviderAPIPath)
 }

@@ -1,10 +1,6 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/users"
-	"github.com/fbreckle/go-netbox/netbox/models"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -33,85 +29,43 @@ func resourceNetboxGroup() *schema.Resource {
 		},
 	}
 }
-func resourceNetboxGroupCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	data := models.Group{}
 
+const groupAPIPath = "users/groups/"
+
+type groupRequest struct {
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+}
+
+type groupResponse struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+func groupRequestFromResourceData(d *schema.ResourceData) *groupRequest {
 	name := d.Get("name").(string)
-	description := d.Get("description").(string)
-
-	data.Name = &name
-	data.Description = description
-
-	params := users.NewUsersGroupsCreateParams().WithData(&data)
-	res, err := api.Users.UsersGroupsCreate(params, nil)
-	if err != nil {
-		return err
+	data := &groupRequest{
+		Name:        name,
+		Description: d.Get("description").(string),
 	}
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
+	return data
+}
 
-	return resourceNetboxGroupRead(d, m)
+func resourceNetboxGroupCreate(d *schema.ResourceData, m interface{}) error {
+	return createObject(d, m, groupAPIPath, groupRequestFromResourceData(d), resourceNetboxGroupRead)
 }
 
 func resourceNetboxGroupRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := users.NewUsersGroupsReadParams().WithID(id)
-
-	res, err := api.Users.UsersGroupsRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*users.UsersGroupsReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-
-	if res.GetPayload().Name != nil {
-		d.Set("name", res.GetPayload().Name)
-	}
-	d.Set("description", res.GetPayload().Description)
-
-	return nil
+	return readObject(d, m, groupAPIPath, func(r *groupResponse) {
+		d.Set("name", r.Name)
+		d.Set("description", r.Description)
+	})
 }
 
 func resourceNetboxGroupUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.Group{}
-
-	name := d.Get("name").(string)
-	description := d.Get("description").(string)
-
-	data.Name = &name
-	data.Description = description
-
-	params := users.NewUsersGroupsUpdateParams().WithID(id).WithData(&data)
-	_, err := api.Users.UsersGroupsUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-	return resourceNetboxGroupRead(d, m)
+	return putObject(d, m, groupAPIPath, groupRequestFromResourceData(d), resourceNetboxGroupRead)
 }
 
 func resourceNetboxGroupDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := users.NewUsersGroupsDeleteParams().WithID(id)
-	_, err := api.Users.UsersGroupsDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*users.UsersGroupsDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	d.SetId("")
-	return nil
+	return deleteObject(d, m, groupAPIPath)
 }

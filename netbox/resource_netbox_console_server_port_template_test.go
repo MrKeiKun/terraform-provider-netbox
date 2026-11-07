@@ -2,12 +2,9 @@ package netbox
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	log "github.com/sirupsen/logrus"
 )
 
 func TestAccNetboxConsoleServerPortTemplate_basic(t *testing.T) {
@@ -122,27 +119,7 @@ func init() {
 		Name:         "netbox_console_server_port_template",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := dcim.NewDcimConsoleServerPortTemplatesListParams()
-			res, err := api.Dcim.DcimConsoleServerPortTemplatesList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, tmpl := range res.GetPayload().Results {
-				if strings.HasPrefix(*tmpl.Name, testPrefix) {
-					deleteParams := dcim.NewDcimConsoleServerPortTemplatesDeleteParams().WithID(tmpl.ID)
-					_, err := api.Dcim.DcimConsoleServerPortTemplatesDelete(deleteParams, nil)
-					if err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted a console server port template")
-				}
-			}
-			return nil
+			return sweepByName(region, "dcim/console-server-port-templates/", "name")
 		},
 	})
 }

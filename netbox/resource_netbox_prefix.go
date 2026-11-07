@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -92,38 +89,66 @@ func resourceNetboxPrefix() *schema.Resource {
 		},
 	}
 }
-func resourceNetboxPrefixCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	data := models.WritablePrefix{}
 
-	prefix := d.Get("prefix").(string)
-	status := d.Get("status").(string)
-	description := d.Get("description").(string)
-	isPool := d.Get("is_pool").(bool)
-	markUtilized := d.Get("mark_utilized").(bool)
+const prefixAPIPath = "ipam/prefixes/"
 
-	data.Prefix = &prefix
-	data.Status = status
+type prefixRequest struct {
+	Prefix       string             `json:"prefix"`
+	Status       string             `json:"status,omitempty"`
+	Description  string             `json:"description,omitempty"`
+	IsPool       bool               `json:"is_pool"`
+	MarkUtilized bool               `json:"mark_utilized"`
+	Vrf          *int64             `json:"vrf"`
+	Tenant       *int64             `json:"tenant"`
+	Vlan         *int64             `json:"vlan"`
+	Role         *int64             `json:"role"`
+	ScopeType    *string            `json:"scope_type"`
+	ScopeID      *int64             `json:"scope_id"`
+	CustomFields interface{}        `json:"custom_fields,omitempty"`
+	Tags         []netboxapi.TagRef `json:"tags"`
+}
 
-	data.Description = description
-	data.IsPool = isPool
+type prefixResponse struct {
+	Prefix       string                 `json:"prefix"`
+	Status       *netboxapi.Choice      `json:"status"`
+	Description  string                 `json:"description"`
+	IsPool       bool                   `json:"is_pool"`
+	MarkUtilized bool                   `json:"mark_utilized"`
+	Vrf          *netboxapi.Ref         `json:"vrf"`
+	Tenant       *netboxapi.Ref         `json:"tenant"`
+	Vlan         *netboxapi.Ref         `json:"vlan"`
+	Role         *netboxapi.Ref         `json:"role"`
+	ScopeType    *string                `json:"scope_type"`
+	ScopeID      *int64                 `json:"scope_id"`
+	CustomFields map[string]interface{} `json:"custom_fields"`
+	Tags         []netboxapi.TagRef     `json:"tags"`
+}
 
-	data.MarkUtilized = markUtilized
-
-	if vrfID, ok := d.GetOk("vrf_id"); ok {
-		data.Vrf = int64ToPtr(int64(vrfID.(int)))
+func prefixRequestFromResourceData(api *providerState, d *schema.ResourceData) (*prefixRequest, error) {
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
+	if err != nil {
+		return nil, err
 	}
+	data := &prefixRequest{
+		Prefix:       d.Get("prefix").(string),
+		Status:       d.Get("status").(string),
+		Description:  getOptionalStr(d, "description", true),
+		IsPool:       d.Get("is_pool").(bool),
+		MarkUtilized: d.Get("mark_utilized").(bool),
 
-	if tenantID, ok := d.GetOk("tenant_id"); ok {
-		data.Tenant = int64ToPtr(int64(tenantID.(int)))
+		Tags: tags,
 	}
-
-	if vlanID, ok := d.GetOk("vlan_id"); ok {
-		data.Vlan = int64ToPtr(int64(vlanID.(int)))
+	if v, ok := d.GetOk("vrf_id"); ok {
+		data.Vrf = int64ToPtr(int64(v.(int)))
 	}
-
-	if roleID, ok := d.GetOk("role_id"); ok {
-		data.Role = int64ToPtr(int64(roleID.(int)))
+	if v, ok := d.GetOk("tenant_id"); ok {
+		data.Tenant = int64ToPtr(int64(v.(int)))
+	}
+	if v, ok := d.GetOk("vlan_id"); ok {
+		data.Vlan = int64ToPtr(int64(v.(int)))
+	}
+	if v, ok := d.GetOk("role_id"); ok {
+		data.Role = int64ToPtr(int64(v.(int)))
 	}
 
 	siteID := getOptionalInt(d, "site_id")
@@ -148,202 +173,64 @@ func resourceNetboxPrefixCreate(d *schema.ResourceData, m interface{}) error {
 		data.ScopeType = nil
 		data.ScopeID = nil
 	}
-
-	cf, ok := d.GetOk(customFieldsKey)
-	if ok {
-		data.CustomFields = cf
+	if ct, ok := d.GetOk(customFieldsKey); ok {
+		data.CustomFields = ct
 	}
+	return data, nil
+}
 
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+func resourceNetboxPrefixCreate(d *schema.ResourceData, m interface{}) error {
+	data, err := prefixRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	params := ipam.NewIpamPrefixesCreateParams().WithData(&data)
-	res, err := api.Ipam.IpamPrefixesCreate(params, nil)
-	if err != nil {
-		return err
-	}
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxPrefixRead(d, m)
+	return createObject(d, m, prefixAPIPath, data, resourceNetboxPrefixRead)
 }
 
 func resourceNetboxPrefixRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := ipam.NewIpamPrefixesReadParams().WithID(id)
+	return readObject(d, m, prefixAPIPath, func(r *prefixResponse) {
+		d.Set("prefix", r.Prefix)
+		d.Set("status", netboxapi.ChoiceValue(r.Status))
+		d.Set("description", r.Description)
+		d.Set("is_pool", r.IsPool)
+		d.Set("mark_utilized", r.MarkUtilized)
+		d.Set("vrf_id", netboxapi.RefID(r.Vrf))
+		d.Set("tenant_id", netboxapi.RefID(r.Tenant))
+		d.Set("vlan_id", netboxapi.RefID(r.Vlan))
+		d.Set("role_id", netboxapi.RefID(r.Role))
 
-	res, err := api.Ipam.IpamPrefixesRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*ipam.IpamPrefixesReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
+		d.Set("site_id", nil)
+		d.Set("site_group_id", nil)
+		d.Set("location_id", nil)
+		d.Set("region_id", nil)
+		if r.ScopeType != nil && r.ScopeID != nil {
+			switch *r.ScopeType {
+			case "dcim.site":
+				d.Set("site_id", *r.ScopeID)
+			case "dcim.sitegroup":
+				d.Set("site_group_id", *r.ScopeID)
+			case "dcim.location":
+				d.Set("location_id", *r.ScopeID)
+			case "dcim.region":
+				d.Set("region_id", *r.ScopeID)
 			}
 		}
-		return err
-	}
-
-	prefix := res.GetPayload()
-	d.Set("description", prefix.Description)
-	d.Set("is_pool", prefix.IsPool)
-	d.Set("mark_utilized", prefix.MarkUtilized)
-	if prefix.Status != nil {
-		d.Set("status", prefix.Status.Value)
-	}
-	if prefix.Prefix != nil {
-		d.Set("prefix", prefix.Prefix)
-	}
-
-	if prefix.Vrf != nil {
-		d.Set("vrf_id", prefix.Vrf.ID)
-	} else {
-		d.Set("vrf_id", nil)
-	}
-
-	if prefix.Tenant != nil {
-		d.Set("tenant_id", prefix.Tenant.ID)
-	} else {
-		d.Set("tenant_id", nil)
-	}
-
-	if prefix.Vlan != nil {
-		d.Set("vlan_id", prefix.Vlan.ID)
-	} else {
-		d.Set("vlan_id", nil)
-	}
-
-	if prefix.Role != nil {
-		d.Set("role_id", prefix.Role.ID)
-	} else {
-		d.Set("role_id", nil)
-	}
-
-	d.Set("site_id", nil)
-	d.Set("site_group_id", nil)
-	d.Set("location_id", nil)
-	d.Set("region_id", nil)
-
-	if prefix.ScopeType != nil && prefix.ScopeID != nil {
-		scopeID := prefix.ScopeID
-		switch scopeType := prefix.ScopeType; *scopeType {
-		case "dcim.site":
-			d.Set("site_id", scopeID)
-		case "dcim.sitegroup":
-			d.Set("site_group_id", scopeID)
-		case "dcim.location":
-			d.Set("location_id", scopeID)
-		case "dcim.region":
-			d.Set("region_id", scopeID)
+		if cf := getCustomFields(r.CustomFields); cf != nil {
+			d.Set(customFieldsKey, cf)
 		}
-	}
-	cf := getCustomFields(prefix.CustomFields)
-	if cf != nil {
-		d.Set(customFieldsKey, cf)
-	}
-
-	api.readTags(d, prefix.Tags)
-	// FIGURE OUT NESTED VRF AND NESTED VLAN (from maybe interfaces?)
-
-	return nil
+		api.readTagRefs(d, r.Tags)
+	})
 }
 
 func resourceNetboxPrefixUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.WritablePrefix{}
-	prefix := d.Get("prefix").(string)
-	status := d.Get("status").(string)
-	isPool := d.Get("is_pool").(bool)
-	markUtilized := d.Get("mark_utilized").(bool)
-
-	data.Prefix = &prefix
-	data.Status = status
-
-	data.IsPool = isPool
-	data.MarkUtilized = markUtilized
-
-	if description, ok := d.GetOk("description"); ok {
-		data.Description = description.(string)
-	} else {
-		data.Description = " "
-	}
-
-	if vrfID, ok := d.GetOk("vrf_id"); ok {
-		data.Vrf = int64ToPtr(int64(vrfID.(int)))
-	}
-
-	if tenantID, ok := d.GetOk("tenant_id"); ok {
-		data.Tenant = int64ToPtr(int64(tenantID.(int)))
-	}
-
-	if vlanID, ok := d.GetOk("vlan_id"); ok {
-		data.Vlan = int64ToPtr(int64(vlanID.(int)))
-	}
-
-	if roleID, ok := d.GetOk("role_id"); ok {
-		data.Role = int64ToPtr(int64(roleID.(int)))
-	}
-
-	if cf, ok := d.GetOk(customFieldsKey); ok {
-		data.CustomFields = cf
-	}
-
-	siteID := getOptionalInt(d, "site_id")
-	siteGroupID := getOptionalInt(d, "site_group_id")
-	locationID := getOptionalInt(d, "location_id")
-	regionID := getOptionalInt(d, "region_id")
-
-	switch {
-	case siteID != nil:
-		data.ScopeType = strToPtr("dcim.site")
-		data.ScopeID = siteID
-	case siteGroupID != nil:
-		data.ScopeType = strToPtr("dcim.sitegroup")
-		data.ScopeID = siteGroupID
-	case locationID != nil:
-		data.ScopeType = strToPtr("dcim.location")
-		data.ScopeID = locationID
-	case regionID != nil:
-		data.ScopeType = strToPtr("dcim.region")
-		data.ScopeID = regionID
-	default:
-		data.ScopeType = nil
-		data.ScopeID = nil
-	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+	data, err := prefixRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	params := ipam.NewIpamPrefixesUpdateParams().WithID(id).WithData(&data)
-	_, err = api.Ipam.IpamPrefixesUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-	return resourceNetboxPrefixRead(d, m)
+	return putObject(d, m, prefixAPIPath, data, resourceNetboxPrefixRead)
 }
 
 func resourceNetboxPrefixDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := ipam.NewIpamPrefixesDeleteParams().WithID(id)
-	_, err := api.Ipam.IpamPrefixesDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*ipam.IpamPrefixesDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	d.SetId("")
-	return nil
+	return deleteObject(d, m, prefixAPIPath)
 }

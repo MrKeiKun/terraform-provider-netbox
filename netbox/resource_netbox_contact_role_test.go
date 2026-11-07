@@ -2,11 +2,8 @@ package netbox
 
 import (
 	"fmt"
-	"log"
-	"strings"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/tenancy"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
@@ -43,27 +40,7 @@ func init() {
 		Name:         "netbox_contact_role",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := tenancy.NewTenancyContactRolesListParams()
-			res, err := api.Tenancy.TenancyContactRolesList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, contactrole := range res.GetPayload().Results {
-				if strings.HasPrefix(*contactrole.Name, testPrefix) {
-					deleteParams := tenancy.NewTenancyContactRolesDeleteParams().WithID(contactrole.ID)
-					_, err := api.Tenancy.TenancyContactRolesDelete(deleteParams, nil)
-					if err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted a contact role")
-				}
-			}
-			return nil
+			return sweepByName(region, "tenancy/contact-roles/", "name")
 		},
 	})
 }

@@ -1,13 +1,14 @@
 package netbox
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"net/http"
-	"strings"
+	"os"
 	"time"
 
-	netboxclient "github.com/fbreckle/go-netbox/netbox/client"
-	httptransport "github.com/go-openapi/runtime/client"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/goware/urlx"
 	log "github.com/sirupsen/logrus"
 )
@@ -30,8 +31,8 @@ type customHeaderTransport struct {
 	headers  map[string]interface{}
 }
 
-// Client does the heavy lifting of establishing a base Open API client to Netbox.
-func (cfg *Config) Client() (*netboxclient.NetBoxAPI, error) {
+// Client creates the client that talks to the Netbox REST API.
+func (cfg *Config) Client() (*netboxapi.Client, error) {
 	log.WithFields(log.Fields{
 		"server_url": cfg.ServerURL,
 	}).Debug("Initializing Netbox client")
@@ -40,63 +41,59 @@ func (cfg *Config) Client() (*netboxclient.NetBoxAPI, error) {
 		return nil, fmt.Errorf("missing netbox API key")
 	}
 
-	// parse serverUrl
-	parsedURL, urlParseError := urlx.Parse(cfg.ServerURL)
-	if urlParseError != nil {
-		return nil, fmt.Errorf("error while trying to parse URL: %s", urlParseError)
+	// urlx accepts URLs without a scheme, for example "localhost:8080"
+	parsedURL, err := urlx.Parse(cfg.ServerURL)
+	if err != nil {
+		return nil, fmt.Errorf("error while trying to parse URL: %s", err)
 	}
 
-	desiredRuntimeClientSchemes := []string{parsedURL.Scheme}
-	log.WithFields(log.Fields{
-		"host":    parsedURL.Host,
-		"schemes": desiredRuntimeClientSchemes,
-	}).Debug("Initializing Netbox Open API runtime client")
-
-	// build http client
-	clientOpts := httptransport.TLSClientOptions{
-		CA:                 cfg.CACertFile,
-		InsecureSkipVerify: cfg.AllowInsecureHTTPS,
-	}
-
-	trans, err := httptransport.TLSTransport(clientOpts)
+	httpClient, err := cfg.httpClient()
 	if err != nil {
 		return nil, err
 	}
 
-	trans.(*http.Transport).Proxy = http.ProxyFromEnvironment
+	return netboxapi.New(parsedURL.String(), cfg.APIToken, httpClient)
+}
 
+// httpClient builds the HTTP client: TLS options, proxy, custom headers and timeout.
+func (cfg *Config) httpClient() (*http.Client, error) {
+	tlsConfig := &tls.Config{
+		InsecureSkipVerify: cfg.AllowInsecureHTTPS, //nolint:gosec // the user asked for it with allow_insecure_https
+	}
+
+	if cfg.CACertFile != "" {
+		pem, err := os.ReadFile(cfg.CACertFile)
+		if err != nil {
+			return nil, fmt.Errorf("could not read the CA certificate file: %w", err)
+		}
+		pool := x509.NewCertPool()
+		if !pool.AppendCertsFromPEM(pem) {
+			return nil, fmt.Errorf("no certificate found in the CA certificate file %q", cfg.CACertFile)
+		}
+		tlsConfig.RootCAs = pool
+	}
+
+	transport := &http.Transport{
+		Proxy:           http.ProxyFromEnvironment,
+		TLSClientConfig: tlsConfig,
+	}
+
+	var roundTripper http.RoundTripper = transport
 	if len(cfg.Headers) > 0 {
 		log.WithFields(log.Fields{
 			"custom_headers": cfg.Headers,
 		}).Debug("Setting custom headers on every request to Netbox")
 
-		trans = customHeaderTransport{
-			original: trans,
+		roundTripper = customHeaderTransport{
+			original: transport,
 			headers:  cfg.Headers,
 		}
 	}
 
-	httpClient := &http.Client{
-		Transport: trans,
+	return &http.Client{
+		Transport: roundTripper,
 		Timeout:   time.Second * time.Duration(cfg.RequestTimeout),
-	}
-
-	// Also apply request_timeout to the per-operation timeout, which otherwise
-	// defaults to 30s independently of http.Client.Timeout.
-	if cfg.RequestTimeout > 0 {
-		httptransport.DefaultTimeout = time.Second * time.Duration(cfg.RequestTimeout)
-	}
-
-	transport := httptransport.NewWithClient(parsedURL.Host, parsedURL.Path+netboxclient.DefaultBasePath, desiredRuntimeClientSchemes, httpClient)
-	authScheme := "Token"
-	if strings.HasPrefix(cfg.APIToken, "nbt_") {
-		authScheme = "Bearer"
-	}
-	transport.DefaultAuthentication = httptransport.APIKeyAuth("Authorization", "header", fmt.Sprintf("%s %v", authScheme, cfg.APIToken))
-	transport.SetLogger(log.StandardLogger())
-	netboxClient := netboxclient.New(transport, nil)
-
-	return netboxClient, nil
+	}, nil
 }
 
 // RoundTrip adds the headers specified in the transport on every request.

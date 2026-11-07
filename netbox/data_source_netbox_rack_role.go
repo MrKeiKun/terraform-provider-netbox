@@ -1,10 +1,10 @@
 package netbox
 
 import (
-	"errors"
+	"net/url"
 	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -34,32 +34,28 @@ func dataSourceNetboxRackRole() *schema.Resource {
 	}
 }
 
+type rackRoleDataSourceResponse struct {
+	ID          int64              `json:"id"`
+	Name        string             `json:"name"`
+	Slug        string             `json:"slug"`
+	Description string             `json:"description"`
+	Color       string             `json:"color"`
+	Tags        []netboxapi.TagRef `json:"tags"`
+}
+
 func dataSourceNetboxRackRoleRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	name := d.Get("name").(string)
-	params := dcim.NewDcimRackRolesListParams()
-	params.Name = &name
-	limit := int64(2) // Limit of 2 is enough
-	params.Limit = &limit
-
-	res, err := api.Dcim.DcimRackRolesList(params, nil)
+	query := url.Values{}
+	addStrQuery(query, d, "name", "name")
+	r, err := findOne[rackRoleDataSourceResponse](m, "dcim/rack-roles/", query, "rack role")
 	if err != nil {
 		return err
 	}
 
-	if *res.GetPayload().Count > int64(1) {
-		return errors.New("more than one rack role returned, specify a more narrow filter")
-	}
-	if *res.GetPayload().Count == int64(0) {
-		return errors.New("no rack role found matching filter")
-	}
-	result := res.GetPayload().Results[0]
-	d.SetId(strconv.FormatInt(result.ID, 10))
-	d.Set("name", result.Name)
-	d.Set("slug", result.Slug)
-	d.Set("description", result.Description)
-	d.Set("color_hex", result.Color)
-	d.Set(tagsKey, getTagListFromNestedTagList(result.Tags))
+	d.SetId(strconv.FormatInt(r.ID, 10))
+	d.Set("name", r.Name)
+	d.Set("slug", r.Slug)
+	d.Set("description", r.Description)
+	d.Set("color_hex", r.Color)
+	d.Set(tagsKey, tagNames(r.Tags))
 	return nil
 }

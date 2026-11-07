@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/circuits"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -81,18 +78,47 @@ func resourceNetboxCircuitTermination() *schema.Resource {
 	}
 }
 
-func resourceNetboxCircuitTerminationCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const circuitTerminationAPIPath = "circuits/circuit-terminations/"
 
-	data := models.WritableCircuitTermination{}
+type circuitTerminationRequest struct {
+	TermSide        string             `json:"term_side"`
+	Description     string             `json:"description,omitempty"`
+	Circuit         *int64             `json:"circuit"`
+	PortSpeed       *int64             `json:"port_speed,omitempty"`
+	UpstreamSpeed   *int64             `json:"upstream_speed,omitempty"`
+	TerminationType *string            `json:"termination_type"`
+	TerminationID   *int64             `json:"termination_id"`
+	CustomFields    interface{}        `json:"custom_fields,omitempty"`
+	Tags            []netboxapi.TagRef `json:"tags"`
+}
 
-	termside := d.Get("term_side").(string)
-	data.TermSide = &termside
-	data.Description = d.Get("description").(string)
+type circuitTerminationResponse struct {
+	TermSide        string                 `json:"term_side"`
+	Description     string                 `json:"description"`
+	Circuit         *netboxapi.Ref         `json:"circuit"`
+	PortSpeed       *int64                 `json:"port_speed"`
+	UpstreamSpeed   *int64                 `json:"upstream_speed"`
+	TerminationType *string                `json:"termination_type"`
+	TerminationID   *int64                 `json:"termination_id"`
+	CustomFields    map[string]interface{} `json:"custom_fields"`
+	Tags            []netboxapi.TagRef     `json:"tags"`
+}
 
-	circuitIDValue, ok := d.GetOk("circuit_id")
-	if ok {
-		data.Circuit = int64ToPtr(int64(circuitIDValue.(int)))
+func circuitTerminationRequestFromResourceData(api *providerState, d *schema.ResourceData) (*circuitTerminationRequest, error) {
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
+	if err != nil {
+		return nil, err
+	}
+	data := &circuitTerminationRequest{
+		TermSide:      d.Get("term_side").(string),
+		Description:   d.Get("description").(string),
+		PortSpeed:     getOptionalInt(d, "port_speed"),
+		UpstreamSpeed: getOptionalInt(d, "upstream_speed"),
+
+		Tags: tags,
+	}
+	if v, ok := d.GetOk("circuit_id"); ok {
+		data.Circuit = int64ToPtr(int64(v.(int)))
 	}
 
 	siteID := getOptionalInt(d, "site_id")
@@ -121,202 +147,63 @@ func resourceNetboxCircuitTerminationCreate(d *schema.ResourceData, m interface{
 		data.TerminationType = nil
 		data.TerminationID = nil
 	}
-
-	portspeedValue, ok := d.GetOk("port_speed")
-	if ok {
-		data.PortSpeed = int64ToPtr(int64(portspeedValue.(int)))
-	}
-
-	upstreamspeedValue, ok := d.GetOk("upstream_speed")
-	if ok {
-		data.UpstreamSpeed = int64ToPtr(int64(upstreamspeedValue.(int)))
-	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
-	if err != nil {
-		return err
-	}
-
-	ct, ok := d.GetOk(customFieldsKey)
-	if ok {
+	if ct, ok := d.GetOk(customFieldsKey); ok {
 		data.CustomFields = ct
 	}
+	return data, nil
+}
 
-	params := circuits.NewCircuitsCircuitTerminationsCreateParams().WithData(&data)
-
-	res, err := api.Circuits.CircuitsCircuitTerminationsCreate(params, nil)
+func resourceNetboxCircuitTerminationCreate(d *schema.ResourceData, m interface{}) error {
+	data, err := circuitTerminationRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxCircuitTerminationRead(d, m)
+	return createObject(d, m, circuitTerminationAPIPath, data, resourceNetboxCircuitTerminationRead)
 }
 
 func resourceNetboxCircuitTerminationRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := circuits.NewCircuitsCircuitTerminationsReadParams().WithID(id)
+	return readObject(d, m, circuitTerminationAPIPath, func(r *circuitTerminationResponse) {
+		d.Set("term_side", r.TermSide)
+		d.Set("description", r.Description)
+		d.Set("circuit_id", netboxapi.RefID(r.Circuit))
+		d.Set("port_speed", r.PortSpeed)
+		d.Set("upstream_speed", r.UpstreamSpeed)
 
-	res, err := api.Circuits.CircuitsCircuitTerminationsRead(params, nil)
-
-	if err != nil {
-		if errresp, ok := err.(*circuits.CircuitsCircuitTerminationsReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-.html
-				d.SetId("")
-				return nil
+		d.Set("site_id", nil)
+		d.Set("site_group_id", nil)
+		d.Set("location_id", nil)
+		d.Set("region_id", nil)
+		d.Set("provider_network_id", nil)
+		if r.TerminationType != nil && r.TerminationID != nil {
+			switch *r.TerminationType {
+			case "dcim.site":
+				d.Set("site_id", *r.TerminationID)
+			case "dcim.sitegroup":
+				d.Set("site_group_id", *r.TerminationID)
+			case "dcim.location":
+				d.Set("location_id", *r.TerminationID)
+			case "dcim.region":
+				d.Set("region_id", *r.TerminationID)
+			case "circuits.providernetwork":
+				d.Set("provider_network_id", *r.TerminationID)
 			}
 		}
-		return err
-	}
-
-	term := res.GetPayload()
-
-	d.Set("term_side", term.TermSide)
-
-	if term.Circuit != nil {
-		d.Set("circuit_id", term.Circuit.ID)
-	} else {
-		d.Set("circuit_id", nil)
-	}
-
-	d.Set("site_id", nil)
-	d.Set("site_group_id", nil)
-	d.Set("location_id", nil)
-	d.Set("region_id", nil)
-	d.Set("provider_network_id", nil)
-	d.Set("description", res.GetPayload().Description)
-
-	if term.TerminationType != nil && term.TerminationID != nil {
-		scopeID := term.TerminationID
-		switch scopeType := term.TerminationType; *scopeType {
-		case "dcim.site":
-			d.Set("site_id", scopeID)
-		case "dcim.sitegroup":
-			d.Set("site_group_id", scopeID)
-		case "dcim.location":
-			d.Set("location_id", scopeID)
-		case "dcim.region":
-			d.Set("region_id", scopeID)
-		case "circuits.providernetwork":
-			d.Set("provider_network_id", scopeID)
+		if cf := getCustomFields(r.CustomFields); cf != nil {
+			d.Set(customFieldsKey, cf)
 		}
-	}
-
-	if term.PortSpeed != nil {
-		d.Set("port_speed", term.PortSpeed)
-	} else {
-		d.Set("port_speed", nil)
-	}
-
-	if term.UpstreamSpeed != nil {
-		d.Set("upstream_speed", term.UpstreamSpeed)
-	} else {
-		d.Set("upstream_speed", nil)
-	}
-
-	api.readTags(d, term.Tags)
-
-	cf := getCustomFields(term.CustomFields)
-	if cf != nil {
-		d.Set(customFieldsKey, cf)
-	}
-
-	return nil
+		api.readTagRefs(d, r.Tags)
+	})
 }
 
 func resourceNetboxCircuitTerminationUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.WritableCircuitTermination{}
-
-	termside := d.Get("term_side").(string)
-	data.TermSide = &termside
-	data.Description = d.Get("description").(string)
-
-	circuitIDValue, ok := d.GetOk("circuit_id")
-	if ok {
-		data.Circuit = int64ToPtr(int64(circuitIDValue.(int)))
-	}
-
-	siteID := getOptionalInt(d, "site_id")
-	siteGroupID := getOptionalInt(d, "site_group_id")
-	locationID := getOptionalInt(d, "location_id")
-	regionID := getOptionalInt(d, "region_id")
-	providerNetworkID := getOptionalInt(d, "provider_network_id")
-
-	switch {
-	case siteID != nil:
-		data.TerminationType = strToPtr("dcim.site")
-		data.TerminationID = siteID
-	case siteGroupID != nil:
-		data.TerminationType = strToPtr("dcim.sitegroup")
-		data.TerminationID = siteGroupID
-	case locationID != nil:
-		data.TerminationType = strToPtr("dcim.location")
-		data.TerminationID = locationID
-	case regionID != nil:
-		data.TerminationType = strToPtr("dcim.region")
-		data.TerminationID = regionID
-	case providerNetworkID != nil:
-		data.TerminationType = strToPtr("circuits.providernetwork")
-		data.TerminationID = providerNetworkID
-	default:
-		data.TerminationType = nil
-		data.TerminationID = nil
-	}
-
-	portspeedValue, ok := d.GetOk("port_speed")
-	if ok {
-		data.PortSpeed = int64ToPtr(int64(portspeedValue.(int)))
-	}
-
-	upstreamspeedValue, ok := d.GetOk("upstream_speed")
-	if ok {
-		data.UpstreamSpeed = int64ToPtr(int64(upstreamspeedValue.(int)))
-	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+	data, err := circuitTerminationRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	cf, ok := d.GetOk(customFieldsKey)
-	if ok {
-		data.CustomFields = cf
-	}
-
-	params := circuits.NewCircuitsCircuitTerminationsPartialUpdateParams().WithID(id).WithData(&data)
-
-	_, err = api.Circuits.CircuitsCircuitTerminationsPartialUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	return resourceNetboxCircuitTerminationRead(d, m)
+	return patchObject(d, m, circuitTerminationAPIPath, data, resourceNetboxCircuitTerminationRead)
 }
 
 func resourceNetboxCircuitTerminationDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := circuits.NewCircuitsCircuitTerminationsDeleteParams().WithID(id)
-
-	_, err := api.Circuits.CircuitsCircuitTerminationsDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*circuits.CircuitsCircuitTerminationsDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	return nil
+	return deleteObject(d, m, circuitTerminationAPIPath)
 }

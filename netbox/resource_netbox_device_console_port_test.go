@@ -2,14 +2,10 @@ package netbox
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	log "github.com/sirupsen/logrus"
 )
 
 func testAccNetboxDeviceConsolePortFullDependencies(testName string) string {
@@ -133,36 +129,7 @@ resource "netbox_device_console_port" "test" {
 }
 
 func testAccCheckDeviceConsolePortDestroy(s *terraform.State) error {
-	// retrieve the connection established in Provider configuration
-	conn := testAccProvider.Meta().(*providerState)
-
-	// loop through the resources in state, verifying each console port
-	// is destroyed
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "netbox_device_console_port" {
-			continue
-		}
-
-		// Retrieve our device by referencing it's state ID for API lookup
-		stateID, _ := strconv.ParseInt(rs.Primary.ID, 10, 64)
-		params := dcim.NewDcimConsolePortsReadParams().WithID(stateID)
-		_, err := conn.Dcim.DcimConsolePortsRead(params, nil)
-
-		if err == nil {
-			return fmt.Errorf("device_console_port (%s) still exists", rs.Primary.ID)
-		}
-
-		if err != nil {
-			if errresp, ok := err.(*dcim.DcimConsolePortsReadDefault); ok {
-				errorcode := errresp.Code()
-				if errorcode == 404 {
-					return nil
-				}
-			}
-			return err
-		}
-	}
-	return nil
+	return testAccCheckObjectsDestroyed(s, "netbox_device_console_port", "dcim/console-ports/")
 }
 
 func init() {
@@ -170,27 +137,7 @@ func init() {
 		Name:         "netbox_device_console_port",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := dcim.NewDcimConsolePortsListParams()
-			res, err := api.Dcim.DcimConsolePortsList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, consolePort := range res.GetPayload().Results {
-				if strings.HasPrefix(*consolePort.Name, testPrefix) {
-					deleteParams := dcim.NewDcimConsolePortsDeleteParams().WithID(consolePort.ID)
-					_, err := api.Dcim.DcimConsolePortsDelete(deleteParams, nil)
-					if err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted a device_console_port")
-				}
-			}
-			return nil
+			return sweepByName(region, "dcim/console-ports/", "name")
 		},
 	})
 }

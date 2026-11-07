@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -64,147 +61,95 @@ func resourceNetboxDeviceConsoleServerPort() *schema.Resource {
 	}
 }
 
-func resourceNetboxDeviceConsoleServerPortCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const deviceConsoleServerPortAPIPath = "dcim/console-server-ports/"
 
-	data := models.WritableConsoleServerPort{
-		Device:        int64ToPtr(int64(d.Get("device_id").(int))),
-		Module:        getOptionalInt(d, "module_id"),
-		Name:          strToPtr(d.Get("name").(string)),
-		Label:         getOptionalStr(d, "label", true),
-		Type:          getOptionalStr(d, "type", false),
-		Speed:         getOptionalInt(d, "speed"),
-		Description:   getOptionalStr(d, "description", false),
-		MarkConnected: d.Get("mark_connected").(bool),
-	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
-	if err != nil {
-		return err
-	}
-
-	ct, ok := d.GetOk(customFieldsKey)
-	if ok {
-		data.CustomFields = ct
-	}
-
-	params := dcim.NewDcimConsoleServerPortsCreateParams().WithData(&data)
-
-	res, err := api.Dcim.DcimConsoleServerPortsCreate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxDeviceConsoleServerPortRead(d, m)
+type deviceConsoleServerPortRequest struct {
+	Name          string             `json:"name"`
+	Device        *int64             `json:"device"`
+	Module        *int64             `json:"module"`
+	Label         string             `json:"label,omitempty"`
+	Type          string             `json:"type"`
+	Speed         *int64             `json:"speed"`
+	Description   string             `json:"description,omitempty"`
+	MarkConnected bool               `json:"mark_connected"`
+	CustomFields  interface{}        `json:"custom_fields,omitempty"`
+	Tags          []netboxapi.TagRef `json:"tags"`
 }
 
-func resourceNetboxDeviceConsoleServerPortRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimConsoleServerPortsReadParams().WithID(id)
-
-	res, err := api.Dcim.DcimConsoleServerPortsRead(params, nil)
-
-	if err != nil {
-		if errIntf, ok := err.(*dcim.DcimConsoleServerPortsReadDefault); ok && errIntf.Code() == 404 {
-			// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-			d.SetId("")
-			return nil
-		}
-		return err
-	}
-
-	consoleServerPort := res.GetPayload()
-
-	if consoleServerPort.Device != nil {
-		d.Set("device_id", consoleServerPort.Device.ID)
-	} else {
-		d.Set("device_id", nil)
-	}
-
-	d.Set("name", consoleServerPort.Name)
-
-	if consoleServerPort.Module != nil {
-		d.Set("module_id", consoleServerPort.Module.ID)
-	} else {
-		d.Set("module_id", nil)
-	}
-
-	d.Set("label", consoleServerPort.Label)
-
-	if consoleServerPort.Type != nil {
-		d.Set("type", consoleServerPort.Type.Value)
-	} else {
-		d.Set("type", nil)
-	}
-
-	if consoleServerPort.Speed != nil {
-		d.Set("speed", consoleServerPort.Speed.Value)
-	} else {
-		d.Set("speed", nil)
-	}
-
-	d.Set("description", consoleServerPort.Description)
-	d.Set("mark_connected", consoleServerPort.MarkConnected)
-
-	cf := getCustomFields(res.GetPayload().CustomFields)
-	if cf != nil {
-		d.Set(customFieldsKey, cf)
-	}
-	api.readTags(d, res.GetPayload().Tags)
-
-	return nil
+type deviceConsoleServerPortResponse struct {
+	Name          string                 `json:"name"`
+	Device        *netboxapi.Ref         `json:"device"`
+	Module        *netboxapi.Ref         `json:"module"`
+	Label         string                 `json:"label"`
+	Type          *netboxapi.Choice      `json:"type"`
+	Speed         *netboxapi.IntChoice   `json:"speed"`
+	Description   string                 `json:"description"`
+	MarkConnected bool                   `json:"mark_connected"`
+	CustomFields  map[string]interface{} `json:"custom_fields"`
+	Tags          []netboxapi.TagRef     `json:"tags"`
 }
 
-func resourceNetboxDeviceConsoleServerPortUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-
-	data := models.WritableConsoleServerPort{
+func deviceConsoleServerPortRequestFromResourceData(api *providerState, d *schema.ResourceData) (*deviceConsoleServerPortRequest, error) {
+	name := d.Get("name").(string)
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
+	if err != nil {
+		return nil, err
+	}
+	data := &deviceConsoleServerPortRequest{
+		Name:          name,
 		Device:        int64ToPtr(int64(d.Get("device_id").(int))),
 		Module:        getOptionalInt(d, "module_id"),
-		Name:          strToPtr(d.Get("name").(string)),
 		Label:         getOptionalStr(d, "label", true),
 		Type:          getOptionalStr(d, "type", false),
 		Speed:         getOptionalInt(d, "speed"),
 		Description:   getOptionalStr(d, "description", true),
 		MarkConnected: d.Get("mark_connected").(bool),
+		Tags:          tags,
 	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
-	if err != nil {
-		return err
-	}
-
-	ct, ok := d.GetOk(customFieldsKey)
-	if ok {
+	if ct, ok := d.GetOk(customFieldsKey); ok {
 		data.CustomFields = ct
 	}
+	return data, nil
+}
 
-	params := dcim.NewDcimConsoleServerPortsPartialUpdateParams().WithID(id).WithData(&data)
-
-	_, err = api.Dcim.DcimConsoleServerPortsPartialUpdate(params, nil)
+func resourceNetboxDeviceConsoleServerPortCreate(d *schema.ResourceData, m interface{}) error {
+	data, err := deviceConsoleServerPortRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
+	return createObject(d, m, deviceConsoleServerPortAPIPath, data, resourceNetboxDeviceConsoleServerPortRead)
+}
 
-	return resourceNetboxDeviceConsoleServerPortRead(d, m)
+func resourceNetboxDeviceConsoleServerPortRead(d *schema.ResourceData, m interface{}) error {
+	api := m.(*providerState)
+	return readObject(d, m, deviceConsoleServerPortAPIPath, func(r *deviceConsoleServerPortResponse) {
+		d.Set("name", r.Name)
+		d.Set("device_id", netboxapi.RefID(r.Device))
+		d.Set("module_id", netboxapi.RefID(r.Module))
+		d.Set("label", r.Label)
+		d.Set("type", netboxapi.ChoiceValue(r.Type))
+		if r.Speed != nil {
+			d.Set("speed", r.Speed.Value)
+		} else {
+			d.Set("speed", nil)
+		}
+		d.Set("description", r.Description)
+		d.Set("mark_connected", r.MarkConnected)
+		if cf := getCustomFields(r.CustomFields); cf != nil {
+			d.Set(customFieldsKey, cf)
+		}
+		api.readTagRefs(d, r.Tags)
+	})
+}
+
+func resourceNetboxDeviceConsoleServerPortUpdate(d *schema.ResourceData, m interface{}) error {
+	data, err := deviceConsoleServerPortRequestFromResourceData(m.(*providerState), d)
+	if err != nil {
+		return err
+	}
+	return patchObject(d, m, deviceConsoleServerPortAPIPath, data, resourceNetboxDeviceConsoleServerPortRead)
 }
 
 func resourceNetboxDeviceConsoleServerPortDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimConsoleServerPortsDeleteParams().WithID(id)
-
-	_, err := api.Dcim.DcimConsoleServerPortsDelete(params, nil)
-	if err != nil {
-		return err
-	}
-	return nil
+	return deleteObject(d, m, deviceConsoleServerPortAPIPath)
 }

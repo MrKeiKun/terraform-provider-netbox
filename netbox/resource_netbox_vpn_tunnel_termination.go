@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/vpn"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -53,19 +50,38 @@ func resourceNetboxVpnTunnelTermination() *schema.Resource {
 	}
 }
 
-func resourceNetboxVpnTunnelTerminationCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const vpnTunnelTerminationAPIPath = "vpn/tunnel-terminations/"
 
-	data := models.WritableTunnelTermination{}
+type vpnTunnelTerminationRequest struct {
+	Tunnel          int64              `json:"tunnel"`
+	Role            string             `json:"role,omitempty"`
+	TerminationType *string            `json:"termination_type"`
+	TerminationID   int64              `json:"termination_id,omitempty"`
+	OutsideIP       *int64             `json:"outside_ip,omitempty"`
+	Tags            []netboxapi.TagRef `json:"tags"`
+}
 
-	tunnelID := int64(d.Get("tunnel_id").(int))
+type vpnTunnelTerminationResponse struct {
+	Tunnel        *netboxapi.Ref     `json:"tunnel"`
+	Role          *netboxapi.Choice  `json:"role"`
+	TerminationID int64              `json:"termination_id"`
+	OutsideIP     *netboxapi.Ref     `json:"outside_ip"`
+	Tags          []netboxapi.TagRef `json:"tags"`
+}
 
-	data.Tunnel = &tunnelID
-	data.Role = d.Get("role").(string)
+func vpnTunnelTerminationRequestFromResourceData(api *providerState, d *schema.ResourceData) *vpnTunnelTerminationRequest {
+	// A failed tag lookup leaves the tags empty, same as before.
+	tags, _ := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
+
+	data := &vpnTunnelTerminationRequest{
+		Tunnel:    int64(d.Get("tunnel_id").(int)),
+		Role:      d.Get("role").(string),
+		OutsideIP: getOptionalInt(d, "outside_ip_address_id"),
+		Tags:      tags,
+	}
 
 	vmInterfaceID := getOptionalInt(d, "virtual_machine_interface_id")
 	deviceInterfaceID := getOptionalInt(d, "device_interface_id")
-
 	switch {
 	case vmInterfaceID != nil:
 		data.TerminationType = strToPtr("virtualization.vminterface")
@@ -74,117 +90,41 @@ func resourceNetboxVpnTunnelTerminationCreate(d *schema.ResourceData, m interfac
 		data.TerminationType = strToPtr("dcim.interface")
 		data.TerminationID = *deviceInterfaceID
 	}
+	return data
+}
 
-	data.OutsideIP = getOptionalInt(d, "outside_ip_address_id")
-
-	tags, _ := getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
-	data.Tags = tags
-
-	params := vpn.NewVpnTunnelTerminationsCreateParams().WithData(&data)
-
-	res, err := api.Vpn.VpnTunnelTerminationsCreate(params, nil)
-	if err != nil {
-		//return errors.New(getTextFromError(err))
-		return err
-	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxVpnTunnelTerminationRead(d, m)
+func resourceNetboxVpnTunnelTerminationCreate(d *schema.ResourceData, m interface{}) error {
+	return createObject(d, m, vpnTunnelTerminationAPIPath, vpnTunnelTerminationRequestFromResourceData(m.(*providerState), d), resourceNetboxVpnTunnelTerminationRead)
 }
 
 func resourceNetboxVpnTunnelTerminationRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := vpn.NewVpnTunnelTerminationsReadParams().WithID(id)
-
-	res, err := api.Vpn.VpnTunnelTerminationsRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*vpn.VpnTunnelTerminationsReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
+	return readObject(d, m, vpnTunnelTerminationAPIPath, func(tunnelTermination *vpnTunnelTerminationResponse) {
+		if tunnelTermination.Tunnel != nil {
+			d.Set("tunnel_id", tunnelTermination.Tunnel.ID)
 		}
-		return err
-	}
+		d.Set("role", netboxapi.ChoiceValue(tunnelTermination.Role))
 
-	tunnelTermination := res.GetPayload()
-	d.Set("tunnel_id", tunnelTermination.Tunnel.ID)
-	d.Set("role", tunnelTermination.Role.Value)
+		vmInterfaceID := getOptionalInt(d, "virtual_machine_interface_id")
+		deviceInterfaceID := getOptionalInt(d, "device_interface_id")
+		switch {
+		case vmInterfaceID != nil:
+			d.Set("virtual_machine_interface_id", tunnelTermination.TerminationID)
+		case deviceInterfaceID != nil:
+			d.Set("device_interface_id", tunnelTermination.TerminationID)
+		}
 
-	vmInterfaceID := getOptionalInt(d, "virtual_machine_interface_id")
-	deviceInterfaceID := getOptionalInt(d, "device_interface_id")
-
-	switch {
-	case vmInterfaceID != nil:
-		d.Set("virtual_machine_interface_id", tunnelTermination.TerminationID)
-	case deviceInterfaceID != nil:
-		d.Set("device_interface_id", tunnelTermination.TerminationID)
-	}
-
-	if tunnelTermination.OutsideIP != nil {
-		d.Set("outside_ip_address_id", tunnelTermination.OutsideIP.ID)
-	}
-
-	api.readTags(d, res.GetPayload().Tags)
-	return nil
+		if tunnelTermination.OutsideIP != nil {
+			d.Set("outside_ip_address_id", tunnelTermination.OutsideIP.ID)
+		}
+		api.readTagRefs(d, tunnelTermination.Tags)
+	})
 }
 
 func resourceNetboxVpnTunnelTerminationUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.WritableTunnelTermination{}
-
-	tunnelID := int64(d.Get("tunnel_id").(int))
-	data.Tunnel = &tunnelID
-	data.Role = d.Get("role").(string)
-
-	vmInterfaceID := getOptionalInt(d, "virtual_machine_interface_id")
-	deviceInterfaceID := getOptionalInt(d, "device_interface_id")
-
-	switch {
-	case vmInterfaceID != nil:
-		data.TerminationType = strToPtr("virtualization.vminterface")
-		data.TerminationID = *vmInterfaceID
-	case deviceInterfaceID != nil:
-		data.TerminationType = strToPtr("dcim.interface")
-		data.TerminationID = *deviceInterfaceID
-	}
-
-	data.OutsideIP = getOptionalInt(d, "outside_ip_address_id")
-
-	tags, _ := getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
-	data.Tags = tags
-
-	params := vpn.NewVpnTunnelTerminationsUpdateParams().WithID(id).WithData(&data)
-
-	_, err := api.Vpn.VpnTunnelTerminationsUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	return resourceNetboxVpnTunnelTerminationRead(d, m)
+	return putObject(d, m, vpnTunnelTerminationAPIPath, vpnTunnelTerminationRequestFromResourceData(m.(*providerState), d), resourceNetboxVpnTunnelTerminationRead)
 }
 
 func resourceNetboxVpnTunnelTerminationDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := vpn.NewVpnTunnelTerminationsDeleteParams().WithID(id)
-
-	_, err := api.Vpn.VpnTunnelTerminationsDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*vpn.VpnTunnelTerminationsDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	return nil
+	return deleteObject(d, m, vpnTunnelTerminationAPIPath)
 }

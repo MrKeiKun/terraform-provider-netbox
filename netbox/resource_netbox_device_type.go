@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -69,190 +66,97 @@ func resourceNetboxDeviceType() *schema.Resource {
 	}
 }
 
-func resourceNetboxDeviceTypeCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const deviceTypeAPIPath = "dcim/device-types/"
 
-	data := models.WritableDeviceType{}
+type deviceTypeRequest struct {
+	Slug          string             `json:"slug"`
+	Model         string             `json:"model"`
+	Manufacturer  *int64             `json:"manufacturer"`
+	PartNumber    string             `json:"part_number,omitempty"`
+	UHeight       *float64           `json:"u_height,omitempty"`
+	IsFullDepth   bool               `json:"is_full_depth"`
+	SubdeviceRole string             `json:"subdevice_role,omitempty"`
+	Description   string             `json:"description,omitempty"`
+	Comments      string             `json:"comments,omitempty"`
+	CustomFields  interface{}        `json:"custom_fields,omitempty"`
+	Tags          []netboxapi.TagRef `json:"tags"`
+}
 
-	model := d.Get("model").(string)
-	data.Model = &model
+type deviceTypeResponse struct {
+	Slug          string                 `json:"slug"`
+	Model         string                 `json:"model"`
+	Manufacturer  *netboxapi.Ref         `json:"manufacturer"`
+	PartNumber    string                 `json:"part_number"`
+	UHeight       *float64               `json:"u_height"`
+	IsFullDepth   bool                   `json:"is_full_depth"`
+	SubdeviceRole *netboxapi.Choice      `json:"subdevice_role"`
+	Description   string                 `json:"description"`
+	Comments      string                 `json:"comments"`
+	CustomFields  map[string]interface{} `json:"custom_fields"`
+	Tags          []netboxapi.TagRef     `json:"tags"`
+}
 
-	slugValue, slugOk := d.GetOk("slug")
-	// Default slug to generated slug if not given
-	if !slugOk {
-		data.Slug = strToPtr(getSlug(model))
-	} else {
-		data.Slug = strToPtr(slugValue.(string))
-	}
-
-	manufacturerIDValue, ok := d.GetOk("manufacturer_id")
-	if ok {
-		data.Manufacturer = int64ToPtr(int64(manufacturerIDValue.(int)))
-	}
-
-	if partNo, ok := d.GetOk("part_number"); ok {
-		data.PartNumber = partNo.(string)
-	}
-
-	//Needed to account for 0 u_height values
-	uHeightValue := d.Get("u_height")
-	data.UHeight = float64ToPtr(uHeightValue.(float64))
-
-	if isFullDepthValue, ok := d.GetOk("is_full_depth"); ok {
-		data.IsFullDepth = isFullDepthValue.(bool)
-	}
-
-	if subdeviceRoleValue, ok := d.GetOk("subdevice_role"); ok {
-		data.SubdeviceRole = subdeviceRoleValue.(string)
-	}
-
-	data.Description = d.Get("description").(string)
-
-	data.Comments = d.Get("comments").(string)
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+func deviceTypeRequestFromResourceData(api *providerState, d *schema.ResourceData) (*deviceTypeRequest, error) {
+	slugSource := d.Get("model").(string)
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	ct, ok := d.GetOk(customFieldsKey)
-	if ok {
+	data := &deviceTypeRequest{
+		Slug:          slugFromResourceData(d, slugSource),
+		Model:         d.Get("model").(string),
+		PartNumber:    d.Get("part_number").(string),
+		UHeight:       float64ToPtr(d.Get("u_height").(float64)),
+		IsFullDepth:   d.Get("is_full_depth").(bool),
+		SubdeviceRole: d.Get("subdevice_role").(string),
+		Description:   d.Get("description").(string),
+		Comments:      d.Get("comments").(string),
+		Tags:          tags,
+	}
+	if v, ok := d.GetOk("manufacturer_id"); ok {
+		data.Manufacturer = int64ToPtr(int64(v.(int)))
+	}
+	if ct, ok := d.GetOk(customFieldsKey); ok {
 		data.CustomFields = ct
 	}
+	return data, nil
+}
 
-	params := dcim.NewDcimDeviceTypesCreateParams().WithData(&data)
-
-	res, err := api.Dcim.DcimDeviceTypesCreate(params, nil)
+func resourceNetboxDeviceTypeCreate(d *schema.ResourceData, m interface{}) error {
+	data, err := deviceTypeRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxDeviceTypeRead(d, m)
+	return createObject(d, m, deviceTypeAPIPath, data, resourceNetboxDeviceTypeRead)
 }
 
 func resourceNetboxDeviceTypeRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimDeviceTypesReadParams().WithID(id)
-
-	res, err := api.Dcim.DcimDeviceTypesRead(params, nil)
-
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimDeviceTypesReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
+	return readObject(d, m, deviceTypeAPIPath, func(r *deviceTypeResponse) {
+		d.Set("slug", r.Slug)
+		d.Set("model", r.Model)
+		d.Set("manufacturer_id", netboxapi.RefID(r.Manufacturer))
+		d.Set("part_number", r.PartNumber)
+		d.Set("u_height", r.UHeight)
+		d.Set("is_full_depth", r.IsFullDepth)
+		d.Set("subdevice_role", netboxapi.ChoiceValue(r.SubdeviceRole))
+		d.Set("description", r.Description)
+		d.Set("comments", r.Comments)
+		if cf := getCustomFields(r.CustomFields); cf != nil {
+			d.Set(customFieldsKey, cf)
 		}
-		return err
-	}
-
-	deviceType := res.GetPayload()
-	d.Set("model", deviceType.Model)
-	d.Set("slug", deviceType.Slug)
-	d.Set("manufacturer_id", deviceType.Manufacturer.ID)
-	d.Set("part_number", deviceType.PartNumber)
-	d.Set("u_height", deviceType.UHeight)
-	d.Set("is_full_depth", deviceType.IsFullDepth)
-	if deviceType.SubdeviceRole != nil && deviceType.SubdeviceRole.Value != nil {
-		d.Set("subdevice_role", *deviceType.SubdeviceRole.Value)
-	} else {
-		d.Set("subdevice_role", "")
-	}
-	d.Set("description", deviceType.Description)
-	d.Set("comments", deviceType.Comments)
-	api.readTags(d, deviceType.Tags)
-
-	cf := getCustomFields(deviceType.CustomFields)
-	if cf != nil {
-		d.Set(customFieldsKey, cf)
-	}
-
-	return nil
+		api.readTagRefs(d, r.Tags)
+	})
 }
 
 func resourceNetboxDeviceTypeUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.WritableDeviceType{}
-
-	model := d.Get("model").(string)
-	data.Model = &model
-
-	slugValue, slugOk := d.GetOk("slug")
-	// Default slug to generated slug if not given
-	if !slugOk {
-		data.Slug = strToPtr(getSlug(model))
-	} else {
-		data.Slug = strToPtr(slugValue.(string))
-	}
-
-	manufacturerIDValue, ok := d.GetOk("manufacturer_id")
-	if ok {
-		data.Manufacturer = int64ToPtr(int64(manufacturerIDValue.(int)))
-	}
-
-	if partNo, ok := d.GetOk("part_number"); ok {
-		data.PartNumber = partNo.(string)
-	}
-
-	uHeightValue := d.Get("u_height")
-	data.UHeight = float64ToPtr(uHeightValue.(float64))
-
-	if isFullDepthValue, ok := d.GetOk("is_full_depth"); ok {
-		data.IsFullDepth = isFullDepthValue.(bool)
-	}
-
-	if subdeviceRoleValue, ok := d.GetOk("subdevice_role"); ok {
-		data.SubdeviceRole = subdeviceRoleValue.(string)
-	}
-
-	data.Description = d.Get("description").(string)
-
-	data.Comments = d.Get("comments").(string)
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+	data, err := deviceTypeRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	ct, ok := d.GetOk(customFieldsKey)
-	if ok {
-		data.CustomFields = ct
-	}
-
-	params := dcim.NewDcimDeviceTypesPartialUpdateParams().WithID(id).WithData(&data)
-
-	_, err = api.Dcim.DcimDeviceTypesPartialUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	return resourceNetboxDeviceTypeRead(d, m)
+	return patchObject(d, m, deviceTypeAPIPath, data, resourceNetboxDeviceTypeRead)
 }
 
 func resourceNetboxDeviceTypeDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimDeviceTypesDeleteParams().WithID(id)
-
-	_, err := api.Dcim.DcimDeviceTypesDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimDeviceTypesDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	return nil
+	return deleteObject(d, m, deviceTypeAPIPath)
 }

@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/vpn"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -61,122 +58,79 @@ func resourceNetboxVpnTunnel() *schema.Resource {
 	}
 }
 
-func resourceNetboxVpnTunnelCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const vpnTunnelAPIPath = "vpn/tunnels/"
 
-	data := models.WritableTunnel{}
+type vpnTunnelRequest struct {
+	Name          string             `json:"name"`
+	Encapsulation string             `json:"encapsulation"`
+	Status        string             `json:"status"`
+	Group         *int64             `json:"group"`
+	Description   string             `json:"description,omitempty"`
+	Tenant        *int64             `json:"tenant,omitempty"`
+	TunnelId      *int64             `json:"tunnel_id,omitempty"`
+	Tags          []netboxapi.TagRef `json:"tags"`
+}
 
-	data.Name = strToPtr(d.Get("name").(string))
-	data.Encapsulation = strToPtr(d.Get("encapsulation").(string))
-	data.Status = strToPtr(d.Get("status").(string))
-	data.Group = int64ToPtr(int64(d.Get("tunnel_group_id").(int)))
+type vpnTunnelResponse struct {
+	Name          string             `json:"name"`
+	Encapsulation *netboxapi.Choice  `json:"encapsulation"`
+	Status        *netboxapi.Choice  `json:"status"`
+	Group         *netboxapi.Ref     `json:"group"`
+	Description   string             `json:"description"`
+	Tenant        *netboxapi.Ref     `json:"tenant"`
+	TunnelId      *int64             `json:"tunnel_id"`
+	Tags          []netboxapi.TagRef `json:"tags"`
+}
 
-	data.Description = getOptionalStr(d, "description", false)
-	data.Tenant = getOptionalInt(d, "tenant_id")
-	data.TunnelID = getOptionalInt(d, "tunnel_id")
-
-	tags, _ := getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
-	data.Tags = tags
-
-	params := vpn.NewVpnTunnelsCreateParams().WithData(&data)
-
-	res, err := api.Vpn.VpnTunnelsCreate(params, nil)
+func vpnTunnelRequestFromResourceData(api *providerState, d *schema.ResourceData) (*vpnTunnelRequest, error) {
+	name := d.Get("name").(string)
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
 	if err != nil {
-		//return errors.New(getTextFromError(err))
+		return nil, err
+	}
+	data := &vpnTunnelRequest{
+		Name:          name,
+		Encapsulation: d.Get("encapsulation").(string),
+		Status:        d.Get("status").(string),
+		Group:         int64ToPtr(int64(d.Get("tunnel_group_id").(int))),
+		Description:   d.Get("description").(string),
+		Tenant:        getOptionalInt(d, "tenant_id"),
+		TunnelId:      getOptionalInt(d, "tunnel_id"),
+		Tags:          tags,
+	}
+	return data, nil
+}
+
+func resourceNetboxVpnTunnelCreate(d *schema.ResourceData, m interface{}) error {
+	data, err := vpnTunnelRequestFromResourceData(m.(*providerState), d)
+	if err != nil {
 		return err
 	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxVpnTunnelRead(d, m)
+	return createObject(d, m, vpnTunnelAPIPath, data, resourceNetboxVpnTunnelRead)
 }
 
 func resourceNetboxVpnTunnelRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := vpn.NewVpnTunnelsReadParams().WithID(id)
-
-	res, err := api.Vpn.VpnTunnelsRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*vpn.VpnTunnelsReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-
-	tunnel := res.GetPayload()
-	d.Set("name", tunnel.Name)
-	d.Set("encapsulation", tunnel.Encapsulation.Value)
-	d.Set("status", tunnel.Status.Value)
-
-	if tunnel.Group != nil {
-		d.Set("tunnel_group_id", tunnel.Group.ID)
-	} else {
-		d.Set("tunnel_group_id", nil)
-	}
-
-	if tunnel.Tenant != nil {
-		d.Set("tenant_id", tunnel.Tenant.ID)
-	} else {
-		d.Set("tenant_id", nil)
-	}
-
-	d.Set("tunnel_id", tunnel.TunnelID)
-
-	d.Set("description", tunnel.Description)
-
-	api.readTags(d, res.GetPayload().Tags)
-	return nil
+	return readObject(d, m, vpnTunnelAPIPath, func(r *vpnTunnelResponse) {
+		d.Set("name", r.Name)
+		d.Set("encapsulation", netboxapi.ChoiceValue(r.Encapsulation))
+		d.Set("status", netboxapi.ChoiceValue(r.Status))
+		d.Set("tunnel_group_id", netboxapi.RefID(r.Group))
+		d.Set("description", r.Description)
+		d.Set("tenant_id", netboxapi.RefID(r.Tenant))
+		d.Set("tunnel_id", r.TunnelId)
+		api.readTagRefs(d, r.Tags)
+	})
 }
 
 func resourceNetboxVpnTunnelUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.WritableTunnel{}
-
-	data.Name = strToPtr(d.Get("name").(string))
-	data.Encapsulation = strToPtr(d.Get("encapsulation").(string))
-	data.Status = strToPtr(d.Get("status").(string))
-	data.Group = int64ToPtr(int64(d.Get("tunnel_group_id").(int)))
-
-	data.Description = getOptionalStr(d, "description", false)
-	data.Tenant = getOptionalInt(d, "tenant_id")
-	data.TunnelID = getOptionalInt(d, "tunnel_id")
-
-	tags, _ := getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
-	data.Tags = tags
-
-	params := vpn.NewVpnTunnelsUpdateParams().WithID(id).WithData(&data)
-
-	_, err := api.Vpn.VpnTunnelsUpdate(params, nil)
+	data, err := vpnTunnelRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	return resourceNetboxVpnTunnelRead(d, m)
+	return putObject(d, m, vpnTunnelAPIPath, data, resourceNetboxVpnTunnelRead)
 }
 
 func resourceNetboxVpnTunnelDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := vpn.NewVpnTunnelsDeleteParams().WithID(id)
-
-	_, err := api.Vpn.VpnTunnelsDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*vpn.VpnTunnelsDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	return nil
+	return deleteObject(d, m, vpnTunnelAPIPath)
 }

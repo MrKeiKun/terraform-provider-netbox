@@ -2,13 +2,8 @@ package netbox
 
 import (
 	"context"
-	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/virtualization"
-	"github.com/fbreckle/go-netbox/netbox/models"
-	"github.com/go-openapi/runtime"
-	"github.com/go-openapi/strfmt"
-	"github.com/go-viper/mapstructure/v2"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -93,268 +88,122 @@ func resourceNetboxInterface() *schema.Resource {
 	}
 }
 
+const vmInterfaceAPIPath = "virtualization/interfaces/"
+
+type vmInterfaceResponse struct {
+	Name              string             `json:"name"`
+	Description       string             `json:"description"`
+	Enabled           bool               `json:"enabled"`
+	MacAddress        *string            `json:"mac_address"`
+	Mtu               *int64             `json:"mtu"`
+	Tags              []netboxapi.TagRef `json:"tags"`
+	TaggedVlans       []netboxapi.Ref    `json:"tagged_vlans"`
+	VirtualMachine    *netboxapi.Ref     `json:"virtual_machine"`
+	Mode              *netboxapi.Choice  `json:"mode"`
+	UntaggedVlan      *netboxapi.Ref     `json:"untagged_vlan"`
+	Bridge            *netboxapi.Ref     `json:"bridge"`
+	PrimaryMacAddress *netboxapi.Ref     `json:"primary_mac_address"`
+}
+
+// vmInterfaceBody builds the fields that are sent on both create and update.
+func vmInterfaceBody(api *providerState, d *schema.ResourceData) (map[string]interface{}, error) {
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
+	if err != nil {
+		return nil, err
+	}
+
+	body := map[string]interface{}{
+		"name":            d.Get("name").(string),
+		"description":     d.Get("description").(string),
+		"enabled":         d.Get("enabled").(bool),
+		"tags":            tags,
+		"tagged_vlans":    toInt64List(d.Get("tagged_vlans")),
+		"virtual_machine": int64(d.Get("virtual_machine_id").(int)),
+	}
+	if mode := d.Get("mode").(string); mode != "" {
+		body["mode"] = mode
+	}
+	return body, nil
+}
+
 func resourceNetboxInterfaceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*providerState)
 
-	var diags diag.Diagnostics
-
-	name := d.Get("name").(string)
-	description := d.Get("description").(string)
-	enabled := d.Get("enabled").(bool)
-	mode := d.Get("mode").(string)
-	tags, err := getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+	body, err := vmInterfaceBody(api, d)
 	if err != nil {
 		return diag.FromErr(err)
-	}
-	taggedVlans := toInt64List(d.Get("tagged_vlans"))
-	virtualMachineID := int64(d.Get("virtual_machine_id").(int))
-
-	data := models.WritableVMInterface{
-		Name:           &name,
-		Description:    description,
-		Enabled:        enabled,
-		Mode:           mode,
-		Tags:           tags,
-		TaggedVlans:    taggedVlans,
-		VirtualMachine: &virtualMachineID,
 	}
 	if mtu, ok := d.Get("mtu").(int); ok && mtu != 0 {
-		data.Mtu = int64ToPtr(int64(mtu))
+		body["mtu"] = int64(mtu)
 	}
 	if untaggedVlan, ok := d.Get("untagged_vlan").(int); ok && untaggedVlan != 0 {
-		data.UntaggedVlan = int64ToPtr(int64(untaggedVlan))
+		body["untagged_vlan"] = int64(untaggedVlan)
 	}
 	if bridgeIF, ok := d.Get("bridge_interface_id").(int); ok && bridgeIF != 0 {
-		data.Bridge = int64ToPtr(int64(bridgeIF))
-	}
-	params := virtualization.NewVirtualizationInterfacesCreateParams().WithData(&data)
-
-	res, err := api.Virtualization.VirtualizationInterfacesCreate(params, nil)
-	if err != nil {
-		return diag.FromErr(err)
+		body["bridge"] = int64(bridgeIF)
 	}
 
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return diags
+	return createObjectCtx(ctx, d, m, vmInterfaceAPIPath, body, resourceNetboxInterfaceRead)
 }
 
 func resourceNetboxInterfaceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-
-	var diags diag.Diagnostics
-
-	params := virtualization.NewVirtualizationInterfacesReadParams().WithID(id)
-
-	res, err := api.Virtualization.VirtualizationInterfacesRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*virtualization.VirtualizationInterfacesReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
+	return readObjectCtx(ctx, d, m, vmInterfaceAPIPath, func(iface *vmInterfaceResponse) {
+		d.Set("name", iface.Name)
+		d.Set("description", iface.Description)
+		d.Set("enabled", iface.Enabled)
+		d.Set("mac_address", iface.MacAddress)
+		d.Set("mtu", iface.Mtu)
+		api.readTagRefs(d, iface.Tags)
+		d.Set("tagged_vlans", netboxapi.IDs(iface.TaggedVlans))
+		if iface.VirtualMachine != nil {
+			d.Set("virtual_machine_id", iface.VirtualMachine.ID)
 		}
-		return diag.FromErr(err)
-	}
-
-	iface := res.GetPayload()
-
-	d.Set("name", iface.Name)
-	d.Set("description", iface.Description)
-	d.Set("enabled", iface.Enabled)
-	d.Set("mac_address", iface.MacAddress)
-	d.Set("mtu", iface.Mtu)
-	api.readTags(d, iface.Tags)
-	d.Set("tagged_vlans", getIDsFromNestedVLAN(iface.TaggedVlans))
-	d.Set("virtual_machine_id", iface.VirtualMachine.ID)
-
-	if iface.Mode != nil {
-		d.Set("mode", iface.Mode.Value)
-	}
-	if iface.UntaggedVlan != nil {
-		d.Set("untagged_vlan", iface.UntaggedVlan.ID)
-	}
-	if iface.Bridge != nil {
-		d.Set("bridge_interface_id", iface.Bridge.ID)
-	} else {
-		d.Set("bridge_interface_id", nil)
-	}
-	if iface.PrimaryMacAddress != nil {
-		d.Set("primary_mac_address_id", iface.PrimaryMacAddress.ID)
-	}
-
-	return diags
+		if iface.Mode != nil {
+			d.Set("mode", iface.Mode.Value)
+		}
+		if iface.UntaggedVlan != nil {
+			d.Set("untagged_vlan", iface.UntaggedVlan.ID)
+		}
+		if iface.Bridge != nil {
+			d.Set("bridge_interface_id", iface.Bridge.ID)
+		} else {
+			d.Set("bridge_interface_id", nil)
+		}
+		if iface.PrimaryMacAddress != nil {
+			d.Set("primary_mac_address_id", iface.PrimaryMacAddress.ID)
+		}
+	})
 }
 
 func resourceNetboxInterfaceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*providerState)
 
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-
-	name := d.Get("name").(string)
-	description := d.Get("description").(string)
-	enabled := d.Get("enabled").(bool)
-	mode := d.Get("mode").(string)
-	tags, err := getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+	body, err := vmInterfaceBody(api, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	taggedVlans := toInt64List(d.Get("tagged_vlans"))
-	virtualMachineID := int64(d.Get("virtual_machine_id").(int))
-
-	data := models.WritableVMInterface{
-		Name:           &name,
-		Description:    description,
-		Enabled:        enabled,
-		Mode:           mode,
-		Tags:           tags,
-		TaggedVlans:    taggedVlans,
-		VirtualMachine: &virtualMachineID,
-	}
-
 	if d.HasChange("mac_address") {
-		macAddress := d.Get("mac_address").(string)
-		data.MacAddress = &macAddress
+		body["mac_address"] = d.Get("mac_address").(string)
 	}
 	if d.HasChange("mtu") {
-		mtu := int64(d.Get("mtu").(int))
-		data.Mtu = &mtu
+		body["mtu"] = nullableID(d.Get("mtu").(int))
 	}
 	if d.HasChange("untagged_vlan") {
-		untaggedvlan := int64(d.Get("untagged_vlan").(int))
-		data.UntaggedVlan = &untaggedvlan
+		body["untagged_vlan"] = nullableID(d.Get("untagged_vlan").(int))
 	}
 	if d.HasChange("primary_mac_address_id") {
-		primaryMac := int64(d.Get("primary_mac_address_id").(int))
-		data.PrimaryMacAddress = &primaryMac
+		body["primary_mac_address"] = nullableID(d.Get("primary_mac_address_id").(int))
 	}
-
-	// About the `nullFields` hack
-	//
-	// Without this hack, the `bridge_interface_id` field can never be unset
-	// in the Netbox API once it has been set. This likely also applies to other
-	// fields, but for now, this is only solved for this field. It can be extended
-	// though.
-	//
-	// Why is it needed?
-	//
-	// This method uses VirtualizationInterfacesPartialUpdate which takes similar
-	// parameters as Create/Update, but will only apply changes to fields that are
-	// supplied in the JSON payload.
-	//
-	// Example:
-	// - `{ "bridge": 123 }` - will set the field
-	// - `{ "bridge": null }` - will unset the field
-	// - `{}` - will make no changes
-	//
-	// Unfortunately with how the Netbox API client is generated, there is no way
-	// to produce the second example. If you set the field `Bridge` to `nil` it
-	// will produce JSON without the field present. This is because of the
-	// `omitempty` struct tag on the field. Which is something you need to make
-	// partial updates work, but prevents you from unsetting the field.
-	// There is simply no way to represent this case in Go without introducing
-	// a special wrapper type that can represent all 3 states.
-	// (Note that sending `"bridge": 0` is not accepted by the API.)
-	//
-	// The way this is solved is on the serialization level.
-	// With `hackSerializeAsNull` I made a serialization middleware of sorts that
-	// will serialize an explicit `null` value for field names given in the slice.
-
-	var nullFields []string
+	// A bridge that is no longer set has to be sent as an explicit null,
+	// otherwise NetBox keeps the old one.
 	if d.HasChange("bridge_interface_id") {
-		ifID := int64(d.Get("bridge_interface_id").(int))
-		data.Bridge = &ifID
-		if ifID == 0 {
-			nullFields = append(nullFields, "bridge")
-		}
+		body["bridge"] = nullableID(d.Get("bridge_interface_id").(int))
 	}
 
-	params := virtualization.NewVirtualizationInterfacesPartialUpdateParams().WithID(id).WithData(&data)
-	_, err = api.Virtualization.VirtualizationInterfacesPartialUpdate(params, nil, hackSerializeAsNull(nullFields...))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return resourceNetboxInterfaceRead(ctx, d, m)
+	return patchObjectCtx(ctx, d, m, vmInterfaceAPIPath, body, resourceNetboxInterfaceRead)
 }
 
 func resourceNetboxInterfaceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := virtualization.NewVirtualizationInterfacesDeleteParams().WithID(id)
-
-	_, err := api.Virtualization.VirtualizationInterfacesDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*virtualization.VirtualizationInterfacesDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return diag.FromErr(err)
-	}
-	return nil
-}
-
-func getIDsFromNestedVLAN(nestedvlans []*models.NestedVLAN) []int64 {
-	var vlans []int64
-	for _, vlan := range nestedvlans {
-		vlans = append(vlans, vlan.ID)
-	}
-	return vlans
-}
-
-type interceptWriter struct {
-	runtime.ClientRequest
-	fields []string
-}
-
-func (iw interceptWriter) SetBodyParam(p any) error {
-	out := make(map[string]any)
-	dec, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		TagName: "json",
-		Result:  &out,
-	})
-	if err != nil {
-		return err
-	}
-	if err := dec.Decode(p); err != nil {
-		return err
-	}
-	for _, fieldName := range iw.fields {
-		_, ok := out[fieldName]
-		if ok {
-			out[fieldName] = nil
-		}
-	}
-	return iw.ClientRequest.SetBodyParam(out)
-}
-
-type interceptParams struct {
-	inner  runtime.ClientRequestWriter
-	fields []string
-}
-
-// WriteToRequest implements [runtime.ClientRequestWriter].
-func (ip interceptParams) WriteToRequest(req runtime.ClientRequest, reg strfmt.Registry) error {
-	writer := interceptWriter{ClientRequest: req, fields: ip.fields}
-	return ip.inner.WriteToRequest(writer, reg)
-}
-
-// hackSerializeAsNull is a serialization middleware of sorts that will
-// serialize an explicit `null` value for all field names given in the slice.
-//
-// It does this by first serializing the params from a struct to a map
-// and then sets the value for given fields to `nil`.
-// With this the field will definitely be serialized and not omitted when set
-// to `nil`.
-func hackSerializeAsNull(fields ...string) virtualization.ClientOption {
-	return func(co *runtime.ClientOperation) {
-		originalParams := co.Params
-		co.Params = interceptParams{inner: originalParams, fields: fields}
-	}
+	return deleteObjectCtx(ctx, d, m, vmInterfaceAPIPath)
 }

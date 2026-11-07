@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -53,127 +50,54 @@ func resourceNetboxRegion() *schema.Resource {
 	}
 }
 
-func resourceNetboxRegionCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const regionAPIPath = "dcim/regions/"
 
-	data := models.WritableRegion{}
+type regionRequest struct {
+	Name        string             `json:"name"`
+	Slug        string             `json:"slug"`
+	Description string             `json:"description,omitempty"`
+	Parent      *int64             `json:"parent,omitempty"`
+	Tags        []netboxapi.TagRef `json:"tags"`
+}
 
+type regionResponse struct {
+	Name        string         `json:"name"`
+	Slug        string         `json:"slug"`
+	Description string         `json:"description"`
+	Parent      *netboxapi.Ref `json:"parent"`
+}
+
+func regionRequestFromResourceData(d *schema.ResourceData) *regionRequest {
 	name := d.Get("name").(string)
-	data.Name = &name
-
-	slugValue, slugOk := d.GetOk("slug")
-	// Default slug to generated slug if not given
-	if !slugOk {
-		data.Slug = strToPtr(getSlug(name))
-	} else {
-		data.Slug = strToPtr(slugValue.(string))
+	data := &regionRequest{
+		Name:        name,
+		Slug:        slugFromResourceData(d, name),
+		Description: d.Get("description").(string),
+		Tags:        []netboxapi.TagRef{},
 	}
-
-	if description, ok := d.GetOk("description"); ok {
-		data.Description = description.(string)
+	if v, ok := d.GetOk("parent_region_id"); ok {
+		data.Parent = int64ToPtr(int64(v.(int)))
 	}
+	return data
+}
 
-	parentRegionIDValue, ok := d.GetOk("parent_region_id")
-	if ok {
-		data.Parent = int64ToPtr(int64(parentRegionIDValue.(int)))
-	}
-
-	data.Tags = []*models.NestedTag{}
-
-	params := dcim.NewDcimRegionsCreateParams().WithData(&data)
-
-	res, err := api.Dcim.DcimRegionsCreate(params, nil)
-	if err != nil {
-		return err
-	}
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxRegionRead(d, m)
+func resourceNetboxRegionCreate(d *schema.ResourceData, m interface{}) error {
+	return createObject(d, m, regionAPIPath, regionRequestFromResourceData(d), resourceNetboxRegionRead)
 }
 
 func resourceNetboxRegionRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimRegionsReadParams().WithID(id)
-
-	res, err := api.Dcim.DcimRegionsRead(params, nil)
-
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimRegionsReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-
-	d.Set("name", res.GetPayload().Name)
-	d.Set("slug", res.GetPayload().Slug)
-	if res.GetPayload().Parent != nil {
-		d.Set("parent_region_id", res.GetPayload().Parent.ID)
-	} else {
-		d.Set("parent_region_id", nil)
-	}
-	d.Set("description", res.GetPayload().Description)
-	return nil
+	return readObject(d, m, regionAPIPath, func(r *regionResponse) {
+		d.Set("name", r.Name)
+		d.Set("slug", r.Slug)
+		d.Set("description", r.Description)
+		d.Set("parent_region_id", netboxapi.RefID(r.Parent))
+	})
 }
 
 func resourceNetboxRegionUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.WritableRegion{}
-
-	name := d.Get("name").(string)
-	data.Name = &name
-
-	slugValue, slugOk := d.GetOk("slug")
-	// Default slug to generated slug if not given
-	if !slugOk {
-		data.Slug = strToPtr(getSlug(name))
-	} else {
-		data.Slug = strToPtr(slugValue.(string))
-	}
-
-	if description, ok := d.GetOk("description"); ok {
-		data.Description = description.(string)
-	}
-
-	parentRegionIDValue, ok := d.GetOk("parent_region_id")
-	if ok {
-		data.Parent = int64ToPtr(int64(parentRegionIDValue.(int)))
-	}
-
-	data.Tags = []*models.NestedTag{}
-
-	params := dcim.NewDcimRegionsPartialUpdateParams().WithID(id).WithData(&data)
-
-	_, err := api.Dcim.DcimRegionsPartialUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	return resourceNetboxRegionRead(d, m)
+	return patchObject(d, m, regionAPIPath, regionRequestFromResourceData(d), resourceNetboxRegionRead)
 }
 
 func resourceNetboxRegionDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimRegionsDeleteParams().WithID(id)
-
-	_, err := api.Dcim.DcimRegionsDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimRegionsDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	return nil
+	return deleteObject(d, m, regionAPIPath)
 }

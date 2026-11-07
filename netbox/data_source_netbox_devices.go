@@ -4,14 +4,8 @@
 package netbox
 
 import (
-	"encoding/json"
-	"fmt"
-	"net"
 	"regexp"
-	"strings"
 
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
-	"github.com/fbreckle/go-netbox/netbox/models"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -163,206 +157,72 @@ func dataSourceNetboxDevices() *schema.Resource {
 }
 
 func dataSourceNetboxDevicesRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	params := dcim.NewDcimDevicesListParams()
-
-	// Get user limit
-	var userLimit int64 = 0
-	if limit, ok := d.GetOk("limit"); ok {
-		userLimit = int64(limit.(int))
+	// filter name in the data source -> query parameter sent to Netbox
+	allowed := map[string]string{
+		"asset_tag":      "asset_tag",
+		"cluster_id":     "cluster_id",
+		"device_type_id": "device_type_id",
+		"name":           "name",
+		"region":         "region",
+		"role_id":        "role_id",
+		"site_id":        "site_id",
+		"location_id":    "location_id",
+		"rack_id":        "rack_id",
+		"tenant_id":      "tenant_id",
+		"tags":           "tag[]",
+		"status":         "status",
 	}
 
-	if filter, ok := d.GetOk("filter"); ok {
-		var filterParams = filter.(*schema.Set)
-		for _, f := range filterParams.List() {
-			k := f.(map[string]interface{})["name"]
-			v := f.(map[string]interface{})["value"]
-			switch k {
-			case "asset_tag":
-				var assetTagString = v.(string)
-				params.AssetTag = &assetTagString
-			case "cluster_id":
-				var clusterString = v.(string)
-				params.ClusterID = &clusterString
-			case "device_type_id":
-				var deviceTypeIDString = v.(string)
-				params.DeviceTypeID = &deviceTypeIDString
-			case "name":
-				var nameString = v.(string)
-				params.Name = &nameString
-			case "region":
-				var regionString = v.(string)
-				params.Region = &regionString
-			case "role_id":
-				var roleIDString = v.(string)
-				params.RoleID = &roleIDString
-			case "site_id":
-				var siteIDString = v.(string)
-				params.SiteID = &siteIDString
-			case "location_id":
-				var locationIDString = v.(string)
-				params.LocationID = &locationIDString
-			case "rack_id":
-				var rackIDString = v.(string)
-				params.RackID = &rackIDString
-			case "tenant_id":
-				var tenantIDString = v.(string)
-				params.TenantID = &tenantIDString
-			case "tags":
-				var tagsString = v.(string)
-				params.Tag = strings.Split(tagsString, ",")
-			case "status":
-				var statusString = v.(string)
-				params.Status = &statusString
-			default:
-				return fmt.Errorf("'%s' is not a supported filter parameter", k)
-			}
-		}
-	}
-
-	// Fetch all pages with pagination (fetch all when name_regex is used)
-	paginationHelper := NewPaginationHelper(FetchAll)
-	var allDevices []*models.DeviceWithConfigContext
-
-	pageSize := paginationHelper.GetPageSize()
-	for {
-		currentOffset := paginationHelper.CurrentOffset()
-		params.Limit = &pageSize
-		params.Offset = &currentOffset
-
-		res, err := api.Dcim.DcimDevicesList(params, nil)
-		if err != nil {
-			return fmt.Errorf("failed to fetch devices at offset %d: %w", currentOffset, err)
-		}
-
-		payload := res.GetPayload()
-		allDevices = append(allDevices, payload.Results...)
-
-		if len(payload.Results) == 0 {
-			break
-		}
-
-		if !paginationHelper.ShouldContinuePaging(int64(len(allDevices)), payload.Next) {
-			break
-		}
-
-		paginationHelper.Advance(int64(len(payload.Results)))
-	}
-
-	// Apply name_regex filter to all fetched devices
-	var filteredDevices []*models.DeviceWithConfigContext
+	// Fetch everything and apply the regular expression before the limit
+	var keep func(map[string]interface{}) bool
 	if nameRegex, ok := d.GetOk("name_regex"); ok {
 		r := regexp.MustCompile(nameRegex.(string))
-		for _, device := range allDevices {
-			if r.MatchString(*device.Name) {
-				filteredDevices = append(filteredDevices, device)
-			}
-		}
-	} else {
-		filteredDevices = allDevices
+		keep = func(o map[string]interface{}) bool { return r.MatchString(jStr(o, "name")) }
 	}
 
-	// Apply user limit to filtered results
-	if userLimit > 0 && int64(len(filteredDevices)) > userLimit {
-		filteredDevices = filteredDevices[:userLimit]
+	results, err := listFilteredWith[map[string]interface{}](d, m, "dcim/devices/", "devices", allowed, nil, keep)
+	if err != nil {
+		return err
 	}
 
 	var s []map[string]interface{}
-	for _, device := range filteredDevices {
-		var mapping = make(map[string]interface{})
-		if device.AssetTag != nil {
-			mapping["asset_tag"] = *device.AssetTag
-		}
-		if device.Cluster != nil {
-			mapping["cluster_id"] = device.Cluster.ID
-		}
-		if device.Comments != "" {
-			mapping["comments"] = device.Comments
-		}
-		if device.Description != "" {
-			mapping["description"] = device.Description
-		}
-		if device.ConfigContext != nil {
-			if configContext, err := json.Marshal(device.ConfigContext); err == nil {
-				mapping["config_context"] = string(configContext)
+	for _, v := range results {
+		mapping := make(map[string]interface{})
+
+		mapping["asset_tag"] = jStr(v, "asset_tag")
+		mapping["cluster_id"] = jID(v, "cluster")
+		mapping["comments"] = jStr(v, "comments")
+		mapping["description"] = jStr(v, "description")
+		mapping["config_context"] = jJSON(v, "config_context")
+		mapping["local_context_data"] = jJSON(v, "local_context_data")
+		mapping["device_id"] = jInt(v, "id")
+		mapping["device_type_id"] = jID(v, "device_type")
+		mapping["manufacturer_id"] = jDeepID(v, "device_type", "manufacturer")
+		mapping["model"] = jNested(v, "device_type", "model")
+		mapping["name"] = jStr(v, "name")
+		mapping["location_id"] = jID(v, "location")
+		mapping["platform_id"] = jID(v, "platform")
+		mapping["site_id"] = jID(v, "site")
+		mapping["tenant_id"] = jID(v, "tenant")
+		mapping["role_id"] = jID(v, "role")
+		mapping["serial"] = jStr(v, "serial")
+		mapping["status"] = jChoice(v, "status")
+		mapping["custom_fields"] = flattenCustomFields(v["custom_fields"])
+		mapping["rack_id"] = jID(v, "rack")
+		mapping["rack_position"] = jFloatP(v, "position")
+		mapping["rack_face"] = jChoice(v, "face")
+		mapping["tags"] = jTags(v)
+		mapping["primary_ipv4"] = jIPAddress(v, "primary_ip4")
+		mapping["primary_ipv6"] = jIPAddress(v, "primary_ip6")
+		mapping["oob_ip"] = jIPAddress(v, "oob_ip")
+
+		// fields that are missing in the response are left out of the state
+		for k, val := range mapping {
+			if val == nil {
+				delete(mapping, k)
 			}
 		}
-		if device.LocalContextData != nil {
-			if localContextData, err := json.Marshal(device.LocalContextData); err == nil {
-				mapping["local_context_data"] = string(localContextData)
-			}
-		}
-		mapping["device_id"] = device.ID
-		if device.DeviceType != nil {
-			mapping["device_type_id"] = device.DeviceType.ID
-			if device.DeviceType.Manufacturer != nil {
-				mapping["manufacturer_id"] = device.DeviceType.Manufacturer.ID
-			}
-			if device.DeviceType.Model != nil {
-				mapping["model"] = *device.DeviceType.Model
-			}
-		}
-		if device.Name != nil {
-			mapping["name"] = *device.Name
-		}
-		if device.Location != nil {
-			mapping["location_id"] = device.Location.ID
-		}
-		if device.Platform != nil {
-			mapping["platform_id"] = device.Platform.ID
-		}
-		if device.Site != nil {
-			mapping["site_id"] = device.Site.ID
-		}
-		if device.Tenant != nil {
-			mapping["tenant_id"] = device.Tenant.ID
-		}
-		if device.Role != nil {
-			mapping["role_id"] = device.Role.ID
-		}
-		if device.Serial != "" {
-			mapping["serial"] = device.Serial
-		}
-		if device.Status != nil {
-			mapping["status"] = *device.Status.Value
-		}
-		if device.CustomFields != nil {
-			mapping["custom_fields"] = flattenCustomFields(device.CustomFields)
-		}
-		if device.Rack != nil {
-			mapping["rack_id"] = device.Rack.ID
-		}
-		if device.Position != nil {
-			mapping["rack_position"] = device.Position
-		}
-		if device.Face != nil {
-			mapping["rack_face"] = device.Face.Value
-		}
-		if device.Tags != nil {
-			mapping["tags"] = getTagListFromNestedTagList(device.Tags)
-		}
-		if device.PrimaryIp4 != nil {
-			ip, _, err := net.ParseCIDR(*device.PrimaryIp4.Address)
-			if err == nil {
-				primaryIPv4 := ip.String()
-				mapping["primary_ipv4"] = &primaryIPv4
-			}
-		}
-		if device.PrimaryIp6 != nil {
-			ip, _, err := net.ParseCIDR(*device.PrimaryIp6.Address)
-			if err == nil {
-				primaryIPv6 := ip.String()
-				mapping["primary_ipv6"] = &primaryIPv6
-			}
-		}
-		if device.OobIP != nil {
-			ip, _, err := net.ParseCIDR(*device.OobIP.Address)
-			if err == nil {
-				OobIP := ip.String()
-				mapping["oob_ip"] = &OobIP
-			}
-		}
+
 		s = append(s, mapping)
 	}
 

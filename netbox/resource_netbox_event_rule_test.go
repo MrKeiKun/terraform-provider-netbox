@@ -2,12 +2,8 @@ package netbox
 
 import (
 	"fmt"
-	"log"
-	"strconv"
-	"strings"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/extras"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
@@ -75,23 +71,7 @@ resource "netbox_event_rule" "test" {
 }
 
 func testAccCheckNetBoxEventRuleDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*providerState)
-
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "netbox_event_rule" {
-			continue
-		}
-
-		// Fetch the eventRule by ID
-		// Retrieve our interface by referencing it's state ID for API lookup
-		stateID, _ := strconv.ParseInt(rs.Primary.ID, 10, 64)
-		eventRule, err := client.Extras.ExtrasEventRulesRead(extras.NewExtrasEventRulesReadParams().WithID(stateID), nil)
-		if err == nil && eventRule != nil {
-			return fmt.Errorf("EventRule %s still exists", rs.Primary.ID)
-		}
-	}
-
-	return nil
+	return testAccCheckObjectsDestroyed(s, "netbox_event_rule", "extras/event-rules/")
 }
 
 func init() {
@@ -99,27 +79,7 @@ func init() {
 		Name:         "netbox_event_rule",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := extras.NewExtrasEventRulesListParams()
-			res, err := api.Extras.ExtrasEventRulesList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, eventRule := range res.GetPayload().Results {
-				if strings.HasPrefix(*eventRule.Name, testPrefix) {
-					deleteParams := extras.NewExtrasEventRulesDeleteParams().WithID(eventRule.ID)
-					_, err := api.Extras.ExtrasEventRulesDelete(deleteParams, nil)
-					if err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted a eventRule")
-				}
-			}
-			return nil
+			return sweepByName(region, "extras/event-rules/", "name")
 		},
 	})
 }

@@ -1,10 +1,6 @@
 package netbox
 
 import (
-	"fmt"
-
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
-	"github.com/fbreckle/go-netbox/netbox/models"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -74,74 +70,32 @@ From the [official documentation](https://netboxlabs.com/docs/netbox/models/dcim
 }
 
 func dataSourceNetboxManufacturerRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	params := dcim.NewDcimManufacturersListParams()
-
-	var userLimit int64 = 0
-	if limitValue, ok := d.GetOk("limit"); ok {
-		userLimit = int64(limitValue.(int))
+	// filter name in the data source -> query parameter sent to Netbox
+	allowed := map[string]string{
+		"name": "name",
+		"tag":  "tag",
+		"slug": "slug",
 	}
 
-	if filter, ok := d.GetOk("filter"); ok {
-		filterParams := filter.(*schema.Set)
-		for _, f := range filterParams.List() {
-			k := f.(map[string]interface{})["name"]
-			v := f.(map[string]interface{})["value"]
-			vString := v.(string)
-			switch k {
-			case "name":
-				params.Name = &vString
-			case "tag":
-				params.Tag = []string{vString}
-			case "slug":
-				params.Slug = &vString
-			default:
-				return fmt.Errorf("'%s' is not a supported filter parameter", k)
-			}
-		}
-	}
-
-	paginationHelper := NewPaginationHelper(userLimit)
-	var allManufacturers []*models.Manufacturer
-
-	pageSize := paginationHelper.GetPageSize()
-	for {
-		currentOffset := paginationHelper.CurrentOffset()
-		params.Limit = &pageSize
-		params.Offset = &currentOffset
-
-		res, err := api.Dcim.DcimManufacturersList(params, nil)
-		if err != nil {
-			return fmt.Errorf("failed to fetch manufacturers at offset %d: %w", currentOffset, err)
-		}
-
-		payload := res.Payload
-		allManufacturers = append(allManufacturers, payload.Results...)
-
-		if len(payload.Results) == 0 {
-			break
-		}
-
-		if !paginationHelper.ShouldContinuePaging(int64(len(allManufacturers)), payload.Next) {
-			break
-		}
-
-		paginationHelper.Advance(int64(len(payload.Results)))
+	results, err := listFiltered[map[string]interface{}](d, m, "dcim/manufacturers/", "manufacturers", allowed, nil)
+	if err != nil {
+		return err
 	}
 
 	var s []map[string]interface{}
-	for _, v := range allManufacturers {
+	for _, v := range results {
 		mapping := make(map[string]interface{})
-		mapping["id"] = v.ID
-		if v.Description != "" {
-			mapping["description"] = v.Description
-		}
-		if v.Slug != nil {
-			mapping["slug"] = *v.Slug
-		}
-		if v.Name != nil {
-			mapping["name"] = *v.Name
+
+		mapping["id"] = jInt(v, "id")
+		mapping["description"] = jStr(v, "description")
+		mapping["slug"] = jStr(v, "slug")
+		mapping["name"] = jStr(v, "name")
+
+		// fields that are missing in the response are left out of the state
+		for k, val := range mapping {
+			if val == nil {
+				delete(mapping, k)
+			}
 		}
 
 		s = append(s, mapping)

@@ -67,7 +67,7 @@ func TestDataSourceNetboxDevicesPagination(t *testing.T) {
 		t.Fatalf("failed to create client: %v", err)
 	}
 
-	state := &providerState{NetBoxAPI: client}
+	state := &providerState{rest: client}
 	d := schema.TestResourceDataRaw(t, dataSourceNetboxDevices().Schema, map[string]interface{}{})
 
 	if err := dataSourceNetboxDevicesRead(d, state); err != nil {

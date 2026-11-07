@@ -1,10 +1,10 @@
 package netbox
 
 import (
-	"errors"
+	"net/url"
 	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -57,47 +57,36 @@ func dataSourceNetboxRegion() *schema.Resource {
 	}
 }
 
+type regionDataSourceResponse struct {
+	ID          int64          `json:"id"`
+	Name        string         `json:"name"`
+	Slug        string         `json:"slug"`
+	Description string         `json:"description"`
+	Parent      *netboxapi.Ref `json:"parent"`
+}
+
 func dataSourceNetboxRegionRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	params := dcim.NewDcimRegionsListParams()
-
+	query := url.Values{}
 	if filter, ok := d.GetOk("filter"); ok {
-		var filterParams = filter.(*schema.Set)
-		for _, f := range filterParams.List() {
-			id := f.(map[string]interface{})["id"]
-			if id != nil {
-				vID := id.(int)
-				if vID != 0 {
-					vIDString := strconv.Itoa(vID)
-					params.ID = &vIDString
-				}
+		for _, f := range filter.(*schema.Set).List() {
+			filterMap := f.(map[string]interface{})
+			if id, ok := filterMap["id"].(int); ok && id != 0 {
+				query.Set("id", strconv.Itoa(id))
 			}
-			name := f.(map[string]interface{})["name"]
-			if name != nil {
-				vName := name.(string)
-				params.Name = &vName
+			if name, ok := filterMap["name"].(string); ok && name != "" {
+				query.Set("name", name)
 			}
-			slug := f.(map[string]interface{})["slug"]
-			if slug != nil {
-				vSlug := slug.(string)
-				params.Slug = &vSlug
+			if slug, ok := filterMap["slug"].(string); ok && slug != "" {
+				query.Set("slug", slug)
 			}
 		}
 	}
 
-	res, err := api.Dcim.DcimRegionsList(params, nil)
+	result, err := findOne[regionDataSourceResponse](m, "dcim/regions/", query, "region")
 	if err != nil {
 		return err
 	}
 
-	if *res.GetPayload().Count > int64(1) {
-		return errors.New("more than one region returned, specify a more narrow filter")
-	}
-	if *res.GetPayload().Count == int64(0) {
-		return errors.New("no region found matching filter")
-	}
-	result := res.GetPayload().Results[0]
 	d.SetId(strconv.FormatInt(result.ID, 10))
 	d.Set("name", result.Name)
 	d.Set("slug", result.Slug)

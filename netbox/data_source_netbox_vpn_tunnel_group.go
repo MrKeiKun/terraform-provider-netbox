@@ -1,10 +1,10 @@
 package netbox
 
 import (
-	"errors"
+	"net/url"
 	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/vpn"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -38,42 +38,29 @@ func dataSourceNetboxVpnTunnelGroup() *schema.Resource {
 	}
 }
 
+type vpnTunnelGroupDataSourceResponse struct {
+	ID          int64              `json:"id"`
+	Name        string             `json:"name"`
+	Slug        string             `json:"slug"`
+	Description string             `json:"description"`
+	Tags        []netboxapi.TagRef `json:"tags"`
+}
+
 func dataSourceNetboxVpnTunnelGroupRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	params := vpn.NewVpnTunnelGroupsListParams()
-
-	limit := int64(2) // Limit of 2 is enough
-	params.Limit = &limit
-
-	if name, ok := d.Get("name").(string); ok && name != "" {
-		params.Name = &name
-	}
-	if slug, ok := d.Get("slug").(string); ok && slug != "" {
-		params.Slug = &slug
-	}
-
-	if tag, ok := d.Get("tag").(string); ok && tag != "" {
-		params.Tag = []string{tag} //TODO: switch schema to list?
-	}
-
-	res, err := api.Vpn.VpnTunnelGroupsList(params, nil)
+	query := url.Values{}
+	addStrQuery(query, d, "name", "name")
+	addStrQuery(query, d, "slug", "slug")
+	addStrQuery(query, d, "tag", "tag")
+	r, err := findOne[vpnTunnelGroupDataSourceResponse](m, "vpn/tunnel-groups/", query, "tunnel group")
 	if err != nil {
 		return err
 	}
 
-	if *res.GetPayload().Count > int64(1) {
-		return errors.New("more than one tunnel group returned, specify a more narrow filter")
-	}
-	if *res.GetPayload().Count == int64(0) {
-		return errors.New("no tunnel group found matching filter")
-	}
-	result := res.GetPayload().Results[0]
-	d.SetId(strconv.FormatInt(result.ID, 10))
-	d.Set("id", result.ID)
-	d.Set("name", result.Name)
-	d.Set("slug", result.Slug)
-	d.Set("description", result.Description)
-	d.Set("tags", getTagListFromNestedTagList(result.Tags))
+	d.SetId(strconv.FormatInt(r.ID, 10))
+	d.Set("id", r.ID)
+	d.Set("name", r.Name)
+	d.Set("slug", r.Slug)
+	d.Set("description", r.Description)
+	d.Set("tags", tagNames(r.Tags))
 	return nil
 }

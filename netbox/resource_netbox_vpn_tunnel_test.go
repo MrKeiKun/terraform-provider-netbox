@@ -2,11 +2,8 @@ package netbox
 
 import (
 	"fmt"
-	"log"
-	"strings"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/vpn"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
@@ -64,27 +61,7 @@ func init() {
 		Name:         "netbox_vpn_tunnel",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := vpn.NewVpnTunnelsListParams()
-			res, err := api.Vpn.VpnTunnelsList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, vpnTunnel := range res.GetPayload().Results {
-				if strings.HasPrefix(*vpnTunnel.Name, testPrefix) {
-					deleteParams := vpn.NewVpnTunnelsDeleteParams().WithID(vpnTunnel.ID)
-					_, err := api.Vpn.VpnTunnelsDelete(deleteParams, nil)
-					if err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted a vpnTunnel")
-				}
-			}
-			return nil
+			return sweepByName(region, "vpn/tunnels/", "name")
 		},
 	})
 }

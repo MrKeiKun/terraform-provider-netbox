@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -49,111 +46,66 @@ func resourceNetboxAsn() *schema.Resource {
 	}
 }
 
+const asnAPIPath = "ipam/asns/"
+
+type asnRequest struct {
+	Asn         *int64             `json:"asn"`
+	Rir         *int64             `json:"rir"`
+	Description string             `json:"description,omitempty"`
+	Comments    string             `json:"comments,omitempty"`
+	Tags        []netboxapi.TagRef `json:"tags"`
+}
+
+type asnResponse struct {
+	Asn         *int64             `json:"asn"`
+	Rir         *netboxapi.Ref     `json:"rir"`
+	Description string             `json:"description"`
+	Comments    string             `json:"comments"`
+	Tags        []netboxapi.TagRef `json:"tags"`
+}
+
+func asnRequestFromResourceData(api *providerState, d *schema.ResourceData) (*asnRequest, error) {
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
+	if err != nil {
+		return nil, err
+	}
+	data := &asnRequest{
+		Asn:         int64ToPtr(int64(d.Get("asn").(int))),
+		Rir:         int64ToPtr(int64(d.Get("rir_id").(int))),
+		Description: d.Get("description").(string),
+		Comments:    d.Get("comments").(string),
+		Tags:        tags,
+	}
+	return data, nil
+}
+
 func resourceNetboxAsnCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	data := models.WritableASN{}
-
-	asn := int64(d.Get("asn").(int))
-	data.Asn = &asn
-
-	rir := int64(d.Get("rir_id").(int))
-	data.Rir = &rir
-
-	data.Description = d.Get("description").(string)
-	data.Comments = d.Get("comments").(string)
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+	data, err := asnRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	params := ipam.NewIpamAsnsCreateParams().WithData(&data)
-
-	res, err := api.Ipam.IpamAsnsCreate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxAsnRead(d, m)
+	return createObject(d, m, asnAPIPath, data, resourceNetboxAsnRead)
 }
 
 func resourceNetboxAsnRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := ipam.NewIpamAsnsReadParams().WithID(id)
-
-	res, err := api.Ipam.IpamAsnsRead(params, nil)
-
-	if err != nil {
-		if errresp, ok := err.(*ipam.IpamAsnsReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-
-	asn := res.GetPayload()
-	d.Set("asn", asn.Asn)
-	d.Set("rir_id", asn.Rir.ID)
-	d.Set("description", asn.Description)
-	d.Set("comments", asn.Comments)
-	api.readTags(d, asn.Tags)
-
-	return nil
+	return readObject(d, m, asnAPIPath, func(r *asnResponse) {
+		d.Set("asn", r.Asn)
+		d.Set("rir_id", netboxapi.RefID(r.Rir))
+		d.Set("description", r.Description)
+		d.Set("comments", r.Comments)
+		api.readTagRefs(d, r.Tags)
+	})
 }
 
 func resourceNetboxAsnUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.WritableASN{}
-
-	asn := int64(d.Get("asn").(int))
-	data.Asn = &asn
-
-	rir := int64(d.Get("rir_id").(int))
-	data.Rir = &rir
-
-	data.Description = d.Get("description").(string)
-	data.Comments = d.Get("comments").(string)
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+	data, err := asnRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	params := ipam.NewIpamAsnsUpdateParams().WithID(id).WithData(&data)
-
-	_, err = api.Ipam.IpamAsnsUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	return resourceNetboxAsnRead(d, m)
+	return putObject(d, m, asnAPIPath, data, resourceNetboxAsnRead)
 }
 
 func resourceNetboxAsnDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := ipam.NewIpamAsnsDeleteParams().WithID(id)
-
-	_, err := api.Ipam.IpamAsnsDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*ipam.IpamAsnsDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	return nil
+	return deleteObject(d, m, asnAPIPath)
 }

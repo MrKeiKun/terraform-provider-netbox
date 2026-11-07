@@ -1,12 +1,13 @@
 package netbox
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strings"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
@@ -158,16 +159,13 @@ func init() {
 				return fmt.Errorf("Error getting client: %s", err)
 			}
 			api := m.(*providerState)
-			params := dcim.NewDcimSitesListParams()
-			res, err := api.Dcim.DcimSitesList(params, nil)
+			sites, err := netboxapi.List[siteResponse](context.Background(), api.rest, siteAPIPath, nil)
 			if err != nil {
 				return err
 			}
-			for _, site := range res.GetPayload().Results {
-				if strings.HasPrefix(*site.Name, testPrefix) {
-					deleteParams := dcim.NewDcimSitesDeleteParams().WithID(site.ID)
-					_, err := api.Dcim.DcimSitesDelete(deleteParams, nil)
-					if err != nil {
+			for _, site := range sites {
+				if strings.HasPrefix(site.Name, testPrefix) {
+					if err := netboxapi.Delete(context.Background(), api.rest, siteAPIPath, site.ID); err != nil {
 						return err
 					}
 					log.Print("[DEBUG] Deleted a site")

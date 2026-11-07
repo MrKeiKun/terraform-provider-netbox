@@ -1,10 +1,10 @@
 package netbox
 
 import (
+	"context"
 	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/virtualization"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -33,6 +33,28 @@ func resourceNetboxVirtualMachineInterfacePrimaryMACAddress() *schema.Resource {
 	}
 }
 
+// interfacePrimaryMACResponse holds the primary MAC address of an interface.
+type interfacePrimaryMACResponse struct {
+	ID                int64           `json:"id"`
+	PrimaryMacAddress *netboxapi.Ref  `json:"primary_mac_address"`
+	TaggedVlans       []netboxapi.Ref `json:"tagged_vlans"`
+	UntaggedVlan      *netboxapi.Ref  `json:"untagged_vlan"`
+}
+
+// interfacePrimaryMACBody builds the update for the primary MAC address of an
+// interface. NetBox drops the VLANs of an interface on every save when its mode
+// is not "tagged", so the current VLANs are sent along to keep them.
+func interfacePrimaryMACBody(iface *interfacePrimaryMACResponse, macAddressID int64) map[string]interface{} {
+	body := map[string]interface{}{
+		"primary_mac_address": ipAssignment(macAddressID),
+		"tagged_vlans":        netboxapi.IDs(iface.TaggedVlans),
+	}
+	if iface.UntaggedVlan != nil {
+		body["untagged_vlan"] = iface.UntaggedVlan.ID
+	}
+	return body
+}
+
 func resourceNetboxVirtualMachineInterfacePrimaryMACAddressCreate(d *schema.ResourceData, m interface{}) error {
 	d.SetId(strconv.Itoa(d.Get("interface_id").(int)))
 
@@ -42,24 +64,20 @@ func resourceNetboxVirtualMachineInterfacePrimaryMACAddressCreate(d *schema.Reso
 func resourceNetboxVirtualMachineInterfacePrimaryMACAddressRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := virtualization.NewVirtualizationInterfacesReadParams().WithID(id)
 
-	res, err := api.Virtualization.VirtualizationInterfacesRead(params, nil)
+	iface, err := netboxapi.Get[interfacePrimaryMACResponse](context.Background(), api.rest, vmInterfaceAPIPath, id)
 	if err != nil {
-		if errresp, ok := err.(*virtualization.VirtualizationInterfacesReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
+		if netboxapi.IsNotFound(err) {
+			// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
+			d.SetId("")
+			return nil
 		}
 		return err
 	}
 
-	if res.GetPayload().PrimaryMacAddress != nil {
-		d.Set("mac_address_id", res.GetPayload().PrimaryMacAddress.ID)
-		d.Set("interface_id", res.GetPayload().ID)
+	if iface.PrimaryMacAddress != nil {
+		d.Set("mac_address_id", iface.PrimaryMacAddress.ID)
+		d.Set("interface_id", iface.ID)
 	} else {
 		d.SetId("")
 	}
@@ -72,82 +90,15 @@ func resourceNetboxVirtualMachineInterfacePrimaryMACAddressUpdate(d *schema.Reso
 	interfaceID := int64(d.Get("interface_id").(int))
 	macAddressID := int64(d.Get("mac_address_id").(int))
 
-	// because the go-netbox library does not have patch support atm, we have to get the whole object and re-put it
-
-	// get the interface
-	readParams := virtualization.NewVirtualizationInterfacesReadParams().WithID(interfaceID)
-	res, err := api.Virtualization.VirtualizationInterfacesRead(readParams, nil)
+	// The interface is read first, see interfacePrimaryMACBody.
+	iface, err := netboxapi.Get[interfacePrimaryMACResponse](context.Background(), api.rest, vmInterfaceAPIPath, interfaceID)
 	if err != nil {
 		return err
 	}
-	iface := res.GetPayload()
-
-	// then update the FULL interface with ALL tracked attributes
-	data := &models.WritableVMInterface{
-		Name:           iface.Name,
-		VirtualMachine: &iface.VirtualMachine.ID, // Allowed to set directly as field is required
-		CustomFields:   iface.CustomFields,
-		Description:    iface.Description,
-		Enabled:        iface.Enabled,
-		ID:             iface.ID,
-		MacAddress:     iface.MacAddress,
-		Mtu:            iface.Mtu,
-		Tags:           iface.Tags,
-		URL:            iface.URL,
-	}
-
-	// the netbox API sends the URL property as part of NestedTag, but it does not accept the URL property when we send it back
-	// so set it to empty
-	// display too
-	for _, tag := range data.Tags {
-		tag.URL = ""
-		tag.Display = ""
-	}
-
-	if iface.Bridge != nil {
-		data.Bridge = &iface.Bridge.ID
-	}
-
-	if iface.Vrf != nil {
-		data.Vrf = &iface.Vrf.ID
-	}
-
-	if iface.UntaggedVlan != nil {
-		data.UntaggedVlan = &iface.UntaggedVlan.ID
-	}
-
-	if iface.Parent != nil {
-		data.Parent = &iface.Parent.ID
-	}
-
-	if iface.Mode != nil {
-		data.Mode = *iface.Mode.Value
-	}
-
-	if iface.L2vpnTermination != nil {
-		data.L2vpnTermination = strconv.FormatInt(iface.L2vpnTermination.ID, 10)
-	}
-
-	if iface.TaggedVlans != nil {
-		vlanTags := make([]int64, len(iface.TaggedVlans))
-		for i, vlan := range iface.TaggedVlans {
-			vlanTags[i] = vlan.ID
-		}
-		data.TaggedVlans = vlanTags
-	}
-
-	if macAddressID == -1 {
-		data.PrimaryMacAddress = nil
-	} else {
-		data.PrimaryMacAddress = &macAddressID
-	}
-
-	updateParams := virtualization.NewVirtualizationInterfacesUpdateParams().WithID(interfaceID).WithData(data)
-
-	_, err = api.Virtualization.VirtualizationInterfacesUpdate(updateParams, nil)
-	if err != nil {
+	if _, err := netboxapi.Patch[netboxapi.Ref](context.Background(), api.rest, vmInterfaceAPIPath, interfaceID, interfacePrimaryMACBody(iface, macAddressID)); err != nil {
 		return err
 	}
+
 	return resourceNetboxVirtualMachineInterfacePrimaryMACAddressRead(d, m)
 }
 

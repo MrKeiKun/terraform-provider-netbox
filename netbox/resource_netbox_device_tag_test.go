@@ -1,11 +1,12 @@
 package netbox
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
@@ -123,12 +124,12 @@ func testAccCheckNetboxDevicePrimaryIP4(deviceResourceName, ipResourceName strin
 		}
 
 		api := testAccProvider.Meta().(*providerState)
-		res, err := api.Dcim.DcimDevicesRead(dcim.NewDcimDevicesReadParams().WithID(deviceID), nil)
+		device, err := netboxapi.Get[primaryIPResponse](context.Background(), api.rest, deviceAPIPath, deviceID)
 		if err != nil {
 			return err
 		}
 
-		primaryIP4 := res.GetPayload().PrimaryIp4
+		primaryIP4 := device.PrimaryIp4
 		if primaryIP4 == nil {
 			return fmt.Errorf("device %d has no primary_ip4 set, expected %d", deviceID, expectedIPID)
 		}

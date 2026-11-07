@@ -2,11 +2,8 @@ package netbox
 
 import (
 	"fmt"
-	"log"
-	"strings"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/users"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
@@ -95,27 +92,7 @@ func init() {
 		Name:         "netbox_user",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := users.NewUsersUsersListParams()
-			res, err := api.Users.UsersUsersList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, user := range res.GetPayload().Results {
-				if strings.HasPrefix(*user.Username, testPrefix) {
-					deleteParams := users.NewUsersUsersDeleteParams().WithID(user.ID)
-					_, err := api.Users.UsersUsersDelete(deleteParams, nil)
-					if err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted a user")
-				}
-			}
-			return nil
+			return sweepByName(region, "users/users/", "username")
 		},
 	})
 }

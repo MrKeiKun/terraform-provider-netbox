@@ -3,10 +3,8 @@ package netbox
 import (
 	"context"
 	"encoding/json"
-	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/extras"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -52,147 +50,84 @@ func resourceNetboxConfigTemplate() *schema.Resource {
 	}
 }
 
-func resourceNetboxConfigTemplateCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := m.(*providerState)
+const configTemplateAPIPath = "extras/config-templates/"
 
-	var diags diag.Diagnostics
+type configTemplateRequest struct {
+	Name              string             `json:"name"`
+	Description       string             `json:"description,omitempty"`
+	TemplateCode      string             `json:"template_code"`
+	EnvironmentParams interface{}        `json:"environment_params,omitempty"`
+	Tags              []netboxapi.TagRef `json:"tags"`
+}
 
-	name := d.Get("name").(string)
-	description := d.Get("description").(string)
-	templateCode := d.Get("template_code").(string)
+type configTemplateResponse struct {
+	Name              string      `json:"name"`
+	Description       string      `json:"description"`
+	TemplateCode      string      `json:"template_code"`
+	EnvironmentParams interface{} `json:"environment_params"`
+}
 
-	tags, _ := getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+func configTemplateRequestFromResourceData(api *providerState, d *schema.ResourceData) (*configTemplateRequest, error) {
+	// A failed tag lookup leaves the tags empty, same as before.
+	tags, _ := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
 
-	data := models.WritableConfigTemplate{
-		Name:         &name,
-		Description:  description,
-		TemplateCode: &templateCode,
+	data := &configTemplateRequest{
+		Name:         d.Get("name").(string),
+		Description:  d.Get("description").(string),
+		TemplateCode: d.Get("template_code").(string),
 		Tags:         tags,
 	}
 
 	// Unmarshal environment_params and add it to data if valid
-	environmentParamsJSON, ok := d.GetOk("environment_params")
-
-	if ok {
+	if environmentParamsJSON, ok := d.GetOk("environment_params"); ok {
 		var environmentParams any
-		err := json.Unmarshal([]byte(environmentParamsJSON.(string)), &environmentParams)
-		if err != nil {
-			return diag.FromErr(err)
+		if err := json.Unmarshal([]byte(environmentParamsJSON.(string)), &environmentParams); err != nil {
+			return nil, err
 		}
-
 		data.EnvironmentParams = environmentParams
 	}
+	return data, nil
+}
 
-	params := extras.NewExtrasConfigTemplatesCreateParams().WithData(&data)
-
-	res, err := api.Extras.ExtrasConfigTemplatesCreate(params, nil)
+func resourceNetboxConfigTemplateCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	data, err := configTemplateRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return diags
+	return createObjectCtx(ctx, d, m, configTemplateAPIPath, data, resourceNetboxConfigTemplateRead)
 }
 
 func resourceNetboxConfigTemplateRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-
-	var diags diag.Diagnostics
-
-	params := extras.NewExtrasConfigTemplatesReadParams().WithID(id)
-
-	res, err := api.Extras.ExtrasConfigTemplatesRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*extras.ExtrasConfigTemplatesReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
+	var marshalErr error
+	diags := readObjectCtx(ctx, d, m, configTemplateAPIPath, func(tmpl *configTemplateResponse) {
+		d.Set("name", tmpl.Name)
+		d.Set("description", tmpl.Description)
+		d.Set("template_code", tmpl.TemplateCode)
+		if tmpl.EnvironmentParams != nil {
+			environmentParamsJSON, err := json.Marshal(tmpl.EnvironmentParams)
+			if err != nil {
+				marshalErr = err
+				return
 			}
+			d.Set("environment_params", string(environmentParamsJSON))
+		} else {
+			d.Set("environment_params", "{}")
 		}
-		return diag.FromErr(err)
+	})
+	if marshalErr != nil {
+		diags = append(diags, diag.FromErr(marshalErr)...)
 	}
-
-	tmpl := res.GetPayload()
-
-	d.Set("name", tmpl.Name)
-	d.Set("description", tmpl.Description)
-	d.Set("template_code", tmpl.TemplateCode)
-
-	if tmpl.EnvironmentParams != nil {
-		environmentParamsJSON, err := json.Marshal(tmpl.EnvironmentParams)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		d.Set("environment_params", string(environmentParamsJSON))
-	} else {
-		d.Set("environment_params", "{}")
-	}
-
 	return diags
 }
 
 func resourceNetboxConfigTemplateUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := m.(*providerState)
-
-	var diags diag.Diagnostics
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-
-	name := d.Get("name").(string)
-	description := d.Get("description").(string)
-	templateCode := d.Get("template_code").(string)
-
-	tags, _ := getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
-
-	data := models.WritableConfigTemplate{
-		Name:         &name,
-		Description:  description,
-		TemplateCode: &templateCode,
-		Tags:         tags,
-	}
-
-	// Unmarshal environment_params and add it to data if valid
-	environmentParamsJSON, ok := d.GetOk("environment_params")
-
-	if ok {
-		var environmentParams any
-		err := json.Unmarshal([]byte(environmentParamsJSON.(string)), &environmentParams)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		data.EnvironmentParams = environmentParams
-	}
-
-	params := extras.NewExtrasConfigTemplatesUpdateParams().WithID(id).WithData(&data)
-	_, err := api.Extras.ExtrasConfigTemplatesUpdate(params, nil)
+	data, err := configTemplateRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	return diags
+	return putObjectCtx(ctx, d, m, configTemplateAPIPath, data, resourceNetboxConfigTemplateRead)
 }
 
 func resourceNetboxConfigTemplateDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := extras.NewExtrasConfigTemplatesDeleteParams().WithID(id)
-
-	_, err := api.Extras.ExtrasConfigTemplatesDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*extras.ExtrasConfigTemplatesDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return diag.FromErr(err)
-	}
-	return nil
+	return deleteObjectCtx(ctx, d, m, configTemplateAPIPath)
 }

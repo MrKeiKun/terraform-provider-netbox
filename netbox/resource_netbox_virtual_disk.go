@@ -2,10 +2,8 @@ package netbox
 
 import (
 	"context"
-	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/virtualization"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -54,148 +52,77 @@ func resourceNetboxVirtualDisks() *schema.Resource {
 	}
 }
 
-func resourceNetboxVirtualDisksCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := m.(*providerState)
+const virtualDiskAPIPath = "virtualization/virtual-disks/"
 
+type virtualDiskRequest struct {
+	Name           string             `json:"name"`
+	Size           *int64             `json:"size"`
+	VirtualMachine *int64             `json:"virtual_machine"`
+	Description    string             `json:"description,omitempty"`
+	CustomFields   interface{}        `json:"custom_fields,omitempty"`
+	Tags           []netboxapi.TagRef `json:"tags"`
+}
+
+type virtualDiskResponse struct {
+	Name           string                 `json:"name"`
+	Size           *int64                 `json:"size"`
+	VirtualMachine *netboxapi.Ref         `json:"virtual_machine"`
+	Description    string                 `json:"description"`
+	CustomFields   map[string]interface{} `json:"custom_fields"`
+	Tags           []netboxapi.TagRef     `json:"tags"`
+}
+
+func virtualDiskRequestFromResourceData(api *providerState, d *schema.ResourceData) (*virtualDiskRequest, error) {
 	name := d.Get("name").(string)
-	size := d.Get("size_mb").(int)
-	virtualMachineID := d.Get("virtual_machine_id").(int)
-
-	data := models.WritableVirtualDisk{
-		Name:           &name,
-		Size:           int64ToPtr(int64(size)),
-		VirtualMachine: int64ToPtr(int64(virtualMachineID)),
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
+	if err != nil {
+		return nil, err
 	}
-
-	descriptionValue, ok := d.GetOk("description")
-	if ok {
-		description := descriptionValue.(string)
-		data.Description = description
+	data := &virtualDiskRequest{
+		Name:           name,
+		Size:           int64ToPtr(int64(d.Get("size_mb").(int))),
+		VirtualMachine: int64ToPtr(int64(d.Get("virtual_machine_id").(int))),
+		Description:    getOptionalStr(d, "description", true),
+		Tags:           tags,
 	}
-
-	ct, ok := d.GetOk(customFieldsKey)
-	if ok {
+	if ct, ok := d.GetOk(customFieldsKey); ok {
 		data.CustomFields = ct
 	}
+	return data, nil
+}
 
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+func resourceNetboxVirtualDisksCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	data, err := virtualDiskRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	params := virtualization.NewVirtualizationVirtualDisksCreateParams().WithData(&data)
-
-	res, err := api.Virtualization.VirtualizationVirtualDisksCreate(params, nil)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxVirtualDisksRead(ctx, d, m)
+	return createObjectCtx(ctx, d, m, virtualDiskAPIPath, data, resourceNetboxVirtualDisksRead)
 }
 
 func resourceNetboxVirtualDisksRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-
-	params := virtualization.NewVirtualizationVirtualDisksReadParams().WithID(id)
-
-	res, err := api.Virtualization.VirtualizationVirtualDisksRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*virtualization.VirtualizationVirtualDisksReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				d.SetId("")
-				return nil
-			}
+	return readObjectCtx(ctx, d, m, virtualDiskAPIPath, func(r *virtualDiskResponse) {
+		d.Set("name", r.Name)
+		d.Set("size_mb", r.Size)
+		if r.VirtualMachine != nil {
+			d.Set("virtual_machine_id", r.VirtualMachine.ID)
 		}
-		return diag.FromErr(err)
-	}
-
-	VirtualDisks := res.GetPayload()
-
-	d.Set("name", VirtualDisks.Name)
-	d.Set("description", VirtualDisks.Description)
-
-	if VirtualDisks.Size != nil {
-		d.Set("size_mb", *VirtualDisks.Size)
-	}
-	if VirtualDisks.VirtualMachine != nil {
-		d.Set("virtual_machine_id", VirtualDisks.VirtualMachine.ID)
-	}
-
-	cf := getCustomFields(res.GetPayload().CustomFields)
-	if cf != nil {
-		d.Set(customFieldsKey, cf)
-	}
-
-	api.readTags(d, VirtualDisks.Tags)
-	return nil
+		d.Set("description", r.Description)
+		if cf := getCustomFields(r.CustomFields); cf != nil {
+			d.Set(customFieldsKey, cf)
+		}
+		api.readTagRefs(d, r.Tags)
+	})
 }
 
 func resourceNetboxVirtualDisksUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.WritableVirtualDisk{}
-
-	name := d.Get("name").(string)
-	size := int64(d.Get("size_mb").(int))
-	virtualMachineID := int64(d.Get("virtual_machine_id").(int))
-
-	data.Name = &name
-	data.Size = &size
-	data.VirtualMachine = &virtualMachineID
-
-	ct, ok := d.GetOk(customFieldsKey)
-	if ok {
-		data.CustomFields = ct
-	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+	data, err := virtualDiskRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	if d.HasChanges("description") {
-		// check if description is set
-		if descriptionValue, ok := d.GetOk("description"); ok {
-			data.Description = descriptionValue.(string)
-		} else {
-			data.Description = " "
-		}
-	}
-
-	params := virtualization.NewVirtualizationVirtualDisksUpdateParams().WithID(id).WithData(&data)
-
-	_, err = api.Virtualization.VirtualizationVirtualDisksUpdate(params, nil)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return resourceNetboxVirtualDisksRead(ctx, d, m)
+	return putObjectCtx(ctx, d, m, virtualDiskAPIPath, data, resourceNetboxVirtualDisksRead)
 }
 
 func resourceNetboxVirtualDisksDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := virtualization.NewVirtualizationVirtualDisksDeleteParams().WithID(id)
-
-	_, err := api.Virtualization.VirtualizationVirtualDisksDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*virtualization.VirtualizationVirtualDisksDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return diag.FromErr(err)
-	}
-
-	return nil
+	return deleteObjectCtx(ctx, d, m, virtualDiskAPIPath)
 }

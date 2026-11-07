@@ -2,11 +2,8 @@ package netbox
 
 import (
 	"fmt"
-	"log"
-	"strings"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
@@ -76,27 +73,7 @@ func init() {
 		Name:         "netbox_site_group",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := dcim.NewDcimSiteGroupsListParams()
-			res, err := api.Dcim.DcimSiteGroupsList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, siteGroup := range res.GetPayload().Results {
-				if strings.HasPrefix(*siteGroup.Name, testPrefix) {
-					deleteParams := dcim.NewDcimSiteGroupsDeleteParams().WithID(siteGroup.ID)
-					_, err := api.Dcim.DcimSiteGroupsDelete(deleteParams, nil)
-					if err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted a site group")
-				}
-			}
-			return nil
+			return sweepByName(region, "dcim/site-groups/", "name")
 		},
 	})
 }

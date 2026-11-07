@@ -1,10 +1,10 @@
 package netbox
 
 import (
+	"context"
 	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -106,99 +106,133 @@ func resourceNetboxSite() *schema.Resource {
 	}
 }
 
-func resourceNetboxSiteCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const siteAPIPath = "dcim/sites/"
 
-	data := models.WritableSite{}
+// siteRequest is the body sent to NetBox when writing a site.
+type siteRequest struct {
+	Name            string             `json:"name"`
+	Slug            string             `json:"slug"`
+	Status          string             `json:"status,omitempty"`
+	Description     string             `json:"description,omitempty"`
+	Comments        string             `json:"comments,omitempty"`
+	Facility        string             `json:"facility,omitempty"`
+	Latitude        *float64           `json:"latitude"`
+	Longitude       *float64           `json:"longitude"`
+	PhysicalAddress string             `json:"physical_address,omitempty"`
+	ShippingAddress string             `json:"shipping_address,omitempty"`
+	Region          *int64             `json:"region,omitempty"`
+	Group           *int64             `json:"group,omitempty"`
+	Tenant          *int64             `json:"tenant,omitempty"`
+	TimeZone        *string            `json:"time_zone,omitempty"`
+	Asns            []int64            `json:"asns"`
+	Tags            []netboxapi.TagRef `json:"tags"`
+	CustomFields    interface{}        `json:"custom_fields,omitempty"`
+}
 
-	name := d.Get("name").(string)
-	data.Name = &name
+// siteResponse is the subset of the NetBox site object this resource reads.
+type siteResponse struct {
+	ID              int64                  `json:"id"`
+	Name            string                 `json:"name"`
+	Slug            string                 `json:"slug"`
+	Status          *netboxapi.Choice      `json:"status"`
+	Description     string                 `json:"description"`
+	Comments        string                 `json:"comments"`
+	Facility        string                 `json:"facility"`
+	Latitude        *float64               `json:"latitude"`
+	Longitude       *float64               `json:"longitude"`
+	PhysicalAddress string                 `json:"physical_address"`
+	ShippingAddress string                 `json:"shipping_address"`
+	Region          *netboxapi.Ref         `json:"region"`
+	Group           *netboxapi.Ref         `json:"group"`
+	Tenant          *netboxapi.Ref         `json:"tenant"`
+	TimeZone        *string                `json:"time_zone"`
+	Asns            []netboxapi.Ref        `json:"asns"`
+	Tags            []netboxapi.TagRef     `json:"tags"`
+	CustomFields    map[string]interface{} `json:"custom_fields"`
+}
 
-	slugValue, slugOk := d.GetOk("slug")
+func siteRequestFromResourceData(api *providerState, d *schema.ResourceData, isUpdate bool) (*siteRequest, error) {
+	data := siteRequest{}
+
+	data.Name = d.Get("name").(string)
+
 	// Default slug to generated slug if not given
-	if !slugOk {
-		data.Slug = strToPtr(getSlug(name))
-	} else {
-		data.Slug = strToPtr(slugValue.(string))
+	data.Slug = getSlug(data.Name)
+	if v, ok := d.GetOk("slug"); ok {
+		data.Slug = v.(string)
 	}
 
 	data.Status = d.Get("status").(string)
 
-	if description, ok := d.GetOk("description"); ok {
-		data.Description = description.(string)
+	// On update, an empty value that changed is sent as a space so NetBox clears it.
+	clearable := func(key string) string {
+		if v, ok := d.GetOk(key); ok {
+			return v.(string)
+		}
+		if isUpdate && d.HasChange(key) {
+			return " "
+		}
+		return ""
 	}
-
-	if comments, ok := d.GetOk("comments"); ok {
-		data.Comments = comments.(string)
-	}
+	data.Description = clearable("description")
+	data.Comments = clearable("comments")
+	data.PhysicalAddress = clearable("physical_address")
+	data.ShippingAddress = clearable("shipping_address")
 
 	if facility, ok := d.GetOk("facility"); ok {
 		data.Facility = facility.(string)
 	}
-
-	latitudeValue, ok := d.GetOk("latitude")
-	if ok {
-		data.Latitude = float64ToPtr(float64(latitudeValue.(float64)))
+	if v, ok := d.GetOk("latitude"); ok {
+		data.Latitude = float64ToPtr(v.(float64))
 	}
-
-	longitudeValue, ok := d.GetOk("longitude")
-	if ok {
-		data.Longitude = float64ToPtr(float64(longitudeValue.(float64)))
+	if v, ok := d.GetOk("longitude"); ok {
+		data.Longitude = float64ToPtr(v.(float64))
 	}
-
-	physicalAddressValue, ok := d.GetOk("physical_address")
-	if ok {
-		data.PhysicalAddress = physicalAddressValue.(string)
+	if v, ok := d.GetOk("region_id"); ok {
+		data.Region = int64ToPtr(int64(v.(int)))
 	}
-
-	shippingAddressValue, ok := d.GetOk("shipping_address")
-	if ok {
-		data.ShippingAddress = shippingAddressValue.(string)
+	if v, ok := d.GetOk("group_id"); ok {
+		data.Group = int64ToPtr(int64(v.(int)))
 	}
-
-	regionIDValue, ok := d.GetOk("region_id")
-	if ok {
-		data.Region = int64ToPtr(int64(regionIDValue.(int)))
+	if v, ok := d.GetOk("tenant_id"); ok {
+		data.Tenant = int64ToPtr(int64(v.(int)))
 	}
-
-	groupIDValue, ok := d.GetOk("group_id")
-	if ok {
-		data.Group = int64ToPtr(int64(groupIDValue.(int)))
-	}
-
-	tenantIDValue, ok := d.GetOk("tenant_id")
-	if ok {
-		data.Tenant = int64ToPtr(int64(tenantIDValue.(int)))
-	}
-
-	if timezone, ok := d.GetOk("timezone"); ok {
-		data.TimeZone = strToPtr(timezone.(string))
+	if v, ok := d.GetOk("timezone"); ok {
+		data.TimeZone = strToPtr(v.(string))
 	}
 
 	data.Asns = []int64{}
-	if asnsValue, ok := d.GetOk("asn_ids"); ok {
-		data.Asns = toInt64List(asnsValue)
+	if v, ok := d.GetOk("asn_ids"); ok {
+		data.Asns = toInt64List(v)
 	}
 
 	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+	data.Tags, err = getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
+	if err != nil {
+		return nil, err
+	}
+
+	if cf, ok := d.GetOk(customFieldsKey); ok {
+		data.CustomFields = cf
+	}
+
+	return &data, nil
+}
+
+func resourceNetboxSiteCreate(d *schema.ResourceData, m interface{}) error {
+	api := m.(*providerState)
+
+	data, err := siteRequestFromResourceData(api, d, false)
 	if err != nil {
 		return err
 	}
 
-	ct, ok := d.GetOk(customFieldsKey)
-	if ok {
-		data.CustomFields = ct
-	}
-
-	params := dcim.NewDcimSitesCreateParams().WithData(&data)
-
-	res, err := api.Dcim.DcimSitesCreate(params, nil)
+	res, err := netboxapi.Create[siteResponse](context.Background(), api.rest, siteAPIPath, data)
 	if err != nil {
 		return err
 	}
 
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
+	d.SetId(strconv.FormatInt(res.ID, 10))
 
 	return resourceNetboxSiteRead(d, m)
 }
@@ -206,27 +240,20 @@ func resourceNetboxSiteCreate(d *schema.ResourceData, m interface{}) error {
 func resourceNetboxSiteRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimSitesReadParams().WithID(id)
 
-	res, err := api.Dcim.DcimSitesRead(params, nil)
-
+	site, err := netboxapi.Get[siteResponse](context.Background(), api.rest, siteAPIPath, id)
 	if err != nil {
-		if errresp, ok := err.(*dcim.DcimSitesReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
+		if netboxapi.IsNotFound(err) {
+			// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
+			d.SetId("")
+			return nil
 		}
 		return err
 	}
 
-	site := res.GetPayload()
-
 	d.Set("name", site.Name)
 	d.Set("slug", site.Slug)
-	d.Set("status", site.Status.Value)
+	d.Set("status", netboxapi.ChoiceValue(site.Status))
 	d.Set("description", site.Description)
 	d.Set("comments", site.Comments)
 	d.Set("facility", site.Facility)
@@ -235,137 +262,30 @@ func resourceNetboxSiteRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("physical_address", site.PhysicalAddress)
 	d.Set("shipping_address", site.ShippingAddress)
 	d.Set("timezone", site.TimeZone)
-	d.Set("asn_ids", getIDsFromNestedASNList(site.Asns))
+	d.Set("asn_ids", netboxapi.IDs(site.Asns))
+	d.Set("region_id", netboxapi.RefID(site.Region))
+	d.Set("group_id", netboxapi.RefID(site.Group))
+	d.Set("tenant_id", netboxapi.RefID(site.Tenant))
 
-	if res.GetPayload().Region != nil {
-		d.Set("region_id", res.GetPayload().Region.ID)
-	} else {
-		d.Set("region_id", nil)
-	}
-
-	if res.GetPayload().Group != nil {
-		d.Set("group_id", res.GetPayload().Group.ID)
-	} else {
-		d.Set("group_id", nil)
-	}
-
-	if res.GetPayload().Tenant != nil {
-		d.Set("tenant_id", res.GetPayload().Tenant.ID)
-	} else {
-		d.Set("tenant_id", nil)
-	}
-
-	cf := getCustomFields(res.GetPayload().CustomFields)
-	if cf != nil {
+	if cf := getCustomFields(site.CustomFields); cf != nil {
 		d.Set(customFieldsKey, cf)
 	}
-	api.readTags(d, res.GetPayload().Tags)
+	api.readTagRefs(d, site.Tags)
 
 	return nil
 }
 
 func resourceNetboxSiteUpdate(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-
 	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.WritableSite{}
 
-	name := d.Get("name").(string)
-	data.Name = &name
-
-	slugValue, slugOk := d.GetOk("slug")
-	// Default slug to generated slug if not given
-	if !slugOk {
-		data.Slug = strToPtr(getSlug(name))
-	} else {
-		data.Slug = strToPtr(slugValue.(string))
-	}
-
-	data.Status = d.Get("status").(string)
-
-	if description, ok := d.GetOk("description"); ok {
-		data.Description = description.(string)
-	} else if d.HasChange("description") {
-		// If GetOK returned unset description and its value changed, set it as a space string to delete it ...
-		data.Description = " "
-	}
-
-	if comments, ok := d.GetOk("comments"); ok {
-		data.Comments = comments.(string)
-	} else if d.HasChange("comments") {
-		// If GetOK returned unset description and its value changed, set it as a space string to delete it ...
-		data.Comments = " "
-	}
-
-	if facility, ok := d.GetOk("facility"); ok {
-		data.Facility = facility.(string)
-	}
-
-	latitudeValue, ok := d.GetOk("latitude")
-	if ok {
-		data.Latitude = float64ToPtr(float64(latitudeValue.(float64)))
-	}
-
-	longitudeValue, ok := d.GetOk("longitude")
-	if ok {
-		data.Longitude = float64ToPtr(float64(longitudeValue.(float64)))
-	}
-
-	physicalAddressValue, ok := d.GetOk("physical_address")
-	if ok {
-		data.PhysicalAddress = physicalAddressValue.(string)
-	} else if d.HasChange("physical_address") {
-		// If GetOK returned unset description and its value changed, set it as a space string to delete it ...
-		data.PhysicalAddress = " "
-	}
-
-	shippingAddressValue, ok := d.GetOk("shipping_address")
-	if ok {
-		data.ShippingAddress = shippingAddressValue.(string)
-	} else if d.HasChange("shipping_address") {
-		// If GetOK returned unset description and its value changed, set it as a space string to delete it ...
-		data.ShippingAddress = " "
-	}
-
-	regionIDValue, ok := d.GetOk("region_id")
-	if ok {
-		data.Region = int64ToPtr(int64(regionIDValue.(int)))
-	}
-
-	groupIDValue, ok := d.GetOk("group_id")
-	if ok {
-		data.Group = int64ToPtr(int64(groupIDValue.(int)))
-	}
-
-	tenantIDValue, ok := d.GetOk("tenant_id")
-	if ok {
-		data.Tenant = int64ToPtr(int64(tenantIDValue.(int)))
-	}
-
-	if timezone, ok := d.GetOk("timezone"); ok {
-		data.TimeZone = strToPtr(timezone.(string))
-	}
-
-	data.Asns = []int64{}
-	if asnsValue, ok := d.GetOk("asn_ids"); ok {
-		data.Asns = toInt64List(asnsValue)
-	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+	data, err := siteRequestFromResourceData(api, d, true)
 	if err != nil {
 		return err
 	}
 
-	cf, ok := d.GetOk(customFieldsKey)
-	if ok {
-		data.CustomFields = cf
-	}
-
-	params := dcim.NewDcimSitesPartialUpdateParams().WithID(id).WithData(&data)
-
-	_, err = api.Dcim.DcimSitesPartialUpdate(params, nil)
-	if err != nil {
+	// The generated client used PATCH here, so keep that.
+	if _, err := netboxapi.Patch[siteResponse](context.Background(), api.rest, siteAPIPath, id, data); err != nil {
 		return err
 	}
 
@@ -374,27 +294,14 @@ func resourceNetboxSiteUpdate(d *schema.ResourceData, m interface{}) error {
 
 func resourceNetboxSiteDelete(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-
 	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimSitesDeleteParams().WithID(id)
 
-	_, err := api.Dcim.DcimSitesDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimSitesDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
+	if err := netboxapi.Delete(context.Background(), api.rest, siteAPIPath, id); err != nil {
+		if netboxapi.IsNotFound(err) {
+			d.SetId("")
+			return nil
 		}
 		return err
 	}
 	return nil
-}
-
-func getIDsFromNestedASNList(nestedASNs []*models.NestedASN) []int64 {
-	var asns []int64
-	for _, asn := range nestedASNs {
-		asns = append(asns, asn.ID)
-	}
-	return asns
 }

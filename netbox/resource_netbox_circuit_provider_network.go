@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/circuits"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -49,121 +46,79 @@ func resourceNetboxCircuitProviderNetwork() *schema.Resource {
 	}
 }
 
-func resourceNetboxCircuitProviderNetworkCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const circuitProviderNetworkAPIPath = "circuits/provider-networks/"
 
-	data := models.WritableProviderNetwork{}
+type circuitProviderNetworkRequest struct {
+	Name         string             `json:"name"`
+	Comments     string             `json:"comments,omitempty"`
+	Description  string             `json:"description,omitempty"`
+	Provider     *int64             `json:"provider"`
+	ServiceId    string             `json:"service_id,omitempty"`
+	CustomFields interface{}        `json:"custom_fields,omitempty"`
+	Tags         []netboxapi.TagRef `json:"tags"`
+}
 
-	data.Comments = d.Get("comments").(string)
-	data.Description = d.Get("description").(string)
+type circuitProviderNetworkResponse struct {
+	Name         string                 `json:"name"`
+	Comments     string                 `json:"comments"`
+	Description  string                 `json:"description"`
+	Provider     *netboxapi.Ref         `json:"provider"`
+	ServiceId    string                 `json:"service_id"`
+	CustomFields map[string]interface{} `json:"custom_fields"`
+	Tags         []netboxapi.TagRef     `json:"tags"`
+}
+
+func circuitProviderNetworkRequestFromResourceData(api *providerState, d *schema.ResourceData) (*circuitProviderNetworkRequest, error) {
 	name := d.Get("name").(string)
-	data.Name = &name
-	provider := int64(d.Get("provider_id").(int))
-	data.Provider = &provider
-	data.ServiceID = d.Get("service_id").(string)
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
+	if err != nil {
+		return nil, err
+	}
+	data := &circuitProviderNetworkRequest{
+		Name:        name,
+		Comments:    d.Get("comments").(string),
+		Description: d.Get("description").(string),
+		Provider:    int64ToPtr(int64(d.Get("provider_id").(int))),
+		ServiceId:   d.Get("service_id").(string),
+		Tags:        tags,
+	}
+	if ct, ok := d.GetOk(customFieldsKey); ok {
+		data.CustomFields = ct
+	}
+	return data, nil
+}
 
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+func resourceNetboxCircuitProviderNetworkCreate(d *schema.ResourceData, m interface{}) error {
+	data, err := circuitProviderNetworkRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	cf, ok := d.GetOk("custom_fields")
-	if ok {
-		data.CustomFields = cf
-	}
-
-	params := circuits.NewCircuitsProviderNetworksCreateParams().WithData(&data)
-
-	res, err := api.Circuits.CircuitsProviderNetworksCreate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxCircuitProviderNetworkRead(d, m)
+	return createObject(d, m, circuitProviderNetworkAPIPath, data, resourceNetboxCircuitProviderNetworkRead)
 }
 
 func resourceNetboxCircuitProviderNetworkRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := circuits.NewCircuitsProviderNetworksReadParams().WithID(id)
-
-	res, err := api.Circuits.CircuitsProviderNetworksRead(params, nil)
-
-	if err != nil {
-		if errresp, ok := err.(*circuits.CircuitsProviderNetworksReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
+	return readObject(d, m, circuitProviderNetworkAPIPath, func(r *circuitProviderNetworkResponse) {
+		d.Set("name", r.Name)
+		d.Set("comments", r.Comments)
+		d.Set("description", r.Description)
+		d.Set("provider_id", netboxapi.RefID(r.Provider))
+		d.Set("service_id", r.ServiceId)
+		if cf := getCustomFields(r.CustomFields); cf != nil {
+			d.Set(customFieldsKey, cf)
 		}
-		return err
-	}
-
-	d.Set("comments", res.GetPayload().Comments)
-	d.Set("description", res.GetPayload().Description)
-	d.Set("name", res.GetPayload().Name)
-	d.Set("provider_id", res.GetPayload().Provider.ID)
-	d.Set("service_id", res.GetPayload().ServiceID)
-
-	api.readTags(d, res.GetPayload().Tags)
-
-	cf := getCustomFields(res.GetPayload().CustomFields)
-	if cf != nil {
-		d.Set(customFieldsKey, cf)
-	}
-
-	return nil
+		api.readTagRefs(d, r.Tags)
+	})
 }
 
 func resourceNetboxCircuitProviderNetworkUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.WritableProviderNetwork{}
-
-	data.Comments = d.Get("comments").(string)
-	data.Description = d.Get("description").(string)
-	name := d.Get("name").(string)
-	data.Name = &name
-	provider := int64(d.Get("provider_id").(int))
-	data.Provider = &provider
-	data.ServiceID = d.Get("service_id").(string)
-
-	cf, ok := d.GetOk(customFieldsKey)
-	if ok {
-		data.CustomFields = cf
-	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+	data, err := circuitProviderNetworkRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	params := circuits.NewCircuitsProviderNetworksPartialUpdateParams().WithID(id).WithData(&data)
-
-	_, err = api.Circuits.CircuitsProviderNetworksPartialUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	return resourceNetboxCircuitProviderNetworkRead(d, m)
+	return patchObject(d, m, circuitProviderNetworkAPIPath, data, resourceNetboxCircuitProviderNetworkRead)
 }
 
 func resourceNetboxCircuitProviderNetworkDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := circuits.NewCircuitsProviderNetworksDeleteParams().WithID(id)
-
-	_, err := api.Circuits.CircuitsProviderNetworksDelete(params, nil)
-	if err != nil {
-		return err
-	}
-	return nil
+	return deleteObject(d, m, circuitProviderNetworkAPIPath)
 }

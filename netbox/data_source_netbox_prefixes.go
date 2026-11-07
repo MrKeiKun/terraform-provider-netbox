@@ -1,11 +1,6 @@
 package netbox
 
 import (
-	"fmt"
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
-	"github.com/fbreckle/go-netbox/netbox/models"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -115,113 +110,42 @@ func dataSourceNetboxPrefixes() *schema.Resource {
 }
 
 func dataSourceNetboxPrefixesRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	params := ipam.NewIpamPrefixesListParams()
-
-	// Get user limit
-	var userLimit int64 = 0
-	if limitValue, ok := d.GetOk("limit"); ok {
-		userLimit = int64(limitValue.(int))
+	// filter name in the data source -> query parameter sent to Netbox
+	allowed := map[string]string{
+		"prefix":      "prefix",
+		"vlan_vid":    "vlan_vid",
+		"contains":    "contains",
+		"vrf_id":      "vrf_id",
+		"vlan_id":     "vlan_id",
+		"status":      "status",
+		"tenant_id":   "tenant_id",
+		"site_id":     "site_id",
+		"role_id":     "role_id",
+		"region_id":   "region_id",
+		"description": "description",
+		"tag":         "tag",
 	}
 
-	if filter, ok := d.GetOk("filter"); ok {
-		var filterParams = filter.(*schema.Set)
-		for _, f := range filterParams.List() {
-			k := f.(map[string]interface{})["name"]
-			v := f.(map[string]interface{})["value"]
-			vString := v.(string)
-			switch k {
-			case "prefix":
-				params.Prefix = &vString
-			case "vlan_vid":
-				float, err := strconv.ParseFloat(vString, 64)
-				if err != nil {
-					return err
-				}
-				params.VlanVid = &float
-			case "contains":
-				params.Contains = &vString
-			case "vrf_id":
-				params.VrfID = &vString
-			case "vlan_id":
-				params.VlanID = &vString
-			case "status":
-				params.Status = &vString
-			case "tenant_id":
-				params.TenantID = &vString
-			case "site_id":
-				params.SiteID = &vString
-			case "role_id":
-				params.RoleID = &vString
-			case "region_id":
-				params.RegionID = &vString
-			case "description":
-				params.Description = &vString
-			case "tag":
-				params.Tag = []string{vString}
-			default:
-				return fmt.Errorf("'%s' is not a supported filter parameter", k)
-			}
-		}
+	results, err := listFiltered[map[string]interface{}](d, m, "ipam/prefixes/", "prefixes", allowed, nil)
+	if err != nil {
+		return err
 	}
-
-	// Fetch all pages with pagination
-	paginationHelper := NewPaginationHelper(userLimit)
-	var allPrefixes []*models.Prefix
-
-	pageSize := paginationHelper.GetPageSize()
-	for {
-		currentOffset := paginationHelper.CurrentOffset()
-		params.Limit = &pageSize
-		params.Offset = &currentOffset
-
-		res, err := api.Ipam.IpamPrefixesList(params, nil)
-		if err != nil {
-			return fmt.Errorf("failed to fetch prefixes at offset %d: %w", currentOffset, err)
-		}
-
-		payload := res.GetPayload()
-		allPrefixes = append(allPrefixes, payload.Results...)
-
-		if len(payload.Results) == 0 {
-			break
-		}
-
-		if !paginationHelper.ShouldContinuePaging(int64(len(allPrefixes)), payload.Next) {
-			break
-		}
-
-		paginationHelper.Advance(int64(len(payload.Results)))
-	}
-
-	// Trim to user limit if specified
-	trimmedCount := paginationHelper.TrimToLimit(len(allPrefixes))
-	filteredPrefixes := allPrefixes[:trimmedCount]
 
 	var s []map[string]interface{}
-	for _, v := range filteredPrefixes {
-		var mapping = make(map[string]interface{})
+	for _, v := range results {
+		mapping := make(map[string]interface{})
 
-		mapping["id"] = v.ID
-		mapping["prefix"] = v.Prefix
-		mapping["description"] = v.Description
-		if v.Vlan != nil {
-			mapping["vlan_vid"] = v.Vlan.Vid
-			mapping["vlan_id"] = v.Vlan.ID
-		}
-		if v.Vrf != nil {
-			mapping["vrf_id"] = v.Vrf.ID
-		}
-		if v.Tenant != nil {
-			mapping["tenant_id"] = v.Tenant.ID
-		}
-		if v.Role != nil {
-			mapping["role_id"] = v.Role.ID
-		}
-		if v.ScopeType != nil && v.ScopeID != nil {
-			scopeID := v.ScopeID
-			switch scopeType := v.ScopeType; *scopeType {
+		mapping["id"] = jInt(v, "id")
+		mapping["prefix"] = jStr(v, "prefix")
+		mapping["description"] = jStr(v, "description")
+		mapping["vlan_vid"] = jNested(v, "vlan", "vid")
+		mapping["vlan_id"] = jID(v, "vlan")
+		mapping["vrf_id"] = jID(v, "vrf")
+		mapping["tenant_id"] = jID(v, "tenant")
+		mapping["role_id"] = jID(v, "role")
+		if scopeType := jStr(v, "scope_type"); scopeType != "" && v["scope_id"] != nil {
+			scopeID := jInt(v, "scope_id")
+			switch scopeType {
 			case "dcim.site":
 				mapping["site_id"] = scopeID
 			case "dcim.sitegroup":
@@ -232,12 +156,17 @@ func dataSourceNetboxPrefixesRead(d *schema.ResourceData, m interface{}) error {
 				mapping["region_id"] = scopeID
 			}
 		}
-		mapping["status"] = v.Status.Value
-		mapping["tags"] = getTagListFromNestedTagList(v.Tags)
-
-		cf := flattenCustomFields(v.CustomFields)
-		if cf != nil {
+		mapping["status"] = jChoice(v, "status")
+		mapping["tags"] = jTags(v)
+		if cf := flattenCustomFields(v["custom_fields"]); cf != nil {
 			mapping[customFieldsKey] = cf
+		}
+
+		// fields that are missing in the response are left out of the state
+		for k, val := range mapping {
+			if val == nil {
+				delete(mapping, k)
+			}
 		}
 
 		s = append(s, mapping)

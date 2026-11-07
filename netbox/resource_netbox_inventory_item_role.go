@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -47,113 +44,75 @@ func resourceNetboxInventoryItemRole() *schema.Resource {
 	}
 }
 
-func resourceNetboxInventoryItemRoleCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	data := models.InventoryItemRole{
-		Name:        strToPtr(d.Get("name").(string)),
-		Slug:        strToPtr(d.Get("slug").(string)),
-		Description: getOptionalStr(d, "description", false),
-		Color:       getOptionalStr(d, "color_hex", false),
-	}
+const inventoryItemRoleAPIPath = "dcim/inventory-item-roles/"
 
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+type inventoryItemRoleRequest struct {
+	Name         string             `json:"name"`
+	Slug         string             `json:"slug"`
+	Description  string             `json:"description,omitempty"`
+	Color        string             `json:"color"`
+	CustomFields interface{}        `json:"custom_fields,omitempty"`
+	Tags         []netboxapi.TagRef `json:"tags"`
+}
+
+type inventoryItemRoleResponse struct {
+	Name         string                 `json:"name"`
+	Slug         string                 `json:"slug"`
+	Description  string                 `json:"description"`
+	Color        string                 `json:"color"`
+	CustomFields map[string]interface{} `json:"custom_fields"`
+	Tags         []netboxapi.TagRef     `json:"tags"`
+}
+
+func inventoryItemRoleRequestFromResourceData(api *providerState, d *schema.ResourceData) (*inventoryItemRoleRequest, error) {
+	name := d.Get("name").(string)
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	ct, ok := d.GetOk(customFieldsKey)
-	if ok {
+	data := &inventoryItemRoleRequest{
+		Name:        name,
+		Slug:        slugFromResourceData(d, name),
+		Description: getOptionalStr(d, "description", true),
+		Color:       d.Get("color_hex").(string),
+		Tags:        tags,
+	}
+	if ct, ok := d.GetOk(customFieldsKey); ok {
 		data.CustomFields = ct
 	}
+	return data, nil
+}
 
-	params := dcim.NewDcimInventoryItemRolesCreateParams().WithData(&data)
-
-	res, err := api.Dcim.DcimInventoryItemRolesCreate(params, nil)
+func resourceNetboxInventoryItemRoleCreate(d *schema.ResourceData, m interface{}) error {
+	data, err := inventoryItemRoleRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxInventoryItemRoleRead(d, m)
+	return createObject(d, m, inventoryItemRoleAPIPath, data, resourceNetboxInventoryItemRoleRead)
 }
 
 func resourceNetboxInventoryItemRoleRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimInventoryItemRolesReadParams().WithID(id)
-
-	res, err := api.Dcim.DcimInventoryItemRolesRead(params, nil)
-
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimInventoryItemRolesReadDefault); ok {
-			if errresp.Code() == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
+	return readObject(d, m, inventoryItemRoleAPIPath, func(r *inventoryItemRoleResponse) {
+		d.Set("name", r.Name)
+		d.Set("slug", r.Slug)
+		d.Set("description", r.Description)
+		d.Set("color_hex", r.Color)
+		if cf := getCustomFields(r.CustomFields); cf != nil {
+			d.Set(customFieldsKey, cf)
 		}
-		return err
-	}
-
-	role := res.GetPayload()
-	d.Set("name", role.Name)
-	d.Set("slug", role.Slug)
-	d.Set("color_hex", role.Color)
-	d.Set("description", role.Description)
-
-	cf := getCustomFields(res.GetPayload().CustomFields)
-	if cf != nil {
-		d.Set(customFieldsKey, cf)
-	}
-	api.readTags(d, res.GetPayload().Tags)
-
-	return nil
+		api.readTagRefs(d, r.Tags)
+	})
 }
 
 func resourceNetboxInventoryItemRoleUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-
-	data := models.InventoryItemRole{
-		Name:        strToPtr(d.Get("name").(string)),
-		Slug:        strToPtr(d.Get("slug").(string)),
-		Description: getOptionalStr(d, "description", true),
-		Color:       getOptionalStr(d, "color_hex", false),
-	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+	data, err := inventoryItemRoleRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	ct, ok := d.GetOk(customFieldsKey)
-	if ok {
-		data.CustomFields = ct
-	}
-
-	params := dcim.NewDcimInventoryItemRolesPartialUpdateParams().WithID(id).WithData(&data)
-
-	_, err = api.Dcim.DcimInventoryItemRolesPartialUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	return resourceNetboxInventoryItemRoleRead(d, m)
+	return patchObject(d, m, inventoryItemRoleAPIPath, data, resourceNetboxInventoryItemRoleRead)
 }
 
 func resourceNetboxInventoryItemRoleDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimInventoryItemRolesDeleteParams().WithID(id)
-
-	_, err := api.Dcim.DcimInventoryItemRolesDelete(params, nil)
-	if err != nil {
-		return err
-	}
-	return nil
+	return deleteObject(d, m, inventoryItemRoleAPIPath)
 }

@@ -2,10 +2,8 @@ package netbox
 
 import (
 	"errors"
-	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/extras"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -83,143 +81,82 @@ A choice set must define a base choice set and/or a set of arbitrary extra choic
 	}
 }
 
-func resourceNetboxCustomFieldChoiceSetCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const customFieldChoiceSetAPIPath = "extras/custom-field-choice-sets/"
 
-	name := d.Get("name").(string)
+type customFieldChoiceSetRequest struct {
+	Name                string     `json:"name"`
+	Description         string     `json:"description,omitempty"`
+	OrderAlphabetically bool       `json:"order_alphabetically,omitempty"`
+	ExtraChoices        [][]string `json:"extra_choices"`
+}
 
-	data := models.CustomFieldChoiceSet{
-		Name:                &name,
+type customFieldChoiceSetResponse struct {
+	Name                string            `json:"name"`
+	Description         string            `json:"description"`
+	ExtraChoices        [][]string        `json:"extra_choices"`
+	OrderAlphabetically bool              `json:"order_alphabetically"`
+	BaseChoices         *netboxapi.Choice `json:"base_choices"`
+}
+
+func customFieldChoiceSetRequestFromResourceData(d *schema.ResourceData) (*customFieldChoiceSetRequest, error) {
+	data := &customFieldChoiceSetRequest{
+		Name:                d.Get("name").(string),
 		OrderAlphabetically: d.Get("order_alphabetically").(bool),
+		Description:         getOptionalStr(d, "description", true),
 	}
 
-	data.Description = getOptionalStr(d, "description", false)
-
-	var extraChoiceListList [][]string
-
-	extraChoices, ok := d.GetOk("extra_choices")
-	if ok {
+	if extraChoices, ok := d.GetOk("extra_choices"); ok {
+		var extraChoiceListList [][]string
 		for _, innerList := range extraChoices.([]interface{}) {
 			tmp := innerList.([]interface{})
 			if len(tmp) != 2 {
-				return errors.New("length of inner lists must be exactly two for custom field choice sets")
+				return nil, errors.New("length of inner lists must be exactly two for custom field choice sets")
 			}
 			extraChoiceListList = append(extraChoiceListList, []string{tmp[0].(string), tmp[1].(string)})
 		}
 		data.ExtraChoices = extraChoiceListList
 	}
+	return data, nil
+}
 
-	params := extras.NewExtrasCustomFieldChoiceSetsCreateParams().WithData(&data)
-
-	res, err := api.Extras.ExtrasCustomFieldChoiceSetsCreate(params, nil)
+func resourceNetboxCustomFieldChoiceSetCreate(d *schema.ResourceData, m interface{}) error {
+	data, err := customFieldChoiceSetRequestFromResourceData(d)
 	if err != nil {
 		return err
 	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxCustomFieldChoiceSetRead(d, m)
+	return createObject(d, m, customFieldChoiceSetAPIPath, data, resourceNetboxCustomFieldChoiceSetRead)
 }
 
 func resourceNetboxCustomFieldChoiceSetRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := extras.NewExtrasCustomFieldChoiceSetsReadParams().WithID(id)
-
-	res, err := api.Extras.ExtrasCustomFieldChoiceSetsRead(params, nil)
-
-	if err != nil {
-		if errresp, ok := err.(*extras.ExtrasCustomFieldChoiceSetsReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
+	return readObject(d, m, customFieldChoiceSetAPIPath, func(choiceSet *customFieldChoiceSetResponse) {
+		d.Set("name", choiceSet.Name)
+		if choiceSet.Description != "" {
+			d.Set("description", choiceSet.Description)
+		} else {
+			d.Set("description", nil)
 		}
-		return err
-	}
-
-	choiceSet := res.GetPayload()
-
-	d.Set("name", choiceSet.Name)
-
-	if choiceSet.Description != "" {
-		d.Set("description", choiceSet.Description)
-	} else {
-		d.Set("description", nil)
-	}
-
-	if choiceSet.ExtraChoices != nil {
-		d.Set("extra_choices", choiceSet.ExtraChoices)
-	} else {
-		d.Set("extra_choices", nil)
-	}
-
-	d.Set("order_alphabetically", choiceSet.OrderAlphabetically)
-
-	if choiceSet.BaseChoices != nil {
-		d.Set("base_choices", choiceSet.BaseChoices.Value)
-	} else {
-		d.Set("base_choices", nil)
-	}
-
-	return nil
+		if choiceSet.ExtraChoices != nil {
+			d.Set("extra_choices", choiceSet.ExtraChoices)
+		} else {
+			d.Set("extra_choices", nil)
+		}
+		d.Set("order_alphabetically", choiceSet.OrderAlphabetically)
+		if choiceSet.BaseChoices != nil {
+			d.Set("base_choices", choiceSet.BaseChoices.Value)
+		} else {
+			d.Set("base_choices", nil)
+		}
+	})
 }
 
 func resourceNetboxCustomFieldChoiceSetUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-
-	name := d.Get("name").(string)
-
-	data := models.CustomFieldChoiceSet{
-		Name:                &name,
-		OrderAlphabetically: d.Get("order_alphabetically").(bool),
-	}
-
-	data.Description = getOptionalStr(d, "description", true)
-
-	var extraChoiceListList [][]string
-
-	extraChoices, ok := d.GetOk("extra_choices")
-	if ok {
-		for _, innerList := range extraChoices.([]interface{}) {
-			tmp := innerList.([]interface{})
-			if len(tmp) != 2 {
-				return errors.New("length of inner lists must be exactly two for custom field choice sets")
-			}
-			extraChoiceListList = append(extraChoiceListList, []string{tmp[0].(string), tmp[1].(string)})
-		}
-		data.ExtraChoices = extraChoiceListList
-	}
-
-	params := extras.NewExtrasCustomFieldChoiceSetsPartialUpdateParams().WithID(id).WithData(&data)
-
-	_, err := api.Extras.ExtrasCustomFieldChoiceSetsPartialUpdate(params, nil)
+	data, err := customFieldChoiceSetRequestFromResourceData(d)
 	if err != nil {
 		return err
 	}
-
-	return resourceNetboxCustomFieldChoiceSetRead(d, m)
+	return patchObject(d, m, customFieldChoiceSetAPIPath, data, resourceNetboxCustomFieldChoiceSetRead)
 }
 
 func resourceNetboxCustomFieldChoiceSetDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := extras.NewExtrasCustomFieldChoiceSetsDeleteParams().WithID(id)
-
-	_, err := api.Extras.ExtrasCustomFieldChoiceSetsDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*extras.ExtrasCustomFieldChoiceSetsDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	return nil
+	return deleteObject(d, m, customFieldChoiceSetAPIPath)
 }

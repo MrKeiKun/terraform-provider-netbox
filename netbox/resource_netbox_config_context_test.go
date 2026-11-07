@@ -2,11 +2,8 @@ package netbox
 
 import (
 	"fmt"
-	"log"
-	"strings"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/extras"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
@@ -178,27 +175,7 @@ func init() {
 		Name:         "netbox_config_context",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := extras.NewExtrasConfigContextsListParams()
-			res, err := api.Extras.ExtrasConfigContextsList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, configContext := range res.GetPayload().Results {
-				if strings.HasPrefix(*configContext.Name, testPrefix) {
-					deleteParams := extras.NewExtrasConfigContextsDeleteParams().WithID(configContext.ID)
-					_, err := api.Extras.ExtrasConfigContextsDelete(deleteParams, nil)
-					if err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted a config context")
-				}
-			}
-			return nil
+			return sweepByName(region, "extras/config-contexts/", "name")
 		},
 	})
 }

@@ -2,12 +2,8 @@ package netbox
 
 import (
 	"fmt"
-	"log"
-	"strconv"
-	"strings"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
@@ -105,36 +101,7 @@ resource "netbox_service" "test_customfield" {
 }
 
 func testAccCheckServiceDestroy(s *terraform.State) error {
-	// retrieve the connection established in Provider configuration
-	conn := testAccProvider.Meta().(*providerState)
-
-	// loop through the resources in state, verifying each service
-	// is destroyed
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "netbox_service" {
-			continue
-		}
-
-		// Retrieve our service by referencing it's state ID for API lookup
-		stateID, _ := strconv.ParseInt(rs.Primary.ID, 10, 64)
-		params := ipam.NewIpamServicesReadParams().WithID(stateID)
-		_, err := conn.Ipam.IpamServicesRead(params, nil)
-
-		if err == nil {
-			return fmt.Errorf("service (%s) still exists", rs.Primary.ID)
-		}
-
-		if err != nil {
-			if errresp, ok := err.(*ipam.IpamServicesReadDefault); ok {
-				errorcode := errresp.Code()
-				if errorcode == 404 {
-					return nil
-				}
-			}
-			return err
-		}
-	}
-	return nil
+	return testAccCheckObjectsDestroyed(s, "netbox_service", "ipam/services/")
 }
 
 func TestAccNetboxService_withDescriptionDeviceID(t *testing.T) {
@@ -255,27 +222,7 @@ func init() {
 		Name:         "netbox_service",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := ipam.NewIpamServicesListParams()
-			res, err := api.Ipam.IpamServicesList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, intrface := range res.GetPayload().Results {
-				if strings.HasPrefix(*intrface.Name, testPrefix) {
-					deleteParams := ipam.NewIpamServicesDeleteParams().WithID(intrface.ID)
-					_, err := api.Ipam.IpamServicesDelete(deleteParams, nil)
-					if err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted an interface")
-				}
-			}
-			return nil
+			return sweepByName(region, "ipam/services/", "name")
 		},
 	})
 }

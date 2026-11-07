@@ -1,10 +1,10 @@
 package netbox
 
 import (
-	"errors"
+	"net/url"
 	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -32,41 +32,30 @@ func dataSourceNetboxRouteTarget() *schema.Resource {
 	}
 }
 
+type routeTargetDataSourceResponse struct {
+	ID          int64              `json:"id"`
+	Name        string             `json:"name"`
+	Tenant      *netboxapi.Ref     `json:"tenant"`
+	Description string             `json:"description"`
+	Tags        []netboxapi.TagRef `json:"tags"`
+}
+
 func dataSourceNetboxRouteTargetRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	name := d.Get("name").(string)
-
-	params := ipam.NewIpamRouteTargetsListParams()
-	params.Name = &name
-
-	limit := int64(2)
-	params.Limit = &limit
-
-	res, err := api.Ipam.IpamRouteTargetsList(params, nil)
-
+	query := url.Values{}
+	addStrQuery(query, d, "name", "name")
+	r, err := findOne[routeTargetDataSourceResponse](m, "ipam/route-targets/", query, "route target")
 	if err != nil {
 		return err
 	}
 
-	if *res.GetPayload().Count > int64(1) {
-		return errors.New("more than one route target returned, specify a more narrow filter")
+	d.SetId(strconv.FormatInt(r.ID, 10))
+	d.Set("name", r.Name)
+	if r.Tenant != nil {
+		d.Set("tenant_id", r.Tenant.ID)
 	}
-	if *res.GetPayload().Count == int64(0) {
-		return errors.New("no route target found matching filter")
+	if r.Description != "" {
+		d.Set("description", r.Description)
 	}
-	result := res.GetPayload().Results[0]
-	d.SetId(strconv.FormatInt(result.ID, 10))
-	d.Set("name", result.Name)
-	if result.Tenant != nil {
-		d.Set("tenant_id", result.Tenant.ID)
-	}
-	if result.Description != "" {
-		d.Set("description", result.Description)
-	}
-	if result.Tags != nil {
-		d.Set(tagsKey, result.Tags)
-	}
-
+	d.Set(tagsKey, tagNames(r.Tags))
 	return nil
 }

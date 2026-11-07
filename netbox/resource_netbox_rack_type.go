@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -186,181 +183,118 @@ func resourceNetboxRackType() *schema.Resource {
 	}
 }
 
-func resourceNetboxRackTypeCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const rackTypeAPIPath = "dcim/rack-types/"
 
-	model := d.Get("model").(string)
-	formFactor := d.Get("form_factor").(string)
+type rackTypeRequest struct {
+	Slug          string             `json:"slug"`
+	Model         string             `json:"model"`
+	FormFactor    string             `json:"form_factor"`
+	Manufacturer  *int64             `json:"manufacturer"`
+	Width         *int64             `json:"width,omitempty"`
+	UHeight       int64              `json:"u_height,omitempty"`
+	Description   string             `json:"description,omitempty"`
+	OuterWidth    *int64             `json:"outer_width,omitempty"`
+	OuterDepth    *int64             `json:"outer_depth,omitempty"`
+	OuterUnit     string             `json:"outer_unit,omitempty"`
+	Comments      string             `json:"comments,omitempty"`
+	Weight        *float64           `json:"weight,omitempty"`
+	MaxWeight     *int64             `json:"max_weight,omitempty"`
+	WeightUnit    string             `json:"weight_unit,omitempty"`
+	MountingDepth *int64             `json:"mounting_depth,omitempty"`
+	Tags          []netboxapi.TagRef `json:"tags"`
+}
 
-	slugValue, slugOk := d.GetOk("slug")
-	var slug string
-	// Default slug to generated slug if not given
-	if !slugOk {
-		slug = getSlug(model)
-	} else {
-		slug = slugValue.(string)
+type rackTypeResponse struct {
+	Slug          string               `json:"slug"`
+	Model         string               `json:"model"`
+	FormFactor    *netboxapi.Choice    `json:"form_factor"`
+	Manufacturer  *netboxapi.Ref       `json:"manufacturer"`
+	Width         *netboxapi.IntChoice `json:"width"`
+	UHeight       int64                `json:"u_height"`
+	Description   string               `json:"description"`
+	OuterWidth    *int64               `json:"outer_width"`
+	OuterDepth    *int64               `json:"outer_depth"`
+	OuterUnit     *netboxapi.Choice    `json:"outer_unit"`
+	Comments      string               `json:"comments"`
+	Weight        *float64             `json:"weight"`
+	MaxWeight     *int64               `json:"max_weight"`
+	WeightUnit    *netboxapi.Choice    `json:"weight_unit"`
+	MountingDepth *int64               `json:"mounting_depth"`
+	StartingUnit  int64                `json:"starting_unit"`
+	Tags          []netboxapi.TagRef   `json:"tags"`
+}
+
+func rackTypeRequestFromResourceData(api *providerState, d *schema.ResourceData) (*rackTypeRequest, error) {
+	slugSource := d.Get("model").(string)
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
+	if err != nil {
+		return nil, err
 	}
-	manufacturerID := int64(d.Get("manufacturer_id").(int))
-	width := int64(d.Get("width").(int))
-	uHeight := int64(d.Get("u_height").(int))
-
-	data := models.WritableRackTypeRequest{
-		Model:         &model,
-		FormFactor:    &formFactor,
-		Slug:          &slug,
-		Manufacturer:  &manufacturerID,
-		Width:         &width,
-		UHeight:       uHeight,
-		Description:   getOptionalStr(d, "description", false),
+	data := &rackTypeRequest{
+		Slug:          slugFromResourceData(d, slugSource),
+		Model:         d.Get("model").(string),
+		FormFactor:    d.Get("form_factor").(string),
+		Manufacturer:  int64ToPtr(int64(d.Get("manufacturer_id").(int))),
+		Width:         getOptionalInt(d, "width"),
+		UHeight:       int64(d.Get("u_height").(int)),
+		Description:   getOptionalStr(d, "description", true),
 		OuterWidth:    getOptionalInt(d, "outer_width"),
 		OuterDepth:    getOptionalInt(d, "outer_depth"),
-		OuterUnit:     getOptionalStr(d, "outer_unit", false),
-		Comments:      getOptionalStr(d, "comments", false),
+		OuterUnit:     d.Get("outer_unit").(string),
+		Comments:      getOptionalStr(d, "comments", true),
 		Weight:        getOptionalFloat(d, "weight"),
 		MaxWeight:     getOptionalInt(d, "max_weight"),
-		WeightUnit:    getOptionalStr(d, "weight_unit", false),
+		WeightUnit:    d.Get("weight_unit").(string),
 		MountingDepth: getOptionalInt(d, "mounting_depth_mm"),
+		Tags:          tags,
 	}
+	return data, nil
+}
 
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+func resourceNetboxRackTypeCreate(d *schema.ResourceData, m interface{}) error {
+	data, err := rackTypeRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	params := dcim.NewDcimRackTypesCreateParams().WithData(&data)
-
-	res, err := api.Dcim.DcimRackTypesCreate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxRackTypeRead(d, m)
+	return createObject(d, m, rackTypeAPIPath, data, resourceNetboxRackTypeRead)
 }
 
 func resourceNetboxRackTypeRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimRackTypesReadParams().WithID(id)
-
-	res, err := api.Dcim.DcimRackTypesRead(params, nil)
-
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimRackTypesReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
+	return readObject(d, m, rackTypeAPIPath, func(r *rackTypeResponse) {
+		d.Set("slug", r.Slug)
+		d.Set("model", r.Model)
+		d.Set("form_factor", netboxapi.ChoiceValue(r.FormFactor))
+		d.Set("manufacturer_id", netboxapi.RefID(r.Manufacturer))
+		if r.Width != nil {
+			d.Set("width", r.Width.Value)
+		} else {
+			d.Set("width", nil)
 		}
-		return err
-	}
+		d.Set("u_height", r.UHeight)
+		d.Set("description", r.Description)
+		d.Set("outer_width", r.OuterWidth)
+		d.Set("outer_depth", r.OuterDepth)
+		d.Set("outer_unit", netboxapi.ChoiceValue(r.OuterUnit))
+		d.Set("comments", r.Comments)
+		d.Set("weight", r.Weight)
+		d.Set("max_weight", r.MaxWeight)
+		d.Set("weight_unit", netboxapi.ChoiceValue(r.WeightUnit))
+		d.Set("mounting_depth_mm", r.MountingDepth)
 
-	rackType := res.GetPayload()
-
-	d.Set("model", rackType.Model)
-	d.Set("form_factor", rackType.FormFactor.Value)
-	d.Set("starting_unit", rackType.StartingUnit)
-	d.Set("manufacturer_id", rackType.Manufacturer.ID)
-
-	if rackType.Width != nil {
-		d.Set("width", rackType.Width.Value)
-	} else {
-		d.Set("width", nil)
-	}
-
-	d.Set("u_height", rackType.UHeight)
-	api.readTags(d, res.GetPayload().Tags)
-	d.Set("description", rackType.Description)
-	d.Set("comments", rackType.Comments)
-
-	d.Set("outer_width", rackType.OuterWidth)
-	d.Set("outer_depth", rackType.OuterDepth)
-
-	if rackType.OuterUnit != nil {
-		d.Set("outer_unit", rackType.OuterUnit.Value)
-	} else {
-		d.Set("outer_unit", nil)
-	}
-
-	d.Set("weight", rackType.Weight)
-	d.Set("max_weight", rackType.MaxWeight)
-
-	if rackType.WeightUnit != nil {
-		d.Set("weight_unit", rackType.WeightUnit.Value)
-	} else {
-		d.Set("weight_unit", nil)
-	}
-
-	d.Set("mounting_depth_mm", rackType.MountingDepth)
-
-	return nil
+		d.Set("starting_unit", r.StartingUnit)
+		api.readTagRefs(d, r.Tags)
+	})
 }
 
 func resourceNetboxRackTypeUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-
-	model := d.Get("model").(string)
-
-	slugValue, slugOk := d.GetOk("slug")
-	var slug string
-	// Default slug to generated slug if not given
-	if !slugOk {
-		slug = getSlug(model)
-	} else {
-		slug = slugValue.(string)
-	}
-	manufacturerID := int64(d.Get("manufacturer_id").(int))
-	width := int64(d.Get("width").(int))
-	uHeight := int64(d.Get("u_height").(int))
-
-	data := models.WritableRackTypeRequest{
-		Model:         &model,
-		Slug:          &slug,
-		Manufacturer:  &manufacturerID,
-		Width:         &width,
-		UHeight:       uHeight,
-		Description:   getOptionalStr(d, "description", true),
-		OuterWidth:    getOptionalInt(d, "outer_width"),
-		OuterDepth:    getOptionalInt(d, "outer_depth"),
-		OuterUnit:     getOptionalStr(d, "outer_unit", true),
-		Comments:      getOptionalStr(d, "comments", true),
-		Weight:        getOptionalFloat(d, "weight"),
-		MaxWeight:     getOptionalInt(d, "max_weight"),
-		WeightUnit:    getOptionalStr(d, "weight_unit", true),
-		MountingDepth: getOptionalInt(d, "mounting_depth_mm"),
-	}
-
-	params := dcim.NewDcimRackTypesUpdateParams().WithID(id).WithData(&data)
-
-	_, err := api.Dcim.DcimRackTypesUpdate(params, nil)
+	data, err := rackTypeRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	return resourceNetboxRackTypeRead(d, m)
+	return putObject(d, m, rackTypeAPIPath, data, resourceNetboxRackTypeRead)
 }
 
 func resourceNetboxRackTypeDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimRackTypesDeleteParams().WithID(id)
-
-	_, err := api.Dcim.DcimRackTypesDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimRackTypesDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	return nil
+	return deleteObject(d, m, rackTypeAPIPath)
 }

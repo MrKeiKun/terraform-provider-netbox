@@ -2,14 +2,10 @@ package netbox
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	log "github.com/sirupsen/logrus"
 )
 
 func testAccNetboxInventoryItemFullDependencies(testName string) string {
@@ -175,36 +171,7 @@ resource "netbox_inventory_item" "test" {
 }
 
 func testAccCheckInventoryItemDestroy(s *terraform.State) error {
-	// retrieve the connection established in Provider configuration
-	conn := testAccProvider.Meta().(*providerState)
-
-	// loop through the resources in state, verifying each inventory item
-	// is destroyed
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "netbox_inventory_item" {
-			continue
-		}
-
-		// Retrieve our device by referencing it's state ID for API lookup
-		stateID, _ := strconv.ParseInt(rs.Primary.ID, 10, 64)
-		params := dcim.NewDcimInventoryItemsReadParams().WithID(stateID)
-		_, err := conn.Dcim.DcimInventoryItemsRead(params, nil)
-
-		if err == nil {
-			return fmt.Errorf("inventory_item (%s) still exists", rs.Primary.ID)
-		}
-
-		if err != nil {
-			if errresp, ok := err.(*dcim.DcimInventoryItemsReadDefault); ok {
-				errorcode := errresp.Code()
-				if errorcode == 404 {
-					return nil
-				}
-			}
-			return err
-		}
-	}
-	return nil
+	return testAccCheckObjectsDestroyed(s, "netbox_inventory_item", "dcim/inventory-items/")
 }
 
 func init() {
@@ -212,27 +179,7 @@ func init() {
 		Name:         "netbox_inventory_item",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := dcim.NewDcimInventoryItemsListParams()
-			res, err := api.Dcim.DcimInventoryItemsList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, rearPort := range res.GetPayload().Results {
-				if strings.HasPrefix(*rearPort.Name, testPrefix) {
-					deleteParams := dcim.NewDcimInventoryItemsDeleteParams().WithID(rearPort.ID)
-					_, err := api.Dcim.DcimInventoryItemsDelete(deleteParams, nil)
-					if err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted an inventory_item")
-				}
-			}
-			return nil
+			return sweepByName(region, "dcim/inventory-items/", "name")
 		},
 	})
 }

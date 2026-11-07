@@ -1,12 +1,13 @@
 package netbox
 
 import (
+	"context"
 	"fmt"
+	"net/url"
 	"regexp"
 	"strings"
 
-	"github.com/fbreckle/go-netbox/netbox/client/virtualization"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -93,123 +94,78 @@ func dataSourceNetboxVirtualDisk() *schema.Resource {
 
 func dataSourceNetboxVirtualDiskRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-	params := virtualization.NewVirtualizationVirtualDisksListParams()
 
-	// Get user limit (0 = fetch all)
-	var userLimit int64 = 0
+	var userLimit int64
 	if limitValue, ok := d.GetOk("limit"); ok {
 		userLimit = int64(limitValue.(int))
 	}
 
+	query := url.Values{}
 	if ordering, ok := d.GetOk("ordering"); ok {
-		orderingList := ordering.([]interface{})
 		var orderingStrs []string
-		for _, o := range orderingList {
+		for _, o := range ordering.([]interface{}) {
 			orderingStrs = append(orderingStrs, o.(string))
 		}
-		orderingStr := strings.Join(orderingStrs, ",")
-		params.Ordering = &orderingStr
+		query.Set("ordering", strings.Join(orderingStrs, ","))
 	}
-
 	if filter, ok := d.GetOk("filter"); ok {
-		var filterParams = filter.([]interface{})
-		var tags []string
-		for _, f := range filterParams {
+		for _, f := range filter.([]interface{}) {
 			k := f.(map[string]interface{})["name"]
-			v := f.(map[string]interface{})["value"]
-			vString := v.(string)
+			vString := f.(map[string]interface{})["value"].(string)
 			switch k {
 			case "name":
-				params.NameIc = &vString
+				query.Set("name__ic", vString)
 			case "virtual_machine_id":
-				params.VirtualMachineID = &vString
+				query.Set("virtual_machine_id", vString)
 			case "tag":
-				tags = append(tags, vString)
+				query.Add("tag", vString)
 			default:
 				return fmt.Errorf("'%s' is not a supported filter parameter", k)
 			}
 		}
-		if len(tags) > 0 {
-			params.Tag = tags
-		}
 	}
 
-	// Fetch all pages with pagination (fetch all when name_regex is used)
-	paginationHelper := NewPaginationHelper(FetchAll)
-	var allDisks []*models.VirtualDisk
-
-	pageSize := paginationHelper.GetPageSize()
-	for {
-		currentOffset := paginationHelper.CurrentOffset()
-		params.Limit = &pageSize
-		params.Offset = &currentOffset
-
-		res, err := api.Virtualization.VirtualizationVirtualDisksList(params, nil)
-		if err != nil {
-			return fmt.Errorf("failed to fetch virtual disks at offset %d: %w", currentOffset, err)
-		}
-
-		payload := res.GetPayload()
-		allDisks = append(allDisks, payload.Results...)
-
-		if len(payload.Results) == 0 {
-			break
-		}
-
-		if !paginationHelper.ShouldContinuePaging(int64(len(allDisks)), payload.Next) {
-			break
-		}
-
-		paginationHelper.Advance(int64(len(payload.Results)))
+	// Fetch all pages, the name_regex and the limit are applied afterwards
+	disks, err := netboxapi.List[map[string]interface{}](context.Background(), api.rest, "virtualization/virtual-disks/", query)
+	if err != nil {
+		return fmt.Errorf("failed to fetch virtual disks: %w", err)
 	}
 
-	// Apply name_regex filter
-	var filteredDisks []*models.VirtualDisk
 	if nameRegex, ok := d.GetOk("name_regex"); ok {
 		r := regexp.MustCompile(nameRegex.(string))
-		for _, disk := range allDisks {
-			if disk.Name != nil && r.MatchString(*disk.Name) {
-				filteredDisks = append(filteredDisks, disk)
+		var filtered []map[string]interface{}
+		for _, disk := range disks {
+			if r.MatchString(jStr(disk, "name")) {
+				filtered = append(filtered, disk)
 			}
 		}
-	} else {
-		filteredDisks = allDisks
+		disks = filtered
 	}
-
-	// Apply user limit to filtered results
-	if userLimit > 0 && int64(len(filteredDisks)) > userLimit {
-		filteredDisks = filteredDisks[:userLimit]
+	if userLimit > 0 && int64(len(disks)) > userLimit {
+		disks = disks[:userLimit]
 	}
 
 	var s []map[string]interface{}
-	for _, v := range filteredDisks {
-		var mapping = make(map[string]interface{})
-		if v.ID != 0 {
-			mapping["id"] = v.ID
+	for _, v := range disks {
+		mapping := make(map[string]interface{})
+		if id := jInt(v, "id"); id != 0 {
+			mapping["id"] = id
 		}
-		if v.Name != nil {
-			mapping["name"] = *v.Name
+		mapping["name"] = jStr(v, "name")
+		if description := jStr(v, "description"); description != "" {
+			mapping["description"] = description
 		}
-		if v.Description != "" {
-			mapping["description"] = v.Description
+		if size := jIntP(v, "size"); size != nil {
+			mapping["size_mb"] = size
 		}
-		if v.Size != nil {
-			mapping["size_mb"] = *v.Size
+		if vm := jID(v, "virtual_machine"); vm != nil {
+			mapping["virtual_machine_id"] = vm
 		}
-		if v.VirtualMachine != nil {
-			mapping["virtual_machine_id"] = v.VirtualMachine.ID
+		if v["custom_fields"] != nil {
+			mapping["custom_fields"] = flattenCustomFields(v["custom_fields"])
 		}
-		if v.CustomFields != nil {
-			mapping["custom_fields"] = flattenCustomFields(v.CustomFields)
-		}
-		if v.Tags != nil {
-			tags := []string{}
-			for _, t := range v.Tags {
-				if t.Name != nil {
-					tags = append(tags, *t.Name)
-				}
-			}
-			mapping["tags"] = tags
+		if v["tags"] != nil {
+			mapping["tags"] = jTags(v)
 		}
 		s = append(s, mapping)
 	}

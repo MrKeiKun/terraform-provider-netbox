@@ -84,7 +84,7 @@ func providerInvalidConfigure() schema.ConfigureContextFunc {
 		}
 
 		return &providerState{
-			NetBoxAPI:   netboxClient,
+			rest:        netboxClient,
 			defaultTags: schema.NewSet(schema.HashString, nil),
 		}, diags
 	}
@@ -114,9 +114,9 @@ func TestAccNetboxProviderConfigure_failure(t *testing.T) {
 // version check (GET /api/status/) gets a non-JSON response - for example
 // from a misconfigured server_url or a proxy/ingress returning an HTML error
 // page - providerConfigure returns a clear, actionable diagnostic instead of
-// the raw go-openapi "is not supported by the TextConsumer" error. See
-// https://github.com/e-breuninger/terraform-provider-netbox/issues/263,
-// https://github.com/e-breuninger/terraform-provider-netbox/issues/606, and
+// the raw JSON decoding error. See
+// https://github.com/MrKeiKun/terraform-provider-netbox/issues/263,
+// https://github.com/MrKeiKun/terraform-provider-netbox/issues/606, and
 // others reporting this same unhelpful error message.
 func TestProviderConfigure_nonJSONStatusResponse(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -144,7 +144,7 @@ func TestProviderConfigure_nonJSONStatusResponse(t *testing.T) {
 			assert.Contains(t, diagnostic.Detail, "skip_version_check")
 			assert.Contains(t, diagnostic.Detail, ts.URL+"/api/status/")
 			assert.True(t, strings.Contains(diagnostic.Detail, "Original error:"),
-				"expected the original go-openapi error to still be included for debugging, prefixed by an explanation")
+				"expected the original error to still be included for debugging, prefixed by an explanation")
 		}
 		assert.True(t, found, "expected an error diagnostic")
 	}

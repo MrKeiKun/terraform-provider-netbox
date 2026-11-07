@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/circuits"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -58,144 +55,65 @@ func resourceNetboxCircuit() *schema.Resource {
 	}
 }
 
+const circuitAPIPath = "circuits/circuits/"
+
+type circuitRequest struct {
+	Cid         string             `json:"cid"`
+	Status      string             `json:"status,omitempty"`
+	Description string             `json:"description,omitempty"`
+	Provider    *int64             `json:"provider"`
+	Type        *int64             `json:"type"`
+	Tenant      *int64             `json:"tenant,omitempty"`
+	Tags        []netboxapi.TagRef `json:"tags"`
+}
+
+type circuitResponse struct {
+	Cid         string            `json:"cid"`
+	Status      *netboxapi.Choice `json:"status"`
+	Description string            `json:"description"`
+	Provider    *netboxapi.Ref    `json:"provider"`
+	Type        *netboxapi.Ref    `json:"type"`
+	Tenant      *netboxapi.Ref    `json:"tenant"`
+}
+
+func circuitRequestFromResourceData(d *schema.ResourceData) *circuitRequest {
+	data := &circuitRequest{
+		Cid:         d.Get("cid").(string),
+		Status:      d.Get("status").(string),
+		Description: d.Get("description").(string),
+		Tags:        []netboxapi.TagRef{},
+	}
+	if v, ok := d.GetOk("provider_id"); ok {
+		data.Provider = int64ToPtr(int64(v.(int)))
+	}
+	if v, ok := d.GetOk("type_id"); ok {
+		data.Type = int64ToPtr(int64(v.(int)))
+	}
+	if v, ok := d.GetOk("tenant_id"); ok {
+		data.Tenant = int64ToPtr(int64(v.(int)))
+	}
+	return data
+}
+
 func resourceNetboxCircuitCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	data := models.WritableCircuit{}
-
-	cid := d.Get("cid").(string)
-	data.Cid = &cid
-
-	data.Status = d.Get("status").(string)
-	data.Description = d.Get("description").(string)
-
-	providerIDValue, ok := d.GetOk("provider_id")
-	if ok {
-		data.Provider = int64ToPtr(int64(providerIDValue.(int)))
-	}
-
-	typeIDValue, ok := d.GetOk("type_id")
-	if ok {
-		data.Type = int64ToPtr(int64(typeIDValue.(int)))
-	}
-
-	tenantIDValue, ok := d.GetOk("tenant_id")
-	if ok {
-		data.Tenant = int64ToPtr(int64(tenantIDValue.(int)))
-	}
-
-	data.Tags = []*models.NestedTag{}
-
-	params := circuits.NewCircuitsCircuitsCreateParams().WithData(&data)
-
-	res, err := api.Circuits.CircuitsCircuitsCreate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxCircuitRead(d, m)
+	return createObject(d, m, circuitAPIPath, circuitRequestFromResourceData(d), resourceNetboxCircuitRead)
 }
 
 func resourceNetboxCircuitRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := circuits.NewCircuitsCircuitsReadParams().WithID(id)
-
-	res, err := api.Circuits.CircuitsCircuitsRead(params, nil)
-
-	if err != nil {
-		if errresp, ok := err.(*circuits.CircuitsCircuitsReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-.html
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-
-	d.Set("cid", res.GetPayload().Cid)
-	d.Set("status", res.GetPayload().Status.Value)
-	d.Set("description", res.GetPayload().Description)
-
-	if res.GetPayload().Provider != nil {
-		d.Set("provider_id", res.GetPayload().Provider.ID)
-	} else {
-		d.Set("provider_id", nil)
-	}
-
-	if res.GetPayload().Type != nil {
-		d.Set("type_id", res.GetPayload().Type.ID)
-	} else {
-		d.Set("type_id", nil)
-	}
-
-	if res.GetPayload().Tenant != nil {
-		d.Set("tenant_id", res.GetPayload().Tenant.ID)
-	} else {
-		d.Set("tenant_id", nil)
-	}
-
-	return nil
+	return readObject(d, m, circuitAPIPath, func(r *circuitResponse) {
+		d.Set("cid", r.Cid)
+		d.Set("status", netboxapi.ChoiceValue(r.Status))
+		d.Set("description", r.Description)
+		d.Set("provider_id", netboxapi.RefID(r.Provider))
+		d.Set("type_id", netboxapi.RefID(r.Type))
+		d.Set("tenant_id", netboxapi.RefID(r.Tenant))
+	})
 }
 
 func resourceNetboxCircuitUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.WritableCircuit{}
-
-	cid := d.Get("cid").(string)
-	data.Cid = &cid
-
-	data.Status = d.Get("status").(string)
-	data.Description = d.Get("description").(string)
-
-	providerIDValue, ok := d.GetOk("provider_id")
-	if ok {
-		data.Provider = int64ToPtr(int64(providerIDValue.(int)))
-	}
-
-	typeIDValue, ok := d.GetOk("type_id")
-	if ok {
-		data.Type = int64ToPtr(int64(typeIDValue.(int)))
-	}
-
-	tenantIDValue, ok := d.GetOk("tenant_id")
-	if ok {
-		data.Tenant = int64ToPtr(int64(tenantIDValue.(int)))
-	}
-
-	data.Tags = []*models.NestedTag{}
-
-	params := circuits.NewCircuitsCircuitsPartialUpdateParams().WithID(id).WithData(&data)
-
-	_, err := api.Circuits.CircuitsCircuitsPartialUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	return resourceNetboxCircuitRead(d, m)
+	return patchObject(d, m, circuitAPIPath, circuitRequestFromResourceData(d), resourceNetboxCircuitRead)
 }
 
 func resourceNetboxCircuitDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := circuits.NewCircuitsCircuitsDeleteParams().WithID(id)
-
-	_, err := api.Circuits.CircuitsCircuitsDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*circuits.CircuitsCircuitsDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	return nil
+	return deleteObject(d, m, circuitAPIPath)
 }

@@ -3,11 +3,11 @@ package netbox
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strconv"
 	"strings"
 
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -130,25 +130,35 @@ func resourceNetboxAvailablePrefixParseImport(importStr string) (int, string, in
 	return parentID, parts[1], prefixLength, nil
 }
 
+type availablePrefixCreateRequest struct {
+	PrefixLength int64       `json:"prefix_length"`
+	CustomFields interface{} `json:"custom_fields,omitempty"`
+}
+
+type availablePrefixCreateResponse struct {
+	ID     int64  `json:"id"`
+	Prefix string `json:"prefix"`
+}
+
 func resourceNetboxAvailablePrefixCreate(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 
 	parentPrefixID := int64(d.Get("parent_prefix_id").(int))
-	prefixLength := int64(d.Get("prefix_length").(int))
-	data := models.PrefixLength{
-		PrefixLength: &prefixLength,
+
+	data := availablePrefixCreateRequest{
+		PrefixLength: int64(d.Get("prefix_length").(int)),
 	}
 	if cf, ok := d.GetOk(customFieldsKey); ok {
 		data.CustomFields = cf
 	}
-	params := ipam.NewIpamPrefixesAvailablePrefixesCreateParams().WithID(parentPrefixID).WithData(&data)
 
-	res, err := api.Ipam.IpamPrefixesAvailablePrefixesCreate(params, nil)
+	// NetBox picks the next free prefix of the parent and returns it.
+	path := fmt.Sprintf("ipam/prefixes/%d/available-prefixes/", parentPrefixID)
+	payload, err := netboxapi.Request[availablePrefixCreateResponse](context.Background(), api.rest, http.MethodPost, path, nil, data)
 	if err != nil {
 		return err
 	}
 
-	payload := res.GetPayload()
 	d.SetId(strconv.FormatInt(payload.ID, 10))
 	d.Set("prefix", payload.Prefix)
 

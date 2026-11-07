@@ -1,12 +1,12 @@
 package netbox
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
 
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -54,44 +54,17 @@ func resourceNetboxDeviceTagParseID(id string) (int64, string, error) {
 	return deviceID, parts[1], nil
 }
 
-// cleanNestedTags strips the URL and Display fields the API sends on read, which it refuses to accept when sent back on write.
-func cleanNestedTags(tags []*models.NestedTag) []*models.NestedTag {
-	cleaned := make([]*models.NestedTag, 0, len(tags))
-	for _, tag := range tags {
-		t := *tag
-		t.URL = ""
-		t.Display = ""
-		cleaned = append(cleaned, &t)
-	}
-	return cleaned
+// deviceTagsResponse is the part of a device that this resource needs.
+type deviceTagsResponse struct {
+	ID   int64              `json:"id"`
+	Tags []netboxapi.TagRef `json:"tags"`
 }
 
-// resourceNetboxDeviceTagUpdateDeviceTags overwrites a device's tag list. device_type, role and site are re-sent
-// because the NetBox API does not treat them as optional on partial update: omitting them clears them. The
-// primary IPs are preserved too, matching resource_netbox_device_oob_ip.go and resource_netbox_device_primary_ip.go.
-func resourceNetboxDeviceTagUpdateDeviceTags(api *providerState, device *models.DeviceWithConfigContext, tags []*models.NestedTag) error {
-	data := models.WritableDeviceWithConfigContext{}
-	data.Name = device.Name
-	data.Tags = tags
-
-	if device.DeviceType != nil {
-		data.DeviceType = &device.DeviceType.ID
-	}
-	if device.Site != nil {
-		data.Site = &device.Site.ID
-	}
-	if device.Role != nil {
-		data.Role = &device.Role.ID
-	}
-	if device.PrimaryIp4 != nil {
-		data.PrimaryIp4 = &device.PrimaryIp4.ID
-	}
-	if device.PrimaryIp6 != nil {
-		data.PrimaryIp6 = &device.PrimaryIp6.ID
-	}
-
-	updateParams := dcim.NewDcimDevicesPartialUpdateParams().WithID(device.ID).WithData(&data)
-	_, err := api.Dcim.DcimDevicesPartialUpdate(updateParams, nil)
+// updateDeviceTags overwrites the tag list of a device. Only the tags are sent,
+// everything else on the device is left alone.
+func updateDeviceTags(api *providerState, deviceID int64, tags []netboxapi.TagRef) error {
+	body := map[string]interface{}{"tags": tags}
+	_, err := netboxapi.Patch[netboxapi.Ref](context.Background(), api.rest, deviceAPIPath, deviceID, body)
 	return err
 }
 
@@ -101,22 +74,20 @@ func resourceNetboxDeviceTagCreate(d *schema.ResourceData, m interface{}) error 
 	deviceID := int64(d.Get("device_id").(int))
 	tagName := d.Get("tag").(string)
 
-	nbTag, err := findTag(api.NetBoxAPI, tagName)
+	nbTag, err := findTagRef(api.rest, tagName)
 	if err != nil {
 		return err
 	}
 
-	readParams := dcim.NewDcimDevicesReadParams().WithID(deviceID)
-	res, err := api.Dcim.DcimDevicesRead(readParams, nil)
+	device, err := netboxapi.Get[deviceTagsResponse](context.Background(), api.rest, deviceAPIPath, deviceID)
 	if err != nil {
 		return err
 	}
-	device := res.GetPayload()
 
-	tags := cleanNestedTags(device.Tags)
+	tags := device.Tags
 	alreadyPresent := false
 	for _, tag := range tags {
-		if tag.Name != nil && nbTag.Name != nil && *tag.Name == *nbTag.Name {
+		if tag.Name == nbTag.Name {
 			alreadyPresent = true
 			break
 		}
@@ -125,11 +96,12 @@ func resourceNetboxDeviceTagCreate(d *schema.ResourceData, m interface{}) error 
 		tags = append(tags, nbTag)
 	}
 
-	if err := resourceNetboxDeviceTagUpdateDeviceTags(api, device, tags); err != nil {
+	if err := updateDeviceTags(api, deviceID, tags); err != nil {
 		return err
 	}
 
 	d.SetId(fmt.Sprintf("%d:%s", deviceID, tagName))
+
 	return resourceNetboxDeviceTagRead(d, m)
 }
 
@@ -141,27 +113,23 @@ func resourceNetboxDeviceTagRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	readParams := dcim.NewDcimDevicesReadParams().WithID(deviceID)
-	res, err := api.Dcim.DcimDevicesRead(readParams, nil)
+	device, err := netboxapi.Get[deviceTagsResponse](context.Background(), api.rest, deviceAPIPath, deviceID)
 	if err != nil {
-		if errresp, ok := err.(*dcim.DcimDevicesReadDefault); ok {
-			if errresp.Code() == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
+		if netboxapi.IsNotFound(err) {
+			// the device is gone, so is the tag assignment
+			d.SetId("")
+			return nil
 		}
 		return err
 	}
 
 	found := false
-	for _, tag := range res.GetPayload().Tags {
-		if tag.Name != nil && *tag.Name == tagName {
+	for _, tag := range device.Tags {
+		if tag.Name == tagName {
 			found = true
 			break
 		}
 	}
-
 	if !found {
 		// the tag was removed from the device out of band
 		d.SetId("")
@@ -181,26 +149,22 @@ func resourceNetboxDeviceTagDelete(d *schema.ResourceData, m interface{}) error 
 		return err
 	}
 
-	readParams := dcim.NewDcimDevicesReadParams().WithID(deviceID)
-	res, err := api.Dcim.DcimDevicesRead(readParams, nil)
+	device, err := netboxapi.Get[deviceTagsResponse](context.Background(), api.rest, deviceAPIPath, deviceID)
 	if err != nil {
-		if errresp, ok := err.(*dcim.DcimDevicesReadDefault); ok {
-			if errresp.Code() == 404 {
-				// the device is already gone, nothing left to clean up
-				return nil
-			}
+		if netboxapi.IsNotFound(err) {
+			// the device is already gone, nothing left to clean up
+			return nil
 		}
 		return err
 	}
-	device := res.GetPayload()
 
-	tags := []*models.NestedTag{}
-	for _, tag := range cleanNestedTags(device.Tags) {
-		if tag.Name != nil && *tag.Name == tagName {
+	tags := []netboxapi.TagRef{}
+	for _, tag := range device.Tags {
+		if tag.Name == tagName {
 			continue
 		}
 		tags = append(tags, tag)
 	}
 
-	return resourceNetboxDeviceTagUpdateDeviceTags(api, device, tags)
+	return updateDeviceTags(api, deviceID, tags)
 }

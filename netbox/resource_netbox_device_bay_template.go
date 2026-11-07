@@ -2,10 +2,8 @@ package netbox
 
 import (
 	"context"
-	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -46,113 +44,54 @@ func resourceNetboxDeviceBayTemplate() *schema.Resource {
 	}
 }
 
-func resourceNetboxDeviceBayTemplateCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := m.(*providerState)
+const deviceBayTemplateAPIPath = "dcim/device-bay-templates/"
 
-	var diags diag.Diagnostics
+type deviceBayTemplateRequest struct {
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+	Label       string `json:"label,omitempty"`
+	DeviceType  *int64 `json:"device_type"`
+}
 
+type deviceBayTemplateResponse struct {
+	Name        string         `json:"name"`
+	Description string         `json:"description"`
+	Label       string         `json:"label"`
+	DeviceType  *netboxapi.Ref `json:"device_type"`
+}
+
+func deviceBayTemplateRequestFromResourceData(d *schema.ResourceData) *deviceBayTemplateRequest {
 	name := d.Get("name").(string)
-	description := d.Get("description").(string)
-	label := d.Get("label").(string)
-
-	data := models.WritableDeviceBayTemplate{
-		Name:        &name,
-		Description: description,
-		Label:       label,
+	data := &deviceBayTemplateRequest{
+		Name:        name,
+		Description: d.Get("description").(string),
+		Label:       d.Get("label").(string),
 	}
-
-	if deviceTypeID, ok := d.Get("device_type_id").(int); ok && deviceTypeID != 0 {
-		data.DeviceType = int64ToPtr(int64(deviceTypeID))
+	if v := int64(d.Get("device_type_id").(int)); v != 0 || d.HasChange("device_type_id") {
+		data.DeviceType = &v
 	}
-	params := dcim.NewDcimDeviceBayTemplatesCreateParams().WithData(&data)
+	return data
+}
 
-	res, err := api.Dcim.DcimDeviceBayTemplatesCreate(params, nil)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return diags
+func resourceNetboxDeviceBayTemplateCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	return createObjectCtx(ctx, d, m, deviceBayTemplateAPIPath, deviceBayTemplateRequestFromResourceData(d), resourceNetboxDeviceBayTemplateRead)
 }
 
 func resourceNetboxDeviceBayTemplateRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-
-	var diags diag.Diagnostics
-
-	params := dcim.NewDcimDeviceBayTemplatesReadParams().WithID(id)
-
-	res, err := api.Dcim.DcimDeviceBayTemplatesRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimDeviceBayTemplatesReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
+	return readObjectCtx(ctx, d, m, deviceBayTemplateAPIPath, func(r *deviceBayTemplateResponse) {
+		d.Set("name", r.Name)
+		d.Set("description", r.Description)
+		d.Set("label", r.Label)
+		if r.DeviceType != nil {
+			d.Set("device_type_id", r.DeviceType.ID)
 		}
-		return diag.FromErr(err)
-	}
-
-	tmpl := res.GetPayload()
-
-	d.Set("device_type_id", tmpl.DeviceType.ID)
-	d.Set("name", tmpl.Name)
-	d.Set("description", tmpl.Description)
-	d.Set("label", tmpl.Label)
-
-	return diags
+	})
 }
 
 func resourceNetboxDeviceBayTemplateUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := m.(*providerState)
-
-	var diags diag.Diagnostics
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-
-	name := d.Get("name").(string)
-	description := d.Get("description").(string)
-	label := d.Get("label").(string)
-
-	data := models.WritableDeviceBayTemplate{
-		Name:        &name,
-		Description: description,
-		Label:       label,
-	}
-
-	if d.HasChange("device_type_id") {
-		deviceTypeID := int64(d.Get("device_type_id").(int))
-		data.DeviceType = &deviceTypeID
-	}
-
-	params := dcim.NewDcimDeviceBayTemplatesPartialUpdateParams().WithID(id).WithData(&data)
-	_, err := api.Dcim.DcimDeviceBayTemplatesPartialUpdate(params, nil)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return diags
+	return patchObjectCtx(ctx, d, m, deviceBayTemplateAPIPath, deviceBayTemplateRequestFromResourceData(d), resourceNetboxDeviceBayTemplateRead)
 }
 
 func resourceNetboxDeviceBayTemplateDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimDeviceBayTemplatesDeleteParams().WithID(id)
-
-	_, err := api.Dcim.DcimDeviceBayTemplatesDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimDeviceBayTemplatesDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return diag.FromErr(err)
-	}
-	return nil
+	return deleteObjectCtx(ctx, d, m, deviceBayTemplateAPIPath)
 }

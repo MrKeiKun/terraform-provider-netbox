@@ -3,26 +3,16 @@ package netbox
 import (
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetTagListFromNestedTagList(t *testing.T) {
-	tags := []*models.NestedTag{
-		{
-			Name: strToPtr("Foo"),
-			Slug: strToPtr("foo"),
-		},
-		{
-			Name: strToPtr("Bar"),
-			Slug: strToPtr("bar"),
-		},
+func TestTagNames(t *testing.T) {
+	tags := []netboxapi.TagRef{
+		{Name: "Foo", Slug: "foo"},
+		{Name: "Bar", Slug: "bar"},
 	}
 
-	flat := getTagListFromNestedTagList(tags)
-	expected := []string{
-		"Foo",
-		"Bar",
-	}
-	assert.Equal(t, flat, expected)
+	assert.Equal(t, []string{"Foo", "Bar"}, tagNames(tags))
+	assert.Equal(t, []string{}, tagNames(nil))
 }

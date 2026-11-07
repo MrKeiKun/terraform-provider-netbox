@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -61,135 +58,86 @@ func resourceNetboxModuleType() *schema.Resource {
 	}
 }
 
-func resourceNetboxModuleTypeCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const moduleTypeAPIPath = "dcim/module-types/"
 
-	data := models.WritableModuleType{
-		Manufacturer: int64ToPtr(int64(d.Get("manufacturer_id").(int))),
-		Model:        strToPtr(d.Get("model").(string)),
-		PartNumber:   getOptionalStr(d, "part_number", false),
-		Weight:       getOptionalFloat(d, "weight"),
-		WeightUnit:   getOptionalStr(d, "weight_unit", false),
-		Description:  getOptionalStr(d, "description", false),
-		Comments:     getOptionalStr(d, "comments", false),
-	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
-	if err != nil {
-		return err
-	}
-
-	ct, ok := d.GetOk(customFieldsKey)
-	if ok {
-		data.CustomFields = ct
-	}
-
-	params := dcim.NewDcimModuleTypesCreateParams().WithData(&data)
-
-	res, err := api.Dcim.DcimModuleTypesCreate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxModuleTypeRead(d, m)
+type moduleTypeRequest struct {
+	Manufacturer *int64             `json:"manufacturer"`
+	Model        string             `json:"model"`
+	PartNumber   string             `json:"part_number,omitempty"`
+	Weight       *float64           `json:"weight"`
+	WeightUnit   string             `json:"weight_unit"`
+	Description  string             `json:"description,omitempty"`
+	Comments     string             `json:"comments,omitempty"`
+	CustomFields interface{}        `json:"custom_fields,omitempty"`
+	Tags         []netboxapi.TagRef `json:"tags"`
 }
 
-func resourceNetboxModuleTypeRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimModuleTypesReadParams().WithID(id)
-
-	res, err := api.Dcim.DcimModuleTypesRead(params, nil)
-
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimModuleTypesReadDefault); ok {
-			if errresp.Code() == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-
-	moduleType := res.GetPayload()
-
-	if moduleType.Manufacturer != nil {
-		d.Set("manufacturer_id", moduleType.Manufacturer.ID)
-	} else {
-		d.Set("manufacturer_id", nil)
-	}
-
-	d.Set("model", moduleType.Model)
-	d.Set("part_number", moduleType.PartNumber)
-	d.Set("weight", moduleType.Weight)
-
-	if moduleType.WeightUnit != nil {
-		d.Set("weight_unit", moduleType.WeightUnit.Value)
-	} else {
-		d.Set("weight_unit", nil)
-	}
-
-	d.Set("description", moduleType.Description)
-	d.Set("comments", moduleType.Comments)
-
-	cf := getCustomFields(res.GetPayload().CustomFields)
-	if cf != nil {
-		d.Set(customFieldsKey, cf)
-	}
-	api.readTags(d, res.GetPayload().Tags)
-
-	return nil
+type moduleTypeResponse struct {
+	Manufacturer *netboxapi.Ref         `json:"manufacturer"`
+	Model        string                 `json:"model"`
+	PartNumber   string                 `json:"part_number"`
+	Weight       *float64               `json:"weight"`
+	WeightUnit   *netboxapi.Choice      `json:"weight_unit"`
+	Description  string                 `json:"description"`
+	Comments     string                 `json:"comments"`
+	CustomFields map[string]interface{} `json:"custom_fields"`
+	Tags         []netboxapi.TagRef     `json:"tags"`
 }
 
-func resourceNetboxModuleTypeUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-
-	data := models.WritableModuleType{
+func moduleTypeRequestFromResourceData(api *providerState, d *schema.ResourceData) (*moduleTypeRequest, error) {
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
+	if err != nil {
+		return nil, err
+	}
+	data := &moduleTypeRequest{
 		Manufacturer: int64ToPtr(int64(d.Get("manufacturer_id").(int))),
-		Model:        strToPtr(d.Get("model").(string)),
+		Model:        d.Get("model").(string),
 		PartNumber:   getOptionalStr(d, "part_number", true),
 		Weight:       getOptionalFloat(d, "weight"),
 		WeightUnit:   getOptionalStr(d, "weight_unit", false),
 		Description:  getOptionalStr(d, "description", true),
 		Comments:     getOptionalStr(d, "comments", true),
+		Tags:         tags,
 	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
-	if err != nil {
-		return err
-	}
-
-	ct, ok := d.GetOk(customFieldsKey)
-	if ok {
+	if ct, ok := d.GetOk(customFieldsKey); ok {
 		data.CustomFields = ct
 	}
+	return data, nil
+}
 
-	params := dcim.NewDcimModuleTypesPartialUpdateParams().WithID(id).WithData(&data)
-
-	_, err = api.Dcim.DcimModuleTypesPartialUpdate(params, nil)
+func resourceNetboxModuleTypeCreate(d *schema.ResourceData, m interface{}) error {
+	data, err := moduleTypeRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
+	return createObject(d, m, moduleTypeAPIPath, data, resourceNetboxModuleTypeRead)
+}
 
-	return resourceNetboxModuleTypeRead(d, m)
+func resourceNetboxModuleTypeRead(d *schema.ResourceData, m interface{}) error {
+	api := m.(*providerState)
+	return readObject(d, m, moduleTypeAPIPath, func(r *moduleTypeResponse) {
+		d.Set("manufacturer_id", netboxapi.RefID(r.Manufacturer))
+		d.Set("model", r.Model)
+		d.Set("part_number", r.PartNumber)
+		d.Set("weight", r.Weight)
+		d.Set("weight_unit", netboxapi.ChoiceValue(r.WeightUnit))
+		d.Set("description", r.Description)
+		d.Set("comments", r.Comments)
+		if cf := getCustomFields(r.CustomFields); cf != nil {
+			d.Set(customFieldsKey, cf)
+		}
+		api.readTagRefs(d, r.Tags)
+	})
+}
+
+func resourceNetboxModuleTypeUpdate(d *schema.ResourceData, m interface{}) error {
+	data, err := moduleTypeRequestFromResourceData(m.(*providerState), d)
+	if err != nil {
+		return err
+	}
+	return patchObject(d, m, moduleTypeAPIPath, data, resourceNetboxModuleTypeRead)
 }
 
 func resourceNetboxModuleTypeDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimModuleTypesDeleteParams().WithID(id)
-
-	_, err := api.Dcim.DcimModuleTypesDelete(params, nil)
-	if err != nil {
-		return err
-	}
-	return nil
+	return deleteObject(d, m, moduleTypeAPIPath)
 }

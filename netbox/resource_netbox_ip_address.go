@@ -1,11 +1,9 @@
 package netbox
 
 import (
-	"strconv"
 	"strings"
 
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -120,20 +118,60 @@ func resourceNetboxIPAddress() *schema.Resource {
 	}
 }
 
-func resourceNetboxIPAddressCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const ipAddressAPIPath = "ipam/ip-addresses/"
 
-	data := models.WritableIPAddress{}
+type ipAddressRequest struct {
+	Address            string             `json:"address"`
+	Status             string             `json:"status,omitempty"`
+	Description        string             `json:"description,omitempty"`
+	Role               string             `json:"role"`
+	DnsName            string             `json:"dns_name,omitempty"`
+	Vrf                *int64             `json:"vrf"`
+	Tenant             *int64             `json:"tenant"`
+	NatInside          *int64             `json:"nat_inside"`
+	AssignedObjectType *string            `json:"assigned_object_type,omitempty"`
+	AssignedObjectID   *int64             `json:"assigned_object_id"`
+	CustomFields       interface{}        `json:"custom_fields,omitempty"`
+	Tags               []netboxapi.TagRef `json:"tags"`
+}
 
-	data.Address = strToPtr(d.Get("ip_address").(string))
-	data.Status = d.Get("status").(string)
+type ipAddressResponse struct {
+	Address            string            `json:"address"`
+	Status             *netboxapi.Choice `json:"status"`
+	Description        string            `json:"description"`
+	Role               *netboxapi.Choice `json:"role"`
+	DnsName            string            `json:"dns_name"`
+	Vrf                *netboxapi.Ref    `json:"vrf"`
+	Tenant             *netboxapi.Ref    `json:"tenant"`
+	NatInside          *netboxapi.Ref    `json:"nat_inside"`
+	AssignedObjectType *string           `json:"assigned_object_type"`
+	AssignedObjectID   *int64            `json:"assigned_object_id"`
+	NatOutside         []struct {
+		ID      int64  `json:"id"`
+		Address string `json:"address"`
+		Family  int64  `json:"family"`
+	} `json:"nat_outside"`
+	CustomFields map[string]interface{} `json:"custom_fields"`
+	Tags         []netboxapi.TagRef     `json:"tags"`
+}
 
-	data.Description = getOptionalStr(d, "description", false)
-	data.Role = getOptionalStr(d, "role", false)
-	data.DNSName = getOptionalStr(d, "dns_name", false)
-	data.Vrf = getOptionalInt(d, "vrf_id")
-	data.Tenant = getOptionalInt(d, "tenant_id")
-	data.NatInside = getOptionalInt(d, "nat_inside_address_id")
+func ipAddressRequestFromResourceData(api *providerState, d *schema.ResourceData) (*ipAddressRequest, error) {
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
+	if err != nil {
+		return nil, err
+	}
+	data := &ipAddressRequest{
+		Address:     d.Get("ip_address").(string),
+		Status:      d.Get("status").(string),
+		Description: getOptionalStr(d, "description", true),
+		Role:        getOptionalStr(d, "role", false),
+		DnsName:     getOptionalStr(d, "dns_name", true),
+		Vrf:         getOptionalInt(d, "vrf_id"),
+		Tenant:      getOptionalInt(d, "tenant_id"),
+		NatInside:   getOptionalInt(d, "nat_inside_address_id"),
+
+		Tags: tags,
+	}
 
 	vmInterfaceID := getOptionalInt(d, "virtual_machine_interface_id")
 	deviceInterfaceID := getOptionalInt(d, "device_interface_id")
@@ -155,209 +193,92 @@ func resourceNetboxIPAddressCreate(d *schema.ResourceData, m interface{}) error 
 		data.AssignedObjectType = strToPtr("")
 		data.AssignedObjectID = nil
 	}
+	if ct, ok := d.GetOk(customFieldsKey); ok {
+		data.CustomFields = ct
+	}
+	return data, nil
+}
 
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+func resourceNetboxIPAddressCreate(d *schema.ResourceData, m interface{}) error {
+	data, err := ipAddressRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	cf, ok := d.GetOk(customFieldsKey)
-	if ok {
-		data.CustomFields = cf
-	}
-
-	params := ipam.NewIpamIPAddressesCreateParams().WithData(&data)
-
-	res, err := api.Ipam.IpamIPAddressesCreate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxIPAddressRead(d, m)
+	return createObject(d, m, ipAddressAPIPath, data, resourceNetboxIPAddressRead)
 }
 
 func resourceNetboxIPAddressRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
+	return readObject(d, m, ipAddressAPIPath, func(r *ipAddressResponse) {
+		d.Set("ip_address", r.Address)
+		d.Set("status", netboxapi.ChoiceValue(r.Status))
+		d.Set("description", r.Description)
+		d.Set("role", netboxapi.ChoiceValue(r.Role))
+		if r.DnsName != "" {
+			d.Set("dns_name", r.DnsName)
+		}
+		d.Set("vrf_id", netboxapi.RefID(r.Vrf))
+		d.Set("tenant_id", netboxapi.RefID(r.Tenant))
+		d.Set("nat_inside_address_id", netboxapi.RefID(r.NatInside))
 
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := ipam.NewIpamIPAddressesReadParams().WithID(id)
+		if r.AssignedObjectID != nil {
+			vmInterfaceID := getOptionalInt(d, "virtual_machine_interface_id")
+			deviceInterfaceID := getOptionalInt(d, "device_interface_id")
+			interfaceID := getOptionalInt(d, "interface_id")
 
-	res, err := api.Ipam.IpamIPAddressesRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*ipam.IpamIPAddressesReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
+			switch {
+			case vmInterfaceID != nil:
+				d.Set("virtual_machine_interface_id", r.AssignedObjectID)
+				d.Set("interface_id", nil)
+				d.Set("object_type", "")
+			case deviceInterfaceID != nil:
+				d.Set("device_interface_id", r.AssignedObjectID)
+				d.Set("interface_id", nil)
+				d.Set("object_type", "")
+			// if interfaceID is given, object_type must be set as well
+			case interfaceID != nil:
+				d.Set("interface_id", r.AssignedObjectID)
+				d.Set("object_type", r.AssignedObjectType)
+			default:
+				// Set changes made to the ip address outside of Terraform and update the state accordingly.
+				d.Set("interface_id", r.AssignedObjectID)
+				d.Set("object_type", r.AssignedObjectType)
 			}
-		}
-		return err
-	}
-
-	ipAddress := res.GetPayload()
-	if ipAddress.AssignedObjectID != nil {
-		vmInterfaceID := getOptionalInt(d, "virtual_machine_interface_id")
-		deviceInterfaceID := getOptionalInt(d, "device_interface_id")
-		interfaceID := getOptionalInt(d, "interface_id")
-
-		switch {
-		case vmInterfaceID != nil:
-			d.Set("virtual_machine_interface_id", ipAddress.AssignedObjectID)
+		} else {
+			d.Set("virtual_machine_interface_id", nil)
+			d.Set("device_interface_id", nil)
 			d.Set("interface_id", nil)
 			d.Set("object_type", "")
-		case deviceInterfaceID != nil:
-			d.Set("device_interface_id", ipAddress.AssignedObjectID)
-			d.Set("interface_id", nil)
-			d.Set("object_type", "")
-		// if interfaceID is given, object_type must be set as well
-		case interfaceID != nil:
-			d.Set("interface_id", ipAddress.AssignedObjectID)
-			d.Set("object_type", ipAddress.AssignedObjectType)
-		default:
-			// Set changes made to the ip address outside of Terraform and update the state accordingly.
-			d.Set("interface_id", ipAddress.AssignedObjectID)
-			d.Set("object_type", ipAddress.AssignedObjectType)
 		}
-	} else {
-		d.Set("virtual_machine_interface_id", nil)
-		d.Set("device_interface_id", nil)
-		d.Set("interface_id", nil)
-		d.Set("object_type", "")
-	}
 
-	if ipAddress.Vrf != nil {
-		d.Set("vrf_id", ipAddress.Vrf.ID)
-	} else {
-		d.Set("vrf_id", nil)
-	}
-
-	if ipAddress.Tenant != nil {
-		d.Set("tenant_id", ipAddress.Tenant.ID)
-	} else {
-		d.Set("tenant_id", nil)
-	}
-
-	if ipAddress.DNSName != "" {
-		d.Set("dns_name", ipAddress.DNSName)
-	}
-
-	if ipAddress.Role != nil {
-		d.Set("role", ipAddress.Role.Value)
-	} else {
-		d.Set("role", nil)
-	}
-
-	if ipAddress.NatInside != nil {
-		d.Set("nat_inside_address_id", ipAddress.NatInside.ID)
-	} else {
-		d.Set("nat_inside_address_id", nil)
-	}
-
-	if ipAddress.NatOutside != nil {
-		natOutsideIPAddresses := ipAddress.NatOutside
-
-		var s []map[string]interface{}
-		for _, v := range natOutsideIPAddresses {
-			var mapping = make(map[string]interface{})
-
-			mapping["id"] = v.ID
-			mapping["ip_address"] = v.Address
-			mapping["address_family"] = v.Family
-
-			s = append(s, mapping)
+		if r.NatOutside != nil {
+			var s []map[string]interface{}
+			for _, v := range r.NatOutside {
+				s = append(s, map[string]interface{}{
+					"id":             v.ID,
+					"ip_address":     v.Address,
+					"address_family": v.Family,
+				})
+			}
+			d.Set("nat_outside_addresses", s)
+		} else {
+			d.Set("nat_outside_addresses", nil)
 		}
-		d.Set("nat_outside_addresses", s)
-	} else {
-		d.Set("nat_outside_addresses", nil)
-	}
-
-	d.Set("ip_address", ipAddress.Address)
-	d.Set("description", ipAddress.Description)
-	d.Set("status", ipAddress.Status.Value)
-	api.readTags(d, ipAddress.Tags)
-	cf := getCustomFields(res.GetPayload().CustomFields)
-	if cf != nil {
-		d.Set(customFieldsKey, cf)
-	}
-	return nil
+		if cf := getCustomFields(r.CustomFields); cf != nil {
+			d.Set(customFieldsKey, cf)
+		}
+		api.readTagRefs(d, r.Tags)
+	})
 }
 
 func resourceNetboxIPAddressUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.WritableIPAddress{}
-
-	data.Address = strToPtr(d.Get("ip_address").(string))
-	data.Status = d.Get("status").(string)
-
-	data.Description = getOptionalStr(d, "description", true)
-	data.Role = getOptionalStr(d, "role", false)
-	data.DNSName = getOptionalStr(d, "dns_name", true)
-	data.Vrf = getOptionalInt(d, "vrf_id")
-	data.Tenant = getOptionalInt(d, "tenant_id")
-	data.NatInside = getOptionalInt(d, "nat_inside_address_id")
-
-	vmInterfaceID := getOptionalInt(d, "virtual_machine_interface_id")
-	deviceInterfaceID := getOptionalInt(d, "device_interface_id")
-	interfaceID := getOptionalInt(d, "interface_id")
-
-	switch {
-	case vmInterfaceID != nil:
-		data.AssignedObjectType = strToPtr("virtualization.vminterface")
-		data.AssignedObjectID = vmInterfaceID
-	case deviceInterfaceID != nil:
-		data.AssignedObjectType = strToPtr("dcim.interface")
-		data.AssignedObjectID = deviceInterfaceID
-	// if interfaceID is given, object_type must be set as well
-	case interfaceID != nil:
-		data.AssignedObjectType = strToPtr(d.Get("object_type").(string))
-		data.AssignedObjectID = interfaceID
-	// default = ip is not linked to anything
-	default:
-		data.AssignedObjectType = strToPtr("")
-		data.AssignedObjectID = nil
-	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+	data, err := ipAddressRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	if cf, ok := d.GetOk(customFieldsKey); ok {
-		data.CustomFields = cf
-	}
-
-	params := ipam.NewIpamIPAddressesUpdateParams().WithID(id).WithData(&data)
-
-	_, err = api.Ipam.IpamIPAddressesUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	return resourceNetboxIPAddressRead(d, m)
+	return putObject(d, m, ipAddressAPIPath, data, resourceNetboxIPAddressRead)
 }
 
 func resourceNetboxIPAddressDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := ipam.NewIpamIPAddressesDeleteParams().WithID(id)
-
-	_, err := api.Ipam.IpamIPAddressesDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*ipam.IpamIPAddressesDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	return nil
+	return deleteObject(d, m, ipAddressAPIPath)
 }

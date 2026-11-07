@@ -2,11 +2,8 @@ package netbox
 
 import (
 	"fmt"
-	"log"
-	"strings"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/tenancy"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
@@ -60,27 +57,7 @@ func init() {
 		Name:         "netbox_contact_group",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := tenancy.NewTenancyContactGroupsListParams()
-			res, err := api.Tenancy.TenancyContactGroupsList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, contactGroup := range res.GetPayload().Results {
-				if strings.HasPrefix(*contactGroup.Name, testPrefix) {
-					deleteParams := tenancy.NewTenancyContactGroupsDeleteParams().WithID(contactGroup.ID)
-					_, err := api.Tenancy.TenancyContactGroupsDelete(deleteParams, nil)
-					if err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted a contact group")
-				}
-			}
-			return nil
+			return sweepByName(region, "tenancy/contact-groups/", "name")
 		},
 	})
 }

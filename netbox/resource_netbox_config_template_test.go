@@ -2,12 +2,9 @@ package netbox
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/extras"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	log "github.com/sirupsen/logrus"
 )
 
 func TestAccNetboxConfigTemplate_basic(t *testing.T) {
@@ -106,27 +103,7 @@ func init() {
 		Name:         "netbox_config_template",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := extras.NewExtrasConfigTemplatesListParams()
-			res, err := api.Extras.ExtrasConfigTemplatesList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, tmpl := range res.GetPayload().Results {
-				if strings.HasPrefix(*tmpl.Name, testPrefix) {
-					deleteParams := extras.NewExtrasConfigTemplatesDeleteParams().WithID(tmpl.ID)
-					_, err := api.Extras.ExtrasConfigTemplatesDelete(deleteParams, nil)
-					if err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted a config template")
-				}
-			}
-			return nil
+			return sweepByName(region, "extras/config-templates/", "name")
 		},
 	})
 }

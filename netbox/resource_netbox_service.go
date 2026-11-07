@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -79,35 +76,60 @@ func resourceNetboxService() *schema.Resource {
 	}
 }
 
-func resourceNetboxServiceCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	data := models.WritableService{}
+const serviceAPIPath = "ipam/services/"
 
-	dataName := d.Get("name").(string)
-	data.Name = &dataName
+type serviceRequest struct {
+	Name             string             `json:"name"`
+	Protocol         string             `json:"protocol"`
+	Description      string             `json:"description,omitempty"`
+	Ports            []int64            `json:"ports"`
+	Ipaddresses      []int64            `json:"ipaddresses"`
+	ParentObjectType *string            `json:"parent_object_type,omitempty"`
+	ParentObjectID   *int64             `json:"parent_object_id,omitempty"`
+	CustomFields     interface{}        `json:"custom_fields,omitempty"`
+	Tags             []netboxapi.TagRef `json:"tags"`
+}
 
-	dataProtocol := d.Get("protocol").(string)
-	data.Protocol = &dataProtocol
+type serviceResponse struct {
+	Name             string                 `json:"name"`
+	Protocol         *netboxapi.Choice      `json:"protocol"`
+	Description      string                 `json:"description"`
+	Ports            []int64                `json:"ports"`
+	ParentObjectType string                 `json:"parent_object_type"`
+	ParentObjectID   *int64                 `json:"parent_object_id"`
+	CustomFields     map[string]interface{} `json:"custom_fields"`
+	Tags             []netboxapi.TagRef     `json:"tags"`
+}
+
+func serviceRequestFromResourceData(api *providerState, d *schema.ResourceData) (*serviceRequest, error) {
+	name := d.Get("name").(string)
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
+	if err != nil {
+		return nil, err
+	}
+	data := &serviceRequest{
+		Name:        name,
+		Protocol:    d.Get("protocol").(string),
+		Description: d.Get("description").(string),
+
+		Ipaddresses: []int64{},
+
+		Tags: tags,
+	}
 
 	// for backwards compatibility, we allow either port or ports
 	// the API only supports ports. We give precedence to port, if it exists.
-	dataPort, dataPortOk := d.GetOk("port")
-	if dataPortOk {
+	if dataPort, ok := d.GetOk("port"); ok {
 		data.Ports = []int64{int64(dataPort.(int))}
-	} else {
+	} else if ports := d.Get("ports").(*schema.Set); ports.Len() > 0 {
 		// if port is not set, ports has to be set
-		var dataPorts []int64
-		if v := d.Get("ports").(*schema.Set); v.Len() > 0 {
-			for _, v := range v.List() {
-				dataPorts = append(dataPorts, int64(v.(int)))
-			}
-			data.Ports = dataPorts
+		for _, port := range ports.List() {
+			data.Ports = append(data.Ports, int64(port.(int)))
 		}
 	}
 
 	virtualMachineID := getOptionalInt(d, "virtual_machine_id")
 	deviceID := getOptionalInt(d, "device_id")
-
 	switch {
 	case virtualMachineID != nil:
 		data.ParentObjectType = strToPtr("virtualization.virtualmachine")
@@ -116,148 +138,49 @@ func resourceNetboxServiceCreate(d *schema.ResourceData, m interface{}) error {
 		data.ParentObjectType = strToPtr("dcim.device")
 		data.ParentObjectID = deviceID
 	}
-
-	tags, _ := getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
-	data.Tags = tags
-
-	if v, ok := d.GetOk("description"); ok {
-		data.Description = v.(string)
-	}
-
-	data.Ipaddresses = []int64{}
-
-	ct, ok := d.GetOk(customFieldsKey)
-	if ok {
+	if ct, ok := d.GetOk(customFieldsKey); ok {
 		data.CustomFields = ct
 	}
+	return data, nil
+}
 
-	params := ipam.NewIpamServicesCreateParams().WithData(&data)
-	res, err := api.Ipam.IpamServicesCreate(params, nil)
+func resourceNetboxServiceCreate(d *schema.ResourceData, m interface{}) error {
+	data, err := serviceRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxServiceUpdate(d, m)
+	return createObject(d, m, serviceAPIPath, data, resourceNetboxServiceUpdate)
 }
 
 func resourceNetboxServiceRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := ipam.NewIpamServicesReadParams().WithID(id)
+	return readObject(d, m, serviceAPIPath, func(r *serviceResponse) {
+		d.Set("name", r.Name)
+		d.Set("protocol", netboxapi.ChoiceValue(r.Protocol))
+		d.Set("description", r.Description)
 
-	res, err := api.Ipam.IpamServicesRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*ipam.IpamServicesReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
+		d.Set("ports", r.Ports)
+		switch r.ParentObjectType {
+		case "virtualization.virtualmachine":
+			d.Set("virtual_machine_id", r.ParentObjectID)
+		case "dcim.device":
+			d.Set("device_id", r.ParentObjectID)
 		}
-		return err
-	}
-
-	service := res.GetPayload()
-
-	d.Set("name", service.Name)
-	d.Set("protocol", service.Protocol.Value)
-	d.Set("ports", service.Ports)
-	d.Set("description", service.Description)
-
-	parentObjectType := service.ParentObjectType
-	switch parentObjectType {
-	case "virtualization.virtualmachine":
-		d.Set("virtual_machine_id", service.ParentObjectID)
-	case "dcim.device":
-		d.Set("device_id", service.ParentObjectID)
-	}
-
-	if tags := service.Tags; tags != nil {
-		api.readTags(d, tags)
-	}
-
-	cf := getCustomFields(service.CustomFields)
-	if cf != nil {
-		d.Set(customFieldsKey, cf)
-	}
-
-	return nil
+		if cf := getCustomFields(r.CustomFields); cf != nil {
+			d.Set(customFieldsKey, cf)
+		}
+		api.readTagRefs(d, r.Tags)
+	})
 }
 
 func resourceNetboxServiceUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.WritableService{}
-
-	dataName := d.Get("name").(string)
-	data.Name = &dataName
-
-	dataProtocol := d.Get("protocol").(string)
-	data.Protocol = &dataProtocol
-
-	dataPort, dataPortOk := d.GetOk("port")
-	if dataPortOk {
-		data.Ports = []int64{int64(dataPort.(int))}
-	} else {
-		// if port is not set, ports has to be set
-		var dataPorts []int64
-		if v := d.Get("ports").(*schema.Set); v.Len() > 0 {
-			for _, v := range v.List() {
-				dataPorts = append(dataPorts, int64(v.(int)))
-			}
-			data.Ports = dataPorts
-		}
-	}
-
-	data.Ipaddresses = []int64{}
-
-	tags, _ := getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
-	data.Tags = tags
-
-	if v, ok := d.GetOk("description"); ok {
-		data.Description = v.(string)
-	}
-
-	virtualMachineID := getOptionalInt(d, "virtual_machine_id")
-	deviceID := getOptionalInt(d, "device_id")
-
-	switch {
-	case virtualMachineID != nil:
-		data.ParentObjectType = strToPtr("virtualization.virtualmachine")
-		data.ParentObjectID = virtualMachineID
-	case deviceID != nil:
-		data.ParentObjectType = strToPtr("dcim.device")
-		data.ParentObjectID = deviceID
-	}
-
-	cf, ok := d.GetOk(customFieldsKey)
-	if ok {
-		data.CustomFields = cf
-	}
-
-	params := ipam.NewIpamServicesUpdateParams().WithID(id).WithData(&data)
-	_, err := api.Ipam.IpamServicesUpdate(params, nil)
+	data, err := serviceRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-	return resourceNetboxServiceRead(d, m)
+	return putObject(d, m, serviceAPIPath, data, resourceNetboxServiceRead)
 }
 
 func resourceNetboxServiceDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := ipam.NewIpamServicesDeleteParams().WithID(id)
-	_, err := api.Ipam.IpamServicesDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*ipam.IpamServicesDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	return nil
+	return deleteObject(d, m, serviceAPIPath)
 }

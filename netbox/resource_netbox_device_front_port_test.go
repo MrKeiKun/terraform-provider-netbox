@@ -3,14 +3,10 @@ package netbox
 import (
 	"fmt"
 	"os"
-	"strconv"
-	"strings"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	log "github.com/sirupsen/logrus"
 )
 
 func testAccNetboxDeviceFrontPortFullDependencies(testName string) string {
@@ -121,7 +117,6 @@ resource "netbox_device_front_port" "test" {
 					resource.TestCheckResourceAttrPair("netbox_device_front_port.test", "rear_port_id", "netbox_device_rear_port.test", "id"),
 					resource.TestCheckResourceAttrPair("netbox_device_front_port.test", "module_id", "netbox_module.test", "id"),
 				),
-
 			},
 			{
 				Config: testAccNetboxDeviceFrontPortFullDependencies(testName) + fmt.Sprintf(`
@@ -145,7 +140,6 @@ resource "netbox_device_front_port" "test" {
 					resource.TestCheckResourceAttrPair("netbox_device_front_port.test", "device_id", "netbox_device.test", "id"),
 					resource.TestCheckResourceAttrPair("netbox_device_front_port.test", "rear_port_id", "netbox_device_rear_port.test", "id"),
 				),
-
 			},
 			{
 				ResourceName:            "netbox_device_front_port.test",
@@ -158,36 +152,7 @@ resource "netbox_device_front_port" "test" {
 }
 
 func testAccCheckDeviceFrontPortDestroy(s *terraform.State) error {
-	// retrieve the connection established in Provider configuration
-	conn := testAccProvider.Meta().(*providerState)
-
-	// loop through the resources in state, verifying each front port
-	// is destroyed
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "netbox_device_front_port" {
-			continue
-		}
-
-		// Retrieve our device by referencing it's state ID for API lookup
-		stateID, _ := strconv.ParseInt(rs.Primary.ID, 10, 64)
-		params := dcim.NewDcimFrontPortsReadParams().WithID(stateID)
-		_, err := conn.Dcim.DcimFrontPortsRead(params, nil)
-
-		if err == nil {
-			return fmt.Errorf("device_front_port (%s) still exists", rs.Primary.ID)
-		}
-
-		if err != nil {
-			if errresp, ok := err.(*dcim.DcimFrontPortsReadDefault); ok {
-				errorcode := errresp.Code()
-				if errorcode == 404 {
-					return nil
-				}
-			}
-			return err
-		}
-	}
-	return nil
+	return testAccCheckObjectsDestroyed(s, "netbox_device_front_port", "dcim/front-ports/")
 }
 
 func init() {
@@ -195,27 +160,7 @@ func init() {
 		Name:         "netbox_device_front_port",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := dcim.NewDcimFrontPortsListParams()
-			res, err := api.Dcim.DcimFrontPortsList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, frontPort := range res.GetPayload().Results {
-				if strings.HasPrefix(*frontPort.Name, testPrefix) {
-					deleteParams := dcim.NewDcimFrontPortsDeleteParams().WithID(frontPort.ID)
-					_, err := api.Dcim.DcimFrontPortsDelete(deleteParams, nil)
-					if err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted a device_front_port")
-				}
-			}
-			return nil
+			return sweepByName(region, "dcim/front-ports/", "name")
 		},
 	})
 }

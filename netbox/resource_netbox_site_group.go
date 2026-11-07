@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -48,125 +45,56 @@ func resourceNetboxSiteGroup() *schema.Resource {
 	}
 }
 
-func resourceNetboxSiteGroupCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const siteGroupAPIPath = "dcim/site-groups/"
 
+type siteGroupRequest struct {
+	Name        string             `json:"name"`
+	Slug        string             `json:"slug"`
+	Description string             `json:"description,omitempty"`
+	Parent      *int64             `json:"parent,omitempty"`
+	Tags        []netboxapi.TagRef `json:"tags"`
+}
+
+type siteGroupResponse struct {
+	Name        string         `json:"name"`
+	Slug        string         `json:"slug"`
+	Description string         `json:"description"`
+	Parent      *netboxapi.Ref `json:"parent"`
+}
+
+func siteGroupRequestFromResourceData(d *schema.ResourceData) *siteGroupRequest {
 	name := d.Get("name").(string)
-	parentID := int64(d.Get("parent_id").(int))
-	description := d.Get("description").(string)
-
-	slugValue, slugOk := d.GetOk("slug")
-	var slug string
-	// Default slug to generated slug if not given
-	if !slugOk {
-		slug = getSlug(name)
-	} else {
-		slug = slugValue.(string)
+	data := &siteGroupRequest{
+		Name:        name,
+		Slug:        slugFromResourceData(d, name),
+		Description: d.Get("description").(string),
+		Tags:        []netboxapi.TagRef{},
 	}
-
-	data := &models.WritableSiteGroup{}
-	data.Name = &name
-	data.Slug = &slug
-	data.Description = description
-	data.Tags = []*models.NestedTag{}
-
-	if parentID != 0 {
-		data.Parent = &parentID
+	if v := int64(d.Get("parent_id").(int)); v != 0 {
+		data.Parent = &v
 	}
+	return data
+}
 
-	params := dcim.NewDcimSiteGroupsCreateParams().WithData(data)
-
-	res, err := api.Dcim.DcimSiteGroupsCreate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxSiteGroupRead(d, m)
+func resourceNetboxSiteGroupCreate(d *schema.ResourceData, m interface{}) error {
+	return createObject(d, m, siteGroupAPIPath, siteGroupRequestFromResourceData(d), resourceNetboxSiteGroupRead)
 }
 
 func resourceNetboxSiteGroupRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-
-	params := dcim.NewDcimSiteGroupsReadParams().WithID(id)
-
-	res, err := api.Dcim.DcimSiteGroupsRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimSiteGroupsReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
+	return readObject(d, m, siteGroupAPIPath, func(r *siteGroupResponse) {
+		d.Set("name", r.Name)
+		d.Set("slug", r.Slug)
+		d.Set("description", r.Description)
+		if r.Parent != nil {
+			d.Set("parent_id", r.Parent.ID)
 		}
-		return err
-	}
-
-	siteGroup := res.GetPayload()
-	d.Set("name", siteGroup.Name)
-	d.Set("slug", siteGroup.Slug)
-	d.Set("description", siteGroup.Description)
-	if siteGroup.Parent != nil {
-		d.Set("parent_id", siteGroup.Parent.ID)
-	}
-	return nil
+	})
 }
 
 func resourceNetboxSiteGroupUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.WritableSiteGroup{}
-
-	name := d.Get("name").(string)
-	description := d.Get("description").(string)
-	parentID := int64(d.Get("parent_id").(int))
-
-	slugValue, slugOk := d.GetOk("slug")
-	var slug string
-	// Default slug to generated slug if not given
-	if !slugOk {
-		slug = getSlug(name)
-	} else {
-		slug = slugValue.(string)
-	}
-
-	data.Slug = &slug
-	data.Name = &name
-	data.Description = description
-	data.Tags = []*models.NestedTag{}
-
-	if parentID != 0 {
-		data.Parent = &parentID
-	}
-	params := dcim.NewDcimSiteGroupsPartialUpdateParams().WithID(id).WithData(&data)
-
-	_, err := api.Dcim.DcimSiteGroupsPartialUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	return resourceNetboxSiteGroupRead(d, m)
+	return patchObject(d, m, siteGroupAPIPath, siteGroupRequestFromResourceData(d), resourceNetboxSiteGroupRead)
 }
 
 func resourceNetboxSiteGroupDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimSiteGroupsDeleteParams().WithID(id)
-
-	_, err := api.Dcim.DcimSiteGroupsDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimSiteGroupsDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	return nil
+	return deleteObject(d, m, siteGroupAPIPath)
 }

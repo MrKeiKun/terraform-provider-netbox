@@ -1,11 +1,8 @@
 package netbox
 
 import (
-	"fmt"
 	"regexp"
 
-	"github.com/fbreckle/go-netbox/netbox/client/virtualization"
-	"github.com/fbreckle/go-netbox/netbox/models"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -113,139 +110,61 @@ func dataSourceNetboxClusters() *schema.Resource {
 }
 
 func dataSourceNetboxClustersRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	params := virtualization.NewVirtualizationClustersListParams()
-
-	// Get user limit (0 = fetch all)
-	var userLimit int64 = 0
-	if limitValue, ok := d.GetOk("limit"); ok {
-		userLimit = int64(limitValue.(int))
+	// filter name in the data source -> query parameter sent to Netbox
+	allowed := map[string]string{
+		"name":             "name",
+		"cluster_type_id":  "type_id",
+		"cluster_group_id": "group_id",
+		"site_id":          "site_id",
+		"tag":              "tag",
 	}
 
-	if filter, ok := d.GetOk("filter"); ok {
-		var filterParams = filter.(*schema.Set)
-		var tags []string
-		for _, f := range filterParams.List() {
-			k := f.(map[string]interface{})["name"]
-			v := f.(map[string]interface{})["value"]
-			vString := v.(string)
-			switch k {
-			case "name":
-				params.Name = &vString
-			case "cluster_type_id":
-				params.TypeID = &vString
-			case "cluster_group_id":
-				params.GroupID = &vString
-			case "site_id":
-				params.SiteID = &vString
-			case "tag":
-				tags = append(tags, vString)
-				params.Tag = tags
-			default:
-				return fmt.Errorf("'%s' is not a supported filter parameter", k)
-			}
-		}
-	}
-
-	// Fetch all pages with pagination (fetch all when name_regex is used)
-	paginationHelper := NewPaginationHelper(FetchAll)
-	var allClusters []*models.Cluster
-
-	pageSize := paginationHelper.GetPageSize()
-	for {
-		currentOffset := paginationHelper.CurrentOffset()
-		params.Limit = &pageSize
-		params.Offset = &currentOffset
-
-		res, err := api.Virtualization.VirtualizationClustersList(params, nil)
-		if err != nil {
-			return fmt.Errorf("failed to fetch clusters at offset %d: %w", currentOffset, err)
-		}
-
-		payload := res.GetPayload()
-		allClusters = append(allClusters, payload.Results...)
-
-		if len(payload.Results) == 0 {
-			break
-		}
-
-		if !paginationHelper.ShouldContinuePaging(int64(len(allClusters)), payload.Next) {
-			break
-		}
-
-		paginationHelper.Advance(int64(len(payload.Results)))
-	}
-
-	// Apply name_regex filter
-	var filteredClusters []*models.Cluster
+	// Fetch everything and apply the regular expression before the limit
+	var keep func(map[string]interface{}) bool
 	if nameRegex, ok := d.GetOk("name_regex"); ok {
 		r := regexp.MustCompile(nameRegex.(string))
-		for _, cluster := range allClusters {
-			if r.MatchString(*cluster.Name) {
-				filteredClusters = append(filteredClusters, cluster)
-			}
-		}
-	} else {
-		filteredClusters = allClusters
+		keep = func(o map[string]interface{}) bool { return r.MatchString(jStr(o, "name")) }
 	}
 
-	// Apply user limit to filtered results
-	if userLimit > 0 && int64(len(filteredClusters)) > userLimit {
-		filteredClusters = filteredClusters[:userLimit]
+	results, err := listFilteredWith[map[string]interface{}](d, m, "virtualization/clusters/", "clusters", allowed, nil, keep)
+	if err != nil {
+		return err
 	}
 
 	var s []map[string]interface{}
-	for _, cluster := range filteredClusters {
-		var mapping = make(map[string]interface{})
+	for _, v := range results {
+		mapping := make(map[string]interface{})
 
-		mapping["cluster_id"] = cluster.ID
-
-		if cluster.Name != nil {
-			mapping["name"] = *cluster.Name
-		}
-
-		if cluster.Type != nil {
-			mapping["cluster_type_id"] = cluster.Type.ID
-		}
-
-		if cluster.Group != nil {
-			mapping["cluster_group_id"] = cluster.Group.ID
-		}
-
-		if cluster.Tenant != nil {
-			mapping["tenant_id"] = cluster.Tenant.ID
-		}
-
-		if cluster.Description != "" {
-			mapping["description"] = cluster.Description
-		}
-
-		if cluster.Comments != "" {
-			mapping["comments"] = cluster.Comments
-		}
-
-		if cluster.ScopeType != nil && cluster.ScopeID != nil {
-			mapping["scope_type"] = *cluster.ScopeType
-			mapping["scope_id"] = *cluster.ScopeID
-			switch *cluster.ScopeType {
+		mapping["cluster_id"] = jInt(v, "id")
+		mapping["name"] = jStr(v, "name")
+		mapping["cluster_type_id"] = jID(v, "type")
+		mapping["cluster_group_id"] = jID(v, "group")
+		mapping["tenant_id"] = jID(v, "tenant")
+		mapping["description"] = jStr(v, "description")
+		mapping["comments"] = jStr(v, "comments")
+		if scopeType := jStr(v, "scope_type"); scopeType != "" && v["scope_id"] != nil {
+			scopeID := jIntP(v, "scope_id")
+			mapping["scope_type"] = scopeType
+			mapping["scope_id"] = scopeID
+			switch scopeType {
 			case "dcim.site":
-				mapping["site_id"] = *cluster.ScopeID
+				mapping["site_id"] = scopeID
 			case "dcim.sitegroup":
-				mapping["site_group_id"] = *cluster.ScopeID
+				mapping["site_group_id"] = scopeID
 			case "dcim.location":
-				mapping["location_id"] = *cluster.ScopeID
+				mapping["location_id"] = scopeID
 			case "dcim.region":
-				mapping["region_id"] = *cluster.ScopeID
+				mapping["region_id"] = scopeID
 			}
 		}
+		mapping["custom_fields"] = v["custom_fields"]
+		mapping[tagsKey] = jTags(v)
 
-		if cluster.CustomFields != nil {
-			mapping["custom_fields"] = cluster.CustomFields
-		}
-
-		if cluster.Tags != nil {
-			mapping[tagsKey] = getTagListFromNestedTagList(cluster.Tags)
+		// fields that are missing in the response are left out of the state
+		for k, val := range mapping {
+			if val == nil {
+				delete(mapping, k)
+			}
 		}
 
 		s = append(s, mapping)

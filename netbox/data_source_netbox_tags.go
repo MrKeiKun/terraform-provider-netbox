@@ -1,10 +1,6 @@
 package netbox
 
 import (
-	"fmt"
-
-	"github.com/fbreckle/go-netbox/netbox/client/extras"
-	"github.com/fbreckle/go-netbox/netbox/models"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -70,105 +66,48 @@ func dataSourceNetboxTags() *schema.Resource {
 }
 
 func dataSourceNetboxTagsRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	params := extras.NewExtrasTagsListParams()
-
-	// Get user limit
-	var userLimit int64 = 0
-	if limitValue, ok := d.GetOk("limit"); ok {
-		userLimit = int64(limitValue.(int))
+	// filter name in the data source -> query parameter sent to Netbox
+	allowed := map[string]string{
+		"id":         "id",
+		"id__gt":     "id__gt",
+		"id__gte":    "id__gte",
+		"id__lt":     "id__lt",
+		"id__lte":    "id__lte",
+		"name":       "name",
+		"name__ic":   "name__ic",
+		"name__niew": "name__niew",
+		"name__iew":  "name__iew",
+		"name__nisw": "name__nisw",
+		"name__isw":  "name__isw",
+		"slug":       "slug",
+		"slug__ic":   "slug__ic",
+		"slug__niew": "slug__niew",
+		"slug__iew":  "slug__iew",
+		"slug__nisw": "slug__nisw",
+		"slug__isw":  "slug__isw",
 	}
 
-	if filter, ok := d.GetOk("filter"); ok {
-		filterParams := filter.(*schema.Set)
-		for _, f := range filterParams.List() {
-			k := f.(map[string]interface{})["name"]
-			v := f.(map[string]interface{})["value"]
-			vString := v.(string)
-			switch k {
-			case "id":
-				params.ID = &vString
-			case "id__gt":
-				params.IDGt = &vString
-			case "id__gte":
-				params.IDGte = &vString
-			case "id__lt":
-				params.IDLt = &vString
-			case "id__lte":
-				params.IDLte = &vString
-			case "name":
-				params.Name = &vString
-			case "name__ic":
-				params.NameIc = &vString
-			case "name__niew":
-				params.NameNiew = &vString
-			case "name__iew":
-				params.NameIew = &vString
-			case "name__nisw":
-				params.NameNisw = &vString
-			case "name__isw":
-				params.NameIsw = &vString
-			case "slug":
-				params.Slug = &vString
-			case "slug__ic":
-				params.SlugIc = &vString
-			case "slug__niew":
-				params.SlugNiew = &vString
-			case "slug__iew":
-				params.SlugIew = &vString
-			case "slug__nisw":
-				params.SlugNisw = &vString
-			case "slug__isw":
-				params.SlugIsw = &vString
-			default:
-				return fmt.Errorf("'%s' is not a supported filter parameter", k)
-			}
-		}
+	results, err := listFiltered[map[string]interface{}](d, m, "extras/tags/", "tags", allowed, nil)
+	if err != nil {
+		return err
 	}
-
-	// Fetch all pages with pagination
-	paginationHelper := NewPaginationHelper(userLimit)
-	var allTags []*models.Tag
-
-	pageSize := paginationHelper.GetPageSize()
-	for {
-		currentOffset := paginationHelper.CurrentOffset()
-		params.Limit = &pageSize
-		params.Offset = &currentOffset
-
-		res, err := api.Extras.ExtrasTagsList(params, nil)
-		if err != nil {
-			return fmt.Errorf("failed to fetch tags at offset %d: %w", currentOffset, err)
-		}
-
-		payload := res.GetPayload()
-		allTags = append(allTags, payload.Results...)
-
-		if len(payload.Results) == 0 {
-			break
-		}
-
-		if !paginationHelper.ShouldContinuePaging(int64(len(allTags)), payload.Next) {
-			break
-		}
-
-		paginationHelper.Advance(int64(len(payload.Results)))
-	}
-
-	// Trim to user limit if specified
-	trimmedCount := paginationHelper.TrimToLimit(len(allTags))
-	results := allTags[:trimmedCount]
 
 	var s []map[string]interface{}
 	for _, v := range results {
 		mapping := make(map[string]interface{})
 
-		mapping["tag_id"] = v.ID
-		mapping["name"] = v.Name
-		mapping["slug"] = v.Slug
-		mapping["description"] = v.Description
-		mapping["color"] = v.Color
+		mapping["tag_id"] = jInt(v, "id")
+		mapping["name"] = jStr(v, "name")
+		mapping["slug"] = jStr(v, "slug")
+		mapping["description"] = jStr(v, "description")
+		mapping["color"] = jStr(v, "color")
+
+		// fields that are missing in the response are left out of the state
+		for k, val := range mapping {
+			if val == nil {
+				delete(mapping, k)
+			}
+		}
 
 		s = append(s, mapping)
 	}

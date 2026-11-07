@@ -2,11 +2,8 @@ package netbox
 
 import (
 	"fmt"
-	"log"
-	"strings"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
@@ -102,27 +99,7 @@ func init() {
 		Name:         "netbox_device_role",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := dcim.NewDcimDeviceRolesListParams()
-			res, err := api.Dcim.DcimDeviceRolesList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, deviceRole := range res.GetPayload().Results {
-				if strings.HasPrefix(*deviceRole.Name, testPrefix) {
-					deleteParams := dcim.NewDcimDeviceRolesDeleteParams().WithID(deviceRole.ID)
-					_, err := api.Dcim.DcimDeviceRolesDelete(deleteParams, nil)
-					if err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted a device_role")
-				}
-			}
-			return nil
+			return sweepByName(region, "dcim/device-roles/", "name")
 		},
 	})
 }

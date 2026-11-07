@@ -2,10 +2,10 @@ package netbox
 
 import (
 	"encoding/json"
-	"errors"
+	"net/url"
 	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/extras"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -138,31 +138,39 @@ func dataSourceNetboxConfigContext() *schema.Resource {
 	}
 }
 
+type configContextDataSourceResponse struct {
+	ID            int64           `json:"id"`
+	Name          string          `json:"name"`
+	Weight        *int64          `json:"weight"`
+	Data          interface{}     `json:"data"`
+	ClusterGroups []netboxapi.Ref `json:"cluster_groups"`
+	ClusterTypes  []netboxapi.Ref `json:"cluster_types"`
+	Clusters      []netboxapi.Ref `json:"clusters"`
+	DeviceTypes   []netboxapi.Ref `json:"device_types"`
+	Locations     []netboxapi.Ref `json:"locations"`
+	Platforms     []netboxapi.Ref `json:"platforms"`
+	Regions       []netboxapi.Ref `json:"regions"`
+	Roles         []netboxapi.Ref `json:"roles"`
+	SiteGroups    []netboxapi.Ref `json:"site_groups"`
+	Sites         []netboxapi.Ref `json:"sites"`
+	TenantGroups  []netboxapi.Ref `json:"tenant_groups"`
+	Tenants       []netboxapi.Ref `json:"tenants"`
+	Tags          []string        `json:"tags"`
+}
+
 func dataSourceNetboxConfigContextRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+	query := url.Values{}
+	query.Set("name", d.Get("name").(string))
 
-	name := d.Get("name").(string)
-	params := extras.NewExtrasConfigContextsListParams()
-	params.Name = &name
-	limit := int64(2) // Limit of 2 is enough
-	params.Limit = &limit
-
-	res, err := api.Extras.ExtrasConfigContextsList(params, nil)
+	result, err := findOneWith[configContextDataSourceResponse](m, "extras/config-contexts/", query,
+		"more than one result. Specify a more narrow filter", "no result")
 	if err != nil {
 		return err
 	}
 
-	if *res.GetPayload().Count > int64(1) {
-		return errors.New("more than one result. Specify a more narrow filter")
-	}
-	if *res.GetPayload().Count == int64(0) {
-		return errors.New("no result")
-	}
-	result := res.GetPayload().Results[0]
 	d.SetId(strconv.FormatInt(result.ID, 10))
 	d.Set("name", result.Name)
 	d.Set("weight", result.Weight)
-
 	if result.Data != nil {
 		if jsonArr, err := json.Marshal(result.Data); err == nil {
 			d.Set("data", string(jsonArr))
@@ -171,83 +179,20 @@ func dataSourceNetboxConfigContextRead(d *schema.ResourceData, m interface{}) er
 		d.Set("data", nil)
 	}
 
-	clusterGroups := make([]int64, len(result.ClusterGroups))
-	for i, v := range result.ClusterGroups {
-		clusterGroups[i] = int64(v.ID)
-	}
-	d.Set("cluster_groups", clusterGroups)
-
-	clusterTypes := make([]int64, len(result.ClusterTypes))
-	for i, v := range result.ClusterTypes {
-		clusterTypes[i] = int64(v.ID)
-	}
-	d.Set("cluster_types", clusterTypes)
-
-	clusters := make([]int64, len(result.Clusters))
-	for i, v := range result.Clusters {
-		clusters[i] = int64(v.ID)
-	}
-	d.Set("clusters", clusters)
-
-	deviceTypes := make([]int64, len(result.DeviceTypes))
-	for i, v := range result.DeviceTypes {
-		deviceTypes[i] = int64(v.ID)
-	}
-	d.Set("device_types", deviceTypes)
-
-	locations := make([]int64, len(result.Locations))
-	for i, v := range result.Locations {
-		locations[i] = int64(v.ID)
-	}
-	d.Set("locations", locations)
-
-	platforms := make([]int64, len(result.Platforms))
-	for i, v := range result.Platforms {
-		platforms[i] = int64(v.ID)
-	}
-	d.Set("platforms", platforms)
-
-	regions := make([]int64, len(result.Regions))
-	for i, v := range result.Regions {
-		regions[i] = int64(v.ID)
-	}
-	d.Set("regions", regions)
-
-	roles := make([]int64, len(result.Roles))
-	for i, v := range result.Roles {
-		roles[i] = int64(v.ID)
-	}
-	d.Set("roles", roles)
-
-	siteGroups := make([]int64, len(result.SiteGroups))
-	for i, v := range result.SiteGroups {
-		siteGroups[i] = int64(v.ID)
-	}
-	d.Set("site_groups", siteGroups)
-
-	sites := make([]int64, len(result.Sites))
-	for i, v := range result.Sites {
-		sites[i] = int64(v.ID)
-	}
-	d.Set("sites", sites)
-
-	tenantGroups := make([]int64, len(result.TenantGroups))
-	for i, v := range result.TenantGroups {
-		tenantGroups[i] = int64(v.ID)
-	}
-	d.Set("tenant_groups", tenantGroups)
-
-	tenants := make([]int64, len(result.Tenants))
-	for i, v := range result.Tenants {
-		tenants[i] = int64(v.ID)
-	}
-	d.Set("tenants", tenants)
-
-	tags := make([]string, len(result.Tags))
-	for i, v := range result.Tags {
-		tags[i] = string(v)
-	}
-	d.Set("tags", tags)
-
+	// the lists are never nil, an empty list is stored as an empty list
+	ids := func(refs []netboxapi.Ref) []int64 { return netboxapi.IDs(refs) }
+	d.Set("cluster_groups", ids(result.ClusterGroups))
+	d.Set("cluster_types", ids(result.ClusterTypes))
+	d.Set("clusters", ids(result.Clusters))
+	d.Set("device_types", ids(result.DeviceTypes))
+	d.Set("locations", ids(result.Locations))
+	d.Set("platforms", ids(result.Platforms))
+	d.Set("regions", ids(result.Regions))
+	d.Set("roles", ids(result.Roles))
+	d.Set("site_groups", ids(result.SiteGroups))
+	d.Set("sites", ids(result.Sites))
+	d.Set("tenant_groups", ids(result.TenantGroups))
+	d.Set("tenants", ids(result.Tenants))
+	d.Set("tags", result.Tags)
 	return nil
 }

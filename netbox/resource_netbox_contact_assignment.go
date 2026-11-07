@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/tenancy"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -52,120 +49,57 @@ func resourceNetboxContactAssignment() *schema.Resource {
 	}
 }
 
-func resourceNetboxContactAssignmentCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const contactAssignmentAPIPath = "tenancy/contact-assignments/"
 
-	contentType := d.Get("content_type").(string)
-	objectID := int64(d.Get("object_id").(int))
-	contactID := int64(d.Get("contact_id").(int))
-	roleID := int64(d.Get("role_id").(int))
-	priority := d.Get("priority").(string)
+type contactAssignmentRequest struct {
+	ObjectType string `json:"object_type,omitempty"`
+	ObjectId   *int64 `json:"object_id"`
+	Contact    *int64 `json:"contact"`
+	Role       *int64 `json:"role"`
+	Priority   string `json:"priority,omitempty"`
+}
 
-	data := &models.WritableContactAssignment{}
+type contactAssignmentResponse struct {
+	ObjectType string            `json:"object_type"`
+	ObjectId   *int64            `json:"object_id"`
+	Contact    *netboxapi.Ref    `json:"contact"`
+	Role       *netboxapi.Ref    `json:"role"`
+	Priority   *netboxapi.Choice `json:"priority"`
+}
 
-	data.ObjectType = contentType
-	data.ObjectID = &objectID
-	data.Contact = &contactID
-	data.Role = &roleID
-	data.Priority = priority
-
-	params := tenancy.NewTenancyContactAssignmentsCreateParams().WithData(data)
-
-	res, err := api.Tenancy.TenancyContactAssignmentsCreate(params, nil)
-	if err != nil {
-		return err
+func contactAssignmentRequestFromResourceData(d *schema.ResourceData) *contactAssignmentRequest {
+	data := &contactAssignmentRequest{
+		ObjectType: d.Get("content_type").(string),
+		ObjectId:   int64ToPtr(int64(d.Get("object_id").(int))),
+		Contact:    int64ToPtr(int64(d.Get("contact_id").(int))),
+		Role:       int64ToPtr(int64(d.Get("role_id").(int))),
+		Priority:   d.Get("priority").(string),
 	}
+	return data
+}
 
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxContactAssignmentRead(d, m)
+func resourceNetboxContactAssignmentCreate(d *schema.ResourceData, m interface{}) error {
+	return createObject(d, m, contactAssignmentAPIPath, contactAssignmentRequestFromResourceData(d), resourceNetboxContactAssignmentRead)
 }
 
 func resourceNetboxContactAssignmentRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := tenancy.NewTenancyContactAssignmentsReadParams().WithID(id)
-
-	res, err := api.Tenancy.TenancyContactAssignmentsRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*tenancy.TenancyContactAssignmentsReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
+	return readObject(d, m, contactAssignmentAPIPath, func(r *contactAssignmentResponse) {
+		d.Set("content_type", r.ObjectType)
+		d.Set("object_id", r.ObjectId)
+		if r.Contact != nil {
+			d.Set("contact_id", r.Contact.ID)
 		}
-		return err
-	}
-
-	d.Set("content_type", res.GetPayload().ObjectType)
-
-	if res.GetPayload().ObjectID != nil {
-		d.Set("object_id", res.GetPayload().ObjectID)
-	}
-	if res.GetPayload().Contact != nil {
-		d.Set("contact_id", res.GetPayload().Contact.ID)
-	}
-	if res.GetPayload().Role != nil {
-		d.Set("role_id", res.GetPayload().Role.ID)
-	}
-	if res.GetPayload().Priority != nil {
-		d.Set("priority", res.GetPayload().Priority.Value)
-	}
-
-	return nil
+		if r.Role != nil {
+			d.Set("role_id", r.Role.ID)
+		}
+		d.Set("priority", netboxapi.ChoiceValue(r.Priority))
+	})
 }
 
 func resourceNetboxContactAssignmentUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.WritableContactAssignment{}
-
-	contentType := d.Get("content_type").(string)
-	objectID := int64(d.Get("object_id").(int))
-	contactID := int64(d.Get("contact_id").(int))
-	roleID := int64(d.Get("role_id").(int))
-	priority := d.Get("priority").(string)
-
-	data.ObjectType = contentType
-	if objectID != 0 {
-		data.ObjectID = &objectID
-	}
-	if contactID != 0 {
-		data.Contact = &contactID
-	}
-	if roleID != 0 {
-		data.Role = &roleID
-	}
-	data.Priority = priority
-
-	params := tenancy.NewTenancyContactAssignmentsPartialUpdateParams().WithID(id).WithData(&data)
-
-	_, err := api.Tenancy.TenancyContactAssignmentsPartialUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	return resourceNetboxContactAssignmentRead(d, m)
+	return patchObject(d, m, contactAssignmentAPIPath, contactAssignmentRequestFromResourceData(d), resourceNetboxContactAssignmentRead)
 }
 
 func resourceNetboxContactAssignmentDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := tenancy.NewTenancyContactAssignmentsDeleteParams().WithID(id)
-
-	_, err := api.Tenancy.TenancyContactAssignmentsDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*tenancy.TenancyContactAssignmentsDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	return nil
+	return deleteObject(d, m, contactAssignmentAPIPath)
 }

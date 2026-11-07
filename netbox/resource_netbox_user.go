@@ -1,12 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-	"time"
-
-	"github.com/fbreckle/go-netbox/netbox/client/users"
-	"github.com/fbreckle/go-netbox/netbox/models"
-	"github.com/go-openapi/strfmt"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -68,128 +63,64 @@ func resourceNetboxUser() *schema.Resource {
 		},
 	}
 }
-func resourceNetboxUserCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	data := models.WritableUser{}
 
-	username := d.Get("username").(string)
-	password := d.Get("password").(string)
-	email := d.Get("email").(string)
-	firstName := d.Get("first_name").(string)
-	lastName := d.Get("last_name").(string)
-	active := d.Get("active").(bool)
-	staff := d.Get("staff").(bool)
-	groupIDs := toInt64List(d.Get("group_ids"))
+const userAPIPath = "users/users/"
 
-	data.Username = &username
-	data.Password = &password
-	data.Email = strfmt.Email(email)
-	data.FirstName = firstName
-	data.LastName = lastName
-	data.IsActive = active
-	data.IsStaff = staff
-	data.Groups = groupIDs
-	data.DateJoined = strfmt.DateTime(time.Now())
+type userRequest struct {
+	Username  string  `json:"username"`
+	Password  string  `json:"password"`
+	Email     string  `json:"email,omitempty"`
+	FirstName string  `json:"first_name,omitempty"`
+	LastName  string  `json:"last_name,omitempty"`
+	IsActive  bool    `json:"is_active"`
+	IsStaff   bool    `json:"is_staff"`
+	Groups    []int64 `json:"groups"`
+}
 
-	params := users.NewUsersUsersCreateParams().WithData(&data)
-	res, err := api.Users.UsersUsersCreate(params, nil)
-	if err != nil {
-		return err
+type userResponse struct {
+	Username  string          `json:"username"`
+	Email     string          `json:"email"`
+	FirstName string          `json:"first_name"`
+	LastName  string          `json:"last_name"`
+	IsActive  bool            `json:"is_active"`
+	IsStaff   bool            `json:"is_staff"`
+	Groups    []netboxapi.Ref `json:"groups"`
+}
+
+func userRequestFromResourceData(d *schema.ResourceData) *userRequest {
+	return &userRequest{
+		Username:  d.Get("username").(string),
+		Password:  d.Get("password").(string),
+		Email:     d.Get("email").(string),
+		FirstName: d.Get("first_name").(string),
+		LastName:  d.Get("last_name").(string),
+		IsActive:  d.Get("active").(bool),
+		IsStaff:   d.Get("staff").(bool),
+		Groups:    toInt64List(d.Get("group_ids")),
 	}
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
+}
 
-	return resourceNetboxUserRead(d, m)
+func resourceNetboxUserCreate(d *schema.ResourceData, m interface{}) error {
+	return createObject(d, m, userAPIPath, userRequestFromResourceData(d), resourceNetboxUserRead)
 }
 
 func resourceNetboxUserRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := users.NewUsersUsersReadParams().WithID(id)
-
-	res, err := api.Users.UsersUsersRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*users.UsersUsersReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-
-	if res.GetPayload().Username != nil {
-		d.Set("username", res.GetPayload().Username)
-	}
-
-	d.Set("email", res.GetPayload().Email)
-	d.Set("first_name", res.GetPayload().FirstName)
-	d.Set("last_name", res.GetPayload().LastName)
-
-	d.Set("staff", res.GetPayload().IsStaff)
-	d.Set("active", res.GetPayload().IsActive)
-	d.Set("group_ids", getIDsFromNestedGroup(res.GetPayload().Groups))
-
-	// Passwords cannot be set and not read
-
-	return nil
+	return readObject(d, m, userAPIPath, func(user *userResponse) {
+		d.Set("username", user.Username)
+		d.Set("email", user.Email)
+		d.Set("first_name", user.FirstName)
+		d.Set("last_name", user.LastName)
+		d.Set("staff", user.IsStaff)
+		d.Set("active", user.IsActive)
+		d.Set("group_ids", netboxapi.IDs(user.Groups))
+		// Passwords cannot be set and not read
+	})
 }
 
 func resourceNetboxUserUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.WritableUser{}
-
-	username := d.Get("username").(string)
-	password := d.Get("password").(string)
-	email := d.Get("email").(string)
-	firstName := d.Get("first_name").(string)
-	lastName := d.Get("last_name").(string)
-	active := d.Get("active").(bool)
-	staff := d.Get("staff").(bool)
-	groupIDs := toInt64List(d.Get("group_ids"))
-
-	data.Username = &username
-	data.Password = &password
-	data.Email = strfmt.Email(email)
-	data.FirstName = firstName
-	data.LastName = lastName
-	data.IsActive = active
-	data.IsStaff = staff
-	data.Groups = groupIDs
-	data.DateJoined = strfmt.DateTime(time.Now())
-
-	params := users.NewUsersUsersUpdateParams().WithID(id).WithData(&data)
-	_, err := api.Users.UsersUsersUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-	return resourceNetboxUserRead(d, m)
+	return putObject(d, m, userAPIPath, userRequestFromResourceData(d), resourceNetboxUserRead)
 }
 
 func resourceNetboxUserDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := users.NewUsersUsersDeleteParams().WithID(id)
-	_, err := api.Users.UsersUsersDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*users.UsersUsersDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	d.SetId("")
-	return nil
-}
-
-func getIDsFromNestedGroup(nestedGroups []*models.NestedGroup) []int64 {
-	var groupIDs []int64
-	for _, group := range nestedGroups {
-		groupIDs = append(groupIDs, group.ID)
-	}
-	return groupIDs
+	return deleteObject(d, m, userAPIPath)
 }

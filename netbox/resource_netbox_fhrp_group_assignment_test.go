@@ -2,10 +2,8 @@ package netbox
 
 import (
 	"fmt"
-	"log"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
@@ -86,25 +84,7 @@ func init() {
 		Name:         "netbox_fhrp_group_assigment",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := ipam.NewIpamFhrpGroupAssignmentsListParams()
-			res, err := api.Ipam.IpamFhrpGroupAssignmentsList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, asn := range res.GetPayload().Results {
-				deleteParams := ipam.NewIpamFhrpGroupAssignmentsDeleteParams().WithID(asn.ID)
-				_, err := api.Ipam.IpamFhrpGroupAssignmentsDelete(deleteParams, nil)
-				if err != nil {
-					return err
-				}
-				log.Print("[DEBUG] Deleted an asn")
-			}
-			return nil
+			return sweepAll(region, "ipam/fhrp-group-assignments/")
 		},
 	})
 }

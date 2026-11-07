@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -66,145 +63,89 @@ func resourceNetboxVlanGroup() *schema.Resource {
 	}
 }
 
-func resourceNetboxVlanGroupCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	data := models.VLANGroup{}
+const vlanGroupAPIPath = "ipam/vlan-groups/"
 
-	name := d.Get("name").(string)
-	slug := d.Get("slug").(string)
-	description := d.Get("description").(string)
-	vidRanges := d.Get("vid_ranges").([]interface{})
+type vlanGroupRequest struct {
+	Name        string             `json:"name"`
+	Slug        string             `json:"slug"`
+	Description string             `json:"description,omitempty"`
+	VidRanges   [][]int64          `json:"vid_ranges"`
+	ScopeType   *string            `json:"scope_type,omitempty"`
+	ScopeID     *int64             `json:"scope_id,omitempty"`
+	Tags        []netboxapi.TagRef `json:"tags"`
+}
 
-	var result = make([][]int64, 0)
-	for _, v := range vidRanges {
+type vlanGroupResponse struct {
+	Name        string             `json:"name"`
+	Slug        string             `json:"slug"`
+	Description string             `json:"description"`
+	VidRanges   [][]int64          `json:"vid_ranges"`
+	ScopeType   *string            `json:"scope_type"`
+	ScopeID     *int64             `json:"scope_id"`
+	Tags        []netboxapi.TagRef `json:"tags"`
+}
+
+func vlanGroupRequestFromResourceData(api *providerState, d *schema.ResourceData) (*vlanGroupRequest, error) {
+	vidRanges := make([][]int64, 0)
+	for _, v := range d.Get("vid_ranges").([]interface{}) {
 		inner := v.([]interface{})
-		pair := make([]int64, 2)
-		pair[0] = int64(inner[0].(int))
-		pair[1] = int64(inner[1].(int))
-		result = append(result, pair)
+		vidRanges = append(vidRanges, []int64{int64(inner[0].(int)), int64(inner[1].(int))})
 	}
-	data.VidRanges = result
 
-	data.Name = &name
-	data.Slug = &slug
-	data.Description = description
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
+	if err != nil {
+		return nil, err
+	}
 
+	data := &vlanGroupRequest{
+		Name:        d.Get("name").(string),
+		Slug:        d.Get("slug").(string),
+		Description: d.Get("description").(string),
+		VidRanges:   vidRanges,
+		Tags:        tags,
+	}
 	if scopeType, ok := d.GetOk("scope_type"); ok {
 		data.ScopeType = strToPtr(scopeType.(string))
 	}
-
 	if scopeID, ok := d.GetOk("scope_id"); ok {
 		data.ScopeID = int64ToPtr(int64(scopeID.(int)))
 	}
+	return data, nil
+}
 
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+func resourceNetboxVlanGroupCreate(d *schema.ResourceData, m interface{}) error {
+	data, err := vlanGroupRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	params := ipam.NewIpamVlanGroupsCreateParams().WithData(&data)
-	res, err := api.Ipam.IpamVlanGroupsCreate(params, nil)
-	if err != nil {
-		return err
-	}
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxVlanGroupRead(d, m)
+	return createObject(d, m, vlanGroupAPIPath, data, resourceNetboxVlanGroupRead)
 }
 
 func resourceNetboxVlanGroupRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := ipam.NewIpamVlanGroupsReadParams().WithID(id)
-
-	res, err := api.Ipam.IpamVlanGroupsRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*ipam.IpamVlanGroupsReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
+	return readObject(d, m, vlanGroupAPIPath, func(vlanGroup *vlanGroupResponse) {
+		d.Set("name", vlanGroup.Name)
+		d.Set("slug", vlanGroup.Slug)
+		d.Set("description", vlanGroup.Description)
+		d.Set("vid_ranges", vlanGroup.VidRanges)
+		api.readTagRefs(d, vlanGroup.Tags)
+		if vlanGroup.ScopeType != nil {
+			d.Set("scope_type", vlanGroup.ScopeType)
 		}
-		return err
-	}
-
-	vlanGroup := res.GetPayload()
-
-	d.Set("name", vlanGroup.Name)
-	d.Set("slug", vlanGroup.Slug)
-	d.Set("description", vlanGroup.Description)
-	d.Set("vid_ranges", vlanGroup.VidRanges)
-	api.readTags(d, vlanGroup.Tags)
-
-	if vlanGroup.ScopeType != nil {
-		d.Set("scope_type", vlanGroup.ScopeType)
-	}
-
-	if vlanGroup.ScopeID != nil {
-		d.Set("scope_id", vlanGroup.ScopeID)
-	}
-
-	return nil
+		if vlanGroup.ScopeID != nil {
+			d.Set("scope_id", vlanGroup.ScopeID)
+		}
+	})
 }
 
 func resourceNetboxVlanGroupUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.VLANGroup{}
-
-	name := d.Get("name").(string)
-	slug := d.Get("slug").(string)
-	description := d.Get("description").(string)
-
-	vidRanges := d.Get("vid_ranges").([]interface{})
-
-	var result = make([][]int64, 0)
-	for _, v := range vidRanges {
-		inner := v.([]interface{})
-		pair := make([]int64, 2)
-		pair[0] = int64(inner[0].(int))
-		pair[1] = int64(inner[1].(int))
-		result = append(result, pair)
-	}
-	data.VidRanges = result
-
-	data.Name = &name
-	data.Slug = &slug
-	data.Description = description
-
-	if scopeType, ok := d.GetOk("scope_type"); ok {
-		data.ScopeType = strToPtr(scopeType.(string))
-	}
-
-	if scopeID, ok := d.GetOk("scope_id"); ok {
-		data.ScopeID = int64ToPtr(int64(scopeID.(int)))
-	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+	data, err := vlanGroupRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	params := ipam.NewIpamVlanGroupsUpdateParams().WithID(id).WithData(&data)
-	_, err = api.Ipam.IpamVlanGroupsUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-	return resourceNetboxVlanGroupRead(d, m)
+	return putObject(d, m, vlanGroupAPIPath, data, resourceNetboxVlanGroupRead)
 }
 
 func resourceNetboxVlanGroupDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := ipam.NewIpamVlanGroupsDeleteParams().WithID(id)
-	_, err := api.Ipam.IpamVlanGroupsDelete(params, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return deleteObject(d, m, vlanGroupAPIPath)
 }

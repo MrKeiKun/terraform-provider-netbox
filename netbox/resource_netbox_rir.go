@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -47,107 +44,51 @@ func resourceNetboxRir() *schema.Resource {
 	}
 }
 
-func resourceNetboxRirCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	data := models.RIR{}
+const rirAPIPath = "ipam/rirs/"
 
+type rirRequest struct {
+	Name        string             `json:"name"`
+	Slug        string             `json:"slug"`
+	Description string             `json:"description,omitempty"`
+	IsPrivate   bool               `json:"is_private"`
+	Tags        []netboxapi.TagRef `json:"tags"`
+}
+
+type rirResponse struct {
+	Name        string `json:"name"`
+	Slug        string `json:"slug"`
+	Description string `json:"description"`
+	IsPrivate   bool   `json:"is_private"`
+}
+
+func rirRequestFromResourceData(d *schema.ResourceData) *rirRequest {
 	name := d.Get("name").(string)
-	slugValue, slugOk := d.GetOk("slug")
-	var slug string
-	// Default slug to generated slug if not given
-	if !slugOk {
-		slug = getSlug(name)
-	} else {
-		slug = slugValue.(string)
+	return &rirRequest{
+		Name:        name,
+		Slug:        slugFromResourceData(d, name),
+		Description: getOptionalStr(d, "description", true),
+		IsPrivate:   d.Get("is_private").(bool),
+		Tags:        []netboxapi.TagRef{},
 	}
+}
 
-	data.Name = &name
-	data.Slug = &slug
-	data.Description = getOptionalStr(d, "description", true)
-	data.Tags = []*models.NestedTag{}
-	data.IsPrivate = d.Get("is_private").(bool)
-
-	params := ipam.NewIpamRirsCreateParams().WithData(&data)
-	res, err := api.Ipam.IpamRirsCreate(params, nil)
-	if err != nil {
-		return err
-	}
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxRirUpdate(d, m)
+func resourceNetboxRirCreate(d *schema.ResourceData, m interface{}) error {
+	return createObject(d, m, rirAPIPath, rirRequestFromResourceData(d), resourceNetboxRirUpdate)
 }
 
 func resourceNetboxRirRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := ipam.NewIpamRirsReadParams().WithID(id)
-
-	res, err := api.Ipam.IpamRirsRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*ipam.IpamRirsReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-
-	rir := res.GetPayload()
-
-	d.Set("name", rir.Name)
-	d.Set("slug", rir.Slug)
-	d.Set("description", rir.Description)
-	d.Set("is_private", rir.IsPrivate)
-
-	return nil
+	return readObject(d, m, rirAPIPath, func(rir *rirResponse) {
+		d.Set("name", rir.Name)
+		d.Set("slug", rir.Slug)
+		d.Set("description", rir.Description)
+		d.Set("is_private", rir.IsPrivate)
+	})
 }
 
 func resourceNetboxRirUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.RIR{}
-
-	name := d.Get("name").(string)
-	slugValue, slugOk := d.GetOk("slug")
-	var slug string
-	// Default slug to generated slug if not given
-	if !slugOk {
-		slug = getSlug(name)
-	} else {
-		slug = slugValue.(string)
-	}
-
-	data.Name = &name
-	data.Slug = &slug
-	data.Description = getOptionalStr(d, "description", true)
-	data.Tags = []*models.NestedTag{}
-	data.IsPrivate = d.Get("is_private").(bool)
-
-	params := ipam.NewIpamRirsUpdateParams().WithID(id).WithData(&data)
-	_, err := api.Ipam.IpamRirsUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-	return resourceNetboxRirRead(d, m)
+	return putObject(d, m, rirAPIPath, rirRequestFromResourceData(d), resourceNetboxRirRead)
 }
 
 func resourceNetboxRirDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := ipam.NewIpamRirsDeleteParams().WithID(id)
-	_, err := api.Ipam.IpamRirsDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*ipam.IpamRirsDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	d.SetId("")
-	return nil
+	return deleteObject(d, m, rirAPIPath)
 }

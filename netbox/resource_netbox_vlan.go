@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -70,164 +67,107 @@ func resourceNetboxVlan() *schema.Resource {
 	}
 }
 
-func resourceNetboxVlanCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	data := models.WritableVLAN{}
+const vlanAPIPath = "ipam/vlans/"
 
+type vlanRequest struct {
+	Name         string             `json:"name"`
+	Vid          *int64             `json:"vid"`
+	Status       string             `json:"status,omitempty"`
+	Description  string             `json:"description,omitempty"`
+	Group        *int64             `json:"group,omitempty"`
+	Site         *int64             `json:"site,omitempty"`
+	Tenant       *int64             `json:"tenant,omitempty"`
+	Role         *int64             `json:"role,omitempty"`
+	CustomFields interface{}        `json:"custom_fields,omitempty"`
+	Tags         []netboxapi.TagRef `json:"tags"`
+}
+
+type vlanResponse struct {
+	Name         string                 `json:"name"`
+	Vid          *int64                 `json:"vid"`
+	Status       *netboxapi.Choice      `json:"status"`
+	Description  string                 `json:"description"`
+	Group        *netboxapi.Ref         `json:"group"`
+	Site         *netboxapi.Ref         `json:"site"`
+	Tenant       *netboxapi.Ref         `json:"tenant"`
+	Role         *netboxapi.Ref         `json:"role"`
+	CustomFields map[string]interface{} `json:"custom_fields"`
+	Tags         []netboxapi.TagRef     `json:"tags"`
+}
+
+func vlanRequestFromResourceData(api *providerState, d *schema.ResourceData) (*vlanRequest, error) {
 	name := d.Get("name").(string)
-	vid := int64(d.Get("vid").(int))
-	status := d.Get("status").(string)
-	description := d.Get("description").(string)
-
-	data.Name = &name
-	data.Vid = &vid
-	data.Status = status
-	data.Description = description
-
-	if groupID, ok := d.GetOk("group_id"); ok {
-		data.Group = int64ToPtr(int64(groupID.(int)))
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
+	if err != nil {
+		return nil, err
 	}
-
-	if siteID, ok := d.GetOk("site_id"); ok {
-		data.Site = int64ToPtr(int64(siteID.(int)))
+	data := &vlanRequest{
+		Name:        name,
+		Vid:         int64ToPtr(int64(d.Get("vid").(int))),
+		Status:      d.Get("status").(string),
+		Description: d.Get("description").(string),
+		Tags:        tags,
 	}
-
-	if tenantID, ok := d.GetOk("tenant_id"); ok {
-		data.Tenant = int64ToPtr(int64(tenantID.(int)))
+	if v, ok := d.GetOk("group_id"); ok {
+		data.Group = int64ToPtr(int64(v.(int)))
 	}
-
-	if roleID, ok := d.GetOk("role_id"); ok {
-		data.Role = int64ToPtr(int64(roleID.(int)))
+	if v, ok := d.GetOk("site_id"); ok {
+		data.Site = int64ToPtr(int64(v.(int)))
 	}
-	if cf, ok := d.GetOk(customFieldsKey); ok {
-		data.CustomFields = getCustomFields(cf)
+	if v, ok := d.GetOk("tenant_id"); ok {
+		data.Tenant = int64ToPtr(int64(v.(int)))
 	}
+	if v, ok := d.GetOk("role_id"); ok {
+		data.Role = int64ToPtr(int64(v.(int)))
+	}
+	if ct, ok := d.GetOk(customFieldsKey); ok {
+		data.CustomFields = ct
+	}
+	return data, nil
+}
 
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+func resourceNetboxVlanCreate(d *schema.ResourceData, m interface{}) error {
+	data, err := vlanRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	params := ipam.NewIpamVlansCreateParams().WithData(&data)
-	res, err := api.Ipam.IpamVlansCreate(params, nil)
-	if err != nil {
-		return err
-	}
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxVlanRead(d, m)
+	return createObject(d, m, vlanAPIPath, data, resourceNetboxVlanRead)
 }
 
 func resourceNetboxVlanRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := ipam.NewIpamVlansReadParams().WithID(id)
-
-	res, err := api.Ipam.IpamVlansRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*ipam.IpamVlansReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
+	return readObject(d, m, vlanAPIPath, func(r *vlanResponse) {
+		d.Set("name", r.Name)
+		d.Set("vid", r.Vid)
+		d.Set("status", netboxapi.ChoiceValue(r.Status))
+		d.Set("description", r.Description)
+		if r.Group != nil {
+			d.Set("group_id", r.Group.ID)
 		}
-		return err
-	}
-
-	vlan := res.GetPayload()
-
-	d.Set("name", vlan.Name)
-	d.Set("vid", vlan.Vid)
-	d.Set("description", vlan.Description)
-	api.readTags(d, vlan.Tags)
-	cf := getCustomFields(vlan.CustomFields)
-	if cf != nil {
-		d.Set(customFieldsKey, cf)
-	}
-
-	if vlan.Status != nil {
-		d.Set("status", vlan.Status.Value)
-	}
-	if vlan.Group != nil {
-		d.Set("group_id", vlan.Group.ID)
-	}
-	if vlan.Site != nil {
-		d.Set("site_id", vlan.Site.ID)
-	}
-	if vlan.Tenant != nil {
-		d.Set("tenant_id", vlan.Tenant.ID)
-	}
-	if vlan.Role != nil {
-		d.Set("role_id", vlan.Role.ID)
-	}
-
-	return nil
+		if r.Site != nil {
+			d.Set("site_id", r.Site.ID)
+		}
+		if r.Tenant != nil {
+			d.Set("tenant_id", r.Tenant.ID)
+		}
+		if r.Role != nil {
+			d.Set("role_id", r.Role.ID)
+		}
+		if cf := getCustomFields(r.CustomFields); cf != nil {
+			d.Set(customFieldsKey, cf)
+		}
+		api.readTagRefs(d, r.Tags)
+	})
 }
 
 func resourceNetboxVlanUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.WritableVLAN{}
-	name := d.Get("name").(string)
-	vid := int64(d.Get("vid").(int))
-	status := d.Get("status").(string)
-	description := d.Get("description").(string)
-
-	data.Name = &name
-	data.Vid = &vid
-	data.Status = status
-	data.Description = description
-
-	if groupID, ok := d.GetOk("group_id"); ok {
-		data.Group = int64ToPtr(int64(groupID.(int)))
-	}
-
-	if siteID, ok := d.GetOk("site_id"); ok {
-		data.Site = int64ToPtr(int64(siteID.(int)))
-	}
-
-	if tenantID, ok := d.GetOk("tenant_id"); ok {
-		data.Tenant = int64ToPtr(int64(tenantID.(int)))
-	}
-
-	if roleID, ok := d.GetOk("role_id"); ok {
-		data.Role = int64ToPtr(int64(roleID.(int)))
-	}
-	if cf, ok := d.GetOk(customFieldsKey); ok {
-		data.CustomFields = getCustomFields(cf)
-	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+	data, err := vlanRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	params := ipam.NewIpamVlansUpdateParams().WithID(id).WithData(&data)
-	_, err = api.Ipam.IpamVlansUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-	return resourceNetboxVlanRead(d, m)
+	return putObject(d, m, vlanAPIPath, data, resourceNetboxVlanRead)
 }
 
 func resourceNetboxVlanDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := ipam.NewIpamVlansDeleteParams().WithID(id)
-	_, err := api.Ipam.IpamVlansDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*ipam.IpamVlansDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-
-	return nil
+	return deleteObject(d, m, vlanAPIPath)
 }

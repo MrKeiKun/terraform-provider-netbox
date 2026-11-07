@@ -3,10 +3,9 @@ package netbox
 import (
 	"context"
 	"strconv"
+	"time"
 
-	"github.com/fbreckle/go-netbox/netbox/client/users"
-	"github.com/fbreckle/go-netbox/netbox/models"
-	"github.com/go-openapi/strfmt"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -66,40 +65,74 @@ func resourceNetboxToken() *schema.Resource {
 	}
 }
 
-func resourceNetboxTokenCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := m.(*providerState)
-	data := models.WritableToken{}
+const tokenAPIPath = "users/tokens/"
 
-	userid := int64(d.Get("user_id").(int))
+// tokenTimeFormat is how NetBox timestamps are written to the state.
+const tokenTimeFormat = "2006-01-02T15:04:05.000Z"
 
-	key := d.Get("key").(string)
+type tokenRequest struct {
+	User         int64         `json:"user"`
+	Key          string        `json:"key,omitempty"`
+	AllowedIps   []interface{} `json:"allowed_ips"`
+	WriteEnabled bool          `json:"write_enabled"`
+	Description  string        `json:"description,omitempty"`
+	Expires      *time.Time    `json:"expires,omitempty"`
+}
+
+type tokenResponse struct {
+	User         *netboxapi.Ref `json:"user"`
+	Key          string         `json:"key"`
+	LastUsed     *string        `json:"last_used"`
+	Expires      *string        `json:"expires"`
+	AllowedIps   []string       `json:"allowed_ips"`
+	WriteEnabled bool           `json:"write_enabled"`
+	Description  string         `json:"description"`
+}
+
+func tokenRequestFromResourceData(d *schema.ResourceData) (*tokenRequest, error) {
 	allowedIps := d.Get("allowed_ips").([]interface{})
 
-	data.User = &userid
-	data.Key = key
-
-	data.AllowedIps = make([]models.IPNetwork, len(allowedIps))
-	for i, v := range allowedIps {
-		data.AllowedIps[i] = v
+	data := &tokenRequest{
+		User:         int64(d.Get("user_id").(int)),
+		Key:          d.Get("key").(string),
+		AllowedIps:   make([]interface{}, len(allowedIps)),
+		WriteEnabled: d.Get("write_enabled").(bool),
+		Description:  d.Get("description").(string),
 	}
-
-	data.WriteEnabled = d.Get("write_enabled").(bool)
-	data.Description = d.Get("description").(string)
+	copy(data.AllowedIps, allowedIps)
 
 	if expiresRaw, ok := d.GetOk("expires"); ok {
-		expires, err := strfmt.ParseDateTime(expiresRaw.(string))
+		expires, err := time.Parse(time.RFC3339, expiresRaw.(string))
 		if err != nil {
-			return diag.FromErr(err)
+			return nil, err
 		}
 		data.Expires = &expires
 	}
+	return data, nil
+}
 
-	params := users.NewUsersTokensCreateParams().WithData(&data)
-	res, err := api.Users.UsersTokensCreate(params, nil)
+// formatTokenTime rewrites a NetBox timestamp the way the state has always stored it.
+func formatTokenTime(s string) string {
+	t, err := time.Parse(time.RFC3339, s)
+	if err != nil {
+		return s
+	}
+	return t.UTC().Format(tokenTimeFormat)
+}
+
+func resourceNetboxTokenCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api := m.(*providerState)
+
+	data, err := tokenRequestFromResourceData(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
+
+	res, err := netboxapi.Create[netboxapi.Ref](ctx, api.rest, tokenAPIPath, data)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	d.SetId(strconv.FormatInt(res.ID, 10))
 
 	return resourceNetboxTokenUpdate(ctx, d, m)
 }
@@ -107,21 +140,16 @@ func resourceNetboxTokenCreate(ctx context.Context, d *schema.ResourceData, m in
 func resourceNetboxTokenRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*providerState)
 	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := users.NewUsersTokensReadParams().WithID(id)
 
-	res, err := api.Users.UsersTokensRead(params, nil)
+	token, err := netboxapi.Get[tokenResponse](ctx, api.rest, tokenAPIPath, id)
 	if err != nil {
-		if errresp, ok := err.(*users.UsersTokensReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
+		if netboxapi.IsNotFound(err) {
+			// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
+			d.SetId("")
+			return nil
 		}
 		return diag.FromErr(err)
 	}
-	token := res.GetPayload()
 
 	if token.User != nil {
 		d.Set("user_id", token.User.ID)
@@ -132,9 +160,11 @@ func resourceNetboxTokenRead(ctx context.Context, d *schema.ResourceData, m inte
 	if token.Key != "" {
 		d.Set("key", token.Key)
 	}
-	d.Set("last_used", token.LastUsed)
+	if token.LastUsed != nil {
+		d.Set("last_used", formatTokenTime(*token.LastUsed))
+	}
 	if token.Expires != nil {
-		d.Set("expires", token.Expires.String())
+		d.Set("expires", formatTokenTime(*token.Expires))
 	}
 	d.Set("allowed_ips", token.AllowedIps)
 	d.Set("write_enabled", token.WriteEnabled)
@@ -146,34 +176,13 @@ func resourceNetboxTokenRead(ctx context.Context, d *schema.ResourceData, m inte
 func resourceNetboxTokenUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*providerState)
 	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.WritableToken{}
 
-	userid := int64(d.Get("user_id").(int))
-	key := d.Get("key").(string)
-	allowedIps := d.Get("allowed_ips").([]interface{})
-
-	data.User = &userid
-	data.Key = key
-
-	data.AllowedIps = make([]models.IPNetwork, len(allowedIps))
-	for i, v := range allowedIps {
-		data.AllowedIps[i] = v
-	}
-
-	data.WriteEnabled = d.Get("write_enabled").(bool)
-	data.Description = d.Get("description").(string)
-
-	if expiresRaw, ok := d.GetOk("expires"); ok {
-		expires, err := strfmt.ParseDateTime(expiresRaw.(string))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		data.Expires = &expires
-	}
-
-	params := users.NewUsersTokensUpdateParams().WithID(id).WithData(&data)
-	_, err := api.Users.UsersTokensUpdate(params, nil)
+	data, err := tokenRequestFromResourceData(d)
 	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if _, err := netboxapi.Update[netboxapi.Ref](ctx, api.rest, tokenAPIPath, id, data); err != nil {
 		return diag.FromErr(err)
 	}
 	return resourceNetboxTokenRead(ctx, d, m)
@@ -182,14 +191,11 @@ func resourceNetboxTokenUpdate(ctx context.Context, d *schema.ResourceData, m in
 func resourceNetboxTokenDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*providerState)
 	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := users.NewUsersTokensDeleteParams().WithID(id)
-	_, err := api.Users.UsersTokensDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*users.UsersTokensDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
+
+	if err := netboxapi.Delete(ctx, api.rest, tokenAPIPath, id); err != nil {
+		if netboxapi.IsNotFound(err) {
+			d.SetId("")
+			return nil
 		}
 		return diag.FromErr(err)
 	}

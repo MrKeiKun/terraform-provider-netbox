@@ -1,7 +1,11 @@
 package netbox
 
 import (
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
+	"context"
+	"fmt"
+	"net/http"
+
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -39,32 +43,34 @@ func dataSourceNetboxAvailablePrefix() *schema.Resource {
 	}
 }
 
+type availablePrefixDataSourceResponse struct {
+	Prefix string         `json:"prefix"`
+	Family float64        `json:"family"`
+	Vrf    *netboxapi.Ref `json:"vrf"`
+}
+
 func dataSourceNetboxAvailablePrefixRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 
-	params := ipam.NewIpamPrefixesAvailablePrefixesListParams()
-
-	if prefixID, ok := d.Get("prefix_id").(int); ok && prefixID != 0 {
-		params.ID = int64(prefixID)
+	var prefixID int64
+	if v, ok := d.Get("prefix_id").(int); ok && v != 0 {
+		prefixID = int64(v)
 	}
 
-	res, err := api.Ipam.IpamPrefixesAvailablePrefixesList(params, nil)
+	path := fmt.Sprintf("ipam/prefixes/%d/available-prefixes/", prefixID)
+	result, err := netboxapi.Request[[]availablePrefixDataSourceResponse](context.Background(), api.rest, http.MethodGet, path, nil, nil)
 	if err != nil {
 		return err
 	}
 
-	result := res.GetPayload()
-
 	var s []map[string]interface{}
-	for _, v := range result {
-		var mapping = make(map[string]interface{})
-
+	for _, v := range *result {
+		mapping := make(map[string]interface{})
 		mapping["prefix"] = v.Prefix
 		mapping["family"] = v.Family
 		if v.Vrf != nil {
 			mapping["vrf_id"] = v.Vrf.ID
 		}
-
 		s = append(s, mapping)
 	}
 

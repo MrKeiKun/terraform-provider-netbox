@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -45,126 +42,71 @@ func resourceNetboxAggregate() *schema.Resource {
 		},
 	}
 }
+
+const aggregateAPIPath = "ipam/aggregates/"
+
+type aggregateRequest struct {
+	Prefix      string             `json:"prefix"`
+	Description string             `json:"description,omitempty"`
+	Tenant      *int64             `json:"tenant,omitempty"`
+	Rir         *int64             `json:"rir,omitempty"`
+	Tags        []netboxapi.TagRef `json:"tags"`
+}
+
+type aggregateResponse struct {
+	Prefix      string             `json:"prefix"`
+	Description string             `json:"description"`
+	Tenant      *netboxapi.Ref     `json:"tenant"`
+	Rir         *netboxapi.Ref     `json:"rir"`
+	Tags        []netboxapi.TagRef `json:"tags"`
+}
+
+func aggregateRequestFromResourceData(api *providerState, d *schema.ResourceData) (*aggregateRequest, error) {
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
+	if err != nil {
+		return nil, err
+	}
+	data := &aggregateRequest{
+		Prefix:      d.Get("prefix").(string),
+		Description: d.Get("description").(string),
+		Tags:        tags,
+	}
+	if v, ok := d.GetOk("tenant_id"); ok {
+		data.Tenant = int64ToPtr(int64(v.(int)))
+	}
+	if v, ok := d.GetOk("rir_id"); ok {
+		data.Rir = int64ToPtr(int64(v.(int)))
+	}
+	return data, nil
+}
+
 func resourceNetboxAggregateCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	data := models.WritableAggregate{}
-
-	prefix := d.Get("prefix").(string)
-	description := d.Get("description").(string)
-
-	data.Prefix = &prefix
-	data.Description = description
-
-	if tenantID, ok := d.GetOk("tenant_id"); ok {
-		data.Tenant = int64ToPtr(int64(tenantID.(int)))
-	}
-
-	if rirID, ok := d.GetOk("rir_id"); ok {
-		data.Rir = int64ToPtr(int64(rirID.(int)))
-	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+	data, err := aggregateRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	params := ipam.NewIpamAggregatesCreateParams().WithData(&data)
-	res, err := api.Ipam.IpamAggregatesCreate(params, nil)
-	if err != nil {
-		return err
-	}
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxAggregateRead(d, m)
+	return createObject(d, m, aggregateAPIPath, data, resourceNetboxAggregateRead)
 }
 
 func resourceNetboxAggregateRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := ipam.NewIpamAggregatesReadParams().WithID(id)
-
-	res, err := api.Ipam.IpamAggregatesRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*ipam.IpamAggregatesReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-
-	d.Set("description", res.GetPayload().Description)
-	if res.GetPayload().Prefix != nil {
-		d.Set("prefix", res.GetPayload().Prefix)
-	}
-
-	if res.GetPayload().Tenant != nil {
-		d.Set("tenant_id", res.GetPayload().Tenant.ID)
-	} else {
-		d.Set("tenant_id", nil)
-	}
-
-	if res.GetPayload().Rir != nil {
-		d.Set("rir_id", res.GetPayload().Rir.ID)
-	} else {
-		d.Set("rir_id", nil)
-	}
-
-	api.readTags(d, res.GetPayload().Tags)
-
-	return nil
+	return readObject(d, m, aggregateAPIPath, func(r *aggregateResponse) {
+		d.Set("prefix", r.Prefix)
+		d.Set("description", r.Description)
+		d.Set("tenant_id", netboxapi.RefID(r.Tenant))
+		d.Set("rir_id", netboxapi.RefID(r.Rir))
+		api.readTagRefs(d, r.Tags)
+	})
 }
 
 func resourceNetboxAggregateUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.WritableAggregate{}
-	prefix := d.Get("prefix").(string)
-	description := d.Get("description").(string)
-
-	data.Prefix = &prefix
-	data.Description = description
-
-	if tenantID, ok := d.GetOk("tenant_id"); ok {
-		data.Tenant = int64ToPtr(int64(tenantID.(int)))
-	}
-
-	if rirID, ok := d.GetOk("rir_id"); ok {
-		data.Rir = int64ToPtr(int64(rirID.(int)))
-	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+	data, err := aggregateRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	params := ipam.NewIpamAggregatesUpdateParams().WithID(id).WithData(&data)
-	_, err = api.Ipam.IpamAggregatesUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-	return resourceNetboxAggregateRead(d, m)
+	return putObject(d, m, aggregateAPIPath, data, resourceNetboxAggregateRead)
 }
 
 func resourceNetboxAggregateDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := ipam.NewIpamAggregatesDeleteParams().WithID(id)
-	_, err := api.Ipam.IpamAggregatesDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*ipam.IpamAggregatesDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	d.SetId("")
-	return nil
+	return deleteObject(d, m, aggregateAPIPath)
 }

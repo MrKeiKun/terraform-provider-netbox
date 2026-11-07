@@ -2,11 +2,8 @@ package netbox
 
 import (
 	"fmt"
-	"log"
-	"strings"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
@@ -96,27 +93,7 @@ func init() {
 		Name:         "netbox_rir",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := ipam.NewIpamRirsListParams()
-			res, err := api.Ipam.IpamRirsList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, role := range res.GetPayload().Results {
-				if strings.HasPrefix(*role.Name, testPrefix) {
-					deleteParams := ipam.NewIpamRirsDeleteParams().WithID(role.ID)
-					_, err := api.Ipam.IpamRirsDelete(deleteParams, nil)
-					if err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted a rir")
-				}
-			}
-			return nil
+			return sweepByName(region, "ipam/rirs/", "name")
 		},
 	})
 }

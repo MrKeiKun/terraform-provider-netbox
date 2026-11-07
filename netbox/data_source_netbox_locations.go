@@ -1,11 +1,9 @@
 package netbox
 
 import (
-	"fmt"
+	"net/url"
 	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
-	"github.com/fbreckle/go-netbox/netbox/models"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -99,105 +97,49 @@ func dataSourceNetboxLocations() *schema.Resource {
 }
 
 func dataSourceNetboxLocationsRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	params := dcim.NewDcimLocationsListParams()
-
-	// Get user limit
-	var userLimit int64 = 0
-	if limitValue, ok := d.GetOk("limit"); ok {
-		userLimit = int64(limitValue.(int))
+	// filter name in the data source -> query parameter sent to Netbox
+	allowed := map[string]string{
+		"name":      "name",
+		"slug":      "slug",
+		"site":      "site",
+		"site_id":   "site_id",
+		"parent_id": "parent_id",
+		"tenant":    "tenant",
+		"tenant_id": "tenant_id",
+		"status":    "status",
 	}
 
-	if filter, ok := d.GetOk("filter"); ok {
-		var filterParams = filter.(*schema.Set)
-		for _, f := range filterParams.List() {
-			k := f.(map[string]interface{})["name"]
-			v := f.(map[string]interface{})["value"]
-			vString := v.(string)
-			switch k {
-			case "name":
-				params.Name = &vString
-			case "slug":
-				params.Slug = &vString
-			case "site":
-				params.Site = &vString
-			case "site_id":
-				params.SiteID = &vString
-			case "parent_id":
-				params.ParentID = &vString
-			case "tenant":
-				params.Tenant = &vString
-			case "tenant_id":
-				params.TenantID = &vString
-			case "status":
-				params.Status = &vString
-			default:
-				return fmt.Errorf("'%s' is not a supported filter parameter", k)
-			}
-		}
-	}
+	extra := url.Values{}
 	if tags, ok := d.GetOk("tags"); ok {
-		tagSet := tags.(*schema.Set)
-		for _, tag := range tagSet.List() {
-			tagV := tag.(string)
-			params.Tag = append(params.Tag, tagV)
+		for _, tag := range tags.(*schema.Set).List() {
+			extra.Add("tag", tag.(string))
 		}
 	}
 
-	// Fetch all pages with pagination
-	paginationHelper := NewPaginationHelper(userLimit)
-	var allLocations []*models.Location
-
-	pageSize := paginationHelper.GetPageSize()
-	for {
-		currentOffset := paginationHelper.CurrentOffset()
-		params.Limit = &pageSize
-		params.Offset = &currentOffset
-
-		res, err := api.Dcim.DcimLocationsList(params, nil)
-		if err != nil {
-			return fmt.Errorf("failed to fetch locations at offset %d: %w", currentOffset, err)
-		}
-
-		payload := res.GetPayload()
-		allLocations = append(allLocations, payload.Results...)
-
-		if len(payload.Results) == 0 {
-			break
-		}
-
-		if !paginationHelper.ShouldContinuePaging(int64(len(allLocations)), payload.Next) {
-			break
-		}
-
-		paginationHelper.Advance(int64(len(payload.Results)))
+	results, err := listFiltered[map[string]interface{}](d, m, "dcim/locations/", "locations", allowed, extra)
+	if err != nil {
+		return err
 	}
 
-	// Trim to user limit if specified
-	trimmedCount := paginationHelper.TrimToLimit(len(allLocations))
-	filteredLocations := allLocations[:trimmedCount]
+	var s []map[string]interface{}
+	for _, v := range results {
+		mapping := make(map[string]interface{})
 
-	var s []map[string]any
-	for _, v := range filteredLocations {
-		var mapping = make(map[string]any)
+		mapping["id"] = strconv.FormatInt(jInt(v, "id"), 10)
+		mapping["name"] = jStr(v, "name")
+		mapping["slug"] = jStr(v, "slug")
+		mapping["site_id"] = jID(v, "site")
+		mapping["description"] = jStr(v, "description")
+		mapping["facility"] = jStr(v, "facility")
+		mapping["parent_id"] = jID(v, "parent")
+		mapping["status"] = jChoice(v, "status")
+		mapping["tenant_id"] = jID(v, "tenant")
 
-		mapping["id"] = strconv.FormatInt(v.ID, 10)
-		mapping["name"] = v.Name
-		mapping["slug"] = v.Slug
-		mapping["site_id"] = v.Site.ID
-		mapping["description"] = v.Description
-		mapping["facility"] = v.Facility
-
-		if v.Parent != nil {
-			mapping["parent_id"] = v.Parent.ID
-		}
-
-		if v.Status != nil {
-			mapping["status"] = v.Status.Value
-		}
-
-		if v.Tenant != nil {
-			mapping["tenant_id"] = v.Tenant.ID
+		// fields that are missing in the response are left out of the state
+		for k, val := range mapping {
+			if val == nil {
+				delete(mapping, k)
+			}
 		}
 
 		s = append(s, mapping)

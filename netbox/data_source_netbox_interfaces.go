@@ -1,11 +1,8 @@
 package netbox
 
 import (
-	"fmt"
 	"regexp"
 
-	"github.com/fbreckle/go-netbox/netbox/client/virtualization"
-	"github.com/fbreckle/go-netbox/netbox/models"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -141,143 +138,53 @@ func dataSourceNetboxInterfaces() *schema.Resource {
 }
 
 func dataSourceNetboxInterfaceRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	params := virtualization.NewVirtualizationInterfacesListParams()
-
-	// Get user limit (0 = fetch all)
-	var userLimit int64 = 0
-	if limitValue, ok := d.GetOk("limit"); ok {
-		userLimit = int64(limitValue.(int))
+	// filter name in the data source -> query parameter sent to Netbox
+	allowed := map[string]string{
+		"cluster_id":  "cluster_id",
+		"mac_address": "mac_address",
+		"name":        "name",
+		"tag":         "tag",
+		"vm_id":       "virtual_machine_id",
 	}
 
-	if filter, ok := d.GetOk("filter"); ok {
-		var filterParams = filter.(*schema.Set)
-		for _, f := range filterParams.List() {
-			k := f.(map[string]interface{})["name"]
-			v := f.(map[string]interface{})["value"]
-			vString := v.(string)
-			switch k {
-			case "cluster_id":
-				params.ClusterID = &vString
-			case "mac_address":
-				params.MacAddress = &vString
-			case "name":
-				params.Name = &vString
-			case "tag":
-				params.Tag = []string{vString} //TODO: switch schema to list?
-			case "vm_id":
-				params.VirtualMachineID = &vString
-			default:
-				return fmt.Errorf("'%s' is not a supported filter parameter", k)
-			}
-		}
-	}
-
-	// Fetch all pages with pagination (fetch all when name_regex is used)
-	paginationHelper := NewPaginationHelper(FetchAll)
-	var allInterfaces []*models.VMInterface
-
-	pageSize := paginationHelper.GetPageSize()
-	for {
-		currentOffset := paginationHelper.CurrentOffset()
-		params.Limit = &pageSize
-		params.Offset = &currentOffset
-
-		res, err := api.Virtualization.VirtualizationInterfacesList(params, nil)
-		if err != nil {
-			return fmt.Errorf("failed to fetch interfaces at offset %d: %w", currentOffset, err)
-		}
-
-		payload := res.GetPayload()
-		allInterfaces = append(allInterfaces, payload.Results...)
-
-		if len(payload.Results) == 0 {
-			break
-		}
-
-		if !paginationHelper.ShouldContinuePaging(int64(len(allInterfaces)), payload.Next) {
-			break
-		}
-
-		paginationHelper.Advance(int64(len(payload.Results)))
-	}
-
-	// Apply name_regex filter
-	var filteredInterfaces []*models.VMInterface
+	// Fetch everything and apply the regular expression before the limit
+	var keep func(map[string]interface{}) bool
 	if nameRegex, ok := d.GetOk("name_regex"); ok {
 		r := regexp.MustCompile(nameRegex.(string))
-		for _, vmInterface := range allInterfaces {
-			if r.MatchString(*vmInterface.Name) {
-				filteredInterfaces = append(filteredInterfaces, vmInterface)
-			}
-		}
-	} else {
-		filteredInterfaces = allInterfaces
+		keep = func(o map[string]interface{}) bool { return r.MatchString(jStr(o, "name")) }
 	}
 
-	// Apply user limit to filtered results
-	if userLimit > 0 && int64(len(filteredInterfaces)) > userLimit {
-		filteredInterfaces = filteredInterfaces[:userLimit]
+	results, err := listFilteredWith[map[string]interface{}](d, m, "virtualization/interfaces/", "interfaces", allowed, nil, keep)
+	if err != nil {
+		return err
 	}
 
 	var s []map[string]interface{}
-	for _, v := range filteredInterfaces {
-		var mapping = make(map[string]interface{})
-		mapping["id"] = v.ID
-		if v.Description != "" {
-			mapping["description"] = v.Description
-		}
-		mapping["enabled"] = v.Enabled
-		if v.MacAddress != nil {
-			mapping["mac_address"] = *v.MacAddress
-		}
-		if v.Mode != nil {
-			mapping["mode"] = map[string]string{
-				"label": *v.Mode.Label,
-				"value": *v.Mode.Value,
-			}
-		}
-		if v.Mtu != nil {
-			mapping["mtu"] = *v.Mtu
-		}
-		if v.Name != nil {
-			mapping["name"] = *v.Name
-		}
-		if v.TaggedVlans != nil {
-			mapping["tagged_vlans"] = flattenVlanAttributes(v.TaggedVlans)
-		}
-		if v.Tags != nil {
-			var tags []int64
-			for _, t := range v.Tags {
-				tags = append(tags, t.ID)
-			}
-			mapping["tag_ids"] = tags
-		}
-		if v.UntaggedVlan != nil {
-			vlanSlice := []*models.NestedVLAN{v.UntaggedVlan}
-			mapping["untagged_vlan"] = flattenVlanAttributes(vlanSlice)
-		}
+	for _, v := range results {
+		mapping := make(map[string]interface{})
 
-		mapping["vm_id"] = v.VirtualMachine.ID
+		mapping["id"] = jInt(v, "id")
+		mapping["description"] = jStr(v, "description")
+		mapping["enabled"] = jBool(v, "enabled")
+		mapping["mac_address"] = jStr(v, "mac_address")
+		mapping["mode"] = jChoiceMap(v, "mode")
+		mapping["mtu"] = jIntP(v, "mtu")
+		mapping["name"] = jStr(v, "name")
+		mapping["tagged_vlans"] = jObjectsList(v, "tagged_vlans", "id", "vid", "name")
+		mapping["tag_ids"] = jTagIDs(v)
+		mapping["untagged_vlan"] = jObjectList(v, "untagged_vlan", "id", "vid", "name")
+		mapping["vm_id"] = jID(v, "virtual_machine")
+
+		// fields that are missing in the response are left out of the state
+		for k, val := range mapping {
+			if val == nil {
+				delete(mapping, k)
+			}
+		}
 
 		s = append(s, mapping)
 	}
 
 	d.SetId(id.UniqueId())
 	return d.Set("interfaces", s)
-}
-
-func flattenVlanAttributes(vlans []*models.NestedVLAN) []map[string]interface{} {
-	var mappedVlans []map[string]interface{}
-	for _, vlan := range vlans {
-		v := *vlan
-		mappedVlan := map[string]interface{}{
-			"id":   v.ID,
-			"vid":  *v.Vid,
-			"name": *v.Name,
-		}
-		mappedVlans = append(mappedVlans, mappedVlan)
-	}
-	return mappedVlans
 }

@@ -2,11 +2,8 @@ package netbox
 
 import (
 	"fmt"
-	"log"
-	"strings"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
@@ -100,27 +97,7 @@ func init() {
 		Name:         "netbox_vlan_group",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := ipam.NewIpamVlanGroupsListParams()
-			res, err := api.Ipam.IpamVlanGroupsList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, vlan := range res.GetPayload().Results {
-				if strings.HasPrefix(*vlan.Name, testPrefix) {
-					deleteParams := ipam.NewIpamVlanGroupsDeleteParams().WithID(vlan.ID)
-					_, err := api.Ipam.IpamVlanGroupsDelete(deleteParams, nil)
-					if err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted a vlan group")
-				}
-			}
-			return nil
+			return sweepByName(region, "ipam/vlan-groups/", "name")
 		},
 	})
 }

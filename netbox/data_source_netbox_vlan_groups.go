@@ -1,11 +1,6 @@
 package netbox
 
 import (
-	"fmt"
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
-	"github.com/fbreckle/go-netbox/netbox/models"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -94,237 +89,108 @@ func dataSourceNetboxVlanGroups() *schema.Resource {
 }
 
 func dataSourceNetboxVlanGroupsRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	params := ipam.NewIpamVlanGroupsListParams()
-
-	// Get user limit (0 = fetch all)
-	var userLimit int64 = 0
-	if limitValue, ok := d.GetOk("limit"); ok {
-		userLimit = int64(limitValue.(int))
+	// filter name in the data source -> query parameter sent to Netbox
+	allowed := map[string]string{
+		"name":               "name",
+		"name__empty":        "name__empty",
+		"name__ic":           "name__ic",
+		"name__ie":           "name__ie",
+		"name__iew":          "name__iew",
+		"name__isw":          "name__isw",
+		"name__n":            "name__n",
+		"name__nic":          "name__nic",
+		"name__nie":          "name__nie",
+		"name__niew":         "name__niew",
+		"name__nisw":         "name__nisw",
+		"slug":               "slug",
+		"slug__empty":        "slug__empty",
+		"slug__ic":           "slug__ic",
+		"slug__ie":           "slug__ie",
+		"slug__iew":          "slug__iew",
+		"slug__isw":          "slug__isw",
+		"slug__n":            "slug__n",
+		"slug__nic":          "slug__nic",
+		"slug__nie":          "slug__nie",
+		"slug__niew":         "slug__niew",
+		"slug__nisw":         "slug__nisw",
+		"description":        "description",
+		"description__empty": "description__empty",
+		"description__ic":    "description__ic",
+		"description__ie":    "description__ie",
+		"description__iew":   "description__iew",
+		"description__isw":   "description__isw",
+		"description__n":     "description__n",
+		"description__nic":   "description__nic",
+		"description__nie":   "description__nie",
+		"description__niew":  "description__niew",
+		"description__nisw":  "description__nisw",
+		"id":                 "id",
+		"id__gt":             "id__gt",
+		"id__gte":            "id__gte",
+		"id__lt":             "id__lt",
+		"id__lte":            "id__lte",
+		"id__n":              "id__n",
+		"scope_type":         "scope_type",
+		"scope_type__n":      "scope_type__n",
+		"scope_id":           "scope_id",
+		"scope_id__gt":       "scope_id__gt",
+		"scope_id__gte":      "scope_id__gte",
+		"scope_id__lt":       "scope_id__lt",
+		"scope_id__lte":      "scope_id__lte",
+		"scope_id__n":        "scope_id__n",
+		"site_id":            "site",
+		"site":               "site",
+		"location_id":        "location",
+		"location":           "location",
+		"rack_id":            "rack",
+		"rack":               "rack",
+		"region_id":          "region",
+		"region":             "region",
+		"sitegroup_id":       "sitegroup",
+		"sitegroup":          "sitegroup",
+		"cluster_id":         "cluster",
+		"cluster":            "cluster",
+		"clustergroup_id":    "clustergroup",
+		"clustergroup":       "clustergroup",
+		"minvid":             "min_vid",
+		"minvid__gt":         "min_vid__gt",
+		"minvid__gte":        "min_vid__gte",
+		"minvid__lt":         "min_vid__lt",
+		"minvid__lte":        "min_vid__lte",
+		"minvid__n":          "min_vid__n",
+		"maxvid":             "max_vid",
+		"maxvid__gt":         "max_vid__gt",
+		"maxvid__gte":        "max_vid__gte",
+		"maxvid__lt":         "max_vid__lt",
+		"maxvid__lte":        "max_vid__lte",
+		"maxvid__n":          "max_vid__n",
+		"tag":                "tag",
 	}
 
-	if filter, ok := d.GetOk("filter"); ok {
-		var filterParams = filter.(*schema.Set)
-		var tags []string
-		for _, f := range filterParams.List() {
-			k := f.(map[string]interface{})["name"]
-			v := f.(map[string]interface{})["value"]
-			vString := v.(string)
-			switch k {
-			case "name":
-				params.Name = strToPtr(vString)
-			case "name__empty":
-				params.NameEmpty = strToPtr(vString)
-			case "name__ic":
-				params.NameIc = strToPtr(vString)
-			case "name__ie":
-				params.NameIe = strToPtr(vString)
-			case "name__iew":
-				params.NameIew = strToPtr(vString)
-			case "name__isw":
-				params.NameIsw = strToPtr(vString)
-			case "name__n":
-				params.Namen = strToPtr(vString)
-			case "name__nic":
-				params.NameNic = strToPtr(vString)
-			case "name__nie":
-				params.NameNie = strToPtr(vString)
-			case "name__niew":
-				params.NameNiew = strToPtr(vString)
-			case "name__nisw":
-				params.NameNisw = strToPtr(vString)
-			case "slug":
-				params.Slug = strToPtr(vString)
-			case "slug__empty":
-				params.SlugEmpty = strToPtr(vString)
-			case "slug__ic":
-				params.SlugIc = strToPtr(vString)
-			case "slug__ie":
-				params.SlugIe = strToPtr(vString)
-			case "slug__iew":
-				params.SlugIew = strToPtr(vString)
-			case "slug__isw":
-				params.SlugIsw = strToPtr(vString)
-			case "slug__n":
-				params.Slugn = strToPtr(vString)
-			case "slug__nic":
-				params.SlugNic = strToPtr(vString)
-			case "slug__nie":
-				params.SlugNie = strToPtr(vString)
-			case "slug__niew":
-				params.SlugNiew = strToPtr(vString)
-			case "slug__nisw":
-				params.SlugNisw = strToPtr(vString)
-			case "description":
-				params.Description = strToPtr(vString)
-			case "description__empty":
-				params.DescriptionEmpty = strToPtr(vString)
-			case "description__ic":
-				params.DescriptionIc = strToPtr(vString)
-			case "description__ie":
-				params.DescriptionIe = strToPtr(vString)
-			case "description__iew":
-				params.DescriptionIew = strToPtr(vString)
-			case "description__isw":
-				params.DescriptionIsw = strToPtr(vString)
-			case "description__n":
-				params.Descriptionn = strToPtr(vString)
-			case "description__nic":
-				params.DescriptionNic = strToPtr(vString)
-			case "description__nie":
-				params.DescriptionNie = strToPtr(vString)
-			case "description__niew":
-				params.DescriptionNiew = strToPtr(vString)
-			case "description__nisw":
-				params.DescriptionNisw = strToPtr(vString)
-			case "id":
-				params.ID = strToPtr(vString)
-			case "id__gt":
-				params.IDGt = strToPtr(vString)
-			case "id__gte":
-				params.IDGte = strToPtr(vString)
-			case "id__lt":
-				params.IDLt = strToPtr(vString)
-			case "id__lte":
-				params.IDLte = strToPtr(vString)
-			case "id__n":
-				params.IDn = strToPtr(vString)
-			case "scope_type":
-				params.ScopeType = strToPtr(vString)
-			case "scope_type__n":
-				params.ScopeTypen = strToPtr(vString)
-			case "scope_id":
-				params.ScopeID = strToPtr(vString)
-			case "scope_id__gt":
-				params.ScopeIDGt = strToPtr(vString)
-			case "scope_id__gte":
-				params.ScopeIDGte = strToPtr(vString)
-			case "scope_id__lt":
-				params.ScopeIDLt = strToPtr(vString)
-			case "scope_id__lte":
-				params.ScopeIDLte = strToPtr(vString)
-			case "scope_id__n":
-				params.ScopeIDn = strToPtr(vString)
-			case "site_id", "site":
-				if f, err := strconv.ParseFloat(vString, 64); err == nil {
-					params.Site = float64ToPtr(f)
-				}
-			case "location_id", "location":
-				if f, err := strconv.ParseFloat(vString, 64); err == nil {
-					params.Location = float64ToPtr(f)
-				}
-			case "rack_id", "rack":
-				if f, err := strconv.ParseFloat(vString, 64); err == nil {
-					params.Rack = float64ToPtr(f)
-				}
-			case "region_id", "region":
-				if f, err := strconv.ParseFloat(vString, 64); err == nil {
-					params.Region = float64ToPtr(f)
-				}
-			case "sitegroup_id", "sitegroup":
-				if f, err := strconv.ParseFloat(vString, 64); err == nil {
-					params.Sitegroup = float64ToPtr(f)
-				}
-			case "cluster_id", "cluster":
-				if f, err := strconv.ParseFloat(vString, 64); err == nil {
-					params.Cluster = float64ToPtr(f)
-				}
-			case "clustergroup_id", "clustergroup":
-				if f, err := strconv.ParseFloat(vString, 64); err == nil {
-					params.Clustergroup = float64ToPtr(f)
-				}
-			case "minvid":
-				params.MinVid = strToPtr(vString)
-			case "minvid__gt":
-				params.MinVidGt = strToPtr(vString)
-			case "minvid__gte":
-				params.MinVidGte = strToPtr(vString)
-			case "minvid__lt":
-				params.MinVidLt = strToPtr(vString)
-			case "minvid__lte":
-				params.MinVidLte = strToPtr(vString)
-			case "minvid__n":
-				params.MinVidn = strToPtr(vString)
-			case "maxvid":
-				params.MaxVid = strToPtr(vString)
-			case "maxvid__gt":
-				params.MaxVidGt = strToPtr(vString)
-			case "maxvid__gte":
-				params.MaxVidGte = strToPtr(vString)
-			case "maxvid__lt":
-				params.MaxVidLt = strToPtr(vString)
-			case "maxvid__lte":
-				params.MaxVidLte = strToPtr(vString)
-			case "maxvid__n":
-				params.MaxVidn = strToPtr(vString)
-			case "tag":
-				tags = append(tags, vString)
-				params.Tag = tags
-			default:
-				return fmt.Errorf("'%s' is not a supported filter parameter", k)
-			}
-		}
+	results, err := listFiltered[map[string]interface{}](d, m, "ipam/vlan-groups/", "VLAN groups", allowed, nil)
+	if err != nil {
+		return err
 	}
-
-	// Fetch all pages with pagination
-	paginationHelper := NewPaginationHelper(userLimit)
-	var allVlanGroups []*models.VLANGroup
-
-	pageSize := paginationHelper.GetPageSize()
-	for {
-		currentOffset := paginationHelper.CurrentOffset()
-		params.Limit = &pageSize
-		params.Offset = &currentOffset
-
-		res, err := api.Ipam.IpamVlanGroupsList(params, nil)
-		if err != nil {
-			return fmt.Errorf("failed to fetch VLAN groups at offset %d: %w", currentOffset, err)
-		}
-
-		payload := res.GetPayload()
-		allVlanGroups = append(allVlanGroups, payload.Results...)
-
-		if len(payload.Results) == 0 {
-			break
-		}
-
-		if !paginationHelper.ShouldContinuePaging(int64(len(allVlanGroups)), payload.Next) {
-			break
-		}
-
-		paginationHelper.Advance(int64(len(payload.Results)))
-	}
-
-	// Trim to user limit if specified
-	trimmedCount := paginationHelper.TrimToLimit(len(allVlanGroups))
-	filteredVlanGroups := allVlanGroups[:trimmedCount]
 
 	var s []map[string]interface{}
-	for _, vg := range filteredVlanGroups {
-		var mapping = make(map[string]interface{})
+	for _, v := range results {
+		mapping := make(map[string]interface{})
 
-		mapping["id"] = vg.ID
-		mapping["name"] = vg.Name
-		mapping["slug"] = vg.Slug
-		mapping["description"] = vg.Description
+		mapping["id"] = jInt(v, "id")
+		mapping["name"] = jStr(v, "name")
+		mapping["slug"] = jStr(v, "slug")
+		mapping["description"] = jStr(v, "description")
+		mapping["ranges"] = jRanges(v, "vid_ranges")
+		mapping["used"] = jInt(v, "vlan_count")
+		mapping["tag_ids"] = jTagIDs(v)
 
-		mapping["ranges"] = []map[string]int64{}
-		for _, v := range vg.VidRanges {
-			mapping["ranges"] = append(mapping["ranges"].([]map[string]int64), map[string]int64{
-				"start": v[0],
-				"end":   v[1],
-			})
-		}
-		mapping["used"] = vg.VlanCount
-
-		if vg.Tags != nil {
-			var tagIDs []int64
-			for _, t := range vg.Tags {
-				tagIDs = append(tagIDs, t.ID)
+		// fields that are missing in the response are left out of the state
+		for k, val := range mapping {
+			if val == nil {
+				delete(mapping, k)
 			}
-			mapping["tag_ids"] = tagIDs
 		}
+
 		s = append(s, mapping)
 	}
 

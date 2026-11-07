@@ -138,7 +138,7 @@ func jsonSemanticCompare(a, b string) (equal bool, err error) {
 // from a given string. The string must be preceded with "v".
 // This is needed since netbox-docker recently started displaying its version string
 // as, for example, v4.2.8-Docker-3.2.1 and we want to ignore the Docker part
-// ref: https://github.com/e-breuninger/terraform-provider-netbox/issues/729
+// ref: https://github.com/MrKeiKun/terraform-provider-netbox/issues/729
 func extractSemanticVersionFromString(s string) (version string, err error) {
 	re := regexp.MustCompile(`^v?(\d+\.\d+\.\d+)`)
 

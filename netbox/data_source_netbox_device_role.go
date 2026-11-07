@@ -1,10 +1,10 @@
 package netbox
 
 import (
-	"errors"
+	"net/url"
 	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -30,31 +30,26 @@ func dataSourceNetboxDeviceRole() *schema.Resource {
 	}
 }
 
+type deviceRoleDataSourceResponse struct {
+	ID    int64              `json:"id"`
+	Name  string             `json:"name"`
+	Slug  string             `json:"slug"`
+	Color string             `json:"color"`
+	Tags  []netboxapi.TagRef `json:"tags"`
+}
+
 func dataSourceNetboxDeviceRoleRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	name := d.Get("name").(string)
-	params := dcim.NewDcimDeviceRolesListParams()
-	params.Name = &name
-	limit := int64(2) // Limit of 2 is enough
-	params.Limit = &limit
-
-	res, err := api.Dcim.DcimDeviceRolesList(params, nil)
+	query := url.Values{}
+	addStrQuery(query, d, "name", "name")
+	r, err := findOne[deviceRoleDataSourceResponse](m, "dcim/device-roles/", query, "device role")
 	if err != nil {
 		return err
 	}
 
-	if *res.GetPayload().Count > int64(1) {
-		return errors.New("more than one device role returned, specify a more narrow filter")
-	}
-	if *res.GetPayload().Count == int64(0) {
-		return errors.New("no device role found matching filter")
-	}
-	result := res.GetPayload().Results[0]
-	d.SetId(strconv.FormatInt(result.ID, 10))
-	d.Set("name", result.Name)
-	d.Set("slug", result.Slug)
-	d.Set("color_hex", result.Color)
-	d.Set(tagsKey, getTagListFromNestedTagList(result.Tags))
+	d.SetId(strconv.FormatInt(r.ID, 10))
+	d.Set("name", r.Name)
+	d.Set("slug", r.Slug)
+	d.Set("color_hex", r.Color)
+	d.Set(tagsKey, tagNames(r.Tags))
 	return nil
 }

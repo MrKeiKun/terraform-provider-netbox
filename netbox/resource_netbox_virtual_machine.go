@@ -3,10 +3,8 @@ package netbox
 import (
 	"context"
 	"encoding/json"
-	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/virtualization"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -120,366 +118,144 @@ func resourceNetboxVirtualMachine() *schema.Resource {
 	}
 }
 
-func resourceNetboxVirtualMachineCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := m.(*providerState)
+type virtualMachineResponse struct {
+	Name             string                 `json:"name"`
+	Cluster          *netboxapi.Ref         `json:"cluster"`
+	PrimaryIp4       *netboxapi.Ref         `json:"primary_ip4"`
+	PrimaryIp6       *netboxapi.Ref         `json:"primary_ip6"`
+	Tenant           *netboxapi.Ref         `json:"tenant"`
+	Device           *netboxapi.Ref         `json:"device"`
+	Role             *netboxapi.Ref         `json:"role"`
+	Platform         *netboxapi.Ref         `json:"platform"`
+	Site             *netboxapi.Ref         `json:"site"`
+	LocalContextData interface{}            `json:"local_context_data"`
+	Comments         string                 `json:"comments"`
+	Description      string                 `json:"description"`
+	Vcpus            *float64               `json:"vcpus"`
+	Memory           *int64                 `json:"memory"`
+	Disk             *int64                 `json:"disk"`
+	Status           *netboxapi.Choice      `json:"status"`
+	Tags             []netboxapi.TagRef     `json:"tags"`
+	CustomFields     map[string]interface{} `json:"custom_fields"`
+}
 
-	name := d.Get("name").(string)
-
-	data := models.WritableVirtualMachineWithConfigContext{
-		Name: &name,
+// virtualMachineBody builds the request for create and update. References that
+// are not set are sent as null, same as before.
+func virtualMachineBody(api *providerState, d *schema.ResourceData, isUpdate bool) (map[string]interface{}, error) {
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
+	if err != nil {
+		return nil, err
 	}
 
-	clusterIDValue, ok := d.GetOk("cluster_id")
-	if ok {
-		clusterID := int64(clusterIDValue.(int))
-		data.Cluster = &clusterID
+	body := map[string]interface{}{
+		"name":        d.Get("name").(string),
+		"cluster":     nullableID(d.Get("cluster_id").(int)),
+		"site":        nullableID(d.Get("site_id").(int)),
+		"tenant":      nullableID(d.Get("tenant_id").(int)),
+		"device":      nullableID(d.Get("device_id").(int)),
+		"platform":    nullableID(d.Get("platform_id").(int)),
+		"role":        nullableID(d.Get("role_id").(int)),
+		"vcpus":       getOptionalFloat(d, "vcpus"),
+		"memory":      getOptionalInt(d, "memory_mb"),
+		"disk":        getOptionalInt(d, "disk_size_mb"),
+		"primary_ip4": nil,
+		"primary_ip6": nil,
+		"tags":        tags,
 	}
 
-	siteIDValue, ok := d.GetOk("site_id")
-	if ok {
-		siteID := int64(siteIDValue.(int))
-		data.Site = &siteID
-	}
-
-	data.Comments = d.Get("comments").(string)
-	data.Description = d.Get("description").(string)
-
-	vcpusValue, ok := d.GetOk("vcpus")
-	if ok {
-		vcpus := vcpusValue.(float64)
-		data.Vcpus = &vcpus
-	}
-
-	memoryMbValue, ok := d.GetOk("memory_mb")
-	if ok {
-		memoryMb := int64(memoryMbValue.(int))
-		data.Memory = &memoryMb
-	}
-
-	diskSizeValue, ok := d.GetOk("disk_size_mb")
-	if ok {
-		diskSize := int64(diskSizeValue.(int))
-		data.Disk = &diskSize
-	}
-
-	tenantIDValue, ok := d.GetOk("tenant_id")
-	if ok {
-		tenantID := int64(tenantIDValue.(int))
-		data.Tenant = &tenantID
-	}
-
-	deviceIDValue, ok := d.GetOk("device_id")
-	if ok {
-		deviceID := int64(deviceIDValue.(int))
-		data.Device = &deviceID
-	}
-
-	platformIDValue, ok := d.GetOk("platform_id")
-	if ok {
-		platformID := int64(platformIDValue.(int))
-		data.Platform = &platformID
-	}
-
-	roleIDValue, ok := d.GetOk("role_id")
-	if ok {
-		roleID := int64(roleIDValue.(int))
-		data.Role = &roleID
-	}
-
-	localContextValue, ok := d.GetOk("local_context_data")
-	if ok {
+	if localContext, ok := d.GetOk("local_context_data"); ok {
 		var jsonObj any
-		localContextBA := []byte(localContextValue.(string))
-		if err := json.Unmarshal(localContextBA, &jsonObj); err == nil {
-			data.LocalContextData = jsonObj
+		if err := json.Unmarshal([]byte(localContext.(string)), &jsonObj); err == nil {
+			body["local_context_data"] = jsonObj
+		}
+	}
+	if cf, ok := d.GetOk(customFieldsKey); ok {
+		body["custom_fields"] = cf
+	}
+
+	// an empty comment or description that changed is sent as a space, to clear it
+	if comments := getOptionalStr(d, "comments", true); comments != "" {
+		body["comments"] = comments
+	}
+	if description := getOptionalStr(d, "description", true); description != "" {
+		body["description"] = description
+	}
+	if status := d.Get("status").(string); status != "" {
+		body["status"] = status
+	}
+
+	if isUpdate {
+		body["primary_ip4"] = getOptionalInt(d, "primary_ipv4")
+		body["primary_ip6"] = getOptionalInt(d, "primary_ipv6")
+
+		// Only send disk_size_mb when explicitly set in config. When virtual disks
+		// are attached, NetBox computes this as their aggregate and rejects any
+		// value that does not match, including stale prior-state values.
+		if d.GetRawConfig().GetAttr("disk_size_mb").IsNull() {
+			body["disk"] = nil
+		} else {
+			body["disk"] = int64(d.Get("disk_size_mb").(int))
 		}
 	}
 
-	data.Status = d.Get("status").(string)
+	return body, nil
+}
 
-	tags, err := getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+func resourceNetboxVirtualMachineCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	body, err := virtualMachineBody(m.(*providerState), d, false)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	data.Tags = tags
-	ct, ok := d.GetOk(customFieldsKey)
-	if ok {
-		data.CustomFields = ct
-	}
-
-	params := virtualization.NewVirtualizationVirtualMachinesCreateParams().WithData(&data)
-
-	res, err := api.Virtualization.VirtualizationVirtualMachinesCreate(params, nil)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxVirtualMachineRead(ctx, d, m)
+	return createObjectCtx(ctx, d, m, virtualMachineAPIPath, body, resourceNetboxVirtualMachineRead)
 }
 
 func resourceNetboxVirtualMachineRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*providerState)
+	return readObjectCtx(ctx, d, m, virtualMachineAPIPath, func(vm *virtualMachineResponse) {
+		d.Set("name", vm.Name)
+		d.Set("cluster_id", netboxapi.RefID(vm.Cluster))
+		d.Set("primary_ipv4", netboxapi.RefID(vm.PrimaryIp4))
+		d.Set("primary_ipv6", netboxapi.RefID(vm.PrimaryIp6))
+		d.Set("tenant_id", netboxapi.RefID(vm.Tenant))
+		d.Set("device_id", netboxapi.RefID(vm.Device))
+		d.Set("role_id", netboxapi.RefID(vm.Role))
+		d.Set("platform_id", netboxapi.RefID(vm.Platform))
+		d.Set("site_id", netboxapi.RefID(vm.Site))
 
-	var diags diag.Diagnostics
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-
-	params := virtualization.NewVirtualizationVirtualMachinesReadParams().WithID(id)
-
-	res, err := api.Virtualization.VirtualizationVirtualMachinesRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*virtualization.VirtualizationVirtualMachinesReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
+		if vm.LocalContextData != nil {
+			if jsonArr, err := json.Marshal(vm.LocalContextData); err == nil {
+				d.Set("local_context_data", string(jsonArr))
 			}
+		} else {
+			d.Set("local_context_data", nil)
 		}
-		return diag.FromErr(err)
-	}
 
-	vm := res.GetPayload()
-
-	d.Set("name", vm.Name)
-
-	if vm.Cluster != nil {
-		d.Set("cluster_id", vm.Cluster.ID)
-	} else {
-		d.Set("cluster_id", nil)
-	}
-
-	if vm.PrimaryIp4 != nil {
-		d.Set("primary_ipv4", vm.PrimaryIp4.ID)
-	} else {
-		d.Set("primary_ipv4", nil)
-	}
-
-	if vm.PrimaryIp6 != nil {
-		d.Set("primary_ipv6", vm.PrimaryIp6.ID)
-	} else {
-		d.Set("primary_ipv6", nil)
-	}
-
-	if vm.Tenant != nil {
-		d.Set("tenant_id", vm.Tenant.ID)
-	} else {
-		d.Set("tenant_id", nil)
-	}
-
-	if vm.Device != nil {
-		d.Set("device_id", vm.Device.ID)
-	} else {
-		d.Set("device_id", nil)
-	}
-
-	if vm.Role != nil {
-		d.Set("role_id", vm.Role.ID)
-	} else {
-		d.Set("role_id", nil)
-	}
-
-	if vm.Platform != nil {
-		d.Set("platform_id", vm.Platform.ID)
-	} else {
-		d.Set("platform_id", nil)
-	}
-
-	if vm.Role != nil {
-		d.Set("role_id", vm.Role.ID)
-	} else {
-		d.Set("role_id", nil)
-	}
-
-	if vm.Site != nil {
-		d.Set("site_id", vm.Site.ID)
-	} else {
-		d.Set("site_id", nil)
-	}
-
-	if vm.LocalContextData != nil {
-		if jsonArr, err := json.Marshal(vm.LocalContextData); err == nil {
-			d.Set("local_context_data", string(jsonArr))
-		}
-	} else {
-		d.Set("local_context_data", nil)
-	}
-
-	d.Set("comments", vm.Comments)
-	d.Set("description", vm.Description)
-	vcpus := vm.Vcpus
-	if vcpus != nil {
+		d.Set("comments", vm.Comments)
+		d.Set("description", vm.Description)
 		d.Set("vcpus", vm.Vcpus)
-	} else {
-		d.Set("vcpus", nil)
-	}
-	d.Set("memory_mb", vm.Memory)
-	d.Set("disk_size_mb", vm.Disk)
-	if vm.Status != nil {
-		d.Set("status", vm.Status.Value)
-	} else {
-		d.Set("status", nil)
-	}
-	api.readTags(d, vm.Tags)
+		d.Set("memory_mb", vm.Memory)
+		d.Set("disk_size_mb", vm.Disk)
+		if vm.Status != nil {
+			d.Set("status", vm.Status.Value)
+		} else {
+			d.Set("status", nil)
+		}
 
-	cf := getCustomFields(vm.CustomFields)
-	if cf != nil {
-		d.Set(customFieldsKey, cf)
-	}
-
-	return diags
+		api.readTagRefs(d, vm.Tags)
+		if cf := getCustomFields(vm.CustomFields); cf != nil {
+			d.Set(customFieldsKey, cf)
+		}
+	})
 }
 
 func resourceNetboxVirtualMachineUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.WritableVirtualMachineWithConfigContext{}
-
-	name := d.Get("name").(string)
-	data.Name = &name
-
-	clusterIDValue, ok := d.GetOk("cluster_id")
-	if ok {
-		clusterID := int64(clusterIDValue.(int))
-		data.Cluster = &clusterID
-	}
-
-	siteIDValue, ok := d.GetOk("site_id")
-	if ok {
-		siteID := int64(siteIDValue.(int))
-		data.Site = &siteID
-	}
-
-	tenantIDValue, ok := d.GetOk("tenant_id")
-	if ok {
-		tenantID := int64(tenantIDValue.(int))
-		data.Tenant = &tenantID
-	}
-
-	deviceIDValue, ok := d.GetOk("device_id")
-	if ok {
-		deviceID := int64(deviceIDValue.(int))
-		data.Device = &deviceID
-	}
-
-	platformIDValue, ok := d.GetOk("platform_id")
-	if ok {
-		platformID := int64(platformIDValue.(int))
-		data.Platform = &platformID
-	}
-
-	roleIDValue, ok := d.GetOk("role_id")
-	if ok {
-		roleID := int64(roleIDValue.(int))
-		data.Role = &roleID
-	}
-
-	memoryMbValue, ok := d.GetOk("memory_mb")
-	if ok {
-		memoryMb := int64(memoryMbValue.(int))
-		data.Memory = &memoryMb
-	}
-
-	vcpusValue, ok := d.GetOk("vcpus")
-	if ok {
-		vcpus := vcpusValue.(float64)
-		data.Vcpus = &vcpus
-	}
-
-	// Only send disk_size_mb when explicitly set in config. When virtual disks
-	// are attached, NetBox computes this as their aggregate and rejects any
-	// value that does not match — including stale prior-state values.
-	if !d.GetRawConfig().GetAttr("disk_size_mb").IsNull() {
-		diskSize := int64(d.Get("disk_size_mb").(int))
-		data.Disk = &diskSize
-	}
-
-	primaryIP4Value, ok := d.GetOk("primary_ipv4")
-	if ok {
-		primaryIP4 := int64(primaryIP4Value.(int))
-		data.PrimaryIp4 = &primaryIP4
-	}
-
-	primaryIP6Value, ok := d.GetOk("primary_ipv6")
-	if ok {
-		primaryIP6 := int64(primaryIP6Value.(int))
-		data.PrimaryIp6 = &primaryIP6
-	}
-
-	localContextValue, ok := d.GetOk("local_context_data")
-	if ok {
-		var jsonObj any
-		localContextBA := []byte(localContextValue.(string))
-		if err := json.Unmarshal(localContextBA, &jsonObj); err == nil {
-			data.LocalContextData = jsonObj
-		}
-	}
-
-	tags, err := getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+	body, err := virtualMachineBody(m.(*providerState), d, true)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	data.Tags = tags
-	cf, ok := d.GetOk(customFieldsKey)
-	if ok {
-		data.CustomFields = cf
-	}
-
-	if d.HasChanges("comments") {
-		// check if comment is set
-		if commentsValue, ok := d.GetOk("comments"); ok {
-			data.Comments = commentsValue.(string)
-		} else {
-			data.Comments = " "
-		}
-	}
-	if d.HasChanges("description") {
-		// check if description is set
-		if descriptionValue, ok := d.GetOk("description"); ok {
-			data.Description = descriptionValue.(string)
-		} else {
-			data.Description = " "
-		}
-	}
-
-	// if d.HasChanges("status") {
-	if status, ok := d.GetOk("status"); ok {
-		data.Status = status.(string)
-	}
-	//}
-
-	params := virtualization.NewVirtualizationVirtualMachinesUpdateParams().WithID(id).WithData(&data)
-
-	_, err = api.Virtualization.VirtualizationVirtualMachinesUpdate(params, nil)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return resourceNetboxVirtualMachineRead(ctx, d, m)
+	return putObjectCtx(ctx, d, m, virtualMachineAPIPath, body, resourceNetboxVirtualMachineRead)
 }
 
 func resourceNetboxVirtualMachineDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := m.(*providerState)
-
-	var diags diag.Diagnostics
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := virtualization.NewVirtualizationVirtualMachinesDeleteParams().WithID(id)
-
-	_, err := api.Virtualization.VirtualizationVirtualMachinesDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*virtualization.VirtualizationVirtualMachinesDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return diag.FromErr(err)
-	}
-	return diags
+	return deleteObjectCtx(ctx, d, m, virtualMachineAPIPath)
 }

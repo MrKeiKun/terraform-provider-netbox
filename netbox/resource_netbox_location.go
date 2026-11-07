@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -63,190 +60,93 @@ Each location must have a name that is unique within its parent site and locatio
 	}
 }
 
-func resourceNetboxLocationCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const locationAPIPath = "dcim/locations/"
 
-	data := models.WritableLocation{}
+type locationRequest struct {
+	Name         string             `json:"name"`
+	Slug         string             `json:"slug"`
+	Description  string             `json:"description,omitempty"`
+	Facility     string             `json:"facility,omitempty"`
+	Site         *int64             `json:"site"`
+	Parent       *int64             `json:"parent"`
+	Tenant       *int64             `json:"tenant,omitempty"`
+	CustomFields interface{}        `json:"custom_fields,omitempty"`
+	Tags         []netboxapi.TagRef `json:"tags"`
+}
 
+type locationResponse struct {
+	Name         string                 `json:"name"`
+	Slug         string                 `json:"slug"`
+	Description  string                 `json:"description"`
+	Facility     string                 `json:"facility"`
+	Site         *netboxapi.Ref         `json:"site"`
+	Parent       *netboxapi.Ref         `json:"parent"`
+	Tenant       *netboxapi.Ref         `json:"tenant"`
+	CustomFields map[string]interface{} `json:"custom_fields"`
+	Tags         []netboxapi.TagRef     `json:"tags"`
+}
+
+func locationRequestFromResourceData(api *providerState, d *schema.ResourceData) (*locationRequest, error) {
 	name := d.Get("name").(string)
-	data.Name = &name
-
-	slugValue, slugOk := d.GetOk("slug")
-	// Default slug to generated slug if not given
-	if !slugOk {
-		data.Slug = strToPtr(getSlug(name))
-	} else {
-		data.Slug = strToPtr(slugValue.(string))
-	}
-
-	data.Description = getOptionalStr(d, "description", true)
-	data.Facility = getOptionalStr(d, "facility", true)
-
-	siteIDValue, ok := d.GetOk("site_id")
-	if ok {
-		data.Site = int64ToPtr(int64(siteIDValue.(int)))
-	}
-
-	parentIDValue, ok := d.GetOk("parent_id")
-	if ok {
-		data.Parent = int64ToPtr(int64(parentIDValue.(int)))
-	}
-
-	tenantIDValue, ok := d.GetOk("tenant_id")
-	if ok {
-		data.Tenant = int64ToPtr(int64(tenantIDValue.(int)))
-	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	ct, ok := d.GetOk(customFieldsKey)
-	if ok {
+	data := &locationRequest{
+		Name:        name,
+		Slug:        slugFromResourceData(d, name),
+		Description: getOptionalStr(d, "description", true),
+		Facility:    getOptionalStr(d, "facility", true),
+		Tags:        tags,
+	}
+	if v, ok := d.GetOk("site_id"); ok {
+		data.Site = int64ToPtr(int64(v.(int)))
+	}
+	if v, ok := d.GetOk("parent_id"); ok {
+		data.Parent = int64ToPtr(int64(v.(int)))
+	}
+	if v, ok := d.GetOk("tenant_id"); ok {
+		data.Tenant = int64ToPtr(int64(v.(int)))
+	}
+	if ct, ok := d.GetOk(customFieldsKey); ok {
 		data.CustomFields = ct
 	}
+	return data, nil
+}
 
-	params := dcim.NewDcimLocationsCreateParams().WithData(&data)
-
-	res, err := api.Dcim.DcimLocationsCreate(params, nil)
+func resourceNetboxLocationCreate(d *schema.ResourceData, m interface{}) error {
+	data, err := locationRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxLocationRead(d, m)
+	return createObject(d, m, locationAPIPath, data, resourceNetboxLocationRead)
 }
 
 func resourceNetboxLocationRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimLocationsReadParams().WithID(id)
-
-	res, err := api.Dcim.DcimLocationsRead(params, nil)
-
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimLocationsReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
+	return readObject(d, m, locationAPIPath, func(r *locationResponse) {
+		d.Set("name", r.Name)
+		d.Set("slug", r.Slug)
+		d.Set("description", r.Description)
+		d.Set("facility", r.Facility)
+		d.Set("site_id", netboxapi.RefID(r.Site))
+		d.Set("parent_id", netboxapi.RefID(r.Parent))
+		d.Set("tenant_id", netboxapi.RefID(r.Tenant))
+		if cf := getCustomFields(r.CustomFields); cf != nil {
+			d.Set(customFieldsKey, cf)
 		}
-		return err
-	}
-
-	location := res.GetPayload()
-
-	d.Set("name", location.Name)
-	d.Set("slug", location.Slug)
-	d.Set("description", location.Description)
-	d.Set("facility", location.Facility)
-
-	if res.GetPayload().Site != nil {
-		d.Set("site_id", res.GetPayload().Site.ID)
-	} else {
-		d.Set("site_id", nil)
-	}
-
-	if res.GetPayload().Parent != nil {
-		d.Set("parent_id", res.GetPayload().Parent.ID)
-	} else {
-		d.Set("parent_id", nil)
-	}
-
-	if res.GetPayload().Tenant != nil {
-		d.Set("tenant_id", res.GetPayload().Tenant.ID)
-	} else {
-		d.Set("tenant_id", nil)
-	}
-
-	cf := getCustomFields(res.GetPayload().CustomFields)
-	if cf != nil {
-		d.Set(customFieldsKey, cf)
-	}
-	api.readTags(d, res.GetPayload().Tags)
-
-	return nil
+		api.readTagRefs(d, r.Tags)
+	})
 }
 
 func resourceNetboxLocationUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.WritableLocation{}
-
-	name := d.Get("name").(string)
-	data.Name = &name
-
-	slugValue, slugOk := d.GetOk("slug")
-	// Default slug to generated slug if not given
-	if !slugOk {
-		data.Slug = strToPtr(getSlug(name))
-	} else {
-		data.Slug = strToPtr(slugValue.(string))
-	}
-
-	data.Description = getOptionalStr(d, "description", true)
-	data.Facility = getOptionalStr(d, "facility", true)
-
-	siteIDValue, ok := d.GetOk("site_id")
-	if ok {
-		data.Site = int64ToPtr(int64(siteIDValue.(int)))
-	}
-
-	parentIDValue := d.Get("parent_id")
-	data.Parent = int64ToPtr(int64(parentIDValue.(int)))
-
-	// remove parent (set null) if we got zero ID
-	if parentIDValue == 0 {
-		data.Parent = nil
-	}
-
-	tenantIDValue, ok := d.GetOk("tenant_id")
-	if ok {
-		data.Tenant = int64ToPtr(int64(tenantIDValue.(int)))
-	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+	data, err := locationRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	cf, ok := d.GetOk(customFieldsKey)
-	if ok {
-		data.CustomFields = cf
-	}
-
-	params := dcim.NewDcimLocationsPartialUpdateParams().WithID(id).WithData(&data)
-
-	_, err = api.Dcim.DcimLocationsPartialUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	return resourceNetboxLocationRead(d, m)
+	return patchObject(d, m, locationAPIPath, data, resourceNetboxLocationRead)
 }
 
 func resourceNetboxLocationDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimLocationsDeleteParams().WithID(id)
-
-	_, err := api.Dcim.DcimLocationsDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimLocationsDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	return nil
+	return deleteObject(d, m, locationAPIPath)
 }

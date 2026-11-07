@@ -1,10 +1,6 @@
 package netbox
 
 import (
-	"fmt"
-
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
-	"github.com/fbreckle/go-netbox/netbox/models"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -147,154 +143,75 @@ func dataSourceNetboxRacks() *schema.Resource {
 }
 
 func dataSourceNetboxRacksRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	params := dcim.NewDcimRacksListParams()
-
-	// Get user limit
-	var userLimit int64 = 0
-	if limitValue, ok := d.GetOk("limit"); ok {
-		userLimit = int64(limitValue.(int))
+	// filter name in the data source -> query parameter sent to Netbox
+	allowed := map[string]string{
+		"asset_tag":      "asset_tag",
+		"contact":        "contact",
+		"contact_group":  "contact_group",
+		"contact_role":   "contact_role",
+		"desc_units":     "desc_units",
+		"facility_id":    "facility_id",
+		"id":             "id",
+		"location_id":    "location_id",
+		"max_weight":     "max_weight",
+		"mounting_depth": "mounting_depth",
+		"name":           "name",
+		"outer_depth":    "outer_depth",
+		"outer_unit":     "outer_unit",
+		"outer_width":    "outer_width",
+		"region_id":      "region_id",
+		"role_id":        "role_id",
+		"serial":         "serial",
+		"site_id":        "site_id",
+		"status":         "status",
+		"tenant_id":      "tenant_id",
+		"type_id":        "type",
+		"u_height":       "u_height",
+		"weight":         "weight",
+		"weight_unit":    "weight_unit",
+		"width":          "width",
 	}
 
-	if filter, ok := d.GetOk("filter"); ok {
-		var filterParams = filter.(*schema.Set)
-		for _, f := range filterParams.List() {
-			k := f.(map[string]interface{})["name"]
-			v := f.(map[string]interface{})["value"]
-			vString := v.(string)
-			switch k {
-			case "asset_tag":
-				params.AssetTag = &vString
-			case "contact":
-				params.Contact = &vString
-			case "contact_group":
-				params.ContactGroup = &vString
-			case "contact_role":
-				params.ContactRole = &vString
-			case "desc_units":
-				params.DescUnits = &vString
-			case "facility_id":
-				params.FacilityID = &vString
-			case "id":
-				params.ID = &vString
-			case "location_id":
-				params.LocationID = &vString
-			case "max_weight":
-				params.MaxWeight = &vString
-			case "mounting_depth":
-				params.MountingDepth = &vString
-			case "name":
-				params.Name = &vString
-			case "outer_depth":
-				params.OuterDepth = &vString
-			case "outer_unit":
-				params.OuterUnit = &vString
-			case "outer_width":
-				params.OuterWidth = &vString
-			case "region_id":
-				params.RegionID = &vString
-			case "role_id":
-				params.RoleID = &vString
-			case "serial":
-				params.Serial = &vString
-			case "site_id":
-				params.SiteID = &vString
-			case "status":
-				params.Status = &vString
-			case "tenant_id":
-				params.TenantID = &vString
-			case "type_id":
-				params.Type = &vString
-			case "u_height":
-				params.UHeight = &vString
-			case "weight":
-				params.Weight = &vString
-			case "weight_unit":
-				params.WeightUnit = &vString
-			case "width":
-				params.Width = &vString
-			default:
-				return fmt.Errorf("'%s' is not a supported filter parameter", k)
-			}
-		}
+	results, err := listFiltered[map[string]interface{}](d, m, "dcim/racks/", "racks", allowed, nil)
+	if err != nil {
+		return err
 	}
-
-	// Fetch all pages with pagination
-	paginationHelper := NewPaginationHelper(userLimit)
-	var allRacks []*models.Rack
-
-	pageSize := paginationHelper.GetPageSize()
-	for {
-		currentOffset := paginationHelper.CurrentOffset()
-		params.Limit = &pageSize
-		params.Offset = &currentOffset
-
-		res, err := api.Dcim.DcimRacksList(params, nil)
-		if err != nil {
-			return fmt.Errorf("failed to fetch racks at offset %d: %w", currentOffset, err)
-		}
-
-		payload := res.GetPayload()
-		allRacks = append(allRacks, payload.Results...)
-
-		if len(payload.Results) == 0 {
-			break
-		}
-
-		if !paginationHelper.ShouldContinuePaging(int64(len(allRacks)), payload.Next) {
-			break
-		}
-
-		paginationHelper.Advance(int64(len(payload.Results)))
-	}
-
-	// Trim to user limit if specified
-	trimmedCount := paginationHelper.TrimToLimit(len(allRacks))
-	filteredRacks := allRacks[:trimmedCount]
 
 	var s []map[string]interface{}
-	for _, v := range filteredRacks {
-		var mapping = make(map[string]interface{})
+	for _, v := range results {
+		mapping := make(map[string]interface{})
 
-		mapping["id"] = v.ID
-		mapping["name"] = v.Name
-		if v.Site != nil {
-			mapping["site_id"] = v.Site.ID
+		mapping["id"] = jInt(v, "id")
+		mapping["name"] = jStr(v, "name")
+		mapping["site_id"] = jID(v, "site")
+		mapping["status"] = jChoice(v, "status")
+		mapping["width"] = jChoiceInt(v, "width")
+		mapping["u_height"] = jInt(v, "u_height")
+		mapping["tags"] = jTags(v)
+		mapping["tenant_id"] = jID(v, "tenant")
+		mapping["facility_id"] = jStr(v, "facility_id")
+		mapping["location_id"] = jID(v, "location")
+		mapping["role_id"] = jID(v, "role")
+		mapping["serial"] = jStr(v, "serial")
+		mapping["asset_tag"] = jStr(v, "asset_tag")
+		mapping["type_id"] = jInt(v, "type")
+		mapping["weight"] = jFloatP(v, "weight")
+		mapping["max_weight"] = jIntP(v, "max_weight")
+		mapping["desc_units"] = jBool(v, "desc_units")
+		mapping["outer_width"] = jIntP(v, "outer_width")
+		mapping["outer_depth"] = jIntP(v, "outer_depth")
+		mapping["outer_unit"] = jChoice(v, "outer_unit")
+		mapping["mounting_depth"] = jIntP(v, "mounting_depth")
+		mapping["description"] = jStr(v, "description")
+		mapping["comments"] = jStr(v, "comments")
+		mapping["custom_fields"] = getCustomFields(v["custom_fields"])
+
+		// fields that are missing in the response are left out of the state
+		for k, val := range mapping {
+			if val == nil {
+				delete(mapping, k)
+			}
 		}
-		if v.Status != nil {
-			mapping["status"] = v.Status.Value
-		}
-		if v.Width != nil {
-			mapping["width"] = v.Width.Value
-		}
-		mapping["u_height"] = v.UHeight
-		mapping["tags"] = getTagListFromNestedTagList(v.Tags)
-		if v.Tenant != nil {
-			mapping["tenant_id"] = v.Tenant.ID
-		}
-		mapping["facility_id"] = v.FacilityID
-		if v.Location != nil {
-			mapping["location_id"] = v.Location.ID
-		}
-		if v.Role != nil {
-			mapping["role_id"] = v.Role.ID
-		}
-		mapping["serial"] = v.Serial
-		mapping["asset_tag"] = v.AssetTag
-		mapping["type_id"] = v.Type
-		mapping["weight"] = v.Weight
-		mapping["max_weight"] = v.MaxWeight
-		mapping["desc_units"] = v.DescUnits
-		mapping["outer_width"] = v.OuterWidth
-		mapping["outer_depth"] = v.OuterDepth
-		if v.OuterUnit != nil {
-			mapping["outer_unit"] = v.OuterUnit.Value
-		}
-		mapping["mounting_depth"] = v.MountingDepth
-		mapping["description"] = v.Description
-		mapping["comments"] = v.Comments
-		mapping["custom_fields"] = getCustomFields(v.CustomFields)
 
 		s = append(s, mapping)
 	}

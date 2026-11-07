@@ -1,11 +1,8 @@
 package netbox
 
 import (
-	"fmt"
 	"regexp"
 
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
-	"github.com/fbreckle/go-netbox/netbox/models"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -170,144 +167,51 @@ func dataSourceNetboxDeviceInterfaces() *schema.Resource {
 }
 
 func dataSourceNetboxDeviceInterfaceRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	params := dcim.NewDcimInterfacesListParams()
-
-	// Get user limit (0 = fetch all)
-	var userLimit int64 = 0
-	if limitValue, ok := d.GetOk("limit"); ok {
-		userLimit = int64(limitValue.(int))
+	// filter name in the data source -> query parameter sent to Netbox
+	allowed := map[string]string{
+		"mac_address": "mac_address",
+		"name":        "name",
+		"tag":         "tag",
+		"device_id":   "device_id",
+		"lag_id":      "lag_id",
 	}
 
-	if filter, ok := d.GetOk("filter"); ok {
-		filterParams := filter.(*schema.Set)
-		for _, f := range filterParams.List() {
-			k := f.(map[string]interface{})["name"]
-			v := f.(map[string]interface{})["value"]
-			vString := v.(string)
-			switch k {
-			case "mac_address":
-				params.MacAddress = &vString
-			case "name":
-				params.Name = &vString
-			case "tag":
-				params.Tag = []string{vString} // TODO: switch schema to list?
-			case "device_id":
-				params.DeviceID = &vString
-			case "lag_id":
-				params.LagID = &vString
-			default:
-				return fmt.Errorf("'%s' is not a supported filter parameter", k)
-			}
-		}
-	}
-
-	// Fetch all pages with pagination (fetch all when name_regex is used)
-	paginationHelper := NewPaginationHelper(FetchAll)
-	var allInterfaces []*models.Interface
-
-	pageSize := paginationHelper.GetPageSize()
-	for {
-		currentOffset := paginationHelper.CurrentOffset()
-		params.Limit = &pageSize
-		params.Offset = &currentOffset
-
-		res, err := api.Dcim.DcimInterfacesList(params, nil)
-		if err != nil {
-			return fmt.Errorf("failed to fetch interfaces at offset %d: %w", currentOffset, err)
-		}
-
-		payload := res.GetPayload()
-		allInterfaces = append(allInterfaces, payload.Results...)
-
-		if len(payload.Results) == 0 {
-			break
-		}
-
-		if !paginationHelper.ShouldContinuePaging(int64(len(allInterfaces)), payload.Next) {
-			break
-		}
-
-		paginationHelper.Advance(int64(len(payload.Results)))
-	}
-
-	// Apply name_regex filter
-	var filteredInterfaces []*models.Interface
+	// Fetch everything and apply the regular expression before the limit
+	var keep func(map[string]interface{}) bool
 	if nameRegex, ok := d.GetOk("name_regex"); ok {
 		r := regexp.MustCompile(nameRegex.(string))
-		for _, dcimInterface := range allInterfaces {
-			if r.MatchString(*dcimInterface.Name) {
-				filteredInterfaces = append(filteredInterfaces, dcimInterface)
-			}
-		}
-	} else {
-		filteredInterfaces = allInterfaces
+		keep = func(o map[string]interface{}) bool { return r.MatchString(jStr(o, "name")) }
 	}
 
-	// Apply user limit to filtered results
-	if userLimit > 0 && int64(len(filteredInterfaces)) > userLimit {
-		filteredInterfaces = filteredInterfaces[:userLimit]
+	results, err := listFilteredWith[map[string]interface{}](d, m, "dcim/interfaces/", "interfaces", allowed, nil, keep)
+	if err != nil {
+		return err
 	}
 
 	var s []map[string]interface{}
-	for _, v := range filteredInterfaces {
+	for _, v := range results {
 		mapping := make(map[string]interface{})
-		mapping["id"] = v.ID
-		if v.Description != "" {
-			mapping["description"] = v.Description
-		}
-		mapping["enabled"] = v.Enabled
-		if v.MacAddresses != nil {
-			var mac_addresses []map[string]interface{}
-			for i, mac := range v.MacAddresses {
-				mac_address := make(map[string]interface{})
-				// We just set the first mac address in the `mac_address` attribute
-				if i == 0 {
-					mapping["mac_address"] = v.MacAddresses[i].MacAddress
-				}
-				mac_address["id"] = mac.ID
-				mac_address["description"] = mac.Description
-				mac_address["mac_address"] = mac.MacAddress
-				mac_addresses = append(mac_addresses, mac_address)
-			}
-			mapping["mac_addresses"] = mac_addresses
-		}
-		if v.Mode != nil {
-			mapping["mode"] = map[string]string{
-				"label": *v.Mode.Label,
-				"value": *v.Mode.Value,
-			}
-		}
-		if v.Mtu != nil {
-			mapping["mtu"] = *v.Mtu
-		}
-		if v.Name != nil {
-			mapping["name"] = *v.Name
-		}
-		if v.TaggedVlans != nil {
-			mapping["tagged_vlans"] = flattenVlanAttributes(v.TaggedVlans)
-		}
-		if v.Tags != nil {
-			var tags []int64
-			for _, t := range v.Tags {
-				tags = append(tags, t.ID)
-			}
-			mapping["tag_ids"] = tags
-		}
-		if v.UntaggedVlan != nil {
-			vlanSlice := []*models.NestedVLAN{v.UntaggedVlan}
-			mapping["untagged_vlan"] = flattenVlanAttributes(vlanSlice)
-		}
 
-		if v.Type != nil && v.Type.Value != nil {
-			mapping["type"] = *v.Type.Value
-		}
+		mapping["id"] = jInt(v, "id")
+		mapping["description"] = jStr(v, "description")
+		mapping["enabled"] = jBool(v, "enabled")
+		mapping["mac_address"] = jFirst(v, "mac_addresses", "mac_address")
+		mapping["mac_addresses"] = jObjectsList(v, "mac_addresses", "id", "description", "mac_address")
+		mapping["mode"] = jChoiceMap(v, "mode")
+		mapping["mtu"] = jIntP(v, "mtu")
+		mapping["name"] = jStr(v, "name")
+		mapping["tagged_vlans"] = jObjectsList(v, "tagged_vlans", "id", "vid", "name")
+		mapping["tag_ids"] = jTagIDs(v)
+		mapping["untagged_vlan"] = jObjectList(v, "untagged_vlan", "id", "vid", "name")
+		mapping["type"] = jChoice(v, "type")
+		mapping["device_id"] = jID(v, "device")
+		mapping["lag_device_interface_id"] = jID(v, "lag")
 
-		mapping["device_id"] = v.Device.ID
-
-		if v.Lag != nil {
-			mapping["lag_device_interface_id"] = v.Lag.ID
+		// fields that are missing in the response are left out of the state
+		for k, val := range mapping {
+			if val == nil {
+				delete(mapping, k)
+			}
 		}
 
 		s = append(s, mapping)
@@ -316,22 +220,3 @@ func dataSourceNetboxDeviceInterfaceRead(d *schema.ResourceData, m interface{}) 
 	d.SetId(id.UniqueId())
 	return d.Set("interfaces", s)
 }
-
-/*
-
-TODO: maybe separate this function from both VM Interfaces and DCIM Interfaces?
-
-func flattenVlanAttributes(vlans []*models.NestedVLAN) []map[string]interface{} {
-	var mappedVlans []map[string]interface{}
-	for _, vlan := range vlans {
-		v := *vlan
-		mappedVlan := map[string]interface{}{
-			"id":   v.ID,
-			"vid":  *v.Vid,
-			"name": *v.Name,
-		}
-		mappedVlans = append(mappedVlans, mappedVlan)
-	}
-	return mappedVlans
-}
-*/

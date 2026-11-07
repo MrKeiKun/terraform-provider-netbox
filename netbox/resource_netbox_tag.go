@@ -1,11 +1,11 @@
 package netbox
 
 import (
+	"context"
 	"regexp"
 	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/extras"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -51,38 +51,44 @@ func resourceNetboxTag() *schema.Resource {
 	}
 }
 
+// tagAPIPath is the NetBox API collection path for tags.
+const tagAPIPath = "extras/tags/"
+
+// netboxTag is the subset of the NetBox tag object this resource uses.
+type netboxTag struct {
+	ID          int64  `json:"id,omitempty"`
+	Name        string `json:"name"`
+	Slug        string `json:"slug"`
+	Color       string `json:"color"`
+	Description string `json:"description"`
+}
+
+func tagFromResourceData(d *schema.ResourceData) *netboxTag {
+	name := d.Get("name").(string)
+
+	// Default slug to generated slug if not given
+	slug := getSlug(name)
+	if v, ok := d.GetOk("slug"); ok {
+		slug = v.(string)
+	}
+
+	return &netboxTag{
+		Name:        name,
+		Slug:        slug,
+		Color:       d.Get("color_hex").(string),
+		Description: d.Get("description").(string),
+	}
+}
+
 func resourceNetboxTagCreate(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 
-	name := d.Get("name").(string)
-
-	slugValue, slugOk := d.GetOk("slug")
-	var slug string
-	// Default slug to generated slug if not given
-	if !slugOk {
-		slug = getSlug(name)
-	} else {
-		slug = slugValue.(string)
-	}
-
-	color := d.Get("color_hex").(string)
-	description := d.Get("description").(string)
-	params := extras.NewExtrasTagsCreateParams().WithData(
-		&models.Tag{
-			Name:        &name,
-			Slug:        &slug,
-			Color:       color,
-			Description: description,
-		},
-	)
-
-	res, err := api.Extras.ExtrasTagsCreate(params, nil)
+	res, err := netboxapi.Create[netboxTag](context.Background(), api.rest, tagAPIPath, tagFromResourceData(d))
 	if err != nil {
-		//return errors.New(getTextFromError(err))
 		return err
 	}
 
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
+	d.SetId(strconv.FormatInt(res.ID, 10))
 
 	return resourceNetboxTagRead(d, m)
 }
@@ -90,56 +96,29 @@ func resourceNetboxTagCreate(d *schema.ResourceData, m interface{}) error {
 func resourceNetboxTagRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := extras.NewExtrasTagsReadParams().WithID(id)
 
-	res, err := api.Extras.ExtrasTagsRead(params, nil)
+	res, err := netboxapi.Get[netboxTag](context.Background(), api.rest, tagAPIPath, id)
 	if err != nil {
-		if errresp, ok := err.(*extras.ExtrasTagsReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
+		if netboxapi.IsNotFound(err) {
+			// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
+			d.SetId("")
+			return nil
 		}
 		return err
 	}
 
-	d.Set("name", res.GetPayload().Name)
-	d.Set("slug", res.GetPayload().Slug)
-	d.Set("color_hex", res.GetPayload().Color)
-	d.Set("description", res.GetPayload().Description)
+	d.Set("name", res.Name)
+	d.Set("slug", res.Slug)
+	d.Set("color_hex", res.Color)
+	d.Set("description", res.Description)
 	return nil
 }
 
 func resourceNetboxTagUpdate(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-
 	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.Tag{}
 
-	name := d.Get("name").(string)
-	color := d.Get("color_hex").(string)
-	description := d.Get("description").(string)
-
-	slugValue, slugOk := d.GetOk("slug")
-	var slug string
-	// Default slug to generated slug if not given
-	if !slugOk {
-		slug = getSlug(name)
-	} else {
-		slug = slugValue.(string)
-	}
-
-	data.Slug = &slug
-	data.Name = &name
-	data.Color = color
-	data.Description = description
-
-	params := extras.NewExtrasTagsUpdateParams().WithID(id).WithData(&data)
-
-	_, err := api.Extras.ExtrasTagsUpdate(params, nil)
-	if err != nil {
+	if _, err := netboxapi.Update[netboxTag](context.Background(), api.rest, tagAPIPath, id, tagFromResourceData(d)); err != nil {
 		return err
 	}
 
@@ -148,17 +127,12 @@ func resourceNetboxTagUpdate(d *schema.ResourceData, m interface{}) error {
 
 func resourceNetboxTagDelete(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-
 	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := extras.NewExtrasTagsDeleteParams().WithID(id)
 
-	_, err := api.Extras.ExtrasTagsDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*extras.ExtrasTagsDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
+	if err := netboxapi.Delete(context.Background(), api.rest, tagAPIPath, id); err != nil {
+		if netboxapi.IsNotFound(err) {
+			d.SetId("")
+			return nil
 		}
 		return err
 	}

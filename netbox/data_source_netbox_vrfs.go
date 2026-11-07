@@ -1,10 +1,6 @@
 package netbox
 
 import (
-	"fmt"
-
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
-	"github.com/fbreckle/go-netbox/netbox/models"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -70,102 +66,43 @@ func dataSourceNetboxVrfs() *schema.Resource {
 }
 
 func dataSourceNetboxVrfsRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	params := ipam.NewIpamVrfsListParams()
-
-	// Get user limit
-	var userLimit int64 = 0
-	if limitValue, ok := d.GetOk("limit"); ok {
-		userLimit = int64(limitValue.(int))
+	// filter name in the data source -> query parameter sent to Netbox
+	allowed := map[string]string{
+		"id":                 "id",
+		"name":               "name",
+		"description":        "description",
+		"rd":                 "rd",
+		"tenant":             "tenant",
+		"tenant__n":          "tenant__n",
+		"tenant_group":       "tenant_group",
+		"tenant_group__n":    "tenant_group__n",
+		"tenant_group_id":    "tenant_group_id",
+		"tenant_group_id__n": "tenant_group_id__n",
+		"tenant_id":          "tenant_id",
+		"tenant_id__n":       "tenant_id__n",
+		"tag":                "tag",
 	}
 
-	if filter, ok := d.GetOk("filter"); ok {
-		var filterParams = filter.(*schema.Set)
-		var tags []string
-		for _, f := range filterParams.List() {
-			k := f.(map[string]interface{})["name"]
-			v := f.(map[string]interface{})["value"]
-			vString := v.(string)
-			switch k {
-			case "id":
-				params.ID = &vString
-			case "name":
-				params.Name = &vString
-			case "description":
-				params.Description = &vString
-			case "rd":
-				params.Rd = &vString
-			case "tenant":
-				params.Tenant = &vString
-			case "tenant__n":
-				params.Tenantn = &vString
-			case "tenant_group":
-				params.TenantGroup = &vString
-			case "tenant_group__n":
-				params.TenantGroupn = &vString
-			case "tenant_group_id":
-				params.TenantGroupID = &vString
-			case "tenant_group_id__n":
-				params.TenantGroupIDn = &vString
-			case "tenant_id":
-				params.TenantID = &vString
-			case "tenant_id__n":
-				params.TenantIDn = &vString
-			case "tag":
-				tags = append(tags, vString)
-				params.Tag = tags
-			default:
-				return fmt.Errorf("'%s' is not a supported filter parameter", k)
-			}
-		}
+	results, err := listFiltered[map[string]interface{}](d, m, "ipam/vrfs/", "VRFs", allowed, nil)
+	if err != nil {
+		return err
 	}
-
-	// Fetch all pages with pagination
-	paginationHelper := NewPaginationHelper(userLimit)
-	var allVrfs []*models.VRF
-
-	pageSize := paginationHelper.GetPageSize()
-	for {
-		currentOffset := paginationHelper.CurrentOffset()
-		params.Limit = &pageSize
-		params.Offset = &currentOffset
-
-		res, err := api.Ipam.IpamVrfsList(params, nil)
-		if err != nil {
-			return fmt.Errorf("failed to fetch VRFs at offset %d: %w", currentOffset, err)
-		}
-
-		payload := res.GetPayload()
-		allVrfs = append(allVrfs, payload.Results...)
-
-		if len(payload.Results) == 0 {
-			break
-		}
-
-		if !paginationHelper.ShouldContinuePaging(int64(len(allVrfs)), payload.Next) {
-			break
-		}
-
-		paginationHelper.Advance(int64(len(payload.Results)))
-	}
-
-	// Trim to user limit if specified
-	trimmedCount := paginationHelper.TrimToLimit(len(allVrfs))
-	filteredVrfs := allVrfs[:trimmedCount]
 
 	var s []map[string]interface{}
-	for _, v := range filteredVrfs {
-		var mapping = make(map[string]interface{})
+	for _, v := range results {
+		mapping := make(map[string]interface{})
 
-		mapping["id"] = v.ID
-		mapping["name"] = v.Name
-		mapping["description"] = v.Description
-		if v.Rd != nil {
-			mapping["rd"] = v.Rd
-		}
-		if v.Tenant != nil {
-			mapping["tenant"] = v.Tenant.ID
+		mapping["id"] = jInt(v, "id")
+		mapping["name"] = jStr(v, "name")
+		mapping["description"] = jStr(v, "description")
+		mapping["rd"] = jStr(v, "rd")
+		mapping["tenant"] = jID(v, "tenant")
+
+		// fields that are missing in the response are left out of the state
+		for k, val := range mapping {
+			if val == nil {
+				delete(mapping, k)
+			}
 		}
 
 		s = append(s, mapping)

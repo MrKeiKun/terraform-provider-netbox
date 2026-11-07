@@ -2,10 +2,8 @@ package netbox
 
 import (
 	"fmt"
-	"strconv"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/virtualization"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
@@ -75,30 +73,5 @@ resource "netbox_virtual_disk" "test" {
 }
 
 func testAccCheckVirtualDiskDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*providerState)
-
-	// loop through the resources in state, verifying each virtual machine
-	// is destroyed
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "netbox_virtual_disk" {
-			continue
-		}
-
-		stateID, _ := strconv.ParseInt(rs.Primary.ID, 10, 64)
-		params := virtualization.NewVirtualizationVirtualDisksReadParams().WithID(stateID)
-		_, err := conn.Virtualization.VirtualizationVirtualDisksRead(params, nil)
-
-		if err == nil {
-			return fmt.Errorf("virtual disk (%s) still exists", rs.Primary.ID)
-		}
-
-		if errresp, ok := err.(*virtualization.VirtualizationVirtualDisksReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				return nil
-			}
-		}
-		return err
-	}
-	return nil
+	return testAccCheckObjectsDestroyed(s, "netbox_virtual_disk", "virtualization/virtual-disks/")
 }

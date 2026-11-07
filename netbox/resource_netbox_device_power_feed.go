@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -92,131 +89,53 @@ func resourceNetboxPowerFeed() *schema.Resource {
 	}
 }
 
-func resourceNetboxPowerFeedCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const powerFeedAPIPath = "dcim/power-feeds/"
 
-	data := models.WritablePowerFeed{
-		PowerPanel:     int64ToPtr(int64(d.Get("power_panel_id").(int))),
-		Name:           strToPtr(d.Get("name").(string)),
-		Status:         d.Get("status").(string),
-		Type:           d.Get("type").(string),
-		Supply:         d.Get("supply").(string),
-		Phase:          d.Get("phase").(string),
-		Voltage:        int64ToPtr(int64(d.Get("voltage").(int))),
-		Amperage:       int64(d.Get("amperage").(int)),
-		MaxUtilization: int64(d.Get("max_percent_utilization").(int)),
-		Rack:           getOptionalInt(d, "rack_id"),
-		MarkConnected:  d.Get("mark_connected").(bool),
-		Description:    getOptionalStr(d, "description", false),
-		Comments:       getOptionalStr(d, "comments", false),
-	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
-	if err != nil {
-		return err
-	}
-
-	ct, ok := d.GetOk(customFieldsKey)
-	if ok {
-		data.CustomFields = ct
-	}
-
-	params := dcim.NewDcimPowerFeedsCreateParams().WithData(&data)
-
-	res, err := api.Dcim.DcimPowerFeedsCreate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxPowerFeedRead(d, m)
+type powerFeedRequest struct {
+	Name           string             `json:"name"`
+	PowerPanel     *int64             `json:"power_panel"`
+	Status         string             `json:"status,omitempty"`
+	Type           string             `json:"type"`
+	Supply         string             `json:"supply,omitempty"`
+	Phase          string             `json:"phase,omitempty"`
+	Voltage        *int64             `json:"voltage,omitempty"`
+	Amperage       int64              `json:"amperage,omitempty"`
+	MaxUtilization int64              `json:"max_utilization,omitempty"`
+	Rack           *int64             `json:"rack"`
+	MarkConnected  bool               `json:"mark_connected"`
+	Description    string             `json:"description,omitempty"`
+	Comments       string             `json:"comments,omitempty"`
+	CustomFields   interface{}        `json:"custom_fields,omitempty"`
+	Tags           []netboxapi.TagRef `json:"tags"`
 }
 
-func resourceNetboxPowerFeedRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimPowerFeedsReadParams().WithID(id)
-
-	res, err := api.Dcim.DcimPowerFeedsRead(params, nil)
-
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimPowerFeedsReadDefault); ok {
-			if errresp.Code() == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-
-	powerFeed := res.GetPayload()
-
-	if powerFeed.PowerPanel != nil {
-		d.Set("power_panel_id", powerFeed.PowerPanel.ID)
-	} else {
-		d.Set("power_panel_id", nil)
-	}
-
-	d.Set("name", powerFeed.Name)
-
-	if powerFeed.Status != nil {
-		d.Set("status", powerFeed.Status.Value)
-	} else {
-		d.Set("status", nil)
-	}
-
-	if powerFeed.Type != nil {
-		d.Set("type", powerFeed.Type.Value)
-	} else {
-		d.Set("type", nil)
-	}
-
-	if powerFeed.Supply != nil {
-		d.Set("supply", powerFeed.Supply.Value)
-	} else {
-		d.Set("supply", nil)
-	}
-
-	if powerFeed.Phase != nil {
-		d.Set("phase", powerFeed.Phase.Value)
-	} else {
-		d.Set("phase", nil)
-	}
-
-	d.Set("voltage", powerFeed.Voltage)
-	d.Set("amperage", powerFeed.Amperage)
-	d.Set("max_percent_utilization", powerFeed.MaxUtilization)
-
-	if powerFeed.Rack != nil {
-		d.Set("rack_id", powerFeed.Rack.ID)
-	} else {
-		d.Set("rack_id", nil)
-	}
-
-	d.Set("mark_connected", powerFeed.MarkConnected)
-	d.Set("description", powerFeed.Description)
-	d.Set("comments", powerFeed.Comments)
-
-	cf := getCustomFields(res.GetPayload().CustomFields)
-	if cf != nil {
-		d.Set(customFieldsKey, cf)
-	}
-	api.readTags(d, res.GetPayload().Tags)
-
-	return nil
+type powerFeedResponse struct {
+	Name           string                 `json:"name"`
+	PowerPanel     *netboxapi.Ref         `json:"power_panel"`
+	Status         *netboxapi.Choice      `json:"status"`
+	Type           *netboxapi.Choice      `json:"type"`
+	Supply         *netboxapi.Choice      `json:"supply"`
+	Phase          *netboxapi.Choice      `json:"phase"`
+	Voltage        *int64                 `json:"voltage"`
+	Amperage       int64                  `json:"amperage"`
+	MaxUtilization int64                  `json:"max_utilization"`
+	Rack           *netboxapi.Ref         `json:"rack"`
+	MarkConnected  bool                   `json:"mark_connected"`
+	Description    string                 `json:"description"`
+	Comments       string                 `json:"comments"`
+	CustomFields   map[string]interface{} `json:"custom_fields"`
+	Tags           []netboxapi.TagRef     `json:"tags"`
 }
 
-func resourceNetboxPowerFeedUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-
-	data := models.WritablePowerFeed{
+func powerFeedRequestFromResourceData(api *providerState, d *schema.ResourceData) (*powerFeedRequest, error) {
+	name := d.Get("name").(string)
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
+	if err != nil {
+		return nil, err
+	}
+	data := &powerFeedRequest{
+		Name:           name,
 		PowerPanel:     int64ToPtr(int64(d.Get("power_panel_id").(int))),
-		Name:           strToPtr(d.Get("name").(string)),
 		Status:         d.Get("status").(string),
 		Type:           d.Get("type").(string),
 		Supply:         d.Get("supply").(string),
@@ -228,38 +147,53 @@ func resourceNetboxPowerFeedUpdate(d *schema.ResourceData, m interface{}) error 
 		MarkConnected:  d.Get("mark_connected").(bool),
 		Description:    getOptionalStr(d, "description", true),
 		Comments:       getOptionalStr(d, "comments", true),
+		Tags:           tags,
 	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
-	if err != nil {
-		return err
-	}
-
-	ct, ok := d.GetOk(customFieldsKey)
-	if ok {
+	if ct, ok := d.GetOk(customFieldsKey); ok {
 		data.CustomFields = ct
 	}
+	return data, nil
+}
 
-	params := dcim.NewDcimPowerFeedsPartialUpdateParams().WithID(id).WithData(&data)
-
-	_, err = api.Dcim.DcimPowerFeedsPartialUpdate(params, nil)
+func resourceNetboxPowerFeedCreate(d *schema.ResourceData, m interface{}) error {
+	data, err := powerFeedRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
+	return createObject(d, m, powerFeedAPIPath, data, resourceNetboxPowerFeedRead)
+}
 
-	return resourceNetboxPowerFeedRead(d, m)
+func resourceNetboxPowerFeedRead(d *schema.ResourceData, m interface{}) error {
+	api := m.(*providerState)
+	return readObject(d, m, powerFeedAPIPath, func(r *powerFeedResponse) {
+		d.Set("name", r.Name)
+		d.Set("power_panel_id", netboxapi.RefID(r.PowerPanel))
+		d.Set("status", netboxapi.ChoiceValue(r.Status))
+		d.Set("type", netboxapi.ChoiceValue(r.Type))
+		d.Set("supply", netboxapi.ChoiceValue(r.Supply))
+		d.Set("phase", netboxapi.ChoiceValue(r.Phase))
+		d.Set("voltage", r.Voltage)
+		d.Set("amperage", r.Amperage)
+		d.Set("max_percent_utilization", r.MaxUtilization)
+		d.Set("rack_id", netboxapi.RefID(r.Rack))
+		d.Set("mark_connected", r.MarkConnected)
+		d.Set("description", r.Description)
+		d.Set("comments", r.Comments)
+		if cf := getCustomFields(r.CustomFields); cf != nil {
+			d.Set(customFieldsKey, cf)
+		}
+		api.readTagRefs(d, r.Tags)
+	})
+}
+
+func resourceNetboxPowerFeedUpdate(d *schema.ResourceData, m interface{}) error {
+	data, err := powerFeedRequestFromResourceData(m.(*providerState), d)
+	if err != nil {
+		return err
+	}
+	return patchObject(d, m, powerFeedAPIPath, data, resourceNetboxPowerFeedRead)
 }
 
 func resourceNetboxPowerFeedDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimPowerFeedsDeleteParams().WithID(id)
-
-	_, err := api.Dcim.DcimPowerFeedsDelete(params, nil)
-	if err != nil {
-		return err
-	}
-	return nil
+	return deleteObject(d, m, powerFeedAPIPath)
 }

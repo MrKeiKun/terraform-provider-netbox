@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -66,153 +63,90 @@ Similar to devices, modules are instantiated from module types, and any componen
 	}
 }
 
-func resourceNetboxModuleCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const moduleAPIPath = "dcim/modules/"
 
-	data := models.WritableModule{
-		Device:      int64ToPtr(int64(d.Get("device_id").(int))),
-		ModuleBay:   int64ToPtr(int64(d.Get("module_bay_id").(int))),
-		ModuleType:  int64ToPtr(int64(d.Get("module_type_id").(int))),
-		Status:      d.Get("status").(string),
-		Serial:      getOptionalStr(d, "serial", false),
-		Description: getOptionalStr(d, "description", false),
-		Comments:    getOptionalStr(d, "comments", false),
-	}
-
-	if assetTag := getOptionalStr(d, "asset_tag", false); assetTag != "" {
-		data.AssetTag = &assetTag
-	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
-	if err != nil {
-		return err
-	}
-
-	ct, ok := d.GetOk(customFieldsKey)
-	if ok {
-		data.CustomFields = ct
-	}
-
-	params := dcim.NewDcimModulesCreateParams().WithData(&data)
-
-	res, err := api.Dcim.DcimModulesCreate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxModuleRead(d, m)
+type moduleRequest struct {
+	Device       *int64             `json:"device"`
+	ModuleBay    *int64             `json:"module_bay"`
+	ModuleType   *int64             `json:"module_type"`
+	Status       string             `json:"status,omitempty"`
+	Serial       string             `json:"serial,omitempty"`
+	AssetTag     *string            `json:"asset_tag"`
+	Description  string             `json:"description,omitempty"`
+	Comments     string             `json:"comments,omitempty"`
+	CustomFields interface{}        `json:"custom_fields,omitempty"`
+	Tags         []netboxapi.TagRef `json:"tags"`
 }
 
-func resourceNetboxModuleRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimModulesReadParams().WithID(id)
-
-	res, err := api.Dcim.DcimModulesRead(params, nil)
-
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimModulesReadDefault); ok {
-			if errresp.Code() == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-
-	module := res.GetPayload()
-
-	if module.Device != nil {
-		d.Set("device_id", module.Device.ID)
-	} else {
-		d.Set("device_id", nil)
-	}
-
-	if module.ModuleBay != nil {
-		d.Set("module_bay_id", module.ModuleBay.ID)
-	} else {
-		d.Set("module_bay_id", nil)
-	}
-
-	if module.ModuleType != nil {
-		d.Set("module_type_id", module.ModuleType.ID)
-	} else {
-		d.Set("module_type_id", nil)
-	}
-
-	if module.Status != nil {
-		d.Set("status", module.Status.Value)
-	} else {
-		d.Set("status", nil)
-	}
-
-	d.Set("serial", module.Serial)
-	d.Set("asset_tag", module.AssetTag)
-	d.Set("description", module.Description)
-	d.Set("comments", module.Comments)
-
-	cf := getCustomFields(res.GetPayload().CustomFields)
-	if cf != nil {
-		d.Set(customFieldsKey, cf)
-	}
-	api.readTags(d, res.GetPayload().Tags)
-
-	return nil
+type moduleResponse struct {
+	Device       *netboxapi.Ref         `json:"device"`
+	ModuleBay    *netboxapi.Ref         `json:"module_bay"`
+	ModuleType   *netboxapi.Ref         `json:"module_type"`
+	Status       *netboxapi.Choice      `json:"status"`
+	Serial       string                 `json:"serial"`
+	AssetTag     *string                `json:"asset_tag"`
+	Description  string                 `json:"description"`
+	Comments     string                 `json:"comments"`
+	CustomFields map[string]interface{} `json:"custom_fields"`
+	Tags         []netboxapi.TagRef     `json:"tags"`
 }
 
-func resourceNetboxModuleUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-
-	data := models.WritableModule{
+func moduleRequestFromResourceData(api *providerState, d *schema.ResourceData) (*moduleRequest, error) {
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
+	if err != nil {
+		return nil, err
+	}
+	data := &moduleRequest{
 		Device:      int64ToPtr(int64(d.Get("device_id").(int))),
 		ModuleBay:   int64ToPtr(int64(d.Get("module_bay_id").(int))),
 		ModuleType:  int64ToPtr(int64(d.Get("module_type_id").(int))),
 		Status:      d.Get("status").(string),
 		Serial:      getOptionalStr(d, "serial", true),
+		AssetTag:    nullableString(getOptionalStr(d, "asset_tag", false)),
 		Description: getOptionalStr(d, "description", true),
 		Comments:    getOptionalStr(d, "comments", true),
+		Tags:        tags,
 	}
-
-	if assetTag := getOptionalStr(d, "asset_tag", false); assetTag != "" {
-		data.AssetTag = &assetTag
-	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
-	if err != nil {
-		return err
-	}
-
-	ct, ok := d.GetOk(customFieldsKey)
-	if ok {
+	if ct, ok := d.GetOk(customFieldsKey); ok {
 		data.CustomFields = ct
 	}
+	return data, nil
+}
 
-	params := dcim.NewDcimModulesPartialUpdateParams().WithID(id).WithData(&data)
-
-	_, err = api.Dcim.DcimModulesPartialUpdate(params, nil)
+func resourceNetboxModuleCreate(d *schema.ResourceData, m interface{}) error {
+	data, err := moduleRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
+	return createObject(d, m, moduleAPIPath, data, resourceNetboxModuleRead)
+}
 
-	return resourceNetboxModuleRead(d, m)
+func resourceNetboxModuleRead(d *schema.ResourceData, m interface{}) error {
+	api := m.(*providerState)
+	return readObject(d, m, moduleAPIPath, func(r *moduleResponse) {
+		d.Set("device_id", netboxapi.RefID(r.Device))
+		d.Set("module_bay_id", netboxapi.RefID(r.ModuleBay))
+		d.Set("module_type_id", netboxapi.RefID(r.ModuleType))
+		d.Set("status", netboxapi.ChoiceValue(r.Status))
+		d.Set("serial", r.Serial)
+		d.Set("asset_tag", r.AssetTag)
+		d.Set("description", r.Description)
+		d.Set("comments", r.Comments)
+		if cf := getCustomFields(r.CustomFields); cf != nil {
+			d.Set(customFieldsKey, cf)
+		}
+		api.readTagRefs(d, r.Tags)
+	})
+}
+
+func resourceNetboxModuleUpdate(d *schema.ResourceData, m interface{}) error {
+	data, err := moduleRequestFromResourceData(m.(*providerState), d)
+	if err != nil {
+		return err
+	}
+	return patchObject(d, m, moduleAPIPath, data, resourceNetboxModuleRead)
 }
 
 func resourceNetboxModuleDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimModulesDeleteParams().WithID(id)
-
-	_, err := api.Dcim.DcimModulesDelete(params, nil)
-	if err != nil {
-		return err
-	}
-	return nil
+	return deleteObject(d, m, moduleAPIPath)
 }

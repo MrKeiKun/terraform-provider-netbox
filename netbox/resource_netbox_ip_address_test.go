@@ -2,12 +2,9 @@ package netbox
 
 import (
 	"fmt"
-	"log"
 	"regexp"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
-	"github.com/fbreckle/go-netbox/netbox/models"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
@@ -527,27 +524,7 @@ func init() {
 		Name:         "netbox_ip_address",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := ipam.NewIpamIPAddressesListParams()
-			res, err := api.Ipam.IpamIPAddressesList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, ipAddress := range res.GetPayload().Results {
-				if len(ipAddress.Tags) > 0 && (ipAddress.Tags[0] == &models.NestedTag{Name: strToPtr("acctest"), Slug: strToPtr("acctest")}) {
-					deleteParams := ipam.NewIpamIPAddressesDeleteParams().WithID(ipAddress.ID)
-					_, err := api.Ipam.IpamIPAddressesDelete(deleteParams, nil)
-					if err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted an ip address")
-				}
-			}
-			return nil
+			return sweepByName(region, "ipam/ip-addresses/", "address")
 		},
 	})
 }

@@ -2,10 +2,8 @@ package netbox
 
 import (
 	"encoding/json"
-	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/users"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -84,28 +82,46 @@ func resourceNetboxPermission() *schema.Resource {
 		},
 	}
 }
-func resourceNetboxPermissionCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	data := models.WritableObjectPermission{}
 
-	name := d.Get("name").(string)
-	data.Name = &name
-	data.Description = d.Get("description").(string)
-	data.Enabled = d.Get("enabled").(bool)
+const permissionAPIPath = "users/permissions/"
 
-	data.ObjectTypes = toStringList(d.Get("object_types"))
-	data.Groups = toInt64List(d.Get("groups"))
-	data.Users = toInt64List(d.Get("users"))
-	data.Actions = toStringList(d.Get("actions"))
+type permissionRequest struct {
+	Name        string      `json:"name"`
+	Description string      `json:"description,omitempty"`
+	Enabled     bool        `json:"enabled"`
+	ObjectTypes []string    `json:"object_types"`
+	Groups      []int64     `json:"groups"`
+	Users       []int64     `json:"users"`
+	Actions     []string    `json:"actions"`
+	Constraints interface{} `json:"constraints"`
+}
 
-	var constraints interface{}
-	c := d.Get("constraints").(string)
-	if c == "" {
-		data.Constraints = nil
-	} else {
-		err := json.Unmarshal([]byte(c), &constraints)
-		if err != nil {
-			return err
+type permissionResponse struct {
+	Name        string          `json:"name"`
+	Description string          `json:"description"`
+	Enabled     bool            `json:"enabled"`
+	ObjectTypes []string        `json:"object_types"`
+	Groups      []netboxapi.Ref `json:"groups"`
+	Users       []netboxapi.Ref `json:"users"`
+	Actions     []string        `json:"actions"`
+	Constraints interface{}     `json:"constraints"`
+}
+
+func permissionRequestFromResourceData(d *schema.ResourceData) (*permissionRequest, error) {
+	data := &permissionRequest{
+		Name:        d.Get("name").(string),
+		Description: d.Get("description").(string),
+		Enabled:     d.Get("enabled").(bool),
+		ObjectTypes: toStringList(d.Get("object_types")),
+		Groups:      toInt64List(d.Get("groups")),
+		Users:       toInt64List(d.Get("users")),
+		Actions:     toStringList(d.Get("actions")),
+	}
+
+	if c := d.Get("constraints").(string); c != "" {
+		var constraints interface{}
+		if err := json.Unmarshal([]byte(c), &constraints); err != nil {
+			return nil, err
 		}
 		switch v := constraints.(type) {
 		case []interface{}:
@@ -114,121 +130,65 @@ func resourceNetboxPermissionCreate(d *schema.ResourceData, m interface{}) error
 			data.Constraints = v
 		}
 	}
+	return data, nil
+}
 
-	params := users.NewUsersPermissionsCreateParams().WithData(&data)
-	res, err := api.Users.UsersPermissionsCreate(params, nil)
+func resourceNetboxPermissionCreate(d *schema.ResourceData, m interface{}) error {
+	data, err := permissionRequestFromResourceData(d)
 	if err != nil {
 		return err
 	}
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxPermissionRead(d, m)
+	return createObject(d, m, permissionAPIPath, data, resourceNetboxPermissionRead)
 }
 
 func resourceNetboxPermissionRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := users.NewUsersPermissionsReadParams().WithID(id)
+	var readErr error
+	err := readObject(d, m, permissionAPIPath, func(permission *permissionResponse) {
+		d.Set("name", permission.Name)
+		d.Set("description", permission.Description)
+		d.Set("enabled", permission.Enabled)
+		d.Set("object_types", permission.ObjectTypes)
 
-	res, err := api.Users.UsersPermissionsRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*users.UsersPermissionsReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
+		var groups []int
+		for _, v := range permission.Groups {
+			groups = append(groups, int(v.ID))
 		}
-		return err
-	}
+		d.Set("groups", groups)
 
-	d.Set("name", res.GetPayload().Name)
-	d.Set("description", res.GetPayload().Description)
-	d.Set("enabled", res.GetPayload().Enabled)
-	d.Set("object_types", res.GetPayload().ObjectTypes)
+		var users []int
+		for _, v := range permission.Users {
+			users = append(users, int(v.ID))
+		}
+		d.Set("users", users)
 
-	var groups []int
-	for _, v := range res.GetPayload().Groups {
-		groups = append(groups, int(v.ID))
-	}
-	d.Set("groups", groups)
+		d.Set("actions", permission.Actions)
 
-	var users []int
-	for _, v := range res.GetPayload().Users {
-		users = append(users, int(v.ID))
-	}
-	d.Set("users", users)
+		if permission.Constraints == nil {
+			d.Set("constraints", "")
+			return
+		}
 
-	d.Set("actions", res.GetPayload().Actions)
-
-	if res.GetPayload().Constraints == nil {
-		d.Set("constraints", "")
-		return nil
-	}
-
-	b, err := json.Marshal(res.GetPayload().Constraints)
+		b, err := json.Marshal(permission.Constraints)
+		if err != nil {
+			readErr = err
+			return
+		}
+		d.Set("constraints", string(b))
+	})
 	if err != nil {
 		return err
 	}
-	d.Set("constraints", string(b))
-
-	return nil
+	return readErr
 }
 
 func resourceNetboxPermissionUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.WritableObjectPermission{}
-
-	name := d.Get("name").(string)
-	data.Name = &name
-	data.Description = d.Get("description").(string)
-	data.Enabled = d.Get("enabled").(bool)
-
-	data.ObjectTypes = toStringList(d.Get("object_types"))
-	data.Groups = toInt64List(d.Get("groups"))
-	data.Users = toInt64List(d.Get("users"))
-	data.Actions = toStringList(d.Get("actions"))
-
-	var constraints interface{}
-	c := d.Get("constraints").(string)
-	if c == "" {
-		data.Constraints = nil
-	} else {
-		err := json.Unmarshal([]byte(c), &constraints)
-		if err != nil {
-			return err
-		}
-		switch v := constraints.(type) {
-		case []interface{}:
-			data.Constraints = v
-		case map[string]interface{}:
-			data.Constraints = v
-		}
-	}
-	params := users.NewUsersPermissionsUpdateParams().WithID(id).WithData(&data)
-	_, err := api.Users.UsersPermissionsUpdate(params, nil)
+	data, err := permissionRequestFromResourceData(d)
 	if err != nil {
 		return err
 	}
-	return resourceNetboxPermissionRead(d, m)
+	return putObject(d, m, permissionAPIPath, data, resourceNetboxPermissionRead)
 }
 
 func resourceNetboxPermissionDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := users.NewUsersPermissionsDeleteParams().WithID(id)
-	_, err := api.Users.UsersPermissionsDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*users.UsersPermissionsDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	d.SetId("")
-	return nil
+	return deleteObject(d, m, permissionAPIPath)
 }

@@ -2,12 +2,8 @@ package netbox
 
 import (
 	"fmt"
-	"log"
-	"strconv"
-	"strings"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/extras"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
@@ -126,23 +122,7 @@ resource "netbox_webhook" "test" {
 }
 
 func testAccCheckNetBoxWebhookDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*providerState)
-
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "netbox_webhook" {
-			continue
-		}
-
-		// Fetch the webhook by ID
-		// Retrieve our interface by referencing it's state ID for API lookup
-		stateID, _ := strconv.ParseInt(rs.Primary.ID, 10, 64)
-		webhook, err := client.Extras.ExtrasWebhooksRead(extras.NewExtrasWebhooksReadParams().WithID(stateID), nil)
-		if err == nil && webhook != nil {
-			return fmt.Errorf("Webhook %s still exists", rs.Primary.ID)
-		}
-	}
-
-	return nil
+	return testAccCheckObjectsDestroyed(s, "netbox_webhook", "extras/webhooks/")
 }
 
 func init() {
@@ -150,27 +130,7 @@ func init() {
 		Name:         "netbox_webhook",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := extras.NewExtrasWebhooksListParams()
-			res, err := api.Extras.ExtrasWebhooksList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, webhook := range res.GetPayload().Results {
-				if strings.HasPrefix(*webhook.Name, testPrefix) {
-					deleteParams := extras.NewExtrasWebhooksDeleteParams().WithID(webhook.ID)
-					_, err := api.Extras.ExtrasWebhooksDelete(deleteParams, nil)
-					if err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted a webhook")
-				}
-			}
-			return nil
+			return sweepByName(region, "extras/webhooks/", "name")
 		},
 	})
 }

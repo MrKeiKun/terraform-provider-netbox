@@ -2,12 +2,8 @@ package netbox
 
 import (
 	"fmt"
-	"log"
-	"strconv"
-	"strings"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
@@ -79,36 +75,7 @@ resource "netbox_rack_type" "test" {
 }
 
 func testAccCheckRackTypeDestroy(s *terraform.State) error {
-	// retrieve the connection established in Provider configuration
-	conn := testAccProvider.Meta().(*providerState)
-
-	// loop through the resources in state, verifying each rack
-	// is destroyed
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "netbox_rack_type" {
-			continue
-		}
-
-		// Retrieve our rack by referencing it's state ID for API lookup
-		stateID, _ := strconv.ParseInt(rs.Primary.ID, 10, 64)
-		params := dcim.NewDcimRackTypesReadParams().WithID(stateID)
-		_, err := conn.Dcim.DcimRackTypesRead(params, nil)
-
-		if err == nil {
-			return fmt.Errorf("rack type (%s) still exists", rs.Primary.ID)
-		}
-
-		if err != nil {
-			if errresp, ok := err.(*dcim.DcimRackTypesReadDefault); ok {
-				errorcode := errresp.Code()
-				if errorcode == 404 {
-					return nil
-				}
-			}
-			return err
-		}
-	}
-	return nil
+	return testAccCheckObjectsDestroyed(s, "netbox_rack_type", "dcim/rack-types/")
 }
 
 func init() {
@@ -116,27 +83,7 @@ func init() {
 		Name:         "netbox_rack_type",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := dcim.NewDcimRackTypesListParams()
-			res, err := api.Dcim.DcimRackTypesList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, RackType := range res.GetPayload().Results {
-				if strings.HasPrefix(*RackType.Model, testPrefix) {
-					deleteParams := dcim.NewDcimRackTypesDeleteParams().WithID(RackType.ID)
-					_, err := api.Dcim.DcimRackTypesDelete(deleteParams, nil)
-					if err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted a rack type")
-				}
-			}
-			return nil
+			return sweepByName(region, "dcim/rack-types/", "model")
 		},
 	})
 }

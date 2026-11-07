@@ -1,13 +1,13 @@
 package netbox
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
-	"github.com/fbreckle/go-netbox/netbox/client/status"
-	httptransport "github.com/go-openapi/runtime/client"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -85,8 +85,7 @@ func TestAdditionalHeadersSet(t *testing.T) {
 	client, err := config.Client()
 	assert.NoError(t, err)
 
-	req := status.NewStatusListParams()
-	client.Status.StatusList(req, nil)
+	_, _ = netboxapi.Request[map[string]interface{}](context.Background(), client, http.MethodGet, "status/", nil, nil)
 }
 
 func TestV1TokenUsesTokenScheme(t *testing.T) {
@@ -104,8 +103,7 @@ func TestV1TokenUsesTokenScheme(t *testing.T) {
 	client, err := config.Client()
 	assert.NoError(t, err)
 
-	req := status.NewStatusListParams()
-	client.Status.StatusList(req, nil)
+	_, _ = netboxapi.Request[map[string]interface{}](context.Background(), client, http.MethodGet, "status/", nil, nil)
 }
 
 func TestV2TokenUsesBearerScheme(t *testing.T) {
@@ -124,23 +122,19 @@ func TestV2TokenUsesBearerScheme(t *testing.T) {
 	client, err := config.Client()
 	assert.NoError(t, err)
 
-	req := status.NewStatusListParams()
-	client.Status.StatusList(req, nil)
+	_, _ = netboxapi.Request[map[string]interface{}](context.Background(), client, http.MethodGet, "status/", nil, nil)
 }
 
-func TestRequestTimeoutAppliesToOperationTimeout(t *testing.T) {
-	original := httptransport.DefaultTimeout
-	defer func() { httptransport.DefaultTimeout = original }()
-
+func TestRequestTimeoutIsUsed(t *testing.T) {
 	config := Config{
 		APIToken:       "07b12b765127747e4afd56cb531b7bf9c61f3c30",
 		ServerURL:      "http://localhost",
 		RequestTimeout: 90,
 	}
 
-	_, err := config.Client()
+	httpClient, err := config.httpClient()
 	assert.NoError(t, err)
-	assert.Equal(t, 90*time.Second, httptransport.DefaultTimeout)
+	assert.Equal(t, 90*time.Second, httpClient.Timeout)
 }
 
 /* TODO

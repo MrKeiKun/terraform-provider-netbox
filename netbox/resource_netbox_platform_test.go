@@ -2,11 +2,8 @@ package netbox
 
 import (
 	"fmt"
-	"log"
-	"strings"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
@@ -162,27 +159,7 @@ func init() {
 		Name:         "netbox_platform",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := dcim.NewDcimPlatformsListParams()
-			res, err := api.Dcim.DcimPlatformsList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, platform := range res.GetPayload().Results {
-				if strings.HasPrefix(*platform.Name, testPrefix) {
-					deleteParams := dcim.NewDcimPlatformsDeleteParams().WithID(platform.ID)
-					_, err := api.Dcim.DcimPlatformsDelete(deleteParams, nil)
-					if err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted a platform")
-				}
-			}
-			return nil
+			return sweepByName(region, "dcim/platforms/", "name")
 		},
 	})
 }

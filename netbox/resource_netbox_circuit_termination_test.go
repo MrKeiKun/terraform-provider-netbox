@@ -2,11 +2,8 @@ package netbox
 
 import (
 	"fmt"
-	"log"
-	"strings"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/circuits"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
@@ -69,27 +66,7 @@ func init() {
 		Name:         "netbox_circuit_termination",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := circuits.NewCircuitsCircuitsListParams()
-			res, err := api.Circuits.CircuitsCircuitsList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, Circuit := range res.GetPayload().Results {
-				if strings.HasPrefix(*Circuit.Cid, testPrefix) {
-					deleteParams := circuits.NewCircuitsCircuitsDeleteParams().WithID(Circuit.ID)
-					_, err := api.Circuits.CircuitsCircuitsDelete(deleteParams, nil)
-					if err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted a circuit termination")
-				}
-			}
-			return nil
+			return sweepByName(region, "circuits/circuits/", "cid")
 		},
 	})
 }

@@ -1,10 +1,10 @@
 package netbox
 
 import (
-	"errors"
+	"net/url"
 	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -49,47 +49,38 @@ func dataSourceNetboxDeviceType() *schema.Resource {
 	}
 }
 
+type deviceTypeDataSourceResponse struct {
+	ID            int64             `json:"id"`
+	IsFullDepth   bool              `json:"is_full_depth"`
+	Manufacturer  *netboxapi.Ref    `json:"manufacturer"`
+	Model         string            `json:"model"`
+	PartNumber    string            `json:"part_number"`
+	SubdeviceRole *netboxapi.Choice `json:"subdevice_role"`
+	Slug          string            `json:"slug"`
+	UHeight       *float64          `json:"u_height"`
+}
+
 func dataSourceNetboxDeviceTypeRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	params := dcim.NewDcimDeviceTypesListParams()
+	query := url.Values{}
+	addStrQuery(query, d, "manufacturer", "manufacturer")
+	addStrQuery(query, d, "model", "model")
+	addStrQuery(query, d, "part_number", "part_number")
+	addStrQuery(query, d, "slug", "slug")
 
-	params.Limit = int64ToPtr(2)
-	if manufacturer, ok := d.Get("manufacturer").(string); ok && manufacturer != "" {
-		params.Manufacturer = &manufacturer
-	}
-	if model, ok := d.Get("model").(string); ok && model != "" {
-		params.Model = &model
-	}
-	if part, ok := d.Get("part_number").(string); ok && part != "" {
-		params.PartNumber = &part
-	}
-	if slug, ok := d.Get("slug").(string); ok && slug != "" {
-		params.Slug = &slug
-	}
-
-	res, err := api.Dcim.DcimDeviceTypesList(params, nil)
+	r, err := findOne[deviceTypeDataSourceResponse](m, "dcim/device-types/", query, "device type")
 	if err != nil {
 		return err
 	}
 
-	if *res.GetPayload().Count > int64(1) {
-		return errors.New("more than one device type returned, specify a more narrow filter")
+	d.SetId(strconv.FormatInt(r.ID, 10))
+	d.Set("is_full_depth", r.IsFullDepth)
+	if r.Manufacturer != nil {
+		d.Set("manufacturer_id", r.Manufacturer.ID)
 	}
-	if *res.GetPayload().Count == int64(0) {
-		return errors.New("no device type found matching filter")
-	}
-	result := res.GetPayload().Results[0]
-	d.SetId(strconv.FormatInt(result.ID, 10))
-	d.Set("is_full_depth", result.IsFullDepth)
-	d.Set("manufacturer_id", result.Manufacturer.ID)
-	d.Set("model", result.Model)
-	d.Set("part_number", result.PartNumber)
-	if result.SubdeviceRole != nil && result.SubdeviceRole.Value != nil {
-		d.Set("subdevice_role", *result.SubdeviceRole.Value)
-	} else {
-		d.Set("subdevice_role", "")
-	}
-	d.Set("slug", result.Slug)
-	d.Set("u_height", result.UHeight)
+	d.Set("model", r.Model)
+	d.Set("part_number", r.PartNumber)
+	d.Set("subdevice_role", netboxapi.ChoiceValue(r.SubdeviceRole))
+	d.Set("slug", r.Slug)
+	d.Set("u_height", r.UHeight)
 	return nil
 }

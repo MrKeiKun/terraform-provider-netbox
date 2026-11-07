@@ -1,10 +1,10 @@
 package netbox
 
 import (
-	"errors"
+	"net/url"
 	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -51,43 +51,36 @@ func dataSourceNetboxFhrpGroup() *schema.Resource {
 	}
 }
 
+type fhrpGroupDataSourceResponse struct {
+	ID          int64              `json:"id"`
+	Protocol    string             `json:"protocol"`
+	GroupId     int64              `json:"group_id"`
+	AuthType    string             `json:"auth_type"`
+	AuthKey     string             `json:"auth_key"`
+	Name        string             `json:"name"`
+	Description string             `json:"description"`
+	Comments    string             `json:"comments"`
+	Tags        []netboxapi.TagRef `json:"tags"`
+}
+
 func dataSourceNetboxFhrpGroupRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	params := ipam.NewIpamFhrpGroupsListParams()
-
-	limit := int64(2) // Limit of 2 is enough
-	params.Limit = &limit
-
-	if group_id, ok := d.Get("group_id").(int); ok && group_id != 0 {
-		params.GroupID = strToPtr(strconv.FormatInt(int64(group_id), 10))
-	}
-
-	if protocol, ok := d.Get("protocol").(string); ok && protocol != "" {
-		params.Protocol = &protocol
-	}
-
-	res, err := api.Ipam.IpamFhrpGroupsList(params, nil)
+	query := url.Values{}
+	addIntQuery(query, d, "group_id", "group_id")
+	addStrQuery(query, d, "protocol", "protocol")
+	r, err := findOne[fhrpGroupDataSourceResponse](m, "ipam/fhrp-groups/", query, "group")
 	if err != nil {
 		return err
 	}
 
-	if *res.GetPayload().Count > int64(1) {
-		return errors.New("more than one group returned, specify a more narrow filter")
-	}
-	if *res.GetPayload().Count == int64(0) {
-		return errors.New("no group found matching filter")
-	}
-	result := res.GetPayload().Results[0]
-	d.Set("id", result.ID)
-	d.Set("protocol", result.Protocol)
-	d.Set("group_id", result.GroupID)
-	d.Set("auth_type", result.AuthType)
-	d.Set("auth_key", result.AuthKey)
-	d.Set("name", result.Name)
-	d.Set("description", result.Description)
-	d.Set("comments", result.Comments)
-	d.Set("tags", getTagListFromNestedTagList(result.Tags))
-	d.SetId(strconv.FormatInt(result.ID, 10))
+	d.SetId(strconv.FormatInt(r.ID, 10))
+	d.Set("id", r.ID)
+	d.Set("protocol", r.Protocol)
+	d.Set("group_id", r.GroupId)
+	d.Set("auth_type", r.AuthType)
+	d.Set("auth_key", r.AuthKey)
+	d.Set("name", r.Name)
+	d.Set("description", r.Description)
+	d.Set("comments", r.Comments)
+	d.Set("tags", tagNames(r.Tags))
 	return nil
 }

@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -56,121 +53,73 @@ func resourceNetboxRackReservation() *schema.Resource {
 	}
 }
 
-func resourceNetboxRackReservationCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const rackReservationAPIPath = "dcim/rack-reservations/"
 
-	tags, _ := getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
-
-	params := dcim.NewDcimRackReservationsCreateParams().WithData(
-		&models.WritableRackReservation{
-			Rack:        getOptionalInt(d, "rack_id"),
-			Units:       toInt64PtrList(d.Get("units")),
-			User:        getOptionalInt(d, "user_id"),
-			Description: strToPtr(getOptionalStr(d, "description", false)),
-			Tenant:      getOptionalInt(d, "tenant_id"),
-			Comments:    getOptionalStr(d, "comments", false),
-			Tags:        tags,
-		},
-	)
-
-	res, err := api.Dcim.DcimRackReservationsCreate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxRackReservationRead(d, m)
+type rackReservationRequest struct {
+	Rack        *int64             `json:"rack"`
+	Units       []*int64           `json:"units"`
+	User        *int64             `json:"user"`
+	Description string             `json:"description"`
+	Tenant      *int64             `json:"tenant,omitempty"`
+	Comments    string             `json:"comments,omitempty"`
+	Tags        []netboxapi.TagRef `json:"tags"`
 }
 
-func resourceNetboxRackReservationRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimRackReservationsReadParams().WithID(id)
-
-	res, err := api.Dcim.DcimRackReservationsRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimRackReservationsReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-
-	rackRes := res.GetPayload()
-
-	if rackRes.Rack != nil {
-		d.Set("rack_id", rackRes.Rack.ID)
-	}
-
-	units := []int{}
-	for _, unit := range rackRes.Units {
-		units = append(units, int(*unit))
-	}
-	d.Set("units", units)
-
-	if rackRes.User != nil {
-		d.Set("user_id", rackRes.User.ID)
-	}
-
-	d.Set("description", rackRes.Description)
-
-	if rackRes.Tenant != nil {
-		d.Set("tenant_id", rackRes.Tenant.ID)
-	}
-
-	d.Set("comments", rackRes.Comments)
-
-	api.readTags(d, res.GetPayload().Tags)
-	return nil
+type rackReservationResponse struct {
+	Rack        *netboxapi.Ref     `json:"rack"`
+	Units       []int64            `json:"units"`
+	User        *netboxapi.Ref     `json:"user"`
+	Description string             `json:"description"`
+	Tenant      *netboxapi.Ref     `json:"tenant"`
+	Comments    string             `json:"comments"`
+	Tags        []netboxapi.TagRef `json:"tags"`
 }
 
-func resourceNetboxRackReservationUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-
-	tags, _ := getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
-
-	data := models.WritableRackReservation{
+func rackReservationRequestFromResourceData(api *providerState, d *schema.ResourceData) *rackReservationRequest {
+	// A failed tag lookup leaves the tags empty, same as before.
+	tags, _ := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
+	return &rackReservationRequest{
 		Rack:        getOptionalInt(d, "rack_id"),
 		Units:       toInt64PtrList(d.Get("units")),
 		User:        getOptionalInt(d, "user_id"),
-		Description: strToPtr(getOptionalStr(d, "description", false)),
+		Description: getOptionalStr(d, "description", false),
 		Tenant:      getOptionalInt(d, "tenant_id"),
 		Comments:    getOptionalStr(d, "comments", false),
 		Tags:        tags,
 	}
+}
 
-	params := dcim.NewDcimRackReservationsPartialUpdateParams().WithID(id).WithData(&data)
+func resourceNetboxRackReservationCreate(d *schema.ResourceData, m interface{}) error {
+	return createObject(d, m, rackReservationAPIPath, rackReservationRequestFromResourceData(m.(*providerState), d), resourceNetboxRackReservationRead)
+}
 
-	_, err := api.Dcim.DcimRackReservationsPartialUpdate(params, nil)
-	if err != nil {
-		return err
-	}
+func resourceNetboxRackReservationRead(d *schema.ResourceData, m interface{}) error {
+	api := m.(*providerState)
+	return readObject(d, m, rackReservationAPIPath, func(rackRes *rackReservationResponse) {
+		if rackRes.Rack != nil {
+			d.Set("rack_id", rackRes.Rack.ID)
+		}
+		units := []int{}
+		for _, unit := range rackRes.Units {
+			units = append(units, int(unit))
+		}
+		d.Set("units", units)
+		if rackRes.User != nil {
+			d.Set("user_id", rackRes.User.ID)
+		}
+		d.Set("description", rackRes.Description)
+		if rackRes.Tenant != nil {
+			d.Set("tenant_id", rackRes.Tenant.ID)
+		}
+		d.Set("comments", rackRes.Comments)
+		api.readTagRefs(d, rackRes.Tags)
+	})
+}
 
-	return resourceNetboxRackReservationRead(d, m)
+func resourceNetboxRackReservationUpdate(d *schema.ResourceData, m interface{}) error {
+	return patchObject(d, m, rackReservationAPIPath, rackReservationRequestFromResourceData(m.(*providerState), d), resourceNetboxRackReservationRead)
 }
 
 func resourceNetboxRackReservationDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimRackReservationsDeleteParams().WithID(id)
-
-	_, err := api.Dcim.DcimRackReservationsDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimRackReservationsDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	return nil
+	return deleteObject(d, m, rackReservationAPIPath)
 }

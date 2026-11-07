@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -88,162 +85,105 @@ func resourceNetboxCable() *schema.Resource {
 	}
 }
 
-func resourceNetboxCableCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const cableAPIPath = "dcim/cables/"
 
-	data := models.WritableCable{
-		Status:      d.Get("status").(string),
-		Type:        getOptionalStr(d, "type", false),
-		Tenant:      getOptionalInt(d, "tenant_id"),
-		Label:       getOptionalStr(d, "label", false),
-		Color:       getOptionalStr(d, "color_hex", false),
-		Length:      getOptionalFloat(d, "length"),
-		LengthUnit:  getOptionalStr(d, "length_unit", false),
-		Description: getOptionalStr(d, "description", false),
-		Comments:    getOptionalStr(d, "comments", false),
-	}
+type cableRequest struct {
+	Status        string             `json:"status,omitempty"`
+	Type          string             `json:"type"`
+	Tenant        *int64             `json:"tenant"`
+	Label         string             `json:"label,omitempty"`
+	Color         string             `json:"color"`
+	Length        *float64           `json:"length"`
+	LengthUnit    string             `json:"length_unit,omitempty"`
+	Description   string             `json:"description,omitempty"`
+	Comments      string             `json:"comments,omitempty"`
+	ATerminations []genericObject    `json:"a_terminations"`
+	BTerminations []genericObject    `json:"b_terminations"`
+	CustomFields  interface{}        `json:"custom_fields,omitempty"`
+	Tags          []netboxapi.TagRef `json:"tags"`
+}
 
-	aTerminations := d.Get("a_termination").(*schema.Set)
-	data.ATerminations = getGenericObjectsFromSchemaSet(aTerminations)
+type cableResponse struct {
+	Status        *netboxapi.Choice      `json:"status"`
+	Type          string                 `json:"type"`
+	Tenant        *netboxapi.Ref         `json:"tenant"`
+	Label         string                 `json:"label"`
+	Color         string                 `json:"color"`
+	Length        *float64               `json:"length"`
+	LengthUnit    *netboxapi.Choice      `json:"length_unit"`
+	Description   string                 `json:"description"`
+	Comments      string                 `json:"comments"`
+	ATerminations []genericObject        `json:"a_terminations"`
+	BTerminations []genericObject        `json:"b_terminations"`
+	CustomFields  map[string]interface{} `json:"custom_fields"`
+	Tags          []netboxapi.TagRef     `json:"tags"`
+}
 
-	bTerminations := d.Get("b_termination").(*schema.Set)
-	data.BTerminations = getGenericObjectsFromSchemaSet(bTerminations)
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+func cableRequestFromResourceData(api *providerState, d *schema.ResourceData) (*cableRequest, error) {
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
 	if err != nil {
-		return err
+		return nil, err
+	}
+	data := &cableRequest{
+		Status:      d.Get("status").(string),
+		Type:        d.Get("type").(string),
+		Tenant:      getOptionalInt(d, "tenant_id"),
+		Label:       getOptionalStr(d, "label", true),
+		Color:       d.Get("color_hex").(string),
+		Length:      getOptionalFloat(d, "length"),
+		LengthUnit:  d.Get("length_unit").(string),
+		Description: getOptionalStr(d, "description", true),
+		Comments:    getOptionalStr(d, "comments", true),
+
+		Tags: tags,
 	}
 
-	ct, ok := d.GetOk(customFieldsKey)
-	if ok {
+	data.ATerminations = getGenericObjectsFromSchemaSet(d.Get("a_termination").(*schema.Set))
+	data.BTerminations = getGenericObjectsFromSchemaSet(d.Get("b_termination").(*schema.Set))
+	if ct, ok := d.GetOk(customFieldsKey); ok {
 		data.CustomFields = ct
 	}
+	return data, nil
+}
 
-	params := dcim.NewDcimCablesCreateParams().WithData(&data)
-
-	res, err := api.Dcim.DcimCablesCreate(params, nil)
+func resourceNetboxCableCreate(d *schema.ResourceData, m interface{}) error {
+	data, err := cableRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxCableRead(d, m)
+	return createObject(d, m, cableAPIPath, data, resourceNetboxCableRead)
 }
 
 func resourceNetboxCableRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimCablesReadParams().WithID(id)
+	return readObject(d, m, cableAPIPath, func(r *cableResponse) {
+		d.Set("status", netboxapi.ChoiceValue(r.Status))
+		d.Set("type", r.Type)
+		d.Set("tenant_id", netboxapi.RefID(r.Tenant))
+		d.Set("label", r.Label)
+		d.Set("color_hex", r.Color)
+		d.Set("length", r.Length)
+		d.Set("length_unit", netboxapi.ChoiceValue(r.LengthUnit))
+		d.Set("description", r.Description)
+		d.Set("comments", r.Comments)
 
-	res, err := api.Dcim.DcimCablesRead(params, nil)
-
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimCablesReadDefault); ok {
-			if errresp.Code() == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
+		d.Set("a_termination", getSchemaSetFromGenericObjects(r.ATerminations))
+		d.Set("b_termination", getSchemaSetFromGenericObjects(r.BTerminations))
+		if cf := getCustomFields(r.CustomFields); cf != nil {
+			d.Set(customFieldsKey, cf)
 		}
-		return err
-	}
-
-	cable := res.GetPayload()
-
-	d.Set("a_termination", getSchemaSetFromGenericObjects(cable.ATerminations))
-	d.Set("b_termination", getSchemaSetFromGenericObjects(cable.BTerminations))
-
-	if cable.Status != nil {
-		d.Set("status", cable.Status.Value)
-	} else {
-		d.Set("status", nil)
-	}
-
-	d.Set("type", cable.Type)
-
-	if cable.Tenant != nil {
-		d.Set("tenant_id", cable.Tenant.ID)
-	} else {
-		d.Set("tenant_id", nil)
-	}
-
-	d.Set("label", cable.Label)
-	d.Set("color_hex", cable.Color)
-	d.Set("length", cable.Length)
-
-	if cable.LengthUnit != nil {
-		d.Set("length_unit", cable.LengthUnit.Value)
-	} else {
-		d.Set("length_unit", nil)
-	}
-
-	d.Set("description", cable.Description)
-	d.Set("comments", cable.Comments)
-
-	cf := getCustomFields(res.GetPayload().CustomFields)
-	if cf != nil {
-		d.Set(customFieldsKey, cf)
-	}
-	api.readTags(d, res.GetPayload().Tags)
-
-	return nil
+		api.readTagRefs(d, r.Tags)
+	})
 }
 
 func resourceNetboxCableUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-
-	data := models.WritableCable{
-		Status:      d.Get("status").(string),
-		Type:        getOptionalStr(d, "type", false),
-		Tenant:      getOptionalInt(d, "tenant_id"),
-		Label:       getOptionalStr(d, "label", true),
-		Color:       getOptionalStr(d, "color_hex", false),
-		Length:      getOptionalFloat(d, "length"),
-		LengthUnit:  getOptionalStr(d, "length_unit", false),
-		Description: getOptionalStr(d, "description", true),
-		Comments:    getOptionalStr(d, "comments", true),
-	}
-
-	aTerminations := d.Get("a_termination").(*schema.Set)
-	data.ATerminations = getGenericObjectsFromSchemaSet(aTerminations)
-
-	bTerminations := d.Get("b_termination").(*schema.Set)
-	data.BTerminations = getGenericObjectsFromSchemaSet(bTerminations)
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+	data, err := cableRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	ct, ok := d.GetOk(customFieldsKey)
-	if ok {
-		data.CustomFields = ct
-	}
-
-	params := dcim.NewDcimCablesPartialUpdateParams().WithID(id).WithData(&data)
-
-	_, err = api.Dcim.DcimCablesPartialUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	return resourceNetboxCableRead(d, m)
+	return patchObject(d, m, cableAPIPath, data, resourceNetboxCableRead)
 }
 
 func resourceNetboxCableDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimCablesDeleteParams().WithID(id)
-
-	_, err := api.Dcim.DcimCablesDelete(params, nil)
-	if err != nil {
-		return err
-	}
-	return nil
+	return deleteObject(d, m, cableAPIPath)
 }

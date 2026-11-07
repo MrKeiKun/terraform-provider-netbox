@@ -1,10 +1,10 @@
 package netbox
 
 import (
-	"errors"
+	"net/url"
 	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/tenancy"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -33,33 +33,28 @@ func dataSourceNetboxTenantGroup() *schema.Resource {
 	}
 }
 
+type tenantGroupDataSourceResponse struct {
+	ID          int64          `json:"id"`
+	Name        string         `json:"name"`
+	Slug        string         `json:"slug"`
+	Description string         `json:"description"`
+	Parent      *netboxapi.Ref `json:"parent"`
+}
+
 func dataSourceNetboxTenantGroupRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	name := d.Get("name").(string)
-	params := tenancy.NewTenancyTenantGroupsListParams()
-	params.Name = &name
-	limit := int64(2) // Limit of 2 is enough
-	params.Limit = &limit
-
-	res, err := api.Tenancy.TenancyTenantGroupsList(params, nil)
+	query := url.Values{}
+	addStrQuery(query, d, "name", "name")
+	r, err := findOne[tenantGroupDataSourceResponse](m, "tenancy/tenant-groups/", query, "tenant group")
 	if err != nil {
 		return err
 	}
 
-	if *res.GetPayload().Count > int64(1) {
-		return errors.New("more than one tenant group returned, specify a more narrow filter")
-	}
-	if *res.GetPayload().Count == int64(0) {
-		return errors.New("no tenant group found matching filter")
-	}
-	result := res.GetPayload().Results[0]
-	d.SetId(strconv.FormatInt(result.ID, 10))
-	d.Set("name", result.Name)
-	d.Set("slug", result.Slug)
-	d.Set("description", result.Description)
-	if result.Parent != nil {
-		d.Set("parent_id", result.Parent.ID)
+	d.SetId(strconv.FormatInt(r.ID, 10))
+	d.Set("name", r.Name)
+	d.Set("slug", r.Slug)
+	d.Set("description", r.Description)
+	if r.Parent != nil {
+		d.Set("parent_id", r.Parent.ID)
 	}
 	return nil
 }

@@ -1,10 +1,6 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/extras"
-	"github.com/fbreckle/go-netbox/netbox/models"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -68,105 +64,62 @@ func resourceNetboxWebhook() *schema.Resource {
 	}
 }
 
-func resourceNetboxWebhookCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const webhookAPIPath = "extras/webhooks/"
 
-	data := &models.Webhook{}
+type webhookRequest struct {
+	Name              string `json:"name"`
+	PayloadUrl        string `json:"payload_url"`
+	BodyTemplate      string `json:"body_template,omitempty"`
+	HttpMethod        string `json:"http_method,omitempty"`
+	HttpContentType   string `json:"http_content_type,omitempty"`
+	AdditionalHeaders string `json:"additional_headers,omitempty"`
+	CaFilePath        string `json:"ca_file_path"`
+}
+
+type webhookResponse struct {
+	Name              string `json:"name"`
+	PayloadUrl        string `json:"payload_url"`
+	BodyTemplate      string `json:"body_template"`
+	HttpMethod        string `json:"http_method"`
+	HttpContentType   string `json:"http_content_type"`
+	AdditionalHeaders string `json:"additional_headers"`
+	CaFilePath        string `json:"ca_file_path"`
+}
+
+func webhookRequestFromResourceData(d *schema.ResourceData) *webhookRequest {
 	name := d.Get("name").(string)
-	data.Name = &name
-	payloadURL := d.Get("payload_url").(string)
-	data.PayloadURL = &payloadURL
-	bodyTemplate := d.Get("body_template").(string)
-	data.BodyTemplate = bodyTemplate
-	data.HTTPMethod = getOptionalStr(d, "http_method", false)
-	data.HTTPContentType = getOptionalStr(d, "http_content_type", false)
-	data.AdditionalHeaders = getOptionalStr(d, "additional_headers", false)
-	data.CaFilePath = strToPtr(getOptionalStr(d, "ca_file_path", false))
-
-	params := extras.NewExtrasWebhooksCreateParams().WithData(data)
-
-	res, err := api.Extras.ExtrasWebhooksCreate(params, nil)
-	if err != nil {
-		return err
+	data := &webhookRequest{
+		Name:              name,
+		PayloadUrl:        d.Get("payload_url").(string),
+		BodyTemplate:      d.Get("body_template").(string),
+		HttpMethod:        d.Get("http_method").(string),
+		HttpContentType:   d.Get("http_content_type").(string),
+		AdditionalHeaders: d.Get("additional_headers").(string),
+		CaFilePath:        d.Get("ca_file_path").(string),
 	}
+	return data
+}
 
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxWebhookRead(d, m)
+func resourceNetboxWebhookCreate(d *schema.ResourceData, m interface{}) error {
+	return createObject(d, m, webhookAPIPath, webhookRequestFromResourceData(d), resourceNetboxWebhookRead)
 }
 
 func resourceNetboxWebhookRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := extras.NewExtrasWebhooksReadParams().WithID(id)
-
-	res, err := api.Extras.ExtrasWebhooksRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*extras.ExtrasWebhooksReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-
-	webhook := res.GetPayload()
-	d.Set("name", webhook.Name)
-	d.Set("payload_url", webhook.PayloadURL)
-	d.Set("body_template", webhook.BodyTemplate)
-	d.Set("http_method", webhook.HTTPMethod)
-	d.Set("http_content_type", webhook.HTTPContentType)
-	d.Set("additional_headers", webhook.AdditionalHeaders)
-	d.Set("ca_file_path", webhook.CaFilePath)
-
-	return nil
+	return readObject(d, m, webhookAPIPath, func(r *webhookResponse) {
+		d.Set("name", r.Name)
+		d.Set("payload_url", r.PayloadUrl)
+		d.Set("body_template", r.BodyTemplate)
+		d.Set("http_method", r.HttpMethod)
+		d.Set("http_content_type", r.HttpContentType)
+		d.Set("additional_headers", r.AdditionalHeaders)
+		d.Set("ca_file_path", r.CaFilePath)
+	})
 }
 
 func resourceNetboxWebhookUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.Webhook{}
-
-	name := d.Get("name").(string)
-	payloadURL := d.Get("payload_url").(string)
-	bodyTemplate := d.Get("body_template").(string)
-
-	data.Name = &name
-	data.PayloadURL = &payloadURL
-	data.BodyTemplate = bodyTemplate
-	data.HTTPMethod = getOptionalStr(d, "http_method", false)
-	data.HTTPContentType = getOptionalStr(d, "http_content_type", false)
-	data.AdditionalHeaders = getOptionalStr(d, "additional_headers", false)
-	data.CaFilePath = strToPtr(getOptionalStr(d, "ca_file_path", false))
-
-	params := extras.NewExtrasWebhooksUpdateParams().WithID(id).WithData(&data)
-
-	_, err := api.Extras.ExtrasWebhooksUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	return resourceNetboxWebhookRead(d, m)
+	return putObject(d, m, webhookAPIPath, webhookRequestFromResourceData(d), resourceNetboxWebhookRead)
 }
 
 func resourceNetboxWebhookDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := extras.NewExtrasWebhooksDeleteParams().WithID(id)
-
-	_, err := api.Extras.ExtrasWebhooksDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*extras.ExtrasWebhooksDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	return nil
+	return deleteObject(d, m, webhookAPIPath)
 }

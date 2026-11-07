@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/tenancy"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -46,118 +43,56 @@ func resourceNetboxContactGroup() *schema.Resource {
 	}
 }
 
-func resourceNetboxContactGroupCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const contactGroupAPIPath = "tenancy/contact-groups/"
 
+type contactGroupRequest struct {
+	Name        string             `json:"name"`
+	Slug        string             `json:"slug"`
+	Description string             `json:"description,omitempty"`
+	Parent      *int64             `json:"parent,omitempty"`
+	Tags        []netboxapi.TagRef `json:"tags"`
+}
+
+type contactGroupResponse struct {
+	Name        string         `json:"name"`
+	Slug        string         `json:"slug"`
+	Description string         `json:"description"`
+	Parent      *netboxapi.Ref `json:"parent"`
+}
+
+func contactGroupRequestFromResourceData(d *schema.ResourceData) *contactGroupRequest {
 	name := d.Get("name").(string)
-	parentID := int64(d.Get("parent_id").(int))
-	description := d.Get("description").(string)
-
-	slugValue, slugOk := d.GetOk("slug")
-	var slug string
-	// Default slug to generated slug if not given
-	if !slugOk {
-		slug = getSlug(name)
-	} else {
-		slug = slugValue.(string)
+	data := &contactGroupRequest{
+		Name:        name,
+		Slug:        slugFromResourceData(d, name),
+		Description: d.Get("description").(string),
+		Tags:        []netboxapi.TagRef{},
 	}
-
-	data := &models.WritableContactGroup{}
-	data.Name = &name
-	data.Slug = &slug
-	data.Description = description
-	data.Tags = []*models.NestedTag{}
-
-	if parentID != 0 {
+	if parentID := int64(d.Get("parent_id").(int)); parentID != 0 {
 		data.Parent = &parentID
 	}
+	return data
+}
 
-	params := tenancy.NewTenancyContactGroupsCreateParams().WithData(data)
-
-	res, err := api.Tenancy.TenancyContactGroupsCreate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxContactGroupRead(d, m)
+func resourceNetboxContactGroupCreate(d *schema.ResourceData, m interface{}) error {
+	return createObject(d, m, contactGroupAPIPath, contactGroupRequestFromResourceData(d), resourceNetboxContactGroupRead)
 }
 
 func resourceNetboxContactGroupRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-
-	params := tenancy.NewTenancyContactGroupsReadParams().WithID(id)
-
-	res, err := api.Tenancy.TenancyContactGroupsRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*tenancy.TenancyContactGroupsReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
+	return readObject(d, m, contactGroupAPIPath, func(res *contactGroupResponse) {
+		d.Set("name", res.Name)
+		d.Set("slug", res.Slug)
+		d.Set("description", res.Description)
+		if res.Parent != nil {
+			d.Set("parent_id", res.Parent.ID)
 		}
-		return err
-	}
-
-	d.Set("name", res.GetPayload().Name)
-	d.Set("slug", res.GetPayload().Slug)
-	d.Set("description", res.GetPayload().Description)
-	if res.GetPayload().Parent != nil {
-		d.Set("parent", res.GetPayload().Parent.ID)
-	}
-	return nil
+	})
 }
 
 func resourceNetboxContactGroupUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.WritableContactGroup{}
-
-	name := d.Get("name").(string)
-	description := d.Get("description").(string)
-	parentID := int64(d.Get("parent_id").(int))
-
-	slugValue, slugOk := d.GetOk("slug")
-	var slug string
-	// Default slug to generated slug if not given
-	if !slugOk {
-		slug = getSlug(name)
-	} else {
-		slug = slugValue.(string)
-	}
-
-	data.Slug = &slug
-	data.Name = &name
-	data.Description = description
-	data.Tags = []*models.NestedTag{}
-
-	if parentID != 0 {
-		data.Parent = &parentID
-	}
-	params := tenancy.NewTenancyContactGroupsPartialUpdateParams().WithID(id).WithData(&data)
-
-	_, err := api.Tenancy.TenancyContactGroupsPartialUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	return resourceNetboxContactGroupRead(d, m)
+	return patchObject(d, m, contactGroupAPIPath, contactGroupRequestFromResourceData(d), resourceNetboxContactGroupRead)
 }
 
 func resourceNetboxContactGroupDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := tenancy.NewTenancyContactGroupsDeleteParams().WithID(id)
-
-	_, err := api.Tenancy.TenancyContactGroupsDelete(params, nil)
-	if err != nil {
-		return err
-	}
-	return nil
+	return deleteObject(d, m, contactGroupAPIPath)
 }

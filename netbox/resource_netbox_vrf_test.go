@@ -2,11 +2,8 @@ package netbox
 
 import (
 	"fmt"
-	"log"
-	"strings"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
@@ -202,27 +199,7 @@ func init() {
 		Name:         "netbox_vrf",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := ipam.NewIpamVrfsListParams()
-			res, err := api.Ipam.IpamVrfsList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, vrf := range res.GetPayload().Results {
-				if strings.HasPrefix(*vrf.Name, testPrefix) {
-					deleteParams := ipam.NewIpamVrfsDeleteParams().WithID(vrf.ID)
-					_, err := api.Ipam.IpamVrfsDelete(deleteParams, nil)
-					if err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted a vrf")
-				}
-			}
-			return nil
+			return sweepByName(region, "ipam/vrfs/", "name")
 		},
 	})
 }

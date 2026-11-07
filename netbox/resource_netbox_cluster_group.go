@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/virtualization"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -42,121 +39,48 @@ func resourceNetboxClusterGroup() *schema.Resource {
 	}
 }
 
-func resourceNetboxClusterGroupCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const clusterGroupAPIPath = "virtualization/cluster-groups/"
 
-	data := models.ClusterGroup{}
+type clusterGroupRequest struct {
+	Name        string             `json:"name"`
+	Slug        string             `json:"slug"`
+	Description string             `json:"description,omitempty"`
+	Tags        []netboxapi.TagRef `json:"tags"`
+}
 
+type clusterGroupResponse struct {
+	Name        string `json:"name"`
+	Slug        string `json:"slug"`
+	Description string `json:"description"`
+}
+
+func clusterGroupRequestFromResourceData(d *schema.ResourceData) *clusterGroupRequest {
 	name := d.Get("name").(string)
-	data.Name = &name
-
-	slugValue, slugOk := d.GetOk("slug")
-	var slug string
-	// Default slug to generated slug if not given
-	if !slugOk {
-		slug = getSlug(name)
-	} else {
-		slug = slugValue.(string)
+	return &clusterGroupRequest{
+		Name: name,
+		Slug: slugFromResourceData(d, name),
+		// description omits empty values, so a cleared one is sent as a single space
+		Description: getOptionalStr(d, "description", true),
+		Tags:        []netboxapi.TagRef{},
 	}
-	data.Slug = &slug
+}
 
-	if description, ok := d.GetOk("description"); ok {
-		data.Description = description.(string)
-	}
-
-	data.Tags = []*models.NestedTag{}
-
-	params := virtualization.NewVirtualizationClusterGroupsCreateParams().WithData(&data)
-
-	res, err := api.Virtualization.VirtualizationClusterGroupsCreate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxClusterGroupRead(d, m)
+func resourceNetboxClusterGroupCreate(d *schema.ResourceData, m interface{}) error {
+	return createObject(d, m, clusterGroupAPIPath, clusterGroupRequestFromResourceData(d), resourceNetboxClusterGroupRead)
 }
 
 func resourceNetboxClusterGroupRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := virtualization.NewVirtualizationClusterGroupsReadParams().WithID(id)
-
-	res, err := api.Virtualization.VirtualizationClusterGroupsRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*virtualization.VirtualizationClusterGroupsReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-
-	d.Set("name", res.GetPayload().Name)
-	d.Set("slug", res.GetPayload().Slug)
-	d.Set("description", res.GetPayload().Description)
-	return nil
+	return readObject(d, m, clusterGroupAPIPath, func(res *clusterGroupResponse) {
+		d.Set("name", res.Name)
+		d.Set("slug", res.Slug)
+		d.Set("description", res.Description)
+	})
 }
 
 func resourceNetboxClusterGroupUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.ClusterGroup{}
-
-	name := d.Get("name").(string)
-	data.Name = &name
-
-	slugValue, slugOk := d.GetOk("slug")
-	var slug string
-	// Default slug to generated slug if not given
-	if !slugOk {
-		slug = getSlug(name)
-	} else {
-		slug = slugValue.(string)
-	}
-	data.Slug = &slug
-
-	if d.HasChange("description") {
-		// description omits empty values so set to ' '
-		if description := d.Get("description"); description.(string) == "" {
-			data.Description = " "
-		} else {
-			data.Description = description.(string)
-		}
-	}
-
-	data.Tags = []*models.NestedTag{}
-
-	params := virtualization.NewVirtualizationClusterGroupsPartialUpdateParams().WithID(id).WithData(&data)
-
-	_, err := api.Virtualization.VirtualizationClusterGroupsPartialUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	return resourceNetboxClusterGroupRead(d, m)
+	return patchObject(d, m, clusterGroupAPIPath, clusterGroupRequestFromResourceData(d), resourceNetboxClusterGroupRead)
 }
 
 func resourceNetboxClusterGroupDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := virtualization.NewVirtualizationClusterGroupsDeleteParams().WithID(id)
-
-	_, err := api.Virtualization.VirtualizationClusterGroupsDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*virtualization.VirtualizationClusterGroupsDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	return nil
+	return deleteObject(d, m, clusterGroupAPIPath)
 }

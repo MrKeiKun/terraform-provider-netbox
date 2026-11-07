@@ -1,10 +1,10 @@
 package netbox
 
 import (
-	"errors"
+	"net/url"
 	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -80,40 +80,38 @@ func dataSourceNetboxSite() *schema.Resource {
 	}
 }
 
+type siteDataSourceResponse struct {
+	ID              int64             `json:"id"`
+	Asns            []netboxapi.Ref   `json:"asns"`
+	Comments        string            `json:"comments"`
+	Description     string            `json:"description"`
+	Name            string            `json:"name"`
+	Slug            string            `json:"slug"`
+	TimeZone        *string           `json:"time_zone"`
+	Facility        string            `json:"facility"`
+	PhysicalAddress string            `json:"physical_address"`
+	Group           *netboxapi.Ref    `json:"group"`
+	Region          *netboxapi.Ref    `json:"region"`
+	Status          *netboxapi.Choice `json:"status"`
+	Tenant          *netboxapi.Ref    `json:"tenant"`
+}
+
 func dataSourceNetboxSiteRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	params := dcim.NewDcimSitesListParams()
-
-	params.Limit = int64ToPtr(2)
-	if name, ok := d.Get("name").(string); ok && name != "" {
-		params.SetName(&name)
-	}
-	if slug, ok := d.Get("slug").(string); ok && slug != "" {
-		params.SetSlug(&slug)
-	}
+	query := url.Values{}
+	addStrQuery(query, d, "name", "name")
+	addStrQuery(query, d, "slug", "slug")
 	if id, ok := d.Get("id").(string); ok && id != "0" {
-		params.SetID(&id)
+		addStrQuery(query, d, "id", "id")
 	}
-	if facility, ok := d.Get("facility").(string); ok && facility != "" {
-		params.SetFacility(&facility)
-	}
+	addStrQuery(query, d, "facility", "facility")
 
-	res, err := api.Dcim.DcimSitesList(params, nil)
+	site, err := findOne[siteDataSourceResponse](m, "dcim/sites/", query, "site")
 	if err != nil {
 		return err
 	}
 
-	if *res.GetPayload().Count > int64(1) {
-		return errors.New("more than one site returned, specify a more narrow filter")
-	}
-	if *res.GetPayload().Count == int64(0) {
-		return errors.New("no site found matching filter")
-	}
-
-	site := res.GetPayload().Results[0]
-
 	d.SetId(strconv.FormatInt(site.ID, 10))
-	d.Set("asn_ids", getIDsFromNestedASNList(site.Asns))
+	d.Set("asn_ids", netboxapi.IDs(site.Asns))
 	d.Set("comments", site.Comments)
 	d.Set("description", site.Description)
 	d.Set("name", site.Name)

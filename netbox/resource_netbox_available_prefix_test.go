@@ -5,11 +5,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
-	"github.com/fbreckle/go-netbox/netbox/models"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	log "github.com/sirupsen/logrus"
 )
 
 func testAccNetboxAvailablePrefixFullDependencies(testName string, parentPrefix string) string {
@@ -313,27 +310,7 @@ func init() {
 		Name:         "netbox_available_prefix",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := ipam.NewIpamPrefixesListParams()
-			res, err := api.Ipam.IpamPrefixesList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, prefix := range res.GetPayload().Results {
-				if len(prefix.Tags) > 0 && (prefix.Tags[0] == &models.NestedTag{Name: strToPtr("acctest"), Slug: strToPtr("acctest")}) {
-					deleteParams := ipam.NewIpamPrefixesDeleteParams().WithID(prefix.ID)
-					_, err := api.Ipam.IpamPrefixesDelete(deleteParams, nil)
-					if err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted a prefix")
-				}
-			}
-			return nil
+			return sweepByName(region, "ipam/prefixes/", "prefix")
 		},
 	})
 }

@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -45,104 +42,49 @@ func resourceNetboxFhrpGroupAssignment() *schema.Resource {
 	}
 }
 
-func resourceNetboxFhrpGroupAssignmentCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const fhrpGroupAssignmentAPIPath = "ipam/fhrp-group-assignments/"
 
-	data := models.WritableFHRPGroupAssignment{}
+type fhrpGroupAssignmentRequest struct {
+	Group         *int64 `json:"group"`
+	InterfaceId   *int64 `json:"interface_id"`
+	InterfaceType string `json:"interface_type"`
+	Priority      *int64 `json:"priority"`
+}
 
-	group_id := int64(d.Get("group_id").(int))
-	data.Group = &group_id
-	interface_id := int64(d.Get("interface_id").(int))
-	data.InterfaceID = &interface_id
-	priority := int64(d.Get("priority").(int))
-	data.Priority = &priority
-	interface_type := d.Get("interface_type").(string)
-	data.InterfaceType = &interface_type
+type fhrpGroupAssignmentResponse struct {
+	Group         *netboxapi.Ref `json:"group"`
+	InterfaceId   *int64         `json:"interface_id"`
+	InterfaceType string         `json:"interface_type"`
+	Priority      *int64         `json:"priority"`
+}
 
-	params := ipam.NewIpamFhrpGroupAssignmentsCreateParams().WithData(&data)
-
-	var err error
-	res, err := api.Ipam.IpamFhrpGroupAssignmentsCreate(params, nil)
-	if err != nil {
-		return err
+func fhrpGroupAssignmentRequestFromResourceData(d *schema.ResourceData) *fhrpGroupAssignmentRequest {
+	data := &fhrpGroupAssignmentRequest{
+		Group:         int64ToPtr(int64(d.Get("group_id").(int))),
+		InterfaceId:   int64ToPtr(int64(d.Get("interface_id").(int))),
+		InterfaceType: d.Get("interface_type").(string),
+		Priority:      int64ToPtr(int64(d.Get("priority").(int))),
 	}
+	return data
+}
 
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxFhrpGroupAssignmentRead(d, m)
+func resourceNetboxFhrpGroupAssignmentCreate(d *schema.ResourceData, m interface{}) error {
+	return createObject(d, m, fhrpGroupAssignmentAPIPath, fhrpGroupAssignmentRequestFromResourceData(d), resourceNetboxFhrpGroupAssignmentRead)
 }
 
 func resourceNetboxFhrpGroupAssignmentRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := ipam.NewIpamFhrpGroupAssignmentsReadParams().WithID(id)
-
-	res, err := api.Ipam.IpamFhrpGroupAssignmentsRead(params, nil)
-
-	if err != nil {
-		if errresp, ok := err.(*ipam.IpamAsnsReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-
-	assignment := res.GetPayload()
-
-	d.Set("group_id", assignment.Group.ID)
-	d.Set("interface_id", assignment.InterfaceID)
-	d.Set("interface_type", assignment.InterfaceType)
-	d.Set("priority", assignment.Priority)
-
-	return nil
+	return readObject(d, m, fhrpGroupAssignmentAPIPath, func(r *fhrpGroupAssignmentResponse) {
+		d.Set("group_id", netboxapi.RefID(r.Group))
+		d.Set("interface_id", r.InterfaceId)
+		d.Set("interface_type", r.InterfaceType)
+		d.Set("priority", r.Priority)
+	})
 }
 
 func resourceNetboxFhrpGroupAssignmentUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.WritableFHRPGroupAssignment{}
-
-	group_id := int64(d.Get("group_id").(int))
-	data.Group = &group_id
-	interface_id := int64(d.Get("interface_id").(int))
-	data.InterfaceID = &interface_id
-	priority := int64(d.Get("priority").(int))
-	data.Priority = &priority
-	interface_type := d.Get("interface_type").(string)
-	data.InterfaceType = &interface_type
-
-	params := ipam.NewIpamFhrpGroupAssignmentsUpdateParams().WithID(id).WithData(&data)
-
-	var err error
-
-	_, err = api.Ipam.IpamFhrpGroupAssignmentsUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	return resourceNetboxFhrpGroupAssignmentRead(d, m)
+	return putObject(d, m, fhrpGroupAssignmentAPIPath, fhrpGroupAssignmentRequestFromResourceData(d), resourceNetboxFhrpGroupAssignmentRead)
 }
 
 func resourceNetboxFhrpGroupAssignmentDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := ipam.NewIpamFhrpGroupAssignmentsDeleteParams().WithID(id)
-
-	_, err := api.Ipam.IpamFhrpGroupAssignmentsDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*ipam.IpamFhrpGroupAssignmentsDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	return nil
+	return deleteObject(d, m, fhrpGroupAssignmentAPIPath)
 }

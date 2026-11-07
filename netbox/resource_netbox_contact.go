@@ -1,11 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/tenancy"
-	"github.com/fbreckle/go-netbox/netbox/models"
-	"github.com/go-openapi/strfmt"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -63,153 +59,91 @@ func resourceNetboxContact() *schema.Resource {
 	}
 }
 
-func resourceNetboxContactCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const contactAPIPath = "tenancy/contacts/"
 
-	name := d.Get("name").(string)
-	phone := d.Get("phone").(string)
-	email := d.Get("email").(string)
-	link := d.Get("link").(string)
-	description := d.Get("description").(string)
-	groupID := int64(d.Get("group_id").(int))
-	groupIDs := d.Get("group_ids").([]interface{})
+type contactRequest struct {
+	Name        string             `json:"name"`
+	Phone       string             `json:"phone,omitempty"`
+	Email       string             `json:"email,omitempty"`
+	Link        string             `json:"link,omitempty"`
+	Description string             `json:"description,omitempty"`
+	Groups      []int64            `json:"groups"`
+	Tags        []netboxapi.TagRef `json:"tags"`
+}
 
-	tags, _ := getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+type contactResponse struct {
+	Name        string          `json:"name"`
+	Phone       string          `json:"phone"`
+	Email       string          `json:"email"`
+	Link        string          `json:"link"`
+	Description string          `json:"description"`
+	Groups      []netboxapi.Ref `json:"groups"`
+}
 
-	data := &models.WritableContact{}
-
-	data.Name = &name
-	data.Tags = tags
-	data.Phone = phone
-	data.Email = strfmt.Email(email)
-	data.Link = strfmt.URI(link)
-	data.Description = description
+func contactRequestFromResourceData(api *providerState, d *schema.ResourceData) (*contactRequest, error) {
+	// A failed tag lookup leaves the tags empty, same as before.
+	tags, _ := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
 
 	groups := make([]int64, 0)
-	if len(groupIDs) > 0 {
+	if groupIDs := d.Get("group_ids").([]interface{}); len(groupIDs) > 0 {
 		for _, v := range groupIDs {
 			groups = append(groups, int64(v.(int)))
 		}
-	} else if groupID != 0 {
+	} else if groupID := int64(d.Get("group_id").(int)); groupID != 0 {
 		groups = append(groups, groupID)
 	}
-	data.Groups = groups
 
-	params := tenancy.NewTenancyContactsCreateParams().WithData(data)
+	return &contactRequest{
+		Name:        d.Get("name").(string),
+		Phone:       d.Get("phone").(string),
+		Email:       d.Get("email").(string),
+		Link:        d.Get("link").(string),
+		Description: d.Get("description").(string),
+		Groups:      groups,
+		Tags:        tags,
+	}, nil
+}
 
-	res, err := api.Tenancy.TenancyContactsCreate(params, nil)
+func resourceNetboxContactCreate(d *schema.ResourceData, m interface{}) error {
+	data, err := contactRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxContactRead(d, m)
+	return createObject(d, m, contactAPIPath, data, resourceNetboxContactRead)
 }
 
 func resourceNetboxContactRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := tenancy.NewTenancyContactsReadParams().WithID(id)
+	return readObject(d, m, contactAPIPath, func(contact *contactResponse) {
+		d.Set("name", contact.Name)
+		d.Set("phone", contact.Phone)
+		d.Set("email", contact.Email)
+		d.Set("link", contact.Link)
+		d.Set("description", contact.Description)
 
-	res, err := api.Tenancy.TenancyContactsRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*tenancy.TenancyContactsReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
+		if contact.Groups != nil {
+			groupIDs := netboxapi.IDs(contact.Groups)
+			if _, ok := d.GetOk("group_ids"); ok {
+				d.Set("group_ids", groupIDs)
+				d.Set("group_id", nil)
+			} else if _, ok := d.GetOk("group_id"); ok && len(groupIDs) == 1 {
+				d.Set("group_id", groupIDs[0])
+				d.Set("group_ids", nil)
 			}
-		}
-		return err
-	}
-
-	d.Set("name", res.GetPayload().Name)
-	d.Set("phone", res.GetPayload().Phone)
-	d.Set("email", res.GetPayload().Email)
-	d.Set("link", res.GetPayload().Link)
-	d.Set("description", res.GetPayload().Description)
-
-	if res.GetPayload().Groups != nil {
-		groups := res.GetPayload().Groups
-		groupIDs := make([]int64, len(groups))
-		for i, group := range groups {
-			groupIDs[i] = group.ID
-		}
-		if _, ok := d.GetOk("group_ids"); ok {
-			d.Set("group_ids", groupIDs)
-			d.Set("group_id", nil)
-		} else if _, ok := d.GetOk("group_id"); ok && len(groups) == 1 {
-			d.Set("group_id", groupIDs[0])
+		} else {
 			d.Set("group_ids", nil)
+			d.Set("group_id", nil)
 		}
-	} else {
-		d.Set("group_ids", nil)
-		d.Set("group_id", nil)
-	}
-
-	return nil
+	})
 }
 
 func resourceNetboxContactUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.WritableContact{}
-
-	name := d.Get("name").(string)
-	phone := d.Get("phone").(string)
-	email := d.Get("email").(string)
-	link := d.Get("link").(string)
-	description := d.Get("description").(string)
-	groupID := int64(d.Get("group_id").(int))
-	groupIDs := d.Get("group_ids").([]interface{})
-
-	tags, _ := getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
-
-	data.Name = &name
-	data.Tags = tags
-	data.Phone = phone
-	data.Email = strfmt.Email(email)
-	data.Link = strfmt.URI(link)
-	data.Description = description
-
-	groups := make([]int64, 0)
-	if len(groupIDs) > 0 {
-		for _, v := range groupIDs {
-			groups = append(groups, int64(v.(int)))
-		}
-	} else if groupID != 0 {
-		groups = append(groups, groupID)
-	}
-	data.Groups = groups
-
-	params := tenancy.NewTenancyContactsPartialUpdateParams().WithID(id).WithData(&data)
-
-	_, err := api.Tenancy.TenancyContactsPartialUpdate(params, nil)
+	data, err := contactRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	return resourceNetboxContactRead(d, m)
+	return patchObject(d, m, contactAPIPath, data, resourceNetboxContactRead)
 }
 
 func resourceNetboxContactDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := tenancy.NewTenancyContactsDeleteParams().WithID(id)
-
-	_, err := api.Tenancy.TenancyContactsDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*tenancy.TenancyContactsDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	return nil
+	return deleteObject(d, m, contactAPIPath)
 }

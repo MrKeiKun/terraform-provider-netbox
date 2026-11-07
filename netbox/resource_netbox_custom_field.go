@@ -2,10 +2,8 @@ package netbox
 
 import (
 	"encoding/json"
-	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/extras"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -61,16 +59,16 @@ func resourceCustomField() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 				ValidateFunc: validation.StringInSlice([]string{
-					models.CustomFieldTypeValueText,
-					models.CustomFieldTypeValueInteger,
-					models.CustomFieldTypeValueBoolean,
-					models.CustomFieldTypeValueDate,
-					models.CustomFieldTypeValueURL,
-					models.CustomFieldTypeValueSelect,
-					models.CustomFieldTypeValueMultiselect,
-					models.CustomFieldTypeValueObject,
-					models.CustomFieldTypeValueMultiobject,
-					models.CustomFieldTypeValueJSON,
+					"text",
+					"integer",
+					"boolean",
+					"date",
+					"url",
+					"select",
+					"multiselect",
+					"object",
+					"multiobject",
+					"json",
 				}, false),
 			},
 			"content_types": {
@@ -136,13 +134,44 @@ func resourceCustomField() *schema.Resource {
 	}
 }
 
-func resourceNetboxCustomFieldUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const customFieldAPIPath = "extras/custom-fields/"
 
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
+type customFieldRequest struct {
+	Name              string      `json:"name"`
+	Type              string      `json:"type,omitempty"`
+	Default           interface{} `json:"default,omitempty"`
+	Description       string      `json:"description,omitempty"`
+	GroupName         string      `json:"group_name,omitempty"`
+	Label             string      `json:"label,omitempty"`
+	Required          bool        `json:"required"`
+	ValidationRegex   string      `json:"validation_regex,omitempty"`
+	RelatedObjectType string      `json:"related_object_type,omitempty"`
+	Weight            *int64      `json:"weight,omitempty"`
+	ChoiceSet         *int64      `json:"choice_set,omitempty"`
+	ObjectTypes       []string    `json:"object_types,omitempty"`
+	ValidationMaximum *float64    `json:"validation_maximum,omitempty"`
+	ValidationMinimum *float64    `json:"validation_minimum,omitempty"`
+}
 
-	data := &models.WritableCustomField{
-		Name:              strToPtr(d.Get("name").(string)),
+type customFieldResponse struct {
+	Name              string            `json:"name"`
+	Type              *netboxapi.Choice `json:"type"`
+	ObjectTypes       []string          `json:"object_types"`
+	ChoiceSet         *netboxapi.Ref    `json:"choice_set"`
+	Weight            *int64            `json:"weight"`
+	Default           interface{}       `json:"default"`
+	Description       string            `json:"description"`
+	GroupName         string            `json:"group_name"`
+	Label             string            `json:"label"`
+	Required          bool              `json:"required"`
+	ValidationMaximum *float64          `json:"validation_maximum"`
+	ValidationMinimum *float64          `json:"validation_minimum"`
+	ValidationRegex   string            `json:"validation_regex"`
+}
+
+func customFieldRequestFromResourceData(d *schema.ResourceData) *customFieldRequest {
+	data := &customFieldRequest{
+		Name:              d.Get("name").(string),
 		Type:              d.Get("type").(string),
 		Default:           customFieldDefaultToAPI(d),
 		Description:       d.Get("description").(string),
@@ -154,160 +183,62 @@ func resourceNetboxCustomFieldUpdate(d *schema.ResourceData, m interface{}) erro
 		Weight:            int64ToPtr(int64(d.Get("weight").(int))),
 	}
 
-	choiceSet, ok := d.GetOk("choice_set_id")
-	if ok {
+	if choiceSet, ok := d.GetOk("choice_set_id"); ok {
 		data.ChoiceSet = int64ToPtr(int64(choiceSet.(int)))
 	}
-
-	ctypes, ok := d.GetOk("content_types")
-	if ok {
-		ctypes := ctypes.(*schema.Set).List()
-		objectTypes := make([]string, 0, len(ctypes))
-		for _, t := range ctypes {
-			objectTypes = append(objectTypes, t.(string))
+	if ctypes, ok := d.GetOk("content_types"); ok {
+		for _, t := range ctypes.(*schema.Set).List() {
+			data.ObjectTypes = append(data.ObjectTypes, t.(string))
 		}
-		data.ObjectTypes = objectTypes
 	}
-
-	vmax, ok := d.GetOk("validation_maximum")
-	if ok {
+	if vmax, ok := d.GetOk("validation_maximum"); ok {
 		data.ValidationMaximum = float64ToPtr(float64(vmax.(int)))
 	}
-	vmin, ok := d.GetOk("validation_minimum")
-	if ok {
+	if vmin, ok := d.GetOk("validation_minimum"); ok {
 		data.ValidationMinimum = float64ToPtr(float64(vmin.(int)))
 	}
-
-	params := extras.NewExtrasCustomFieldsUpdateParams().WithID(id).WithData(data)
-	res, err := api.Extras.ExtrasCustomFieldsUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxCustomFieldRead(d, m)
+	return data
 }
 
 func resourceNetboxCustomFieldCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	data := &models.WritableCustomField{
-		Name:              strToPtr(d.Get("name").(string)),
-		Type:              d.Get("type").(string),
-		Default:           customFieldDefaultToAPI(d),
-		Description:       d.Get("description").(string),
-		GroupName:         d.Get("group_name").(string),
-		Label:             d.Get("label").(string),
-		Required:          d.Get("required").(bool),
-		ValidationRegex:   d.Get("validation_regex").(string),
-		RelatedObjectType: d.Get("related_object_type").(string),
-		Weight:            int64ToPtr(int64(d.Get("weight").(int))),
-	}
-
-	choiceSet, ok := d.GetOk("choice_set_id")
-	if ok {
-		data.ChoiceSet = int64ToPtr(int64(choiceSet.(int)))
-	}
-
-	ctypes, ok := d.GetOk("content_types")
-	if ok {
-		ctypes := ctypes.(*schema.Set).List()
-		objectTypes := make([]string, 0, len(ctypes))
-		for _, t := range ctypes {
-			objectTypes = append(objectTypes, t.(string))
-		}
-		data.ObjectTypes = objectTypes
-	}
-
-	vmax, ok := d.GetOk("validation_maximum")
-	if ok {
-		data.ValidationMaximum = float64ToPtr(float64(vmax.(int)))
-	}
-	vmin, ok := d.GetOk("validation_minimum")
-	if ok {
-		data.ValidationMinimum = float64ToPtr(float64(vmin.(int)))
-	}
-
-	params := extras.NewExtrasCustomFieldsCreateParams().WithData(data)
-
-	res, err := api.Extras.ExtrasCustomFieldsCreate(params, nil)
-	if err != nil {
-		//return errors.New(getTextFromError(err))
-		return err
-	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxCustomFieldRead(d, m)
+	return createObject(d, m, customFieldAPIPath, customFieldRequestFromResourceData(d), resourceNetboxCustomFieldRead)
 }
 
 func resourceNetboxCustomFieldRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := extras.NewExtrasCustomFieldsReadParams().WithID(id)
-	res, err := api.Extras.ExtrasCustomFieldsRead(params, nil)
-	if err != nil {
-		errapi, ok := err.(*extras.ExtrasCustomFieldsReadDefault)
-		if !ok {
-			return err
+	return readObject(d, m, customFieldAPIPath, func(customField *customFieldResponse) {
+		d.Set("name", customField.Name)
+		d.Set("type", netboxapi.ChoiceValue(customField.Type))
+		d.Set("content_types", customField.ObjectTypes)
+		if customField.ChoiceSet != nil {
+			d.Set("choice_set_id", customField.ChoiceSet.ID)
 		}
-		errorcode := errapi.Code()
-		if errorcode == 404 {
-			d.SetId("")
-			return nil
+		d.Set("weight", customField.Weight)
+
+		// JSON value (number, bool, list) is re-encoded to its JSON text.
+		if customField.Default != nil {
+			if s, isStr := customField.Default.(string); isStr {
+				d.Set("default", s)
+			} else if b, err := json.Marshal(customField.Default); err == nil {
+				d.Set("default", string(b))
+			}
+		} else {
+			d.Set("default", "")
 		}
-		return err
-	}
 
-	customField := res.GetPayload()
-	d.Set("name", customField.Name)
-	d.Set("type", *customField.Type.Value)
+		d.Set("description", customField.Description)
+		d.Set("group_name", customField.GroupName)
+		d.Set("label", customField.Label)
+		d.Set("required", customField.Required)
+		d.Set("validation_maximum", customField.ValidationMaximum)
+		d.Set("validation_minimum", customField.ValidationMinimum)
+		d.Set("validation_regex", customField.ValidationRegex)
+	})
+}
 
-	d.Set("content_types", customField.ObjectTypes)
-
-	choiceSet := customField.ChoiceSet
-	if choiceSet != nil {
-		d.Set("choice_set_id", customField.ChoiceSet.ID)
-	}
-
-	d.Set("weight", customField.Weight)
-	// JSON value (number, bool, list) is re-encoded to its JSON text.
-	if customField.Default != nil {
-		if s, isStr := customField.Default.(string); isStr {
-			d.Set("default", s)
-		} else if b, err := json.Marshal(customField.Default); err == nil {
-			d.Set("default", string(b))
-		}
-	} else {
-		d.Set("default", "")
-	}
-
-	d.Set("description", customField.Description)
-	d.Set("group_name", customField.GroupName)
-	d.Set("label", customField.Label)
-	d.Set("required", customField.Required)
-
-	d.Set("validation_maximum", customField.ValidationMaximum)
-	d.Set("validation_minimum", customField.ValidationMinimum)
-	d.Set("validation_regex", customField.ValidationRegex)
-
-	return nil
+func resourceNetboxCustomFieldUpdate(d *schema.ResourceData, m interface{}) error {
+	return putObject(d, m, customFieldAPIPath, customFieldRequestFromResourceData(d), resourceNetboxCustomFieldRead)
 }
 
 func resourceNetboxCustomFieldDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := extras.NewExtrasCustomFieldsDeleteParams().WithID(id)
-	_, err := api.Extras.ExtrasCustomFieldsDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*extras.ExtrasCustomFieldsDeleteDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				d.SetId("")
-			}
-		}
-		return err
-	}
-	return nil
+	return deleteObject(d, m, customFieldAPIPath)
 }

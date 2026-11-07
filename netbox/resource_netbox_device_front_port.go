@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -72,155 +69,99 @@ func resourceNetboxDeviceFrontPort() *schema.Resource {
 	}
 }
 
-func resourceNetboxDeviceFrontPortCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const deviceFrontPortAPIPath = "dcim/front-ports/"
 
-	data := models.WritableFrontPort{
+type deviceFrontPortRequest struct {
+	Name             string             `json:"name"`
+	Device           *int64             `json:"device"`
+	Module           *int64             `json:"module"`
+	Label            string             `json:"label,omitempty"`
+	Type             string             `json:"type"`
+	RearPort         *int64             `json:"rear_port"`
+	RearPortPosition int64              `json:"rear_port_position,omitempty"`
+	Color            string             `json:"color"`
+	Description      string             `json:"description,omitempty"`
+	MarkConnected    bool               `json:"mark_connected"`
+	CustomFields     interface{}        `json:"custom_fields,omitempty"`
+	Tags             []netboxapi.TagRef `json:"tags"`
+}
+
+type deviceFrontPortResponse struct {
+	Name             string                 `json:"name"`
+	Device           *netboxapi.Ref         `json:"device"`
+	Module           *netboxapi.Ref         `json:"module"`
+	Label            string                 `json:"label"`
+	Type             *netboxapi.Choice      `json:"type"`
+	RearPort         *netboxapi.Ref         `json:"rear_port"`
+	RearPortPosition int64                  `json:"rear_port_position"`
+	Color            string                 `json:"color"`
+	Description      string                 `json:"description"`
+	MarkConnected    bool                   `json:"mark_connected"`
+	CustomFields     map[string]interface{} `json:"custom_fields"`
+	Tags             []netboxapi.TagRef     `json:"tags"`
+}
+
+func deviceFrontPortRequestFromResourceData(api *providerState, d *schema.ResourceData) (*deviceFrontPortRequest, error) {
+	name := d.Get("name").(string)
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
+	if err != nil {
+		return nil, err
+	}
+	data := &deviceFrontPortRequest{
+		Name:             name,
 		Device:           int64ToPtr(int64(d.Get("device_id").(int))),
-		Name:             strToPtr(d.Get("name").(string)),
-		Type:             strToPtr(d.Get("type").(string)),
+		Module:           getOptionalInt(d, "module_id"),
+		Label:            getOptionalStr(d, "label", true),
+		Type:             d.Get("type").(string),
 		RearPort:         int64ToPtr(int64(d.Get("rear_port_id").(int))),
 		RearPortPosition: int64(d.Get("rear_port_position").(int)),
-		Module:           getOptionalInt(d, "module_id"),
-		Label:            getOptionalStr(d, "label", false),
-		Color:            getOptionalStr(d, "color_hex", false),
-		Description:      getOptionalStr(d, "description", false),
+		Color:            getOptionalStr(d, "color_hex", true),
+		Description:      getOptionalStr(d, "description", true),
 		MarkConnected:    d.Get("mark_connected").(bool),
+		Tags:             tags,
 	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
-	if err != nil {
-		return err
-	}
-
-	ct, ok := d.GetOk(customFieldsKey)
-	if ok {
+	if ct, ok := d.GetOk(customFieldsKey); ok {
 		data.CustomFields = ct
 	}
+	return data, nil
+}
 
-	params := dcim.NewDcimFrontPortsCreateParams().WithData(&data)
-
-	res, err := api.Dcim.DcimFrontPortsCreate(params, nil)
+func resourceNetboxDeviceFrontPortCreate(d *schema.ResourceData, m interface{}) error {
+	data, err := deviceFrontPortRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxDeviceFrontPortRead(d, m)
+	return createObject(d, m, deviceFrontPortAPIPath, data, resourceNetboxDeviceFrontPortRead)
 }
 
 func resourceNetboxDeviceFrontPortRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimFrontPortsReadParams().WithID(id)
-
-	res, err := api.Dcim.DcimFrontPortsRead(params, nil)
-
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimFrontPortsReadDefault); ok {
-			if errresp.Code() == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
+	return readObject(d, m, deviceFrontPortAPIPath, func(r *deviceFrontPortResponse) {
+		d.Set("name", r.Name)
+		d.Set("device_id", netboxapi.RefID(r.Device))
+		d.Set("module_id", netboxapi.RefID(r.Module))
+		d.Set("label", r.Label)
+		d.Set("type", netboxapi.ChoiceValue(r.Type))
+		d.Set("rear_port_id", netboxapi.RefID(r.RearPort))
+		d.Set("rear_port_position", r.RearPortPosition)
+		d.Set("color_hex", r.Color)
+		d.Set("description", r.Description)
+		d.Set("mark_connected", r.MarkConnected)
+		if cf := getCustomFields(r.CustomFields); cf != nil {
+			d.Set(customFieldsKey, cf)
 		}
-		return err
-	}
-
-	frontPort := res.GetPayload()
-
-	if frontPort.Device != nil {
-		d.Set("device_id", frontPort.Device.ID)
-	} else {
-		d.Set("device_id", nil)
-	}
-
-	d.Set("name", frontPort.Name)
-
-	if frontPort.Type != nil {
-		d.Set("type", frontPort.Type.Value)
-	} else {
-		d.Set("type", nil)
-	}
-
-	if frontPort.RearPort != nil {
-		d.Set("rear_port_id", frontPort.RearPort.ID)
-	} else {
-		d.Set("rear_port_id", nil)
-	}
-
-	d.Set("rear_port_position", frontPort.RearPortPosition)
-
-	if frontPort.Module != nil {
-		d.Set("module_id", frontPort.Module.ID)
-	} else {
-		d.Set("module_id", nil)
-	}
-
-	d.Set("label", frontPort.Label)
-	d.Set("color_hex", frontPort.Color)
-	d.Set("description", frontPort.Description)
-	d.Set("mark_connected", frontPort.MarkConnected)
-
-	cf := getCustomFields(res.GetPayload().CustomFields)
-	if cf != nil {
-		d.Set(customFieldsKey, cf)
-	}
-	api.readTags(d, res.GetPayload().Tags)
-
-	return nil
+		api.readTagRefs(d, r.Tags)
+	})
 }
 
 func resourceNetboxDeviceFrontPortUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-
-	data := models.WritableFrontPort{
-		Device:           int64ToPtr(int64(d.Get("device_id").(int))),
-		Name:             strToPtr(d.Get("name").(string)),
-		Type:             strToPtr(d.Get("type").(string)),
-		RearPort:         int64ToPtr(int64(d.Get("rear_port_id").(int))),
-		RearPortPosition: int64(d.Get("rear_port_position").(int)),
-		Module:           getOptionalInt(d, "module_id"),
-		Label:            getOptionalStr(d, "label", true),
-		Color:            getOptionalStr(d, "color_hex", false),
-		Description:      getOptionalStr(d, "description", true),
-		MarkConnected:    d.Get("mark_connected").(bool),
-	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+	data, err := deviceFrontPortRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	ct, ok := d.GetOk(customFieldsKey)
-	if ok {
-		data.CustomFields = ct
-	}
-
-	params := dcim.NewDcimFrontPortsPartialUpdateParams().WithID(id).WithData(&data)
-
-	_, err = api.Dcim.DcimFrontPortsPartialUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	return resourceNetboxDeviceFrontPortRead(d, m)
+	return patchObject(d, m, deviceFrontPortAPIPath, data, resourceNetboxDeviceFrontPortRead)
 }
 
 func resourceNetboxDeviceFrontPortDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimFrontPortsDeleteParams().WithID(id)
-
-	_, err := api.Dcim.DcimFrontPortsDelete(params, nil)
-	if err != nil {
-		return err
-	}
-	return nil
+	return deleteObject(d, m, deviceFrontPortAPIPath)
 }

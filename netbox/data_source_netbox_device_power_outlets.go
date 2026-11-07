@@ -1,11 +1,8 @@
 package netbox
 
 import (
-	"fmt"
 	"regexp"
 
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
-	"github.com/fbreckle/go-netbox/netbox/models"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -99,116 +96,44 @@ func dataSourceNetboxDevicePowerOutlets() *schema.Resource {
 }
 
 func dataSourceNetboxDevicePowerOutletRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	params := dcim.NewDcimPowerOutletsListParams()
-
-	// Get user limit (0 = fetch all)
-	var userLimit int64 = 0
-	if limitValue, ok := d.GetOk("limit"); ok {
-		userLimit = int64(limitValue.(int))
+	// filter name in the data source -> query parameter sent to Netbox
+	allowed := map[string]string{
+		"name":      "name",
+		"tag":       "tag",
+		"device_id": "device_id",
 	}
 
-	if filter, ok := d.GetOk("filter"); ok {
-		var filterParams = filter.(*schema.Set)
-		for _, f := range filterParams.List() {
-			k := f.(map[string]interface{})["name"]
-			v := f.(map[string]interface{})["value"]
-			vString := v.(string)
-			switch k {
-			case "name":
-				params.Name = &vString
-			case "tag":
-				params.Tag = []string{vString} //TODO: switch schema to list?
-			case "device_id":
-				params.DeviceID = &vString
-			default:
-				return fmt.Errorf("'%s' is not a supported filter parameter", k)
-			}
-		}
-	}
-
-	// Fetch all pages with pagination (fetch all when name_regex is used)
-	paginationHelper := NewPaginationHelper(FetchAll)
-	var allPowerOutlets []*models.PowerOutlet
-
-	pageSize := paginationHelper.GetPageSize()
-	for {
-		currentOffset := paginationHelper.CurrentOffset()
-		params.Limit = &pageSize
-		params.Offset = &currentOffset
-
-		res, err := api.Dcim.DcimPowerOutletsList(params, nil)
-		if err != nil {
-			return fmt.Errorf("failed to fetch power outlets at offset %d: %w", currentOffset, err)
-		}
-
-		payload := res.GetPayload()
-		allPowerOutlets = append(allPowerOutlets, payload.Results...)
-
-		if len(payload.Results) == 0 {
-			break
-		}
-
-		if !paginationHelper.ShouldContinuePaging(int64(len(allPowerOutlets)), payload.Next) {
-			break
-		}
-
-		paginationHelper.Advance(int64(len(payload.Results)))
-	}
-
-	// Apply name_regex filter
-	var filteredPowerOutlets []*models.PowerOutlet
+	// Fetch everything and apply the regular expression before the limit
+	var keep func(map[string]interface{}) bool
 	if nameRegex, ok := d.GetOk("name_regex"); ok {
-		r, err := regexp.Compile(nameRegex.(string))
-		if err != nil {
-			return fmt.Errorf("failed to compile name regex: %w", err)
-		}
-		for _, outlet := range allPowerOutlets {
-			if r.MatchString(*outlet.Name) {
-				filteredPowerOutlets = append(filteredPowerOutlets, outlet)
-			}
-		}
-	} else {
-		filteredPowerOutlets = allPowerOutlets
+		r := regexp.MustCompile(nameRegex.(string))
+		keep = func(o map[string]interface{}) bool { return r.MatchString(jStr(o, "name")) }
 	}
 
-	// Apply user limit to filtered results
-	if userLimit > 0 && int64(len(filteredPowerOutlets)) > userLimit {
-		filteredPowerOutlets = filteredPowerOutlets[:userLimit]
+	results, err := listFilteredWith[map[string]interface{}](d, m, "dcim/power-outlets/", "power outlets", allowed, nil, keep)
+	if err != nil {
+		return err
 	}
 
 	var s []map[string]interface{}
-	for _, v := range filteredPowerOutlets {
-		var mapping = make(map[string]interface{})
-		mapping["id"] = v.ID
-		if v.Description != "" {
-			mapping["description"] = v.Description
-		}
-		if v.Name != nil {
-			mapping["name"] = *v.Name
-		}
-		if v.Tags != nil {
-			var tags []int64
-			for _, t := range v.Tags {
-				tags = append(tags, t.ID)
+	for _, v := range results {
+		mapping := make(map[string]interface{})
+
+		mapping["id"] = jInt(v, "id")
+		mapping["description"] = jStr(v, "description")
+		mapping["name"] = jStr(v, "name")
+		mapping["tag_ids"] = jTagIDs(v)
+		mapping["device_id"] = jID(v, "device")
+		mapping["module_id"] = jID(v, "module")
+		mapping["power_port_id"] = jID(v, "power_port")
+		mapping["type"] = jChoice(v, "type")
+		mapping["feed_leg"] = jChoice(v, "feed_leg")
+
+		// fields that are missing in the response are left out of the state
+		for k, val := range mapping {
+			if val == nil {
+				delete(mapping, k)
 			}
-			mapping["tag_ids"] = tags
-		}
-
-		mapping["device_id"] = v.Device.ID
-		if v.Module != nil {
-			mapping["module_id"] = v.Module.ID
-		}
-		if v.PowerPort != nil {
-			mapping["power_port_id"] = v.PowerPort.ID
-		}
-
-		if v.Type != nil {
-			mapping["type"] = v.Type.Value
-		}
-		if v.FeedLeg != nil {
-			mapping["feed_leg"] = v.FeedLeg.Value
 		}
 
 		s = append(s, mapping)

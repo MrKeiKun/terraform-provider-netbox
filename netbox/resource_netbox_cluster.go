@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/virtualization"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -71,16 +68,52 @@ func resourceNetboxCluster() *schema.Resource {
 	}
 }
 
-func resourceNetboxClusterCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const clusterAPIPath = "virtualization/clusters/"
 
-	data := models.WritableCluster{}
+type clusterRequest struct {
+	Name        string             `json:"name"`
+	Type        *int64             `json:"type"`
+	Group       *int64             `json:"group,omitempty"`
+	Comments    string             `json:"comments,omitempty"`
+	Description string             `json:"description,omitempty"`
+	Tenant      *int64             `json:"tenant,omitempty"`
+	ScopeType   *string            `json:"scope_type"`
+	ScopeID     *int64             `json:"scope_id"`
+	Tags        []netboxapi.TagRef `json:"tags"`
+}
 
+type clusterResponse struct {
+	Name        string             `json:"name"`
+	Type        *netboxapi.Ref     `json:"type"`
+	Group       *netboxapi.Ref     `json:"group"`
+	Comments    string             `json:"comments"`
+	Description string             `json:"description"`
+	Tenant      *netboxapi.Ref     `json:"tenant"`
+	ScopeType   *string            `json:"scope_type"`
+	ScopeID     *int64             `json:"scope_id"`
+	Tags        []netboxapi.TagRef `json:"tags"`
+}
+
+func clusterRequestFromResourceData(api *providerState, d *schema.ResourceData) (*clusterRequest, error) {
 	name := d.Get("name").(string)
-	data.Name = &name
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
+	if err != nil {
+		return nil, err
+	}
+	data := &clusterRequest{
+		Name:        name,
+		Type:        int64ToPtr(int64(d.Get("cluster_type_id").(int))),
+		Comments:    getOptionalStr(d, "comments", true),
+		Description: getOptionalStr(d, "description", true),
 
-	clusterTypeID := int64(d.Get("cluster_type_id").(int))
-	data.Type = &clusterTypeID
+		Tags: tags,
+	}
+	if v, ok := d.GetOk("cluster_group_id"); ok {
+		data.Group = int64ToPtr(int64(v.(int)))
+	}
+	if v, ok := d.GetOk("tenant_id"); ok {
+		data.Tenant = int64ToPtr(int64(v.(int)))
+	}
 
 	siteID := getOptionalInt(d, "site_id")
 	siteGroupID := getOptionalInt(d, "site_group_id")
@@ -104,173 +137,55 @@ func resourceNetboxClusterCreate(d *schema.ResourceData, m interface{}) error {
 		data.ScopeType = nil
 		data.ScopeID = nil
 	}
+	return data, nil
+}
 
-	if clusterGroupIDValue, ok := d.GetOk("cluster_group_id"); ok {
-		clusterGroupID := int64(clusterGroupIDValue.(int))
-		data.Group = &clusterGroupID
-	}
-
-	data.Comments = getOptionalStr(d, "comments", false)
-	data.Description = getOptionalStr(d, "description", false)
-
-	if tenantIDValue, ok := d.GetOk("tenant_id"); ok {
-		tenantID := int64(tenantIDValue.(int))
-		data.Tenant = &tenantID
-	}
-
-	tags, _ := getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
-	data.Tags = tags
-
-	params := virtualization.NewVirtualizationClustersCreateParams().WithData(&data)
-
-	res, err := api.Virtualization.VirtualizationClustersCreate(params, nil)
+func resourceNetboxClusterCreate(d *schema.ResourceData, m interface{}) error {
+	data, err := clusterRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
-		//return errors.New(getTextFromError(err))
 		return err
 	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxClusterRead(d, m)
+	return createObject(d, m, clusterAPIPath, data, resourceNetboxClusterRead)
 }
 
 func resourceNetboxClusterRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := virtualization.NewVirtualizationClustersReadParams().WithID(id)
+	return readObject(d, m, clusterAPIPath, func(r *clusterResponse) {
+		d.Set("name", r.Name)
+		d.Set("cluster_type_id", netboxapi.RefID(r.Type))
+		d.Set("cluster_group_id", netboxapi.RefID(r.Group))
+		d.Set("comments", r.Comments)
+		d.Set("description", r.Description)
+		d.Set("tenant_id", netboxapi.RefID(r.Tenant))
 
-	res, err := api.Virtualization.VirtualizationClustersRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*virtualization.VirtualizationClustersReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
+		d.Set("site_id", nil)
+		d.Set("site_group_id", nil)
+		d.Set("location_id", nil)
+		d.Set("region_id", nil)
+		if r.ScopeType != nil && r.ScopeID != nil {
+			switch *r.ScopeType {
+			case "dcim.site":
+				d.Set("site_id", *r.ScopeID)
+			case "dcim.sitegroup":
+				d.Set("site_group_id", *r.ScopeID)
+			case "dcim.location":
+				d.Set("location_id", *r.ScopeID)
+			case "dcim.region":
+				d.Set("region_id", *r.ScopeID)
 			}
 		}
-		return err
-	}
-
-	cluster := res.GetPayload()
-
-	d.Set("name", cluster.Name)
-	d.Set("cluster_type_id", cluster.Type.ID)
-
-	if cluster.Group != nil {
-		d.Set("cluster_group_id", cluster.Group.ID)
-	} else {
-		d.Set("cluster_group_id", nil)
-	}
-
-	d.Set("comments", cluster.Comments)
-	d.Set("description", cluster.Description)
-
-	if cluster.Tenant != nil {
-		d.Set("tenant_id", cluster.Tenant.ID)
-	} else {
-		d.Set("tenant_id", nil)
-	}
-
-	d.Set("site_id", nil)
-	d.Set("site_group_id", nil)
-	d.Set("location_id", nil)
-	d.Set("region_id", nil)
-
-	if cluster.ScopeType != nil && cluster.ScopeID != nil {
-		scopeID := cluster.ScopeID
-		switch scopeType := cluster.ScopeType; *scopeType {
-		case "dcim.site":
-			d.Set("site_id", scopeID)
-		case "dcim.sitegroup":
-			d.Set("site_group_id", scopeID)
-		case "dcim.location":
-			d.Set("location_id", scopeID)
-		case "dcim.region":
-			d.Set("region_id", scopeID)
-		}
-	}
-
-	api.readTags(d, res.GetPayload().Tags)
-	return nil
+		api.readTagRefs(d, r.Tags)
+	})
 }
 
 func resourceNetboxClusterUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.WritableCluster{}
-
-	name := d.Get("name").(string)
-	data.Name = &name
-
-	clusterTypeID := int64(d.Get("cluster_type_id").(int))
-	data.Type = &clusterTypeID
-
-	if clusterGroupIDValue, ok := d.GetOk("cluster_group_id"); ok {
-		clusterGroupID := int64(clusterGroupIDValue.(int))
-		data.Group = &clusterGroupID
-	}
-
-	data.Comments = getOptionalStr(d, "comments", true)
-	data.Description = getOptionalStr(d, "description", true)
-
-	if tenantIDValue, ok := d.GetOk("tenant_id"); ok {
-		tenantID := int64(tenantIDValue.(int))
-		data.Tenant = &tenantID
-	}
-
-	siteID := getOptionalInt(d, "site_id")
-	siteGroupID := getOptionalInt(d, "site_group_id")
-	locationID := getOptionalInt(d, "location_id")
-	regionID := getOptionalInt(d, "region_id")
-
-	switch {
-	case siteID != nil:
-		data.ScopeType = strToPtr("dcim.site")
-		data.ScopeID = siteID
-	case siteGroupID != nil:
-		data.ScopeType = strToPtr("dcim.sitegroup")
-		data.ScopeID = siteGroupID
-	case locationID != nil:
-		data.ScopeType = strToPtr("dcim.location")
-		data.ScopeID = locationID
-	case regionID != nil:
-		data.ScopeType = strToPtr("dcim.region")
-		data.ScopeID = regionID
-	default:
-		data.ScopeType = nil
-		data.ScopeID = nil
-	}
-
-	tags, _ := getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
-	data.Tags = tags
-
-	params := virtualization.NewVirtualizationClustersPartialUpdateParams().WithID(id).WithData(&data)
-
-	_, err := api.Virtualization.VirtualizationClustersPartialUpdate(params, nil)
+	data, err := clusterRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	return resourceNetboxClusterRead(d, m)
+	return patchObject(d, m, clusterAPIPath, data, resourceNetboxClusterRead)
 }
 
 func resourceNetboxClusterDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := virtualization.NewVirtualizationClustersDeleteParams().WithID(id)
-
-	_, err := api.Virtualization.VirtualizationClustersDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*virtualization.VirtualizationClustersDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	return nil
+	return deleteObject(d, m, clusterAPIPath)
 }

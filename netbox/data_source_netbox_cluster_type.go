@@ -1,10 +1,9 @@
 package netbox
 
 import (
-	"errors"
+	"net/url"
 	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/virtualization"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -25,29 +24,21 @@ func dataSourceNetboxClusterType() *schema.Resource {
 	}
 }
 
+type clusterTypeDataSourceResponse struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
+}
+
 func dataSourceNetboxClusterTypeRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	name := d.Get("name").(string)
-	params := virtualization.NewVirtualizationClusterTypesListParams()
-	params.Name = &name
-	limit := int64(2) // Limit of 2 is enough
-	params.Limit = &limit
-
-	res, err := api.Virtualization.VirtualizationClusterTypesList(params, nil)
+	query := url.Values{}
+	addStrQuery(query, d, "name", "name")
+	r, err := findOne[clusterTypeDataSourceResponse](m, "virtualization/cluster-types/", query, "cluster type")
 	if err != nil {
 		return err
 	}
 
-	if *res.GetPayload().Count > int64(1) {
-		return errors.New("more than one cluster type returned, specify a more narrow filter")
-	}
-	if *res.GetPayload().Count == int64(0) {
-		return errors.New("no cluster type found matching filter")
-	}
-	result := res.GetPayload().Results[0]
-	d.Set("cluster_type_id", result.ID)
-	d.SetId(strconv.FormatInt(result.ID, 10))
-	d.Set("name", result.Name)
+	d.SetId(strconv.FormatInt(r.ID, 10))
+	d.Set("cluster_type_id", r.ID)
+	d.Set("name", r.Name)
 	return nil
 }

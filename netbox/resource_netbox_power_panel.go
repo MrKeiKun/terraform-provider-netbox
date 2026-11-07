@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -49,129 +46,79 @@ func resourceNetboxPowerPanel() *schema.Resource {
 	}
 }
 
-func resourceNetboxPowerPanelCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const powerPanelAPIPath = "dcim/power-panels/"
 
-	data := models.WritablePowerPanel{
-		Site:        int64ToPtr(int64(d.Get("site_id").(int))),
-		Name:        strToPtr(d.Get("name").(string)),
-		Location:    getOptionalInt(d, "location_id"),
-		Description: getOptionalStr(d, "description", false),
-		Comments:    getOptionalStr(d, "comments", false),
-	}
+type powerPanelRequest struct {
+	Name         string             `json:"name"`
+	Site         *int64             `json:"site"`
+	Location     *int64             `json:"location"`
+	Description  string             `json:"description,omitempty"`
+	Comments     string             `json:"comments,omitempty"`
+	CustomFields interface{}        `json:"custom_fields,omitempty"`
+	Tags         []netboxapi.TagRef `json:"tags"`
+}
 
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+type powerPanelResponse struct {
+	Name         string                 `json:"name"`
+	Site         *netboxapi.Ref         `json:"site"`
+	Location     *netboxapi.Ref         `json:"location"`
+	Description  string                 `json:"description"`
+	Comments     string                 `json:"comments"`
+	CustomFields map[string]interface{} `json:"custom_fields"`
+	Tags         []netboxapi.TagRef     `json:"tags"`
+}
+
+func powerPanelRequestFromResourceData(api *providerState, d *schema.ResourceData) (*powerPanelRequest, error) {
+	name := d.Get("name").(string)
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	ct, ok := d.GetOk(customFieldsKey)
-	if ok {
+	data := &powerPanelRequest{
+		Name:        name,
+		Site:        int64ToPtr(int64(d.Get("site_id").(int))),
+		Location:    getOptionalInt(d, "location_id"),
+		Description: getOptionalStr(d, "description", true),
+		Comments:    getOptionalStr(d, "comments", true),
+		Tags:        tags,
+	}
+	if ct, ok := d.GetOk(customFieldsKey); ok {
 		data.CustomFields = ct
 	}
+	return data, nil
+}
 
-	params := dcim.NewDcimPowerPanelsCreateParams().WithData(&data)
-
-	res, err := api.Dcim.DcimPowerPanelsCreate(params, nil)
+func resourceNetboxPowerPanelCreate(d *schema.ResourceData, m interface{}) error {
+	data, err := powerPanelRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxPowerPanelRead(d, m)
+	return createObject(d, m, powerPanelAPIPath, data, resourceNetboxPowerPanelRead)
 }
 
 func resourceNetboxPowerPanelRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimPowerPanelsReadParams().WithID(id)
-
-	res, err := api.Dcim.DcimPowerPanelsRead(params, nil)
-
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimPowerPanelsReadDefault); ok {
-			if errresp.Code() == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
+	return readObject(d, m, powerPanelAPIPath, func(r *powerPanelResponse) {
+		d.Set("name", r.Name)
+		d.Set("site_id", netboxapi.RefID(r.Site))
+		d.Set("location_id", netboxapi.RefID(r.Location))
+		d.Set("description", r.Description)
+		d.Set("comments", r.Comments)
+		if cf := getCustomFields(r.CustomFields); cf != nil {
+			d.Set(customFieldsKey, cf)
 		}
-		return err
-	}
-
-	powerPanel := res.GetPayload()
-
-	if powerPanel.Site != nil {
-		d.Set("site_id", powerPanel.Site.ID)
-	} else {
-		d.Set("site_id", nil)
-	}
-
-	d.Set("name", powerPanel.Name)
-
-	if powerPanel.Location != nil {
-		d.Set("location_id", powerPanel.Location.ID)
-	} else {
-		d.Set("location_id", nil)
-	}
-
-	d.Set("description", powerPanel.Description)
-	d.Set("comments", powerPanel.Comments)
-
-	cf := getCustomFields(res.GetPayload().CustomFields)
-	if cf != nil {
-		d.Set(customFieldsKey, cf)
-	}
-	api.readTags(d, res.GetPayload().Tags)
-
-	return nil
+		api.readTagRefs(d, r.Tags)
+	})
 }
 
 func resourceNetboxPowerPanelUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-
-	data := models.WritablePowerPanel{
-		Site:        int64ToPtr(int64(d.Get("site_id").(int))),
-		Name:        strToPtr(d.Get("name").(string)),
-		Location:    getOptionalInt(d, "location_id"),
-		Description: getOptionalStr(d, "description", true),
-		Comments:    getOptionalStr(d, "comments", true),
-	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+	data, err := powerPanelRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	ct, ok := d.GetOk(customFieldsKey)
-	if ok {
-		data.CustomFields = ct
-	}
-
-	params := dcim.NewDcimPowerPanelsPartialUpdateParams().WithID(id).WithData(&data)
-
-	_, err = api.Dcim.DcimPowerPanelsPartialUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	return resourceNetboxPowerPanelRead(d, m)
+	return patchObject(d, m, powerPanelAPIPath, data, resourceNetboxPowerPanelRead)
 }
 
 func resourceNetboxPowerPanelDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimPowerPanelsDeleteParams().WithID(id)
-
-	_, err := api.Dcim.DcimPowerPanelsDelete(params, nil)
-	if err != nil {
-		return err
-	}
-	return nil
+	return deleteObject(d, m, powerPanelAPIPath)
 }

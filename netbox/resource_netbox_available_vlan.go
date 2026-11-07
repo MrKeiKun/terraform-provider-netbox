@@ -1,10 +1,12 @@
 package netbox
 
 import (
+	"context"
+	"fmt"
+	"net/http"
 	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -69,16 +71,54 @@ This resource will retrieve the next available VLAN ID from a given VLAN group (
 	}
 }
 
+type availableVLANCreateRequest struct {
+	Name        string             `json:"name"`
+	Description string             `json:"description,omitempty"`
+	Tenant      *int64             `json:"tenant,omitempty"`
+	Site        *int64             `json:"site,omitempty"`
+	Role        *int64             `json:"role,omitempty"`
+	Status      string             `json:"status,omitempty"`
+	Tags        []netboxapi.TagRef `json:"tags"`
+}
+
+type availableVLANUpdateRequest struct {
+	Name        string             `json:"name"`
+	Description string             `json:"description,omitempty"`
+	Tenant      *int64             `json:"tenant,omitempty"`
+	Site        *int64             `json:"site,omitempty"`
+	Group       *int64             `json:"group,omitempty"`
+	Role        *int64             `json:"role,omitempty"`
+	Status      string             `json:"status,omitempty"`
+	Vid         *int64             `json:"vid"`
+	Tags        []netboxapi.TagRef `json:"tags"`
+}
+
+type availableVLANResponse struct {
+	ID          int64              `json:"id"`
+	Vid         int64              `json:"vid"`
+	Name        string             `json:"name"`
+	Description string             `json:"description"`
+	Comments    string             `json:"comments"`
+	Status      *netboxapi.Choice  `json:"status"`
+	Tenant      *netboxapi.Ref     `json:"tenant"`
+	Site        *netboxapi.Ref     `json:"site"`
+	Group       *netboxapi.Ref     `json:"group"`
+	Role        *netboxapi.Ref     `json:"role"`
+	Tags        []netboxapi.TagRef `json:"tags"`
+}
+
 func resourceNetboxAvailableVLANCreate(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
+
 	groupID := int64(d.Get("group_id").(int))
 
-	tags, err := getNestedTagListFromResourceDataSet(api, d.Get(tagsKey))
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsKey))
 	if err != nil {
 		return err
 	}
-	data := &models.WritableCreateAvailableVLAN{
-		Name:        strToPtr(d.Get("name").(string)),
+
+	data := &availableVLANCreateRequest{
+		Name:        d.Get("name").(string),
 		Description: getOptionalStr(d, "description", false),
 		Tenant:      getOptionalInt(d, "tenant_id"),
 		Site:        getOptionalInt(d, "site_id"),
@@ -87,88 +127,52 @@ func resourceNetboxAvailableVLANCreate(d *schema.ResourceData, m interface{}) er
 		Tags:        tags,
 	}
 
-	params := ipam.NewIpamVlanGroupsAvailableVlansCreateParams().WithID(groupID).WithData(data)
-	resp, err := api.Ipam.IpamVlanGroupsAvailableVlansCreate(params, nil)
+	// NetBox picks the next free VLAN ID of the group and returns the new VLAN.
+	path := fmt.Sprintf("ipam/vlan-groups/%d/available-vlans/", groupID)
+	vlan, err := netboxapi.Request[availableVLANResponse](context.Background(), api.rest, http.MethodPost, path, nil, data)
 	if err != nil {
 		return err
 	}
 
-	vlan := resp.Payload
 	d.SetId(strconv.FormatInt(vlan.ID, 10))
 	d.Set("vid", vlan.Vid)
 	d.Set("name", vlan.Name)
-	d.Set("group_id", vlan.Group.ID)
+	if vlan.Group != nil {
+		d.Set("group_id", vlan.Group.ID)
+	}
+
 	return resourceNetboxAvailableVLANRead(d, m)
 }
 
 func resourceNetboxAvailableVLANRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := ipam.NewIpamVlansReadParams().WithID(id)
+	return readObject(d, m, "ipam/vlans/", func(vlan *availableVLANResponse) {
+		// Required fields
+		d.Set("vid", vlan.Vid)
+		d.Set("name", vlan.Name)
 
-	res, err := api.Ipam.IpamVlansRead(params, nil)
-	if err != nil {
-		if erresp, ok := err.(*ipam.IpamVlansReadDefault); ok {
-			errorcode := erresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-
-	vlan := res.GetPayload()
-	// Required fields
-	d.Set("vid", vlan.Vid)
-	d.Set("name", vlan.Name)
-
-	// Optional fields
-	d.Set("description", vlan.Description)
-	d.Set("comments", vlan.Comments)
-
-	if vlan.Status != nil && vlan.Status.Value != nil {
-		d.Set("status", *vlan.Status.Value)
-	} else {
-		d.Set("status", "")
-	}
-
-	if vlan.Tenant != nil {
-		d.Set("tenant_id", vlan.Tenant.ID)
-	} else {
-		d.Set("tenant_id", nil)
-	}
-
-	if vlan.Site != nil {
-		d.Set("site_id", vlan.Site.ID)
-	} else {
-		d.Set("site_id", nil)
-	}
-
-	if vlan.Group != nil {
-		d.Set("group_id", vlan.Group.ID)
-	} else {
-		d.Set("group_id", nil)
-	}
-
-	if vlan.Role != nil {
-		d.Set("role_id", vlan.Role.ID)
-	} else {
-		d.Set("role_id", nil)
-	}
-
-	api.readTags(d, vlan.Tags)
-
-	return nil
+		// Optional fields
+		d.Set("description", vlan.Description)
+		d.Set("comments", vlan.Comments)
+		d.Set("status", netboxapi.ChoiceValue(vlan.Status))
+		d.Set("tenant_id", netboxapi.RefID(vlan.Tenant))
+		d.Set("site_id", netboxapi.RefID(vlan.Site))
+		d.Set("group_id", netboxapi.RefID(vlan.Group))
+		d.Set("role_id", netboxapi.RefID(vlan.Role))
+		api.readTagRefs(d, vlan.Tags)
+	})
 }
 
 func resourceNetboxAvailableVLANUpdate(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
 
-	data := &models.WritableVLAN{
-		Name:        strToPtr(d.Get("name").(string)),
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsKey))
+	if err != nil {
+		return err
+	}
+
+	data := &availableVLANUpdateRequest{
+		Name:        d.Get("name").(string),
 		Description: getOptionalStr(d, "description", false),
 		Tenant:      getOptionalInt(d, "tenant_id"),
 		Site:        getOptionalInt(d, "site_id"),
@@ -176,38 +180,12 @@ func resourceNetboxAvailableVLANUpdate(d *schema.ResourceData, m interface{}) er
 		Role:        getOptionalInt(d, "role_id"),
 		Status:      d.Get("status").(string),
 		Vid:         int64ToPtr(int64(d.Get("vid").(int))),
+		Tags:        tags,
 	}
 
-	var err_tags error
-	data.Tags, err_tags = getNestedTagListFromResourceDataSet(api, d.Get(tagsKey))
-	if err_tags != nil {
-		return err_tags
-	}
-
-	params := ipam.NewIpamVlansUpdateParams().
-		WithID(id).
-		WithData(data)
-
-	_, err := api.Ipam.IpamVlansUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-	return resourceNetboxAvailableVLANRead(d, m)
+	return putObject(d, m, "ipam/vlans/", data, resourceNetboxAvailableVLANRead)
 }
 
 func resourceNetboxAvailableVLANDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-
-	params := ipam.NewIpamVlansDeleteParams().WithID(id)
-	_, err := api.Ipam.IpamVlansDelete(params, nil)
-
-	if err != nil {
-		if errresp, ok := err.(*ipam.IpamVlansDeleteDefault); ok && errresp.Code() == 404 {
-			d.SetId("")
-			return nil
-		}
-		return err
-	}
-	return nil
+	return deleteObject(d, m, "ipam/vlans/")
 }

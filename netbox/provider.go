@@ -4,12 +4,11 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
-	"github.com/fbreckle/go-netbox/netbox/client"
-	"github.com/fbreckle/go-netbox/netbox/client/status"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -17,11 +16,12 @@ import (
 )
 
 type providerState struct {
-	*client.NetBoxAPI
+	// rest talks to the Netbox REST API
+	rest        *netboxapi.Client
 	defaultTags *schema.Set
 
 	// concurrent access ok, only populated on provider start
-	tagCache map[string]*models.NestedTag
+	tagCache map[string]netboxapi.TagRef
 }
 
 // This makes the description contain the default value, particularly useful for the docs
@@ -331,8 +331,8 @@ func providerConfigure(ctx context.Context, data *schema.ResourceData) (interfac
 	serverURL := data.Get("server_url").(string)
 
 	// Unless explicitly switched off, strip trailing slashes from the server url
-	// Trailing slashes cause errors as seen in https://github.com/e-breuninger/terraform-provider-netbox/issues/198
-	// and https://github.com/e-breuninger/terraform-provider-netbox/issues/300
+	// Trailing slashes cause errors as seen in https://github.com/MrKeiKun/terraform-provider-netbox/issues/198
+	// and https://github.com/MrKeiKun/terraform-provider-netbox/issues/300
 	stripTrailingSlashesFromURL := data.Get("strip_trailing_slashes_from_url").(bool)
 
 	if stripTrailingSlashesFromURL {
@@ -354,7 +354,7 @@ func providerConfigure(ctx context.Context, data *schema.ResourceData) (interfac
 
 	config.ServerURL = serverURL
 
-	netboxClient, clientError := config.Client()
+	restClient, clientError := config.Client()
 	if clientError != nil {
 		return nil, diag.FromErr(clientError)
 	}
@@ -369,11 +369,10 @@ func providerConfigure(ctx context.Context, data *schema.ResourceData) (interfac
 		// fail provider configuration outright. Retry a few times with a linear
 		// backoff before giving up.
 		const versionCheckAttempts = 5
-		var res *status.StatusListOK
+		var res *map[string]interface{}
 		var err error
 		for attempt := 1; attempt <= versionCheckAttempts; attempt++ {
-			req := status.NewStatusListParams()
-			res, err = netboxClient.Status.StatusList(req, nil)
+			res, err = netboxapi.Request[map[string]interface{}](ctx, restClient, http.MethodGet, "status/", nil, nil)
 			if err == nil {
 				break
 			}
@@ -398,14 +397,14 @@ func providerConfigure(ctx context.Context, data *schema.ResourceData) (interfac
 			}}
 		}
 
-		netboxVersionStringFromAPI := res.GetPayload().(map[string]interface{})["netbox-version"].(string)
+		netboxVersionStringFromAPI, _ := (*res)["netbox-version"].(string)
 
 		netboxVersion, err := extractSemanticVersionFromString(netboxVersionStringFromAPI)
 		if err != nil {
 			return nil, diag.FromErr(fmt.Errorf("error extracting netbox version. try using the `skip_version_check` provider parameter to bypass this error. original error: %w", err))
 		}
 
-		supportedVersions := []string{"4.3.0", "4.3.2", "4.3.3", "4.3.4", "4.3.5", "4.3.6", "4.3.7", "4.4.0", "4.4.1", "4.4.2", "4.4.4", "4.4.5", "4.4.6", "4.4.7", "4.4.8", "4.4.9", "4.4.10", "4.5.1", "4.5.2", "4.5.3", "4.5.4", "4.5.5", "4.5.6", "4.5.7", "4.5.8", "4.5.9", "4.5.10", "4.6.0", "4.6.1", "4.6.2", "4.6.3", "4.6.4", "4.6.5"}
+		supportedVersions := []string{"4.4.0", "4.4.1", "4.4.2", "4.4.4", "4.4.5", "4.4.6", "4.4.7", "4.4.8", "4.4.9", "4.4.10", "4.5.1", "4.5.2", "4.5.3", "4.5.4", "4.5.5", "4.5.6", "4.5.7", "4.5.8", "4.5.9", "4.5.10", "4.6.0", "4.6.1", "4.6.2", "4.6.3", "4.6.4", "4.6.5", "4.7.0", "4.7.1", "4.7.2", "4.7.3", "4.7.4"}
 
 		if !slices.Contains(supportedVersions, netboxVersion) {
 			// Currently, there is no way to test these warnings. There is an issue to track this: https://github.com/hashicorp/terraform-plugin-sdk/issues/864
@@ -418,11 +417,11 @@ func providerConfigure(ctx context.Context, data *schema.ResourceData) (interfac
 	}
 
 	tags, ok := data.Get("default_tags").(*schema.Set)
-	tagCache := make(map[string]*models.NestedTag, tags.Len())
+	tagCache := make(map[string]netboxapi.TagRef, tags.Len())
 	if ok {
 		for _, tag := range tags.List() {
 			if tagName, ok := tag.(string); ok {
-				nbTag, err := findTag(netboxClient, tagName)
+				nbTag, err := findTagRef(restClient, tagName)
 				if err != nil {
 					d := diag.FromErr(fmt.Errorf("default tag not found: %w", err))
 					d[0].Severity = diag.Warning
@@ -437,7 +436,7 @@ func providerConfigure(ctx context.Context, data *schema.ResourceData) (interfac
 	}
 
 	state := &providerState{
-		NetBoxAPI:   netboxClient,
+		rest:        restClient,
 		defaultTags: schema.CopySet(tags),
 		tagCache:    tagCache,
 	}

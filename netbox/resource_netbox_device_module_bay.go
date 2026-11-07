@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -51,123 +48,79 @@ func resourceNetboxDeviceModuleBay() *schema.Resource {
 	}
 }
 
-func resourceNetboxDeviceModuleBayCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const deviceModuleBayAPIPath = "dcim/module-bays/"
 
-	data := models.WritableModuleBay{
-		Device:      int64ToPtr(int64(d.Get("device_id").(int))),
-		Name:        strToPtr(d.Get("name").(string)),
-		Label:       getOptionalStr(d, "label", false),
-		Position:    getOptionalStr(d, "position", false),
-		Description: getOptionalStr(d, "description", false),
-	}
+type deviceModuleBayRequest struct {
+	Name         string             `json:"name"`
+	Device       *int64             `json:"device"`
+	Label        string             `json:"label,omitempty"`
+	Position     string             `json:"position,omitempty"`
+	Description  string             `json:"description,omitempty"`
+	CustomFields interface{}        `json:"custom_fields,omitempty"`
+	Tags         []netboxapi.TagRef `json:"tags"`
+}
 
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+type deviceModuleBayResponse struct {
+	Name         string                 `json:"name"`
+	Device       *netboxapi.Ref         `json:"device"`
+	Label        string                 `json:"label"`
+	Position     string                 `json:"position"`
+	Description  string                 `json:"description"`
+	CustomFields map[string]interface{} `json:"custom_fields"`
+	Tags         []netboxapi.TagRef     `json:"tags"`
+}
+
+func deviceModuleBayRequestFromResourceData(api *providerState, d *schema.ResourceData) (*deviceModuleBayRequest, error) {
+	name := d.Get("name").(string)
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	ct, ok := d.GetOk(customFieldsKey)
-	if ok {
+	data := &deviceModuleBayRequest{
+		Name:        name,
+		Device:      int64ToPtr(int64(d.Get("device_id").(int))),
+		Label:       getOptionalStr(d, "label", true),
+		Position:    getOptionalStr(d, "position", true),
+		Description: getOptionalStr(d, "description", true),
+		Tags:        tags,
+	}
+	if ct, ok := d.GetOk(customFieldsKey); ok {
 		data.CustomFields = ct
 	}
+	return data, nil
+}
 
-	params := dcim.NewDcimModuleBaysCreateParams().WithData(&data)
-
-	res, err := api.Dcim.DcimModuleBaysCreate(params, nil)
+func resourceNetboxDeviceModuleBayCreate(d *schema.ResourceData, m interface{}) error {
+	data, err := deviceModuleBayRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxDeviceModuleBayRead(d, m)
+	return createObject(d, m, deviceModuleBayAPIPath, data, resourceNetboxDeviceModuleBayRead)
 }
 
 func resourceNetboxDeviceModuleBayRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimModuleBaysReadParams().WithID(id)
-
-	res, err := api.Dcim.DcimModuleBaysRead(params, nil)
-
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimModuleBaysReadDefault); ok {
-			if errresp.Code() == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
+	return readObject(d, m, deviceModuleBayAPIPath, func(r *deviceModuleBayResponse) {
+		d.Set("name", r.Name)
+		d.Set("device_id", netboxapi.RefID(r.Device))
+		d.Set("label", r.Label)
+		d.Set("position", r.Position)
+		d.Set("description", r.Description)
+		if cf := getCustomFields(r.CustomFields); cf != nil {
+			d.Set(customFieldsKey, cf)
 		}
-		return err
-	}
-
-	moduleBay := res.GetPayload()
-
-	if moduleBay.Device != nil {
-		d.Set("device_id", moduleBay.Device.ID)
-	} else {
-		d.Set("device_id", nil)
-	}
-
-	d.Set("name", moduleBay.Name)
-	d.Set("label", moduleBay.Label)
-	d.Set("position", moduleBay.Position)
-	d.Set("description", moduleBay.Description)
-
-	cf := getCustomFields(res.GetPayload().CustomFields)
-	if cf != nil {
-		d.Set(customFieldsKey, cf)
-	}
-	api.readTags(d, res.GetPayload().Tags)
-
-	return nil
+		api.readTagRefs(d, r.Tags)
+	})
 }
 
 func resourceNetboxDeviceModuleBayUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-
-	data := models.WritableModuleBay{
-		Device:      int64ToPtr(int64(d.Get("device_id").(int))),
-		Name:        strToPtr(d.Get("name").(string)),
-		Label:       getOptionalStr(d, "label", true),
-		Position:    getOptionalStr(d, "position", true),
-		Description: getOptionalStr(d, "description", true),
-	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+	data, err := deviceModuleBayRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	ct, ok := d.GetOk(customFieldsKey)
-	if ok {
-		data.CustomFields = ct
-	}
-
-	params := dcim.NewDcimModuleBaysPartialUpdateParams().WithID(id).WithData(&data)
-
-	_, err = api.Dcim.DcimModuleBaysPartialUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	return resourceNetboxDeviceModuleBayRead(d, m)
+	return patchObject(d, m, deviceModuleBayAPIPath, data, resourceNetboxDeviceModuleBayRead)
 }
 
 func resourceNetboxDeviceModuleBayDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimModuleBaysDeleteParams().WithID(id)
-
-	_, err := api.Dcim.DcimModuleBaysDelete(params, nil)
-	if err != nil {
-		return err
-	}
-	return nil
+	return deleteObject(d, m, deviceModuleBayAPIPath)
 }

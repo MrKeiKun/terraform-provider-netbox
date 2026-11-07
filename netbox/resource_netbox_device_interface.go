@@ -2,10 +2,8 @@ package netbox
 
 import (
 	"context"
-	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -135,246 +133,180 @@ func resourceNetboxDeviceInterface() *schema.Resource {
 	}
 }
 
+const deviceInterfaceAPIPath = "dcim/interfaces/"
+
+type deviceInterfaceMAC struct {
+	ID          int64  `json:"id"`
+	MacAddress  string `json:"mac_address"`
+	Description string `json:"description"`
+}
+
+type deviceInterfaceResponse struct {
+	Name              string               `json:"name"`
+	Description       string               `json:"description"`
+	Label             string               `json:"label"`
+	Type              *netboxapi.Choice    `json:"type"`
+	Enabled           bool                 `json:"enabled"`
+	MgmtOnly          bool                 `json:"mgmt_only"`
+	Mtu               *int64               `json:"mtu"`
+	Speed             *int64               `json:"speed"`
+	Tags              []netboxapi.TagRef   `json:"tags"`
+	TaggedVlans       []netboxapi.Ref      `json:"tagged_vlans"`
+	Device            *netboxapi.Ref       `json:"device"`
+	Module            *netboxapi.Ref       `json:"module"`
+	Lag               *netboxapi.Ref       `json:"lag"`
+	Mode              *netboxapi.Choice    `json:"mode"`
+	Parent            *netboxapi.Ref       `json:"parent"`
+	UntaggedVlan      *netboxapi.Ref       `json:"untagged_vlan"`
+	Vrf               *netboxapi.Ref       `json:"vrf"`
+	MacAddresses      []deviceInterfaceMAC `json:"mac_addresses"`
+	PrimaryMacAddress *netboxapi.Ref       `json:"primary_mac_address"`
+}
+
+// deviceInterfaceBody builds the fields that are sent on both create and update.
+func deviceInterfaceBody(api *providerState, d *schema.ResourceData) (map[string]interface{}, error) {
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
+	if err != nil {
+		return nil, err
+	}
+
+	body := map[string]interface{}{
+		"name":          d.Get("name").(string),
+		"description":   d.Get("description").(string),
+		"label":         d.Get("label").(string),
+		"type":          d.Get("type").(string),
+		"enabled":       d.Get("enabled").(bool),
+		"mgmt_only":     d.Get("mgmtonly").(bool),
+		"tags":          tags,
+		"tagged_vlans":  toInt64List(d.Get("tagged_vlans")),
+		"device":        int64(d.Get("device_id").(int)),
+		"wireless_lans": []int64{},
+		"vdcs":          []int64{},
+	}
+	if mode := d.Get("mode").(string); mode != "" {
+		body["mode"] = mode
+	}
+	return body, nil
+}
+
 func resourceNetboxDeviceInterfaceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*providerState)
 
-	var diags diag.Diagnostics
-
-	name := d.Get("name").(string)
-	description := d.Get("description").(string)
-	label := d.Get("label").(string)
-	interfaceType := d.Get("type").(string)
-	enabled := d.Get("enabled").(bool)
-	mgmtonly := d.Get("mgmtonly").(bool)
-	mode := d.Get("mode").(string)
-	tags, err := getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+	body, err := deviceInterfaceBody(api, d)
 	if err != nil {
 		return diag.FromErr(err)
-	}
-	taggedVlans := toInt64List(d.Get("tagged_vlans"))
-	deviceID := int64(d.Get("device_id").(int))
-
-	data := models.WritableInterface{
-		Name:         &name,
-		Description:  description,
-		Label:        label,
-		Type:         &interfaceType,
-		Enabled:      enabled,
-		MgmtOnly:     mgmtonly,
-		Mode:         mode,
-		Tags:         tags,
-		TaggedVlans:  taggedVlans,
-		Device:       &deviceID,
-		WirelessLans: []int64{},
-		Vdcs:         []int64{},
 	}
 	if lag, ok := d.Get("lag_device_interface_id").(int); ok && lag != 0 {
-		data.Lag = int64ToPtr(int64(lag))
+		body["lag"] = int64(lag)
 	}
 	if mtu, ok := d.Get("mtu").(int); ok && mtu != 0 {
-		data.Mtu = int64ToPtr(int64(mtu))
+		body["mtu"] = int64(mtu)
 	}
 	if parent, ok := d.Get("parent_device_interface_id").(int); ok && parent != 0 {
-		data.Parent = int64ToPtr(int64(parent))
+		body["parent"] = int64(parent)
 	}
 	if speed, ok := d.Get("speed").(int); ok && speed != 0 {
-		data.Speed = int64ToPtr(int64(speed))
+		body["speed"] = int64(speed)
 	}
 	if untaggedVlan, ok := d.Get("untagged_vlan").(int); ok && untaggedVlan != 0 {
-		data.UntaggedVlan = int64ToPtr(int64(untaggedVlan))
+		body["untagged_vlan"] = int64(untaggedVlan)
 	}
-	data.Vrf = getOptionalInt(d, "vrf_id")
-	data.Module = getOptionalInt(d, "module_id")
-
-	params := dcim.NewDcimInterfacesCreateParams().WithData(&data)
-
-	res, err := api.Dcim.DcimInterfacesCreate(params, nil)
-	if err != nil {
-		return diag.FromErr(err)
+	if vrf := getOptionalInt(d, "vrf_id"); vrf != nil {
+		body["vrf"] = *vrf
+	}
+	if module := getOptionalInt(d, "module_id"); module != nil {
+		body["module"] = *module
 	}
 
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return diags
+	return createObjectCtx(ctx, d, m, deviceInterfaceAPIPath, body, resourceNetboxDeviceInterfaceRead)
 }
 
 func resourceNetboxDeviceInterfaceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-
-	var diags diag.Diagnostics
-
-	params := dcim.NewDcimInterfacesReadParams().WithID(id)
-
-	res, err := api.Dcim.DcimInterfacesRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimInterfacesReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
+	return readObjectCtx(ctx, d, m, deviceInterfaceAPIPath, func(iface *deviceInterfaceResponse) {
+		d.Set("name", iface.Name)
+		d.Set("description", iface.Description)
+		d.Set("label", iface.Label)
+		d.Set("type", netboxapi.ChoiceValue(iface.Type))
+		d.Set("enabled", iface.Enabled)
+		d.Set("mgmtonly", iface.MgmtOnly)
+		d.Set("mtu", iface.Mtu)
+		d.Set("speed", iface.Speed)
+		api.readTagRefs(d, iface.Tags)
+		d.Set("tagged_vlans", netboxapi.IDs(iface.TaggedVlans))
+		if iface.Device != nil {
+			d.Set("device_id", iface.Device.ID)
 		}
-		return diag.FromErr(err)
-	}
-
-	iface := res.GetPayload()
-
-	d.Set("name", iface.Name)
-	d.Set("description", iface.Description)
-	d.Set("label", iface.Label)
-	d.Set("type", iface.Type.Value)
-	d.Set("enabled", iface.Enabled)
-	d.Set("mgmtonly", iface.MgmtOnly)
-	d.Set("mtu", iface.Mtu)
-	d.Set("speed", iface.Speed)
-	api.readTags(d, iface.Tags)
-	d.Set("tagged_vlans", getIDsFromNestedVLANDevice(iface.TaggedVlans))
-	d.Set("device_id", iface.Device.ID)
-
-	if iface.Module != nil {
-		d.Set("module_id", iface.Module.ID)
-	} else {
-		d.Set("module_id", nil)
-	}
-
-	if iface.Lag != nil {
-		d.Set("lag_device_interface_id", iface.Lag.ID)
-	}
-	if iface.Mode != nil {
-		d.Set("mode", iface.Mode.Value)
-	}
-	if iface.Parent != nil {
-		d.Set("parent_device_interface_id", iface.Parent.ID)
-	}
-	if iface.UntaggedVlan != nil {
-		d.Set("untagged_vlan", iface.UntaggedVlan.ID)
-	}
-	if iface.Vrf != nil {
-		d.Set("vrf_id", iface.Vrf.ID)
-	} else {
-		d.Set("vrf_id", nil)
-	}
-	if iface.MacAddresses != nil {
-		var mac_addresses []map[string]interface{}
-		for i, mac := range iface.MacAddresses {
-			mac_address := make(map[string]interface{})
-			// We just set the first mac address in the `mac_address` attribute
-			if i == 0 {
-				d.Set("mac_address", iface.MacAddresses[i].MacAddress)
-			}
-			mac_address["id"] = mac.ID
-			mac_address["description"] = mac.Description
-			mac_address["mac_address"] = mac.MacAddress
-			mac_addresses = append(mac_addresses, mac_address)
+		d.Set("module_id", netboxapi.RefID(iface.Module))
+		if iface.Lag != nil {
+			d.Set("lag_device_interface_id", iface.Lag.ID)
 		}
-		d.Set("mac_addresses", mac_addresses)
-	}
-	if iface.PrimaryMacAddress != nil {
-		d.Set("primary_mac_address_id", iface.PrimaryMacAddress.ID)
-	}
-
-	return diags
+		if iface.Mode != nil {
+			d.Set("mode", iface.Mode.Value)
+		}
+		if iface.Parent != nil {
+			d.Set("parent_device_interface_id", iface.Parent.ID)
+		}
+		if iface.UntaggedVlan != nil {
+			d.Set("untagged_vlan", iface.UntaggedVlan.ID)
+		}
+		d.Set("vrf_id", netboxapi.RefID(iface.Vrf))
+		if iface.MacAddresses != nil {
+			var macAddresses []map[string]interface{}
+			for i, mac := range iface.MacAddresses {
+				// We just set the first mac address in the `mac_address` attribute
+				if i == 0 {
+					d.Set("mac_address", mac.MacAddress)
+				}
+				macAddresses = append(macAddresses, map[string]interface{}{
+					"id":          mac.ID,
+					"description": mac.Description,
+					"mac_address": mac.MacAddress,
+				})
+			}
+			d.Set("mac_addresses", macAddresses)
+		}
+		if iface.PrimaryMacAddress != nil {
+			d.Set("primary_mac_address_id", iface.PrimaryMacAddress.ID)
+		}
+	})
 }
 
 func resourceNetboxDeviceInterfaceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*providerState)
 
-	var diags diag.Diagnostics
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-
-	name := d.Get("name").(string)
-	description := d.Get("description").(string)
-	label := d.Get("label").(string)
-	interfaceType := d.Get("type").(string)
-	enabled := d.Get("enabled").(bool)
-	mgmtonly := d.Get("mgmtonly").(bool)
-	mode := d.Get("mode").(string)
-	tags, err := getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+	body, err := deviceInterfaceBody(api, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	taggedVlans := toInt64List(d.Get("tagged_vlans"))
-	deviceID := int64(d.Get("device_id").(int))
-
-	data := models.WritableInterface{
-		Name:         &name,
-		Description:  description,
-		Label:        label,
-		Type:         &interfaceType,
-		Enabled:      enabled,
-		MgmtOnly:     mgmtonly,
-		Mode:         mode,
-		Tags:         tags,
-		TaggedVlans:  taggedVlans,
-		Device:       &deviceID,
-		WirelessLans: []int64{},
-		Vdcs:         []int64{},
+	if module := getOptionalInt(d, "module_id"); module != nil {
+		body["module"] = *module
 	}
-	data.Module = getOptionalInt(d, "module_id")
-
 	if d.HasChange("lag_device_interface_id") {
-		lag := int64(d.Get("lag_device_interface_id").(int))
-		data.Lag = &lag
+		body["lag"] = nullableID(d.Get("lag_device_interface_id").(int))
 	}
 	if d.HasChange("mtu") {
-		mtu := int64(d.Get("mtu").(int))
-		data.Mtu = &mtu
+		body["mtu"] = nullableID(d.Get("mtu").(int))
 	}
 	if d.HasChange("parent_device_interface_id") {
-		parent := int64(d.Get("parent_device_interface_id").(int))
-		data.Parent = &parent
+		body["parent"] = nullableID(d.Get("parent_device_interface_id").(int))
 	}
 	if d.HasChange("speed") {
-		speed := int64(d.Get("speed").(int))
-		data.Speed = &speed
+		body["speed"] = nullableID(d.Get("speed").(int))
 	}
 	if d.HasChange("untagged_vlan") {
-		untaggedvlan := int64(d.Get("untagged_vlan").(int))
-		data.UntaggedVlan = &untaggedvlan
+		body["untagged_vlan"] = nullableID(d.Get("untagged_vlan").(int))
 	}
 	if d.HasChange("primary_mac_address_id") {
-		primaryMac := int64(d.Get("primary_mac_address_id").(int))
-		data.PrimaryMacAddress = &primaryMac
+		body["primary_mac_address"] = nullableID(d.Get("primary_mac_address_id").(int))
 	}
 	if d.HasChange("vrf_id") {
-		data.Vrf = getOptionalInt(d, "vrf_id")
+		body["vrf"] = nullableID(d.Get("vrf_id").(int))
 	}
 
-	params := dcim.NewDcimInterfacesPartialUpdateParams().WithID(id).WithData(&data)
-	_, err = api.Dcim.DcimInterfacesPartialUpdate(params, nil)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return diags
+	return patchObjectCtx(ctx, d, m, deviceInterfaceAPIPath, body, resourceNetboxDeviceInterfaceRead)
 }
 
 func resourceNetboxDeviceInterfaceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimInterfacesDeleteParams().WithID(id)
-
-	_, err := api.Dcim.DcimInterfacesDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimInterfacesDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return diag.FromErr(err)
-	}
-	return nil
-}
-
-func getIDsFromNestedVLANDevice(nestedvlans []*models.NestedVLAN) []int64 {
-	var vlans []int64
-	for _, vlan := range nestedvlans {
-		vlans = append(vlans, vlan.ID)
-	}
-	return vlans
+	return deleteObjectCtx(ctx, d, m, deviceInterfaceAPIPath)
 }

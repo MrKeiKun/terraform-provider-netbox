@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -42,98 +39,58 @@ func resourceNetboxRouteTarget() *schema.Resource {
 		},
 	}
 }
-func resourceNetboxRouteTargetCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	data := models.WritableRouteTarget{}
 
+const routeTargetAPIPath = "ipam/route-targets/"
+
+type routeTargetRequest struct {
+	Name        string             `json:"name"`
+	Description string             `json:"description,omitempty"`
+	Tenant      *int64             `json:"tenant,omitempty"`
+	Tags        []netboxapi.TagRef `json:"tags"`
+}
+
+type routeTargetResponse struct {
+	Name        string             `json:"name"`
+	Description string             `json:"description"`
+	Tenant      *netboxapi.Ref     `json:"tenant"`
+	Tags        []netboxapi.TagRef `json:"tags"`
+}
+
+func routeTargetRequestFromResourceData(d *schema.ResourceData) *routeTargetRequest {
 	name := d.Get("name").(string)
-
-	data.Name = &name
-	data.Tags = []*models.NestedTag{}
-
-	params := ipam.NewIpamRouteTargetsCreateParams().WithData(&data)
-	res, err := api.Ipam.IpamRouteTargetsCreate(params, nil)
-	if err != nil {
-		return err
+	data := &routeTargetRequest{
+		Name:        name,
+		Description: d.Get("description").(string),
+		Tags:        []netboxapi.TagRef{},
 	}
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
+	if v := int64(d.Get("tenant_id").(int)); v != 0 {
+		data.Tenant = &v
+	}
+	return data
+}
 
-	return resourceNetboxRouteTargetUpdate(d, m)
+func resourceNetboxRouteTargetCreate(d *schema.ResourceData, m interface{}) error {
+	return createObject(d, m, routeTargetAPIPath, routeTargetRequestFromResourceData(d), resourceNetboxRouteTargetUpdate)
 }
 
 func resourceNetboxRouteTargetRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := ipam.NewIpamRouteTargetsReadParams().WithID(id)
-
-	res, err := api.Ipam.IpamRouteTargetsRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*ipam.IpamRouteTargetsReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
+	return readObject(d, m, routeTargetAPIPath, func(r *routeTargetResponse) {
+		d.Set("name", r.Name)
+		if r.Description != "" {
+			d.Set("description", r.Description)
 		}
-		return err
-	}
-
-	if res.GetPayload().Name != nil {
-		d.Set("name", res.GetPayload().Name)
-	}
-
-	if res.GetPayload().Tenant != nil {
-		d.Set("tenant_id", res.GetPayload().Tenant.ID)
-	}
-
-	if res.GetPayload().Description != "" {
-		d.Set("description", res.GetPayload().Description)
-	}
-
-	if res.GetPayload().Tags != nil {
-		api.readTags(d, res.GetPayload().Tags)
-	}
-
-	return nil
+		if r.Tenant != nil {
+			d.Set("tenant_id", r.Tenant.ID)
+		}
+		api.readTagRefs(d, r.Tags)
+	})
 }
 
 func resourceNetboxRouteTargetUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.WritableRouteTarget{}
-
-	name := d.Get("name").(string)
-	tenantID := int64(d.Get("tenant_id").(int))
-	description := d.Get("description").(string)
-
-	data.Name = &name
-	data.Description = description
-	data.Tenant = &tenantID
-	data.Tags = []*models.NestedTag{}
-
-	params := ipam.NewIpamRouteTargetsUpdateParams().WithID(id).WithData(&data)
-	_, err := api.Ipam.IpamRouteTargetsUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-	return resourceNetboxRouteTargetRead(d, m)
+	return putObject(d, m, routeTargetAPIPath, routeTargetRequestFromResourceData(d), resourceNetboxRouteTargetRead)
 }
 
 func resourceNetboxRouteTargetDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := ipam.NewIpamRouteTargetsDeleteParams().WithID(id)
-	_, err := api.Ipam.IpamRouteTargetsDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*ipam.IpamRouteTargetsDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	d.SetId("")
-	return nil
+	return deleteObject(d, m, routeTargetAPIPath)
 }

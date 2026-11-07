@@ -2,10 +2,8 @@ package netbox
 
 import (
 	"encoding/json"
-	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/extras"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -151,227 +149,117 @@ func resourceNetboxConfigContext() *schema.Resource {
 	}
 }
 
-func resourceNetboxConfigContextCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	data := models.WritableConfigContext{}
-	data.Name = strToPtr(d.Get("name").(string))
+const configContextAPIPath = "extras/config-contexts/"
 
-	dataJSON, ok := d.GetOk("data")
-	if ok {
+type configContextRequest struct {
+	Name          string      `json:"name"`
+	Data          interface{} `json:"data"`
+	Description   string      `json:"description,omitempty"`
+	ClusterGroups []int64     `json:"cluster_groups"`
+	ClusterTypes  []int64     `json:"cluster_types"`
+	Clusters      []int64     `json:"clusters"`
+	DeviceTypes   []int64     `json:"device_types"`
+	Locations     []int64     `json:"locations"`
+	Platforms     []int64     `json:"platforms"`
+	Regions       []int64     `json:"regions"`
+	Roles         []int64     `json:"roles"`
+	SiteGroups    []int64     `json:"site_groups"`
+	Sites         []int64     `json:"sites"`
+	TenantGroups  []int64     `json:"tenant_groups"`
+	Tenants       []int64     `json:"tenants"`
+	Tags          []string    `json:"tags"`
+	Weight        *int64      `json:"weight,omitempty"`
+}
+
+type configContextResponse struct {
+	Name          string          `json:"name"`
+	Description   string          `json:"description"`
+	Weight        *int64          `json:"weight"`
+	Data          interface{}     `json:"data"`
+	ClusterGroups []netboxapi.Ref `json:"cluster_groups"`
+	ClusterTypes  []netboxapi.Ref `json:"cluster_types"`
+	Clusters      []netboxapi.Ref `json:"clusters"`
+	DeviceTypes   []netboxapi.Ref `json:"device_types"`
+	Locations     []netboxapi.Ref `json:"locations"`
+	Platforms     []netboxapi.Ref `json:"platforms"`
+	Regions       []netboxapi.Ref `json:"regions"`
+	Roles         []netboxapi.Ref `json:"roles"`
+	SiteGroups    []netboxapi.Ref `json:"site_groups"`
+	Sites         []netboxapi.Ref `json:"sites"`
+	TenantGroups  []netboxapi.Ref `json:"tenant_groups"`
+	Tenants       []netboxapi.Ref `json:"tenants"`
+	Tags          []string        `json:"tags"`
+}
+
+func configContextRequestFromResourceData(d *schema.ResourceData) *configContextRequest {
+	data := &configContextRequest{
+		Name:          d.Get("name").(string),
+		Description:   d.Get("description").(string),
+		ClusterGroups: toInt64List(d.Get("cluster_groups")),
+		ClusterTypes:  toInt64List(d.Get("cluster_types")),
+		Clusters:      toInt64List(d.Get("clusters")),
+		DeviceTypes:   toInt64List(d.Get("device_types")),
+		Locations:     toInt64List(d.Get("locations")),
+		Platforms:     toInt64List(d.Get("platforms")),
+		Regions:       toInt64List(d.Get("regions")),
+		Roles:         toInt64List(d.Get("roles")),
+		SiteGroups:    toInt64List(d.Get("site_groups")),
+		Sites:         toInt64List(d.Get("sites")),
+		TenantGroups:  toInt64List(d.Get("tenant_groups")),
+		Tenants:       toInt64List(d.Get("tenants")),
+		Tags:          toStringList(d.Get(tagsAllKey)),
+		Weight:        int64ToPtr(int64(d.Get("weight").(int))),
+	}
+
+	if dataJSON, ok := d.GetOk("data"); ok {
 		var jsonObj any
-		localContextBA := []byte(dataJSON.(string))
-		if err := json.Unmarshal(localContextBA, &jsonObj); err == nil {
+		if err := json.Unmarshal([]byte(dataJSON.(string)), &jsonObj); err == nil {
 			data.Data = jsonObj
 		}
 	}
-	data.Description = d.Get("description").(string)
-	data.ClusterGroups = toInt64List(d.Get("cluster_groups"))
-	data.ClusterTypes = toInt64List(d.Get("cluster_types"))
-	data.Clusters = toInt64List(d.Get("clusters"))
-	data.DeviceTypes = toInt64List(d.Get("device_types"))
-	data.Locations = toInt64List(d.Get("locations"))
-	data.Platforms = toInt64List(d.Get("platforms"))
-	data.Regions = toInt64List(d.Get("regions"))
-	data.Roles = toInt64List(d.Get("roles"))
-	data.SiteGroups = toInt64List(d.Get("site_groups"))
-	data.Sites = toInt64List(d.Get("sites"))
-	data.TenantGroups = toInt64List(d.Get("tenant_groups"))
-	data.Tenants = toInt64List(d.Get("tenants"))
-	data.Tags = toStringList(d.Get(tagsAllKey))
-	data.Weight = int64ToPtr(int64(d.Get("weight").(int)))
+	return data
+}
 
-	params := extras.NewExtrasConfigContextsCreateParams().WithData(&data)
-
-	res, err := api.Extras.ExtrasConfigContextsCreate(params, nil)
-	if err != nil {
-		//return errors.New(getTextFromError(err))
-		return err
-	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxConfigContextRead(d, m)
+func resourceNetboxConfigContextCreate(d *schema.ResourceData, m interface{}) error {
+	return createObject(d, m, configContextAPIPath, configContextRequestFromResourceData(d), resourceNetboxConfigContextRead)
 }
 
 func resourceNetboxConfigContextRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := extras.NewExtrasConfigContextsReadParams().WithID(id)
-
-	res, err := api.Extras.ExtrasConfigContextsRead(params, nil)
-
-	if err != nil {
-		if errresp, ok := err.(*extras.ExtrasConfigContextsReadDefault); ok {
-			if errresp.Code() == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
+	return readObject(d, m, configContextAPIPath, func(cc *configContextResponse) {
+		d.Set("name", cc.Name)
+		d.Set("description", cc.Description)
+		d.Set("weight", cc.Weight)
+		if cc.Data != nil {
+			if jsonArr, err := json.Marshal(cc.Data); err == nil {
+				d.Set("data", string(jsonArr))
 			}
+		} else {
+			d.Set("data", nil)
 		}
-		return err
-	}
 
-	d.Set("name", res.GetPayload().Name)
-	d.Set("description", res.GetPayload().Description)
-	d.Set("weight", res.GetPayload().Weight)
+		d.Set("cluster_groups", netboxapi.IDs(cc.ClusterGroups))
+		d.Set("cluster_types", netboxapi.IDs(cc.ClusterTypes))
+		d.Set("clusters", netboxapi.IDs(cc.Clusters))
+		d.Set("device_types", netboxapi.IDs(cc.DeviceTypes))
+		d.Set("locations", netboxapi.IDs(cc.Locations))
+		d.Set("platforms", netboxapi.IDs(cc.Platforms))
+		d.Set("regions", netboxapi.IDs(cc.Regions))
+		d.Set("roles", netboxapi.IDs(cc.Roles))
+		d.Set("site_groups", netboxapi.IDs(cc.SiteGroups))
+		d.Set("sites", netboxapi.IDs(cc.Sites))
+		d.Set("tenant_groups", netboxapi.IDs(cc.TenantGroups))
+		d.Set("tenants", netboxapi.IDs(cc.Tenants))
 
-	if res.GetPayload().Data != nil {
-		if jsonArr, err := json.Marshal(res.GetPayload().Data); err == nil {
-			d.Set("data", string(jsonArr))
-		}
-	} else {
-		d.Set("data", nil)
-	}
-
-	clusterGroups := res.GetPayload().ClusterGroups
-	clusterGroupsSlice := make([]int64, len(clusterGroups))
-	for i, v := range clusterGroups {
-		clusterGroupsSlice[i] = int64(v.ID)
-	}
-	d.Set("cluster_groups", clusterGroupsSlice)
-
-	clusterTypes := res.GetPayload().ClusterTypes
-	clusterTypesSlice := make([]int64, len(clusterTypes))
-	for i, v := range clusterTypes {
-		clusterTypesSlice[i] = int64(v.ID)
-	}
-	d.Set("cluster_types", clusterTypesSlice)
-
-	clusters := res.GetPayload().Clusters
-	clustersSlice := make([]int64, len(clusters))
-	for i, v := range clusters {
-		clustersSlice[i] = int64(v.ID)
-	}
-	d.Set("clusters", clustersSlice)
-
-	deviceTypes := res.GetPayload().DeviceTypes
-	deviceTypesSlice := make([]int64, len(deviceTypes))
-	for i, v := range deviceTypes {
-		deviceTypesSlice[i] = int64(v.ID)
-	}
-	d.Set("device_types", deviceTypesSlice)
-
-	locations := res.GetPayload().Locations
-	locationsSlice := make([]int64, len(locations))
-	for i, v := range locations {
-		locationsSlice[i] = int64(v.ID)
-	}
-	d.Set("locations", locationsSlice)
-
-	platforms := res.GetPayload().Platforms
-	platformsSlice := make([]int64, len(platforms))
-	for i, v := range platforms {
-		platformsSlice[i] = int64(v.ID)
-	}
-	d.Set("platforms", platformsSlice)
-
-	regions := res.GetPayload().Regions
-	regionsSlice := make([]int64, len(regions))
-	for i, v := range regions {
-		regionsSlice[i] = int64(v.ID)
-	}
-	d.Set("regions", regionsSlice)
-
-	roles := res.GetPayload().Roles
-	rolesSlice := make([]int64, len(roles))
-	for i, v := range roles {
-		rolesSlice[i] = int64(v.ID)
-	}
-	d.Set("roles", rolesSlice)
-
-	siteGroups := res.GetPayload().SiteGroups
-	siteGroupsSlice := make([]int64, len(siteGroups))
-	for i, v := range siteGroups {
-		siteGroupsSlice[i] = int64(v.ID)
-	}
-	d.Set("site_groups", siteGroupsSlice)
-
-	sites := res.GetPayload().Sites
-	sitesSlice := make([]int64, len(sites))
-	for i, v := range sites {
-		sitesSlice[i] = int64(v.ID)
-	}
-	d.Set("sites", sitesSlice)
-
-	// hack since `readTags` mostly deals with nested tags
-	tags := make([]*models.NestedTag, 0, len(res.GetPayload().Tags))
-	for _, tagName := range res.GetPayload().Tags {
-		tags = append(tags, &models.NestedTag{
-			Name: &tagName,
-		})
-	}
-	api.readTags(d, tags)
-
-	tenantGroups := res.GetPayload().TenantGroups
-	tenantGroupsSlice := make([]int64, len(tenantGroups))
-	for i, v := range tenantGroups {
-		tenantGroupsSlice[i] = int64(v.ID)
-	}
-	d.Set("tenant_groups", tenantGroupsSlice)
-
-	tenants := res.GetPayload().Tenants
-	tenantsSlice := make([]int64, len(tenants))
-	for i, v := range tenants {
-		tenantsSlice[i] = int64(v.ID)
-	}
-	d.Set("tenants", tenantsSlice)
-
-	return nil
+		// config contexts return the tags as plain names
+		api.readTagNames(d, cc.Tags)
+	})
 }
 
 func resourceNetboxConfigContextUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-
-	data := models.WritableConfigContext{}
-
-	name := d.Get("name").(string)
-	data.Name = &name
-
-	dataValue, ok := d.GetOk("data")
-	if ok {
-		var jsonObj any
-		localContextBA := []byte(dataValue.(string))
-		if err := json.Unmarshal(localContextBA, &jsonObj); err == nil {
-			data.Data = jsonObj
-		}
-	}
-	data.Description = d.Get("description").(string)
-	data.ClusterGroups = toInt64List(d.Get("cluster_groups"))
-	data.ClusterTypes = toInt64List(d.Get("cluster_types"))
-	data.Clusters = toInt64List(d.Get("clusters"))
-	data.DeviceTypes = toInt64List(d.Get("device_types"))
-	data.Locations = toInt64List(d.Get("locations"))
-	data.Platforms = toInt64List(d.Get("platforms"))
-	data.Regions = toInt64List(d.Get("regions"))
-	data.Roles = toInt64List(d.Get("roles"))
-	data.SiteGroups = toInt64List(d.Get("site_groups"))
-	data.Sites = toInt64List(d.Get("sites"))
-	data.TenantGroups = toInt64List(d.Get("tenant_groups"))
-	data.Tenants = toInt64List(d.Get("tenants"))
-	data.Tags = toStringList(d.Get(tagsAllKey))
-	data.Weight = int64ToPtr(int64(d.Get("weight").(int)))
-
-	params := extras.NewExtrasConfigContextsPartialUpdateParams().WithID(id).WithData(&data)
-
-	_, err := api.Extras.ExtrasConfigContextsPartialUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	return resourceNetboxConfigContextRead(d, m)
+	return patchObject(d, m, configContextAPIPath, configContextRequestFromResourceData(d), resourceNetboxConfigContextRead)
 }
 
 func resourceNetboxConfigContextDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := extras.NewExtrasConfigContextsDeleteParams().WithID(id)
-
-	_, err := api.Extras.ExtrasConfigContextsDelete(params, nil)
-	if err != nil {
-		return err
-	}
-	return nil
+	return deleteObject(d, m, configContextAPIPath)
 }

@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -52,132 +49,83 @@ func resourceNetboxVrf() *schema.Resource {
 	}
 }
 
+const vrfAPIPath = "ipam/vrfs/"
+
+type vrfRequest struct {
+	Name          string             `json:"name"`
+	Rd            *string            `json:"rd"`
+	Tenant        *int64             `json:"tenant,omitempty"`
+	Description   string             `json:"description,omitempty"`
+	EnforceUnique bool               `json:"enforce_unique"`
+	ExportTargets []int64            `json:"export_targets"`
+	ImportTargets []int64            `json:"import_targets"`
+	Tags          []netboxapi.TagRef `json:"tags"`
+}
+
+type vrfResponse struct {
+	Name          string             `json:"name"`
+	Rd            *string            `json:"rd"`
+	Tenant        *netboxapi.Ref     `json:"tenant"`
+	Description   string             `json:"description"`
+	EnforceUnique bool               `json:"enforce_unique"`
+	Tags          []netboxapi.TagRef `json:"tags"`
+}
+
+func vrfRequestFromResourceData(api *providerState, d *schema.ResourceData) (*vrfRequest, error) {
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
+	if err != nil {
+		return nil, err
+	}
+
+	data := &vrfRequest{
+		Name:          d.Get("name").(string),
+		Description:   getOptionalStr(d, "description", true),
+		EnforceUnique: d.Get("enforce_unique").(bool),
+		ExportTargets: []int64{},
+		ImportTargets: []int64{},
+		Tags:          tags,
+	}
+	if rd, ok := d.GetOk("rd"); ok {
+		data.Rd = strToPtr(rd.(string))
+	}
+	if tenantID, ok := d.GetOk("tenant_id"); ok {
+		data.Tenant = int64ToPtr(int64(tenantID.(int)))
+	}
+	return data, nil
+}
+
 func resourceNetboxVrfCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	data := models.WritableVRF{}
-
-	name := d.Get("name").(string)
-	tenantID := int64(d.Get("tenant_id").(int))
-	enforceUnique := d.Get("enforce_unique").(bool)
-	rd := d.Get("rd").(string)
-
-	data.Name = &name
-	if tenantID != 0 {
-		data.Tenant = &tenantID
-	}
-
-	data.Description = getOptionalStr(d, "description", true)
-	data.EnforceUnique = enforceUnique
-	if rd != "" {
-		data.Rd = &rd
-	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+	data, err := vrfRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	data.ExportTargets = []int64{}
-	data.ImportTargets = []int64{}
-
-	params := ipam.NewIpamVrfsCreateParams().WithData(&data)
-
-	res, err := api.Ipam.IpamVrfsCreate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxVrfRead(d, m)
+	return createObject(d, m, vrfAPIPath, data, resourceNetboxVrfRead)
 }
 
 func resourceNetboxVrfRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := ipam.NewIpamVrfsReadParams().WithID(id)
-
-	res, err := api.Ipam.IpamVrfsRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*ipam.IpamVrfsReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
+	return readObject(d, m, vrfAPIPath, func(vrf *vrfResponse) {
+		d.Set("name", vrf.Name)
+		d.Set("description", vrf.Description)
+		d.Set("enforce_unique", vrf.EnforceUnique)
+		if vrf.Rd != nil {
+			d.Set("rd", *vrf.Rd)
+		} else {
+			d.Set("rd", nil)
 		}
-		return err
-	}
-
-	vrf := res.GetPayload()
-	d.Set("name", vrf.Name)
-	d.Set("description", vrf.Description)
-	d.Set("enforce_unique", vrf.EnforceUnique)
-	if vrf.Rd != nil {
-		d.Set("rd", *vrf.Rd)
-	} else {
-		d.Set("rd", nil)
-	}
-	if vrf.Tenant != nil {
-		d.Set("tenant_id", vrf.Tenant.ID)
-	} else {
-		d.Set("tenant_id", nil)
-	}
-	return nil
+		d.Set("tenant_id", netboxapi.RefID(vrf.Tenant))
+		api.readTagRefs(d, vrf.Tags)
+	})
 }
 
 func resourceNetboxVrfUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.WritableVRF{}
-
-	name := d.Get("name").(string)
-	enforceUnique := d.Get("enforce_unique").(bool)
-
-	tags, _ := getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
-
-	data.Name = &name
-	data.Tags = tags
-	data.ExportTargets = []int64{}
-	data.ImportTargets = []int64{}
-	data.Description = getOptionalStr(d, "description", true)
-	data.EnforceUnique = enforceUnique
-
-	if rd, ok := d.GetOk("rd"); ok {
-		data.Rd = strToPtr(rd.(string))
-	}
-
-	if tenantID, ok := d.GetOk("tenant_id"); ok {
-		data.Tenant = int64ToPtr(int64(tenantID.(int)))
-	}
-	params := ipam.NewIpamVrfsPartialUpdateParams().WithID(id).WithData(&data)
-
-	_, err := api.Ipam.IpamVrfsPartialUpdate(params, nil)
+	data, err := vrfRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	return resourceNetboxVrfRead(d, m)
+	return patchObject(d, m, vrfAPIPath, data, resourceNetboxVrfRead)
 }
 
 func resourceNetboxVrfDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := ipam.NewIpamVrfsDeleteParams().WithID(id)
-
-	_, err := api.Ipam.IpamVrfsDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*ipam.IpamVrfsDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	return nil
+	return deleteObject(d, m, vrfAPIPath)
 }

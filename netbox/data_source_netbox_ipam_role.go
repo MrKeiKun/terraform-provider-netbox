@@ -1,10 +1,9 @@
 package netbox
 
 import (
-	"errors"
+	"net/url"
 	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -33,37 +32,30 @@ func dataSourceNetboxIPAMRole() *schema.Resource {
 	}
 }
 
+type ipamRoleDataSourceResponse struct {
+	ID          int64  `json:"id"`
+	Slug        string `json:"slug"`
+	Name        string `json:"name"`
+	Weight      *int64 `json:"weight"`
+	Description string `json:"description"`
+}
+
 func dataSourceNetboxIPAMRoleRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	name := d.Get("name").(string)
-
-	params := ipam.NewIpamRolesListParams()
-	params.Name = &name
-
-	limit := int64(2) // Limit of 2 is enough
-	params.Limit = &limit
-
-	res, err := api.Ipam.IpamRolesList(params, nil)
+	query := url.Values{}
+	addStrQuery(query, d, "name", "name")
+	r, err := findOne[ipamRoleDataSourceResponse](m, "ipam/roles/", query, "ipam role")
 	if err != nil {
 		return err
 	}
 
-	if *res.GetPayload().Count > int64(1) {
-		return errors.New("more than one ipam role returned, specify a more narrow filter")
+	d.SetId(strconv.FormatInt(r.ID, 10))
+	d.Set("slug", r.Slug)
+	d.Set("name", r.Name)
+	if r.Weight != nil {
+		d.Set("weight", r.Weight)
 	}
-	if *res.GetPayload().Count == int64(0) {
-		return errors.New("no ipam role found matching filter")
-	}
-	result := res.GetPayload().Results[0]
-	d.SetId(strconv.FormatInt(result.ID, 10))
-	d.Set("slug", result.Slug)
-	d.Set("name", result.Name)
-	if result.Weight != nil {
-		d.Set("weight", result.Weight)
-	}
-	if result.Description != "" {
-		d.Set("description", result.Description)
+	if r.Description != "" {
+		d.Set("description", r.Description)
 	}
 	return nil
 }

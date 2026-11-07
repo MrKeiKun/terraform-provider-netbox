@@ -1,10 +1,10 @@
 package netbox
 
 import (
-	"errors"
+	"net/url"
 	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -133,99 +133,63 @@ for more information on available lookup expressions.`,
 	}
 }
 
+type prefixDataSourceResponse struct {
+	ID           int64                  `json:"id"`
+	Prefix       string                 `json:"prefix"`
+	Status       *netboxapi.Choice      `json:"status"`
+	Description  string                 `json:"description"`
+	Family       *netboxapi.IntChoice   `json:"family"`
+	Tags         []netboxapi.TagRef     `json:"tags"`
+	CustomFields map[string]interface{} `json:"custom_fields"`
+	Role         *netboxapi.Ref         `json:"role"`
+	Vrf          *netboxapi.Ref         `json:"vrf"`
+	Vlan         *struct {
+		ID  int64   `json:"id"`
+		Vid float64 `json:"vid"`
+	} `json:"vlan"`
+	Tenant    *netboxapi.Ref `json:"tenant"`
+	ScopeType *string        `json:"scope_type"`
+	ScopeID   *int64         `json:"scope_id"`
+}
+
 func dataSourceNetboxPrefixRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	params := ipam.NewIpamPrefixesListParams()
-	var opts []ipam.ClientOption
-
-	limit := int64(2) // Limit of 2 is enough
-	params.Limit = &limit
-
+	query := url.Values{}
 	// note: cidr is deprecated in favor of prefix
-	if cidr, ok := d.Get("cidr").(string); ok && cidr != "" {
-		params.Prefix = &cidr
-	}
-
-	if description, ok := d.Get("description").(string); ok && description != "" {
-		params.Description = &description
-	}
-
-	if family, ok := d.Get("family").(int); ok && family != 0 {
-		familyFloat := float64(family)
-		params.Family = &familyFloat
-	}
-
-	if roleID, ok := d.Get("role_id").(int); ok && roleID != 0 {
-		params.RoleID = strToPtr(strconv.Itoa(roleID))
-	}
-
-	if prefix, ok := d.Get("prefix").(string); ok && prefix != "" {
-		params.Prefix = &prefix
-	}
-
-	if vrfID, ok := d.Get("vrf_id").(int); ok && vrfID != 0 {
-		// Note that vrf_id is a string pointer in the netbox filter, but we use a number in the provider
-		params.VrfID = strToPtr(strconv.Itoa(vrfID))
-	}
-
-	if vlanID, ok := d.Get("vlan_id").(int); ok && vlanID != 0 {
-		// Note that vlan_id is a string pointer in the netbox filter, but we use a number in the provider
-		params.VlanID = strToPtr(strconv.Itoa(vlanID))
-	}
-
+	addStrQuery(query, d, "cidr", "prefix")
+	addStrQuery(query, d, "description", "description")
+	addIntQuery(query, d, "family", "family")
+	addIntQuery(query, d, "role_id", "role_id")
+	addStrQuery(query, d, "prefix", "prefix")
+	addIntQuery(query, d, "vrf_id", "vrf_id")
+	addIntQuery(query, d, "vlan_id", "vlan_id")
 	if vlanVid, ok := d.Get("vlan_vid").(float64); ok && vlanVid != 0 {
-		params.VlanVid = &vlanVid
+		query.Set("vlan_vid", strconv.FormatFloat(vlanVid, 'f', -1, 64))
 	}
-
-	if tenantID, ok := d.Get("tenant_id").(int); ok && tenantID != 0 {
-		// Note that tenant_id is a string pointer in the netbox filter, but we use a number in the provider
-		params.TenantID = strToPtr(strconv.Itoa(tenantID))
-	}
-
-	if siteID, ok := d.Get("site_id").(int); ok && siteID != 0 {
-		// Note that site_id is a string pointer in the netbox filter, but we use a number in the provider
-		params.SiteID = strToPtr(strconv.Itoa(siteID))
-	}
-
-	if tag, ok := d.Get("tag").(string); ok && tag != "" {
-		params.Tag = []string{tag} //TODO: switch schema to list
-	}
-	if tagn, ok := d.Get("tag__n").(string); ok && tagn != "" {
-		params.Tagn = &tagn
-	}
-
-	if status, ok := d.Get("status").(string); ok && status != "" {
-		params.Status = &status
-	}
-
+	addIntQuery(query, d, "tenant_id", "tenant_id")
+	addIntQuery(query, d, "site_id", "site_id")
+	addStrQuery(query, d, "tag", "tag")
+	addStrQuery(query, d, "tag__n", "tag__n")
+	addStrQuery(query, d, "status", "status")
 	if cfm, ok := d.Get(customFieldsKey).(map[string]interface{}); ok {
-		opts = append(opts, WithCustomFieldParamsOption(cfm))
+		addCustomFieldQuery(query, cfm)
 	}
 
-	res, err := api.Ipam.IpamPrefixesList(params, nil, opts...)
+	result, err := findOne[prefixDataSourceResponse](m, "ipam/prefixes/", query, "prefix")
 	if err != nil {
 		return err
 	}
 
-	if *res.GetPayload().Count > int64(1) {
-		return errors.New("more than prefix returned, specify a more narrow filter")
-	}
-	if *res.GetPayload().Count == int64(0) {
-		return errors.New("no prefix found matching filter")
-	}
-
-	result := res.GetPayload().Results[0]
+	d.SetId(strconv.FormatInt(result.ID, 10))
 	d.Set("id", result.ID)
 	d.Set("cidr", result.Prefix)
 	d.Set("prefix", result.Prefix)
-	d.Set("status", result.Status.Value)
+	d.Set("status", netboxapi.ChoiceValue(result.Status))
 	d.Set("description", result.Description)
-	d.Set("family", int(*result.Family.Value))
-	d.Set("tags", getTagListFromNestedTagList(result.Tags))
-
-	cf := getCustomFields(result.CustomFields)
-	if cf != nil {
+	if result.Family != nil {
+		d.Set("family", int(result.Family.Value))
+	}
+	d.Set("tags", tagNames(result.Tags))
+	if cf := getCustomFields(result.CustomFields); cf != nil {
 		d.Set(customFieldsKey, cf)
 	}
 	if result.Role != nil {
@@ -241,26 +205,21 @@ func dataSourceNetboxPrefixRead(d *schema.ResourceData, m interface{}) error {
 	if result.Tenant != nil {
 		d.Set("tenant_id", result.Tenant.ID)
 	}
-
 	d.Set("site_id", nil)
 	d.Set("site_group_id", nil)
 	d.Set("location_id", nil)
 	d.Set("region_id", nil)
-
 	if result.ScopeType != nil && result.ScopeID != nil {
-		scopeID := result.ScopeID
-		switch scopeType := result.ScopeType; *scopeType {
+		switch *result.ScopeType {
 		case "dcim.site":
-			d.Set("site_id", scopeID)
+			d.Set("site_id", *result.ScopeID)
 		case "dcim.sitegroup":
-			d.Set("site_group_id", scopeID)
+			d.Set("site_group_id", *result.ScopeID)
 		case "dcim.location":
-			d.Set("location_id", scopeID)
+			d.Set("location_id", *result.ScopeID)
 		case "dcim.region":
-			d.Set("region_id", scopeID)
+			d.Set("region_id", *result.ScopeID)
 		}
 	}
-
-	d.SetId(strconv.FormatInt(result.ID, 10))
 	return nil
 }

@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -67,147 +64,95 @@ func resourceNetboxDeviceRearPort() *schema.Resource {
 	}
 }
 
-func resourceNetboxDeviceRearPortCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const deviceRearPortAPIPath = "dcim/rear-ports/"
 
-	data := models.WritableRearPort{
-		Device:        int64ToPtr(int64(d.Get("device_id").(int))),
-		Name:          strToPtr(d.Get("name").(string)),
-		Type:          strToPtr(d.Get("type").(string)),
-		Positions:     int64(d.Get("positions").(int)),
-		Module:        getOptionalInt(d, "module_id"),
-		Label:         getOptionalStr(d, "label", false),
-		Color:         getOptionalStr(d, "color_hex", false),
-		Description:   getOptionalStr(d, "description", false),
-		MarkConnected: d.Get("mark_connected").(bool),
-	}
+type deviceRearPortRequest struct {
+	Name          string             `json:"name"`
+	Device        *int64             `json:"device"`
+	Module        *int64             `json:"module"`
+	Label         string             `json:"label,omitempty"`
+	Type          string             `json:"type"`
+	Positions     int64              `json:"positions,omitempty"`
+	Color         string             `json:"color"`
+	Description   string             `json:"description,omitempty"`
+	MarkConnected bool               `json:"mark_connected"`
+	CustomFields  interface{}        `json:"custom_fields,omitempty"`
+	Tags          []netboxapi.TagRef `json:"tags"`
+}
 
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+type deviceRearPortResponse struct {
+	Name          string                 `json:"name"`
+	Device        *netboxapi.Ref         `json:"device"`
+	Module        *netboxapi.Ref         `json:"module"`
+	Label         string                 `json:"label"`
+	Type          *netboxapi.Choice      `json:"type"`
+	Positions     int64                  `json:"positions"`
+	Color         string                 `json:"color"`
+	Description   string                 `json:"description"`
+	MarkConnected bool                   `json:"mark_connected"`
+	CustomFields  map[string]interface{} `json:"custom_fields"`
+	Tags          []netboxapi.TagRef     `json:"tags"`
+}
+
+func deviceRearPortRequestFromResourceData(api *providerState, d *schema.ResourceData) (*deviceRearPortRequest, error) {
+	name := d.Get("name").(string)
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	ct, ok := d.GetOk(customFieldsKey)
-	if ok {
+	data := &deviceRearPortRequest{
+		Name:          name,
+		Device:        int64ToPtr(int64(d.Get("device_id").(int))),
+		Module:        getOptionalInt(d, "module_id"),
+		Label:         getOptionalStr(d, "label", true),
+		Type:          d.Get("type").(string),
+		Positions:     int64(d.Get("positions").(int)),
+		Color:         getOptionalStr(d, "color_hex", true),
+		Description:   getOptionalStr(d, "description", true),
+		MarkConnected: d.Get("mark_connected").(bool),
+		Tags:          tags,
+	}
+	if ct, ok := d.GetOk(customFieldsKey); ok {
 		data.CustomFields = ct
 	}
+	return data, nil
+}
 
-	params := dcim.NewDcimRearPortsCreateParams().WithData(&data)
-
-	res, err := api.Dcim.DcimRearPortsCreate(params, nil)
+func resourceNetboxDeviceRearPortCreate(d *schema.ResourceData, m interface{}) error {
+	data, err := deviceRearPortRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxDeviceRearPortRead(d, m)
+	return createObject(d, m, deviceRearPortAPIPath, data, resourceNetboxDeviceRearPortRead)
 }
 
 func resourceNetboxDeviceRearPortRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimRearPortsReadParams().WithID(id)
-
-	res, err := api.Dcim.DcimRearPortsRead(params, nil)
-
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimRearPortsReadDefault); ok {
-			if errresp.Code() == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
+	return readObject(d, m, deviceRearPortAPIPath, func(r *deviceRearPortResponse) {
+		d.Set("name", r.Name)
+		d.Set("device_id", netboxapi.RefID(r.Device))
+		d.Set("module_id", netboxapi.RefID(r.Module))
+		d.Set("label", r.Label)
+		d.Set("type", netboxapi.ChoiceValue(r.Type))
+		d.Set("positions", r.Positions)
+		d.Set("color_hex", r.Color)
+		d.Set("description", r.Description)
+		d.Set("mark_connected", r.MarkConnected)
+		if cf := getCustomFields(r.CustomFields); cf != nil {
+			d.Set(customFieldsKey, cf)
 		}
-		return err
-	}
-
-	rearPort := res.GetPayload()
-
-	if rearPort.Device != nil {
-		d.Set("device_id", rearPort.Device.ID)
-	} else {
-		d.Set("device_id", nil)
-	}
-
-	d.Set("name", rearPort.Name)
-
-	if rearPort.Type != nil {
-		d.Set("type", rearPort.Type.Value)
-	} else {
-		d.Set("type", nil)
-	}
-
-	d.Set("positions", rearPort.Positions)
-
-	if rearPort.Module != nil {
-		d.Set("module_id", rearPort.Module.ID)
-	} else {
-		d.Set("module_id", nil)
-	}
-
-	d.Set("label", rearPort.Label)
-	d.Set("color_hex", rearPort.Color)
-	d.Set("description", rearPort.Description)
-	d.Set("mark_connected", rearPort.MarkConnected)
-
-	cf := getCustomFields(res.GetPayload().CustomFields)
-	if cf != nil {
-		d.Set(customFieldsKey, cf)
-	}
-	api.readTags(d, res.GetPayload().Tags)
-
-	return nil
+		api.readTagRefs(d, r.Tags)
+	})
 }
 
 func resourceNetboxDeviceRearPortUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-
-	data := models.WritableRearPort{
-		Device:        int64ToPtr(int64(d.Get("device_id").(int))),
-		Name:          strToPtr(d.Get("name").(string)),
-		Type:          strToPtr(d.Get("type").(string)),
-		Positions:     int64(d.Get("positions").(int)),
-		Module:        getOptionalInt(d, "module_id"),
-		Label:         getOptionalStr(d, "label", true),
-		Color:         getOptionalStr(d, "color_hex", false),
-		Description:   getOptionalStr(d, "description", true),
-		MarkConnected: d.Get("mark_connected").(bool),
-	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+	data, err := deviceRearPortRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	ct, ok := d.GetOk(customFieldsKey)
-	if ok {
-		data.CustomFields = ct
-	}
-
-	params := dcim.NewDcimRearPortsPartialUpdateParams().WithID(id).WithData(&data)
-
-	_, err = api.Dcim.DcimRearPortsPartialUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	return resourceNetboxDeviceRearPortRead(d, m)
+	return patchObject(d, m, deviceRearPortAPIPath, data, resourceNetboxDeviceRearPortRead)
 }
 
 func resourceNetboxDeviceRearPortDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimRearPortsDeleteParams().WithID(id)
-
-	_, err := api.Dcim.DcimRearPortsDelete(params, nil)
-	if err != nil {
-		return err
-	}
-	return nil
+	return deleteObject(d, m, deviceRearPortAPIPath)
 }

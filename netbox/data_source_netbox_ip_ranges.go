@@ -1,10 +1,6 @@
 package netbox
 
 import (
-	"fmt"
-
-	"github.com/fbreckle/go-netbox/netbox/client/ipam"
-	"github.com/fbreckle/go-netbox/netbox/models"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -135,112 +131,48 @@ func dataSourceNetboxIPRanges() *schema.Resource {
 }
 
 func dataSourceNetboxIPRangesRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	params := ipam.NewIpamIPRangesListParams()
-
-	// Get user limit
-	var userLimit int64 = 0
-	if limitValue, ok := d.GetOk("limit"); ok {
-		userLimit = int64(limitValue.(int))
+	// filter name in the data source -> query parameter sent to Netbox
+	allowed := map[string]string{
+		"contains":      "contains",
+		"start_address": "start_address",
+		"end_address":   "end_address",
+		"role":          "role",
+		"status":        "status",
+		"vrf":           "vrf",
+		"tenant":        "tenant",
+		"tag":           "tag",
 	}
 
-	if filter, ok := d.GetOk("filter"); ok {
-		var filterParams = filter.(*schema.Set)
-		var tags []string
-		for _, f := range filterParams.List() {
-			k := f.(map[string]interface{})["name"]
-			v := f.(map[string]interface{})["value"]
-			vString := v.(string)
-			switch k {
-			case "contains":
-				params.Contains = &vString
-			case "start_address":
-				params.StartAddress = &vString
-			case "end_address":
-				params.EndAddress = &vString
-			case "role":
-				params.Role = &vString
-			case "status":
-				params.Status = &vString
-			case "vrf":
-				params.Vrf = &vString
-			case "tenant":
-				params.Tenant = &vString
-			case "tag":
-				tags = append(tags, vString)
-				params.Tag = tags
-			default:
-				return fmt.Errorf("'%s' is not a supported filter parameter", k)
-			}
-		}
+	results, err := listFiltered[map[string]interface{}](d, m, "ipam/ip-ranges/", "IP ranges", allowed, nil)
+	if err != nil {
+		return err
 	}
-
-	// Fetch all pages with pagination
-	paginationHelper := NewPaginationHelper(userLimit)
-	var allIPRanges []*models.IPRange
-
-	pageSize := paginationHelper.GetPageSize()
-	for {
-		currentOffset := paginationHelper.CurrentOffset()
-		params.Limit = &pageSize
-		params.Offset = &currentOffset
-
-		res, err := api.Ipam.IpamIPRangesList(params, nil)
-		if err != nil {
-			return fmt.Errorf("failed to fetch IP ranges at offset %d: %w", currentOffset, err)
-		}
-
-		payload := res.GetPayload()
-		allIPRanges = append(allIPRanges, payload.Results...)
-
-		if len(payload.Results) == 0 {
-			break
-		}
-
-		if !paginationHelper.ShouldContinuePaging(int64(len(allIPRanges)), payload.Next) {
-			break
-		}
-
-		paginationHelper.Advance(int64(len(payload.Results)))
-	}
-
-	// Trim to user limit if specified
-	trimmedCount := paginationHelper.TrimToLimit(len(allIPRanges))
-	filteredIPRanges := allIPRanges[:trimmedCount]
 
 	var s []map[string]interface{}
-	for _, v := range filteredIPRanges {
-		var mapping = make(map[string]interface{})
+	for _, v := range results {
+		mapping := make(map[string]interface{})
 
-		mapping["id"] = v.ID
-		mapping["description"] = v.Description
-		mapping["created"] = v.Created.String()
-		mapping["last_updated"] = v.LastUpdated.String()
-		mapping["custom_fields"] = flattenCustomFields(v.CustomFields)
+		mapping["id"] = jInt(v, "id")
+		mapping["description"] = jStr(v, "description")
+		mapping["created"] = jTime(v, "created")
+		mapping["last_updated"] = jTime(v, "last_updated")
+		mapping["custom_fields"] = flattenCustomFields(v["custom_fields"])
+		mapping["start_address"] = jStr(v, "start_address")
+		mapping["end_address"] = jStr(v, "end_address")
+		mapping["address_family"] = jNested(v, "family", "label")
+		mapping["status"] = jChoice(v, "status")
+		mapping["tenant"] = jObjectList(v, "tenant", "id", "name", "slug")
+		mapping["vrf_id"] = jID(v, "vrf")
+		mapping["role_id"] = jID(v, "role")
+		mapping["description"] = jStr(v, "description")
+		mapping["tags"] = jObjectsList(v, "tags", "name", "display", "slug", "id")
 
-		mapping["start_address"] = v.StartAddress
-		mapping["end_address"] = v.EndAddress
-		mapping["address_family"] = v.Family.Label
-		mapping["status"] = v.Status.Value
-		mapping["tenant"] = flattenTenant(v.Tenant)
-		if v.Vrf != nil {
-			mapping["vrf_id"] = v.Vrf.ID
+		// fields that are missing in the response are left out of the state
+		for k, val := range mapping {
+			if val == nil {
+				delete(mapping, k)
+			}
 		}
-		if v.Role != nil {
-			mapping["role_id"] = v.Role.ID
-		}
-		mapping["description"] = v.Description
-		var stags []map[string]interface{}
-		for _, t := range v.Tags {
-			var tagmapping = make(map[string]interface{})
-			tagmapping["name"] = t.Name
-			tagmapping["display"] = t.Display
-			tagmapping["slug"] = t.Slug
-			tagmapping["id"] = t.ID
-			stags = append(stags, tagmapping)
-		}
-		mapping["tags"] = stags
 
 		s = append(s, mapping)
 	}

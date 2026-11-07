@@ -2,11 +2,8 @@ package netbox
 
 import (
 	"fmt"
-	"log"
-	"strings"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/virtualization"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
@@ -63,27 +60,7 @@ func init() {
 		Name:         "netbox_cluster_type",
 		Dependencies: []string{"netbox_cluster"},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := virtualization.NewVirtualizationClusterTypesListParams()
-			res, err := api.Virtualization.VirtualizationClusterTypesList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, clusterType := range res.GetPayload().Results {
-				if strings.HasPrefix(*clusterType.Name, testPrefix) {
-					deleteParams := virtualization.NewVirtualizationClusterTypesDeleteParams().WithID(clusterType.ID)
-					_, err := api.Virtualization.VirtualizationClusterTypesDelete(deleteParams, nil)
-					if err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted a cluster type")
-				}
-			}
-			return nil
+			return sweepByName(region, "virtualization/cluster-types/", "name")
 		},
 	})
 }

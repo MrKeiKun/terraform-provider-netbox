@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/wireless"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -84,205 +81,100 @@ func resourceNetboxWirelessLAN() *schema.Resource {
 	}
 }
 
-func resourceNetboxWirelessLANCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const wirelessLANAPIPath = "wireless/wireless-lans/"
 
-	ssid := d.Get("ssid").(string)
-	status := d.Get("status").(string)
+type wirelessLANResponse struct {
+	Ssid         string                 `json:"ssid"`
+	Description  string                 `json:"description"`
+	Comments     string                 `json:"comments"`
+	AuthPsk      string                 `json:"auth_psk"`
+	Status       *netboxapi.Choice      `json:"status"`
+	AuthType     *netboxapi.Choice      `json:"auth_type"`
+	AuthCipher   *netboxapi.Choice      `json:"auth_cipher"`
+	Group        *netboxapi.Ref         `json:"group"`
+	Tenant       *netboxapi.Ref         `json:"tenant"`
+	Vlan         *netboxapi.Ref         `json:"vlan"`
+	CustomFields map[string]interface{} `json:"custom_fields"`
+	Tags         []netboxapi.TagRef     `json:"tags"`
+}
 
-	data := &models.WritableWirelessLAN{
-		Ssid:        &ssid,
-		Status:      status,
-		AuthType:    d.Get("auth_type").(string),
-		AuthCipher:  d.Get("auth_cipher").(string),
-		AuthPsk:     d.Get("auth_psk").(string),
-		Description: d.Get("description").(string),
-		Comments:    d.Get("comments").(string),
-	}
-
-	if groupID, ok := d.GetOk("group_id"); ok {
-		data.Group = int64ToPtr(int64(groupID.(int)))
-	}
-
-	if tenantID, ok := d.GetOk("tenant_id"); ok {
-		data.Tenant = int64ToPtr(int64(tenantID.(int)))
-	}
-
-	if vlanID, ok := d.GetOk("vlan_id"); ok {
-		data.Vlan = int64ToPtr(int64(vlanID.(int)))
-	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+// wirelessLANBody builds the update. Values that are not set are sent as null,
+// so that they are cleared in NetBox instead of being left as they were.
+func wirelessLANBody(api *providerState, d *schema.ResourceData) (map[string]interface{}, error) {
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
 	if err != nil {
-		return err
+		return nil, err
+	}
+
+	body := map[string]interface{}{
+		"ssid":        d.Get("ssid").(string),
+		"status":      d.Get("status").(string),
+		"description": getOptionalStr(d, "description", true),
+		"comments":    getOptionalStr(d, "comments", true),
+		"group":       nullableID(d.Get("group_id").(int)),
+		"tenant":      nullableID(d.Get("tenant_id").(int)),
+		"vlan":        nullableID(d.Get("vlan_id").(int)),
+		"tags":        tags,
+	}
+
+	if authType, ok := d.GetOk("auth_type"); ok {
+		body["auth_type"] = authType.(string)
+	} else {
+		body["auth_type"] = nil
+	}
+	if authCipher, ok := d.GetOk("auth_cipher"); ok {
+		body["auth_cipher"] = authCipher.(string)
+	} else {
+		body["auth_cipher"] = nil
+	}
+	if authPSK, ok := d.GetOk("auth_psk"); ok {
+		body["auth_psk"] = authPSK.(string)
+	} else {
+		body["auth_psk"] = ""
 	}
 
 	if cf, ok := d.GetOk(customFieldsKey); ok {
-		data.CustomFields = cf
+		body["custom_fields"] = cf
 	}
+	return body, nil
+}
 
-	params := wireless.NewWirelessWirelessLansCreateParams().WithData(data)
-	res, err := api.Wireless.WirelessWirelessLansCreate(params, nil)
+func resourceNetboxWirelessLANCreate(d *schema.ResourceData, m interface{}) error {
+	body, err := wirelessLANBody(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxWirelessLANRead(d, m)
+	return createObject(d, m, wirelessLANAPIPath, body, resourceNetboxWirelessLANRead)
 }
 
 func resourceNetboxWirelessLANRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-
-	params := wireless.NewWirelessWirelessLansReadParams().WithID(id)
-	res, err := api.Wireless.WirelessWirelessLansRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*wireless.WirelessWirelessLansReadDefault); ok && errresp.Code() == 404 {
-			d.SetId("")
-			return nil
+	return readObject(d, m, wirelessLANAPIPath, func(wlan *wirelessLANResponse) {
+		d.Set("ssid", wlan.Ssid)
+		d.Set("description", wlan.Description)
+		d.Set("comments", wlan.Comments)
+		d.Set("auth_psk", wlan.AuthPsk)
+		d.Set("status", netboxapi.ChoiceValue(wlan.Status))
+		d.Set("auth_type", netboxapi.ChoiceValue(wlan.AuthType))
+		d.Set("auth_cipher", netboxapi.ChoiceValue(wlan.AuthCipher))
+		d.Set("group_id", netboxapi.RefID(wlan.Group))
+		d.Set("tenant_id", netboxapi.RefID(wlan.Tenant))
+		d.Set("vlan_id", netboxapi.RefID(wlan.Vlan))
+		if cf := getCustomFields(wlan.CustomFields); cf != nil {
+			d.Set(customFieldsKey, cf)
 		}
-		return err
-	}
-
-	wlan := res.GetPayload()
-	d.Set("ssid", wlan.Ssid)
-	d.Set("description", wlan.Description)
-	d.Set("comments", wlan.Comments)
-	d.Set("auth_psk", wlan.AuthPsk)
-
-	if wlan.Status != nil {
-		d.Set("status", wlan.Status.Value)
-	} else {
-		d.Set("status", nil)
-	}
-
-	if wlan.AuthType != nil {
-		d.Set("auth_type", wlan.AuthType.Value)
-	} else {
-		d.Set("auth_type", nil)
-	}
-
-	if wlan.AuthCipher != nil {
-		d.Set("auth_cipher", wlan.AuthCipher.Value)
-	} else {
-		d.Set("auth_cipher", nil)
-	}
-
-	if wlan.Group != nil {
-		d.Set("group_id", wlan.Group.ID)
-	} else {
-		d.Set("group_id", nil)
-	}
-
-	if wlan.Tenant != nil {
-		d.Set("tenant_id", wlan.Tenant.ID)
-	} else {
-		d.Set("tenant_id", nil)
-	}
-
-	if wlan.Vlan != nil {
-		d.Set("vlan_id", wlan.Vlan.ID)
-	} else {
-		d.Set("vlan_id", nil)
-	}
-
-	cf := getCustomFields(wlan.CustomFields)
-	if cf != nil {
-		d.Set(customFieldsKey, cf)
-	}
-	api.readTags(d, wlan.Tags)
-
-	return nil
+		api.readTagRefs(d, wlan.Tags)
+	})
 }
 
 func resourceNetboxWirelessLANUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-
-	ssid := d.Get("ssid").(string)
-	data := models.WritableWirelessLAN{
-		Ssid:        &ssid,
-		Status:      d.Get("status").(string),
-		Description: getOptionalStr(d, "description", true),
-		Comments:    getOptionalStr(d, "comments", true),
-	}
-
-	overrideFields := make(map[string]any)
-
-	groupID := d.Get("group_id").(int)
-	if groupID != 0 {
-		data.Group = int64ToPtr(int64(groupID))
-	} else {
-		overrideFields["group"] = nil
-	}
-
-	tenantID := d.Get("tenant_id").(int)
-	if tenantID != 0 {
-		data.Tenant = int64ToPtr(int64(tenantID))
-	} else {
-		overrideFields["tenant"] = nil
-	}
-
-	vlanID := d.Get("vlan_id").(int)
-	if vlanID != 0 {
-		data.Vlan = int64ToPtr(int64(vlanID))
-	} else {
-		overrideFields["vlan"] = nil
-	}
-
-	if authType, ok := d.GetOk("auth_type"); ok {
-		data.AuthType = authType.(string)
-	} else {
-		overrideFields["auth_type"] = nil
-	}
-
-	if authCipher, ok := d.GetOk("auth_cipher"); ok {
-		data.AuthCipher = authCipher.(string)
-	} else {
-		overrideFields["auth_cipher"] = nil
-	}
-
-	if authPSK, ok := d.GetOk("auth_psk"); ok {
-		data.AuthPsk = authPSK.(string)
-	} else {
-		overrideFields["auth_psk"] = ""
-	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+	body, err := wirelessLANBody(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	if cf, ok := d.GetOk(customFieldsKey); ok {
-		data.CustomFields = cf
-	}
-
-	params := wireless.NewWirelessWirelessLansPartialUpdateParams().WithID(id).WithData(&data)
-	_, err = api.Wireless.WirelessWirelessLansPartialUpdate(params, nil, hackSerializeWirelessWithValues(overrideFields))
-	if err != nil {
-		return err
-	}
-
-	return resourceNetboxWirelessLANRead(d, m)
+	return patchObject(d, m, wirelessLANAPIPath, body, resourceNetboxWirelessLANRead)
 }
 
 func resourceNetboxWirelessLANDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-
-	params := wireless.NewWirelessWirelessLansDeleteParams().WithID(id)
-	_, err := api.Wireless.WirelessWirelessLansDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*wireless.WirelessWirelessLansDeleteDefault); ok && errresp.Code() == 404 {
-			d.SetId("")
-			return nil
-		}
-		return err
-	}
-
-	return nil
+	return deleteObject(d, m, wirelessLANAPIPath)
 }

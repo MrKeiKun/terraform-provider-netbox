@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -47,138 +44,71 @@ func resourceNetboxPlatform() *schema.Resource {
 	}
 }
 
-func resourceNetboxPlatformCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const platformAPIPath = "dcim/platforms/"
 
+type platformRequest struct {
+	Name         string             `json:"name"`
+	Slug         string             `json:"slug"`
+	Description  string             `json:"description,omitempty"`
+	Manufacturer *int64             `json:"manufacturer,omitempty"`
+	Tags         []netboxapi.TagRef `json:"tags"`
+}
+
+type platformResponse struct {
+	Name         string             `json:"name"`
+	Slug         string             `json:"slug"`
+	Description  string             `json:"description"`
+	Manufacturer *netboxapi.Ref     `json:"manufacturer"`
+	Tags         []netboxapi.TagRef `json:"tags"`
+}
+
+func platformRequestFromResourceData(api *providerState, d *schema.ResourceData) (*platformRequest, error) {
 	name := d.Get("name").(string)
-
-	slugValue, slugOk := d.GetOk("slug")
-	var slug string
-	// Default slug to generated slug if not given
-	if !slugOk {
-		slug = getSlug(name)
-	} else {
-		slug = slugValue.(string)
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
+	if err != nil {
+		return nil, err
 	}
-
-	data := models.WritablePlatform{
-		Name:        &name,
-		Slug:        &slug,
+	data := &platformRequest{
+		Name:        name,
+		Slug:        slugFromResourceData(d, name),
 		Description: d.Get("description").(string),
+		Tags:        tags,
 	}
-
-	manufacturerIDValue, ok := d.GetOk("manufacturer_id")
-	if ok {
-		data.Manufacturer = int64ToPtr(int64(manufacturerIDValue.(int)))
+	if v, ok := d.GetOk("manufacturer_id"); ok {
+		data.Manufacturer = int64ToPtr(int64(v.(int)))
 	}
+	return data, nil
+}
 
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+func resourceNetboxPlatformCreate(d *schema.ResourceData, m interface{}) error {
+	data, err := platformRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	params := dcim.NewDcimPlatformsCreateParams().WithData(&data)
-
-	res, err := api.Dcim.DcimPlatformsCreate(params, nil)
-	if err != nil {
-		//return errors.New(getTextFromError(err))
-		return err
-	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxPlatformRead(d, m)
+	return createObject(d, m, platformAPIPath, data, resourceNetboxPlatformRead)
 }
 
 func resourceNetboxPlatformRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimPlatformsReadParams().WithID(id)
-
-	res, err := api.Dcim.DcimPlatformsRead(params, nil)
-
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimPlatformsReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
+	return readObject(d, m, platformAPIPath, func(r *platformResponse) {
+		d.Set("name", r.Name)
+		d.Set("slug", r.Slug)
+		d.Set("description", r.Description)
+		if r.Manufacturer != nil {
+			d.Set("manufacturer_id", r.Manufacturer.ID)
 		}
-		return err
-	}
-
-	result := res.GetPayload()
-
-	d.Set("name", result.Name)
-	d.Set("slug", result.Slug)
-	d.Set("description", result.Description)
-	if result.Manufacturer != nil {
-		d.Set("manufacturer_id", result.Manufacturer.ID)
-	}
-	api.readTags(d, result.Tags)
-	return nil
+		api.readTagRefs(d, r.Tags)
+	})
 }
 
 func resourceNetboxPlatformUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.WritablePlatform{}
-
-	name := d.Get("name").(string)
-
-	slugValue, slugOk := d.GetOk("slug")
-	var slug string
-	// Default slug to generated slug if not given
-	if !slugOk {
-		slug = getSlug(name)
-	} else {
-		slug = slugValue.(string)
-	}
-
-	data.Slug = &slug
-	data.Name = &name
-	data.Description = d.Get("description").(string)
-
-	manufacturerIDValue, ok := d.GetOk("manufacturer_id")
-	if ok {
-		data.Manufacturer = int64ToPtr(int64(manufacturerIDValue.(int)))
-	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
+	data, err := platformRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
-
-	params := dcim.NewDcimPlatformsPartialUpdateParams().WithID(id).WithData(&data)
-
-	_, err = api.Dcim.DcimPlatformsPartialUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	return resourceNetboxPlatformRead(d, m)
+	return patchObject(d, m, platformAPIPath, data, resourceNetboxPlatformRead)
 }
 
 func resourceNetboxPlatformDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimPlatformsDeleteParams().WithID(id)
-
-	_, err := api.Dcim.DcimPlatformsDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimPlatformsDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	return nil
+	return deleteObject(d, m, platformAPIPath)
 }

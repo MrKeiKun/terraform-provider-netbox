@@ -1,10 +1,10 @@
 package netbox
 
 import (
-	"errors"
+	"net/url"
 	"strconv"
 
-	"github.com/fbreckle/go-netbox/netbox/client/vpn"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -18,33 +18,33 @@ func dataSourceNetboxVpnTunnel() *schema.Resource {
 				Computed: true,
 			},
 			"name": {
-				Type:         schema.TypeString,
-				Required:     true,
+				Type:     schema.TypeString,
+				Required: true,
 			},
 			"status": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:	  true,
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
 			},
 			"encapsualation": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:	  true,
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
 			},
 			"tunnel_group_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:	  true,
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
 			},
 			"tunnel_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:	  true,
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
 			},
 			"tenant_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:	  true,
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
 			},
 			"description": {
 				Type:     schema.TypeString,
@@ -55,59 +55,48 @@ func dataSourceNetboxVpnTunnel() *schema.Resource {
 	}
 }
 
+type vpnTunnelDataSourceResponse struct {
+	ID            int64              `json:"id"`
+	Name          string             `json:"name"`
+	Status        *netboxapi.Choice  `json:"status"`
+	Encapsulation *netboxapi.Choice  `json:"encapsulation"`
+	Group         *netboxapi.Ref     `json:"group"`
+	TunnelID      *int64             `json:"tunnel_id"`
+	Tenant        *netboxapi.Ref     `json:"tenant"`
+	Description   string             `json:"description"`
+	Tags          []netboxapi.TagRef `json:"tags"`
+}
+
 func dataSourceNetboxVpnTunnelRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+	query := url.Values{}
+	addStrQuery(query, d, "name", "name")
+	addStrQuery(query, d, "status", "status")
+	addStrQuery(query, d, "encapsulation", "encapsulation")
+	addStrQuery(query, d, "group_id", "group_id")
+	addStrQuery(query, d, "tunnel_id", "tunnel_id")
+	addStrQuery(query, d, "tenant_id", "tenant_id")
+	addStrQuery(query, d, "tag", "tag")
 
-	params := vpn.NewVpnTunnelsListParams()
-
-	limit := int64(2) // Limit of 2 is enough
-	params.Limit = &limit
-
-	if name, ok := d.Get("name").(string); ok && name != "" {
-		params.Name = &name
-	}
-	if status, ok := d.Get("status").(string); ok && status != "" {
-		params.Status = &status
-	}
-	if encapsulation, ok := d.Get("encapsulation").(string); ok && encapsulation != "" {
-		params.Encapsulation = &encapsulation
-	}
-
-	if group_id, ok := d.Get("group_id").(string); ok && group_id != "" {
-		params.GroupID = &group_id
-	}
-	if tunnel_id, ok := d.Get("tunnel_id").(string); ok && tunnel_id != "" {
-		params.TunnelID = &tunnel_id
-	}
-	if tenant_id, ok := d.Get("tenant_id").(string); ok && tenant_id != "" {
-		params.TenantID = &tenant_id
-	}
-
-	if tag, ok := d.Get("tag").(string); ok && tag != "" {
-		params.Tag = []string{tag} //TODO: switch schema to list?
-	}
-
-	res, err := api.Vpn.VpnTunnelsList(params, nil)
+	r, err := findOne[vpnTunnelDataSourceResponse](m, "vpn/tunnels/", query, "vpn tunnel")
 	if err != nil {
 		return err
 	}
 
-	if *res.GetPayload().Count > int64(1) {
-		return errors.New("more than one vpn tunnel returned, specify a more narrow filter")
+	d.SetId(strconv.FormatInt(r.ID, 10))
+	d.Set("id", r.ID)
+	d.Set("name", r.Name)
+	d.Set("status", netboxapi.ChoiceValue(r.Status))
+	d.Set("encapsualation", netboxapi.ChoiceValue(r.Encapsulation))
+	if r.Group != nil {
+		d.Set("tunnel_group_id", strconv.FormatInt(r.Group.ID, 10))
 	}
-	if *res.GetPayload().Count == int64(0) {
-		return errors.New("no vpn tunnel found matching filter")
+	if r.TunnelID != nil {
+		d.Set("tunnel_id", strconv.FormatInt(*r.TunnelID, 10))
 	}
-	result := res.GetPayload().Results[0]
-	d.SetId(strconv.FormatInt(result.ID, 10))
-	d.Set("id", result.ID)
-	d.Set("name", result.Name)
-	d.Set("status", result.Status.Value)
-	d.Set("encapsualation", result.Encapsulation.Value)
-	d.Set("tunnel_group_id", strconv.FormatInt(result.Group.ID, 10))
-	d.Set("tunnel_id", strconv.FormatInt(*result.TunnelID, 10))
-	d.Set("tenant_id", strconv.FormatInt(result.Tenant.ID, 10))
-	d.Set("description", result.Description)
-	d.Set("tags", getTagListFromNestedTagList(result.Tags))
+	if r.Tenant != nil {
+		d.Set("tenant_id", strconv.FormatInt(r.Tenant.ID, 10))
+	}
+	d.Set("description", r.Description)
+	d.Set("tags", tagNames(r.Tags))
 	return nil
 }

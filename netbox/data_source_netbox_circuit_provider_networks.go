@@ -1,11 +1,8 @@
 package netbox
 
 import (
-	"fmt"
 	"regexp"
 
-	"github.com/fbreckle/go-netbox/netbox/client/circuits"
-	"github.com/fbreckle/go-netbox/netbox/models"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -85,115 +82,43 @@ func dataSourceNetboxCircuitProviderNetworks() *schema.Resource {
 }
 
 func dataSourceNetboxCircuitProviderNetworksRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	params := circuits.NewCircuitsProviderNetworksListParams()
-
-	// Get user limit (0 = fetch all)
-	var userLimit int64 = 0
-	if limitValue, ok := d.GetOk("limit"); ok {
-		userLimit = int64(limitValue.(int))
+	// filter name in the data source -> query parameter sent to Netbox
+	allowed := map[string]string{
+		"name":        "name",
+		"provider_id": "provider_id",
+		"tag":         "tag",
 	}
 
-	if filter, ok := d.GetOk("filter"); ok {
-		var filterParams = filter.(*schema.Set)
-		var tags []string
-		for _, f := range filterParams.List() {
-			k := f.(map[string]interface{})["name"]
-			v := f.(map[string]interface{})["value"]
-			vString := v.(string)
-			switch k {
-			case "name":
-				params.Name = &vString
-			case "provider_id":
-				params.ProviderID = &vString
-			case "tag":
-				tags = append(tags, vString)
-				params.Tag = tags
-			default:
-				return fmt.Errorf("'%s' is not a supported filter parameter", k)
-			}
-		}
-	}
-
-	// Fetch all pages with pagination (fetch all when name_regex is used)
-	paginationHelper := NewPaginationHelper(userLimit)
-	var allProviderNetworks []*models.ProviderNetwork
-
-	pageSize := paginationHelper.GetPageSize()
-	for {
-		currentOffset := paginationHelper.CurrentOffset()
-		params.Limit = &pageSize
-		params.Offset = &currentOffset
-
-		res, err := api.Circuits.CircuitsProviderNetworksList(params, nil)
-		if err != nil {
-			return fmt.Errorf("failed to fetch Provider Networks at offset %d: %w", currentOffset, err)
-		}
-
-		payload := res.GetPayload()
-		allProviderNetworks = append(allProviderNetworks, payload.Results...)
-
-		if len(payload.Results) == 0 {
-			break
-		}
-
-		if !paginationHelper.ShouldContinuePaging(int64(len(allProviderNetworks)), payload.Next) {
-			break
-		}
-
-		paginationHelper.Advance(int64(len(payload.Results)))
-	}
-
-	// Apply name_regex filter
-	var filteredProviderNetworks []*models.ProviderNetwork
+	// Fetch everything and apply the regular expression before the limit
+	var keep func(map[string]interface{}) bool
 	if nameRegex, ok := d.GetOk("name_regex"); ok {
 		r := regexp.MustCompile(nameRegex.(string))
-		for _, provider_network := range allProviderNetworks {
-			if r.MatchString(*provider_network.Name) {
-				filteredProviderNetworks = append(filteredProviderNetworks, provider_network)
-			}
-		}
-	} else {
-		filteredProviderNetworks = allProviderNetworks
+		keep = func(o map[string]interface{}) bool { return r.MatchString(jStr(o, "name")) }
 	}
 
-	// Trim to user limit if specified
-	trimmedCount := paginationHelper.TrimToLimit(len(filteredProviderNetworks))
-	filteredProviderNetworks = filteredProviderNetworks[:trimmedCount]
+	results, err := listFilteredWith[map[string]interface{}](d, m, "circuits/provider-networks/", "Provider Networks", allowed, nil, keep)
+	if err != nil {
+		return err
+	}
 
 	var s []map[string]interface{}
-	for _, provider_network := range filteredProviderNetworks {
-		var mapping = make(map[string]interface{})
+	for _, v := range results {
+		mapping := make(map[string]interface{})
 
-		mapping["provider_network_id"] = provider_network.ID
+		mapping["provider_network_id"] = jInt(v, "id")
+		mapping["comments"] = jStr(v, "comments")
+		mapping["custom_fields"] = v["custom_fields"]
+		mapping["description"] = jStr(v, "description")
+		mapping["name"] = jStr(v, "name")
+		mapping["provider_id"] = jID(v, "provider")
+		mapping["service_id"] = jStr(v, "service_id")
+		mapping[tagsKey] = jTags(v)
 
-		if provider_network.Comments != "" {
-			mapping["comments"] = provider_network.Comments
-		}
-
-		if provider_network.CustomFields != nil {
-			mapping["custom_fields"] = provider_network.CustomFields
-		}
-
-		if provider_network.Description != "" {
-			mapping["description"] = provider_network.Description
-		}
-
-		if provider_network.Name != nil {
-			mapping["name"] = *provider_network.Name
-		}
-
-		if provider_network.Provider != nil {
-			mapping["provider_id"] = provider_network.Provider.ID
-		}
-
-		if provider_network.ServiceID != "" {
-			mapping["service_id"] = provider_network.ServiceID
-		}
-
-		if provider_network.Tags != nil {
-			mapping[tagsKey] = getTagListFromNestedTagList(provider_network.Tags)
+		// fields that are missing in the response are left out of the state
+		for k, val := range mapping {
+			if val == nil {
+				delete(mapping, k)
+			}
 		}
 
 		s = append(s, mapping)

@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -72,157 +69,95 @@ For example, imagine a PDU with one power port which draws from a three-phase fe
 	}
 }
 
-func resourceNetboxDevicePowerOutletCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const devicePowerOutletAPIPath = "dcim/power-outlets/"
 
-	data := models.WritablePowerOutlet{
-		Device:        int64ToPtr(int64(d.Get("device_id").(int))),
-		Module:        getOptionalInt(d, "module_id"),
-		Name:          strToPtr(d.Get("name").(string)),
-		Label:         getOptionalStr(d, "label", false),
-		Type:          getOptionalStr(d, "type", false),
-		PowerPort:     getOptionalInt(d, "power_port_id"),
-		FeedLeg:       getOptionalStr(d, "feed_leg", false),
-		Description:   getOptionalStr(d, "description", false),
-		MarkConnected: d.Get("mark_connected").(bool),
-	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
-	if err != nil {
-		return err
-	}
-
-	ct, ok := d.GetOk(customFieldsKey)
-	if ok {
-		data.CustomFields = ct
-	}
-
-	params := dcim.NewDcimPowerOutletsCreateParams().WithData(&data)
-
-	res, err := api.Dcim.DcimPowerOutletsCreate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxDevicePowerOutletRead(d, m)
+type devicePowerOutletRequest struct {
+	Name          string             `json:"name"`
+	Device        *int64             `json:"device"`
+	Module        *int64             `json:"module"`
+	Label         string             `json:"label,omitempty"`
+	Type          string             `json:"type"`
+	PowerPort     *int64             `json:"power_port"`
+	FeedLeg       string             `json:"feed_leg"`
+	Description   string             `json:"description,omitempty"`
+	MarkConnected bool               `json:"mark_connected"`
+	CustomFields  interface{}        `json:"custom_fields,omitempty"`
+	Tags          []netboxapi.TagRef `json:"tags"`
 }
 
-func resourceNetboxDevicePowerOutletRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimPowerOutletsReadParams().WithID(id)
-
-	res, err := api.Dcim.DcimPowerOutletsRead(params, nil)
-
-	if err != nil {
-		if errresp, ok := err.(*dcim.DcimPowerOutletsReadDefault); ok {
-			if errresp.Code() == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-
-	powerOutlet := res.GetPayload()
-
-	if powerOutlet.Device != nil {
-		d.Set("device_id", powerOutlet.Device.ID)
-	} else {
-		d.Set("device_id", nil)
-	}
-
-	d.Set("name", powerOutlet.Name)
-
-	if powerOutlet.Module != nil {
-		d.Set("module_id", powerOutlet.Module.ID)
-	} else {
-		d.Set("module_id", nil)
-	}
-
-	d.Set("label", powerOutlet.Label)
-
-	if powerOutlet.Type != nil {
-		d.Set("type", powerOutlet.Type.Value)
-	} else {
-		d.Set("type", nil)
-	}
-
-	if powerOutlet.PowerPort != nil {
-		d.Set("power_port_id", powerOutlet.PowerPort.ID)
-	} else {
-		d.Set("power_port_id", nil)
-	}
-
-	if powerOutlet.FeedLeg != nil {
-		d.Set("feed_leg", powerOutlet.FeedLeg.Value)
-	} else {
-		d.Set("feed_leg", nil)
-	}
-
-	d.Set("description", powerOutlet.Description)
-	d.Set("mark_connected", powerOutlet.MarkConnected)
-
-	cf := getCustomFields(res.GetPayload().CustomFields)
-	if cf != nil {
-		d.Set(customFieldsKey, cf)
-	}
-	api.readTags(d, res.GetPayload().Tags)
-
-	return nil
+type devicePowerOutletResponse struct {
+	Name          string                 `json:"name"`
+	Device        *netboxapi.Ref         `json:"device"`
+	Module        *netboxapi.Ref         `json:"module"`
+	Label         string                 `json:"label"`
+	Type          *netboxapi.Choice      `json:"type"`
+	PowerPort     *netboxapi.Ref         `json:"power_port"`
+	FeedLeg       *netboxapi.Choice      `json:"feed_leg"`
+	Description   string                 `json:"description"`
+	MarkConnected bool                   `json:"mark_connected"`
+	CustomFields  map[string]interface{} `json:"custom_fields"`
+	Tags          []netboxapi.TagRef     `json:"tags"`
 }
 
-func resourceNetboxDevicePowerOutletUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-
-	data := models.WritablePowerOutlet{
+func devicePowerOutletRequestFromResourceData(api *providerState, d *schema.ResourceData) (*devicePowerOutletRequest, error) {
+	name := d.Get("name").(string)
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
+	if err != nil {
+		return nil, err
+	}
+	data := &devicePowerOutletRequest{
+		Name:          name,
 		Device:        int64ToPtr(int64(d.Get("device_id").(int))),
 		Module:        getOptionalInt(d, "module_id"),
-		Name:          strToPtr(d.Get("name").(string)),
 		Label:         getOptionalStr(d, "label", true),
 		Type:          getOptionalStr(d, "type", false),
 		PowerPort:     getOptionalInt(d, "power_port_id"),
 		FeedLeg:       getOptionalStr(d, "feed_leg", false),
 		Description:   getOptionalStr(d, "description", true),
 		MarkConnected: d.Get("mark_connected").(bool),
+		Tags:          tags,
 	}
-
-	var err error
-	data.Tags, err = getNestedTagListFromResourceDataSet(api, d.Get(tagsAllKey))
-	if err != nil {
-		return err
-	}
-
-	ct, ok := d.GetOk(customFieldsKey)
-	if ok {
+	if ct, ok := d.GetOk(customFieldsKey); ok {
 		data.CustomFields = ct
 	}
+	return data, nil
+}
 
-	params := dcim.NewDcimPowerOutletsPartialUpdateParams().WithID(id).WithData(&data)
-
-	_, err = api.Dcim.DcimPowerOutletsPartialUpdate(params, nil)
+func resourceNetboxDevicePowerOutletCreate(d *schema.ResourceData, m interface{}) error {
+	data, err := devicePowerOutletRequestFromResourceData(m.(*providerState), d)
 	if err != nil {
 		return err
 	}
+	return createObject(d, m, devicePowerOutletAPIPath, data, resourceNetboxDevicePowerOutletRead)
+}
 
-	return resourceNetboxDevicePowerOutletRead(d, m)
+func resourceNetboxDevicePowerOutletRead(d *schema.ResourceData, m interface{}) error {
+	api := m.(*providerState)
+	return readObject(d, m, devicePowerOutletAPIPath, func(r *devicePowerOutletResponse) {
+		d.Set("name", r.Name)
+		d.Set("device_id", netboxapi.RefID(r.Device))
+		d.Set("module_id", netboxapi.RefID(r.Module))
+		d.Set("label", r.Label)
+		d.Set("type", netboxapi.ChoiceValue(r.Type))
+		d.Set("power_port_id", netboxapi.RefID(r.PowerPort))
+		d.Set("feed_leg", netboxapi.ChoiceValue(r.FeedLeg))
+		d.Set("description", r.Description)
+		d.Set("mark_connected", r.MarkConnected)
+		if cf := getCustomFields(r.CustomFields); cf != nil {
+			d.Set(customFieldsKey, cf)
+		}
+		api.readTagRefs(d, r.Tags)
+	})
+}
+
+func resourceNetboxDevicePowerOutletUpdate(d *schema.ResourceData, m interface{}) error {
+	data, err := devicePowerOutletRequestFromResourceData(m.(*providerState), d)
+	if err != nil {
+		return err
+	}
+	return patchObject(d, m, devicePowerOutletAPIPath, data, resourceNetboxDevicePowerOutletRead)
 }
 
 func resourceNetboxDevicePowerOutletDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := dcim.NewDcimPowerOutletsDeleteParams().WithID(id)
-
-	_, err := api.Dcim.DcimPowerOutletsDelete(params, nil)
-	if err != nil {
-		return err
-	}
-	return nil
+	return deleteObject(d, m, devicePowerOutletAPIPath)
 }

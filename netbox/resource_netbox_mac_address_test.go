@@ -2,11 +2,8 @@ package netbox
 
 import (
 	"fmt"
-	"log"
 	"testing"
 
-	"github.com/fbreckle/go-netbox/netbox/client/dcim"
-	"github.com/fbreckle/go-netbox/netbox/models"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
@@ -309,27 +306,7 @@ func init() {
 		Name:         "netbox_mac_address",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			params := dcim.NewDcimMacAddressesListParams()
-			res, err := api.Dcim.DcimMacAddressesList(params, nil)
-			if err != nil {
-				return err
-			}
-			for _, macAddress := range res.GetPayload().Results {
-				if len(macAddress.Tags) > 0 && (macAddress.Tags[0] == &models.NestedTag{Name: strToPtr("acctest"), Slug: strToPtr("acctest")}) {
-					deleteParams := dcim.NewDcimMacAddressesDeleteParams().WithID(macAddress.ID)
-					_, err := api.Dcim.DcimMacAddressesDelete(deleteParams, nil)
-					if err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted a mac address")
-				}
-			}
-			return nil
+			return sweepByName(region, "dcim/mac-addresses/", "mac_address")
 		},
 	})
 }

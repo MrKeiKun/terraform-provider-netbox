@@ -1,10 +1,7 @@
 package netbox
 
 import (
-	"strconv"
-
-	"github.com/fbreckle/go-netbox/netbox/client/virtualization"
-	"github.com/fbreckle/go-netbox/netbox/models"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -38,108 +35,43 @@ func resourceNetboxClusterType() *schema.Resource {
 	}
 }
 
-func resourceNetboxClusterTypeCreate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
+const clusterTypeAPIPath = "virtualization/cluster-types/"
 
+type clusterTypeRequest struct {
+	Name string             `json:"name"`
+	Slug string             `json:"slug"`
+	Tags []netboxapi.TagRef `json:"tags"`
+}
+
+type clusterTypeResponse struct {
+	Name string `json:"name"`
+	Slug string `json:"slug"`
+}
+
+func clusterTypeRequestFromResourceData(d *schema.ResourceData) *clusterTypeRequest {
 	name := d.Get("name").(string)
-	slugValue, slugOk := d.GetOk("slug")
-	var slug string
-
-	// Default slug to generated slug if not given
-	if !slugOk {
-		slug = getSlug(name)
-	} else {
-		slug = slugValue.(string)
+	return &clusterTypeRequest{
+		Name: name,
+		Slug: slugFromResourceData(d, name),
+		Tags: []netboxapi.TagRef{},
 	}
+}
 
-	params := virtualization.NewVirtualizationClusterTypesCreateParams().WithData(
-		&models.ClusterType{
-			Name: &name,
-			Slug: &slug,
-			Tags: []*models.NestedTag{},
-		},
-	)
-
-	res, err := api.Virtualization.VirtualizationClusterTypesCreate(params, nil)
-	if err != nil {
-		//return errors.New(getTextFromError(err))
-		return err
-	}
-
-	d.SetId(strconv.FormatInt(res.GetPayload().ID, 10))
-
-	return resourceNetboxClusterTypeRead(d, m)
+func resourceNetboxClusterTypeCreate(d *schema.ResourceData, m interface{}) error {
+	return createObject(d, m, clusterTypeAPIPath, clusterTypeRequestFromResourceData(d), resourceNetboxClusterTypeRead)
 }
 
 func resourceNetboxClusterTypeRead(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := virtualization.NewVirtualizationClusterTypesReadParams().WithID(id)
-
-	res, err := api.Virtualization.VirtualizationClusterTypesRead(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*virtualization.VirtualizationClusterTypesReadDefault); ok {
-			errorcode := errresp.Code()
-			if errorcode == 404 {
-				// If the ID is updated to blank, this tells Terraform the resource no longer exists (maybe it was destroyed out of band). Just like the destroy callback, the Read function should gracefully handle this case. https://www.terraform.io/docs/extend/writing-custom-providers.html
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-
-	d.Set("name", res.GetPayload().Name)
-	d.Set("slug", res.GetPayload().Slug)
-	return nil
+	return readObject(d, m, clusterTypeAPIPath, func(res *clusterTypeResponse) {
+		d.Set("name", res.Name)
+		d.Set("slug", res.Slug)
+	})
 }
 
 func resourceNetboxClusterTypeUpdate(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	data := models.ClusterType{}
-
-	name := d.Get("name").(string)
-	slugValue, slugOk := d.GetOk("slug")
-	var slug string
-
-	// Default slug to generated slug if not given
-	if !slugOk {
-		slug = getSlug(name)
-	} else {
-		slug = slugValue.(string)
-	}
-
-	data.Slug = &slug
-	data.Name = &name
-	data.Tags = []*models.NestedTag{}
-
-	params := virtualization.NewVirtualizationClusterTypesPartialUpdateParams().WithID(id).WithData(&data)
-
-	_, err := api.Virtualization.VirtualizationClusterTypesPartialUpdate(params, nil)
-	if err != nil {
-		return err
-	}
-
-	return resourceNetboxClusterTypeRead(d, m)
+	return patchObject(d, m, clusterTypeAPIPath, clusterTypeRequestFromResourceData(d), resourceNetboxClusterTypeRead)
 }
 
 func resourceNetboxClusterTypeDelete(d *schema.ResourceData, m interface{}) error {
-	api := m.(*providerState)
-
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	params := virtualization.NewVirtualizationClusterTypesDeleteParams().WithID(id)
-
-	_, err := api.Virtualization.VirtualizationClusterTypesDelete(params, nil)
-	if err != nil {
-		if errresp, ok := err.(*virtualization.VirtualizationClusterTypesDeleteDefault); ok {
-			if errresp.Code() == 404 {
-				d.SetId("")
-				return nil
-			}
-		}
-		return err
-	}
-	return nil
+	return deleteObject(d, m, clusterTypeAPIPath)
 }
