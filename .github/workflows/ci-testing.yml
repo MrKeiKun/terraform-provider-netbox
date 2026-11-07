@@ -26,14 +26,6 @@ jobs:
       fail-fast: false
       matrix:
         netbox-version:
-          - v4.3.0
-          # - v4.3.1 # with this version, we get {"scope":["Please select a site."]} for prefixes
-          - v4.3.2
-          - v4.3.3
-          - v4.3.4
-          - v4.3.5
-          - v4.3.6
-          - v4.3.7
           - v4.4.0
           - v4.4.1
           - v4.4.2
@@ -62,6 +54,11 @@ jobs:
           - v4.6.3
           - v4.6.4
           - v4.6.5
+          - v4.7.0
+          - v4.7.1
+          - v4.7.2
+          - v4.7.3
+          - v4.7.4
     steps:
       - uses: actions/checkout@v7
       - name: Set up Go

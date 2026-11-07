@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # This script makes sure that we do not accidentally introduce a new subcategory in the docs
-# Each subcategory is rendered as a separate list in the docs page at https://registry.terraform.io/providers/e-breuninger/netbox/latest/docs
+# Each subcategory is rendered as a separate list in the docs page at https://registry.terraform.io/providers/mrkeikun/netbox/latest/docs
 # The list in the docs should be concise, not cluttered with typos or other inadvertent subcategories
 #
 # The list of allowed subcategories is maintained in a file (see below)
