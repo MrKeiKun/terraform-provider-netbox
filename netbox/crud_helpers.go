@@ -9,12 +9,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// readFunc is the read function that runs after a create or an update.
+type readFunc func(d *schema.ResourceData, m interface{}) error
+
 // The helpers in this file hold the create/read/update/delete plumbing that is
 // the same for nearly every resource. A resource supplies the API path, the
 // request body and a function that copies the response into the state.
 
 // createObject creates an object and stores its ID, then runs read.
-func createObject(d *schema.ResourceData, m interface{}, path string, body interface{}, read schema.ReadFunc) error {
+func createObject(d *schema.ResourceData, m interface{}, path string, body interface{}, read readFunc) error {
 	api := m.(*providerState)
 
 	res, err := netboxapi.Create[netboxapi.Ref](context.Background(), api.rest, path, body)
@@ -48,7 +51,7 @@ func readObject[T any](d *schema.ResourceData, m interface{}, path string, set f
 }
 
 // patchObject updates the object behind d.Id() with a PATCH, then runs read.
-func patchObject(d *schema.ResourceData, m interface{}, path string, body interface{}, read schema.ReadFunc) error {
+func patchObject(d *schema.ResourceData, m interface{}, path string, body interface{}, read readFunc) error {
 	api := m.(*providerState)
 	id, _ := strconv.ParseInt(d.Id(), 10, 64)
 
@@ -60,7 +63,7 @@ func patchObject(d *schema.ResourceData, m interface{}, path string, body interf
 }
 
 // putObject updates the object behind d.Id() with a PUT, then runs read.
-func putObject(d *schema.ResourceData, m interface{}, path string, body interface{}, read schema.ReadFunc) error {
+func putObject(d *schema.ResourceData, m interface{}, path string, body interface{}, read readFunc) error {
 	api := m.(*providerState)
 	id, _ := strconv.ParseInt(d.Id(), 10, 64)
 

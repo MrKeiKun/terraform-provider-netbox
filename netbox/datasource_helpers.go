@@ -168,11 +168,6 @@ func jInt(o map[string]interface{}, k string) int64 {
 	return int64(f)
 }
 
-func jFloat(o map[string]interface{}, k string) float64 {
-	f, _ := o[k].(float64)
-	return f
-}
-
 func jBool(o map[string]interface{}, k string) bool {
 	b, _ := o[k].(bool)
 	return b
@@ -198,20 +193,6 @@ func jChoice(o map[string]interface{}, k string) string {
 	}
 	s, _ := nested["value"].(string)
 	return s
-}
-
-// jIDs returns the IDs of a list of nested objects.
-func jIDs(o map[string]interface{}, k string) []int64 {
-	var ids []int64
-	list, _ := o[k].([]interface{})
-	for _, item := range list {
-		if nested, ok := item.(map[string]interface{}); ok {
-			if f, ok := nested["id"].(float64); ok {
-				ids = append(ids, int64(f))
-			}
-		}
-	}
-	return ids
 }
 
 // jTags returns the names of the tags of an object.
@@ -317,16 +298,6 @@ func pickFields(nested map[string]interface{}, fields []string) map[string]inter
 	return m
 }
 
-// jChoiceLabel returns the label of a nested choice object, or an empty string.
-func jChoiceLabel(o map[string]interface{}, k string) string {
-	nested, ok := o[k].(map[string]interface{})
-	if !ok {
-		return ""
-	}
-	s, _ := nested["label"].(string)
-	return s
-}
-
 // jJSON returns a field as a JSON string, or nil when the field is missing or null.
 func jJSON(o map[string]interface{}, k string) interface{} {
 	if o[k] == nil {
@@ -351,13 +322,6 @@ func jIntP(o map[string]interface{}, k string) interface{} {
 func jFloatP(o map[string]interface{}, k string) interface{} {
 	if f, ok := o[k].(float64); ok {
 		return f
-	}
-	return nil
-}
-
-func jBoolP(o map[string]interface{}, k string) interface{} {
-	if b, ok := o[k].(bool); ok {
-		return b
 	}
 	return nil
 }
