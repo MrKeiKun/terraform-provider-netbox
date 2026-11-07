@@ -135,7 +135,7 @@ func l2VPNRequestFromResourceData(api *providerState, d *schema.ResourceData) (*
 		Tenant:        getOptionalInt(d, "tenant_id"),
 		Tags:          tags,
 	}
-	if ct, ok := d.GetOk(customFieldsKey); ok {
+	if ct, ok := managedCustomFields(d); ok {
 		data.CustomFields = ct
 	}
 	return data, nil
@@ -164,9 +164,7 @@ func resourceNetboxL2VPNRead(d *schema.ResourceData, m interface{}) error {
 		d.Set("comments", r.Comments)
 		d.Set("tenant_id", netboxapi.RefID(r.Tenant))
 		api.readTagRefs(d, r.Tags)
-		if cf := getCustomFields(r.CustomFields); cf != nil {
-			d.Set(customFieldsKey, cf)
-		}
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
 	})
 }
 

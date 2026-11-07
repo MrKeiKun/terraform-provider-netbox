@@ -18,6 +18,13 @@ resource "netbox_device_type" "test" {
   model           = "%[1]s"
   manufacturer_id = netbox_manufacturer.test.id
 }
+
+resource "netbox_rear_port_template" "test" {
+  name           = "%[1]s"
+  device_type_id = netbox_device_type.test.id
+  type           = "8p8c"
+  positions      = 1
+}
 `, testName)
 }
 
@@ -39,6 +46,7 @@ resource "netbox_front_port_template" "test" {
   name = "%[1]s"
   device_type_id = netbox_device_type.test.id
   type = "8p8c"
+  rear_port_id = netbox_rear_port_template.test.id
 }`, testName, deps),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("netbox_front_port_template.test", "name", testName),

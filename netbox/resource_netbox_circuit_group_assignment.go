@@ -78,7 +78,7 @@ func circuitGroupAssignmentRequestFromResourceData(api *providerState, d *schema
 		Priority:   getOptionalStrClear(d, "priority"),
 		Tags:       tags,
 	}
-	if ct, ok := d.GetOk(customFieldsKey); ok {
+	if ct, ok := managedCustomFields(d); ok {
 		data.CustomFields = ct
 	}
 	return data, nil
@@ -100,9 +100,7 @@ func resourceNetboxCircuitGroupAssignmentRead(d *schema.ResourceData, m interfac
 		d.Set("member_id", r.MemberID)
 		d.Set("priority", netboxapi.ChoiceValue(r.Priority))
 		api.readTagRefs(d, r.Tags)
-		if cf := getCustomFields(r.CustomFields); cf != nil {
-			d.Set(customFieldsKey, cf)
-		}
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
 	})
 }
 

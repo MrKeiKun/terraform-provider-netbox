@@ -56,6 +56,19 @@ func resourceNetboxFrontPortTemplate() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"rear_port_id": {
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"rear_ports"},
+				Description:   "ID of the rear port template this port is mapped to. Use `rear_ports` to map more than one position.",
+			},
+			"rear_port_position": {
+				Type:     schema.TypeInt,
+				Optional: true,
+				Computed: true,
+			},
+			"rear_ports": portMappingsSchema("rear_port"),
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -66,37 +79,46 @@ func resourceNetboxFrontPortTemplate() *schema.Resource {
 const frontPortTemplateAPIPath = "dcim/front-port-templates/"
 
 type frontPortTemplateRequest struct {
-	DeviceType  *int64 `json:"device_type"`
-	ModuleType  *int64 `json:"module_type"`
-	Name        string `json:"name"`
-	Label       string `json:"label,omitempty"`
-	Type        string `json:"type,omitempty"`
-	Color       string `json:"color,omitempty"`
-	Positions   int64  `json:"positions,omitempty"`
-	Description string `json:"description,omitempty"`
+	RearPorts        []map[string]int64 `json:"rear_ports,omitempty"`
+	RearPort         *int64             `json:"rear_port,omitempty"`
+	RearPortPosition int64              `json:"rear_port_position,omitempty"`
+	DeviceType       *int64             `json:"device_type"`
+	ModuleType       *int64             `json:"module_type"`
+	Name             string             `json:"name"`
+	Label            string             `json:"label,omitempty"`
+	Type             string             `json:"type,omitempty"`
+	Color            string             `json:"color,omitempty"`
+	Positions        int64              `json:"positions,omitempty"`
+	Description      string             `json:"description,omitempty"`
 }
 
 type frontPortTemplateResponse struct {
-	DeviceType  *netboxapi.Ref    `json:"device_type"`
-	ModuleType  *netboxapi.Ref    `json:"module_type"`
-	Name        string            `json:"name"`
-	Label       string            `json:"label"`
-	Type        *netboxapi.Choice `json:"type"`
-	Color       string            `json:"color"`
-	Positions   *int64            `json:"positions"`
-	Description string            `json:"description"`
+	RearPorts        []map[string]interface{} `json:"rear_ports"`
+	RearPort         *netboxapi.Ref           `json:"rear_port"`
+	RearPortPosition int64                    `json:"rear_port_position"`
+	DeviceType       *netboxapi.Ref           `json:"device_type"`
+	ModuleType       *netboxapi.Ref           `json:"module_type"`
+	Name             string                   `json:"name"`
+	Label            string                   `json:"label"`
+	Type             *netboxapi.Choice        `json:"type"`
+	Color            string                   `json:"color"`
+	Positions        *int64                   `json:"positions"`
+	Description      string                   `json:"description"`
 }
 
 func frontPortTemplateRequestFromResourceData(api *providerState, d *schema.ResourceData) (*frontPortTemplateRequest, error) {
 	data := &frontPortTemplateRequest{
-		DeviceType:  getOptionalInt(d, "device_type_id"),
-		ModuleType:  getOptionalInt(d, "module_type_id"),
-		Name:        d.Get("name").(string),
-		Label:       getOptionalStr(d, "label", true),
-		Type:        d.Get("type").(string),
-		Color:       getOptionalStr(d, "color_hex", true),
-		Positions:   int64(d.Get("positions").(int)),
-		Description: getOptionalStr(d, "description", true),
+		RearPorts:        portMappingsRequest(d, "rear_ports", "rear_port"),
+		RearPort:         getOptionalInt(d, "rear_port_id"),
+		RearPortPosition: int64(d.Get("rear_port_position").(int)),
+		DeviceType:       getOptionalInt(d, "device_type_id"),
+		ModuleType:       getOptionalInt(d, "module_type_id"),
+		Name:             d.Get("name").(string),
+		Label:            getOptionalStr(d, "label", true),
+		Type:             d.Get("type").(string),
+		Color:            getOptionalStr(d, "color_hex", true),
+		Positions:        int64(d.Get("positions").(int)),
+		Description:      getOptionalStr(d, "description", true),
 	}
 	return data, nil
 }
@@ -111,6 +133,9 @@ func resourceNetboxFrontPortTemplateCreate(d *schema.ResourceData, m interface{}
 
 func resourceNetboxFrontPortTemplateRead(d *schema.ResourceData, m interface{}) error {
 	return readObject(d, m, frontPortTemplateAPIPath, func(r *frontPortTemplateResponse) {
+		d.Set("rear_ports", portMappingsState(r.RearPorts, "rear_port"))
+		d.Set("rear_port_id", netboxapi.RefID(r.RearPort))
+		d.Set("rear_port_position", r.RearPortPosition)
 		d.Set("device_type_id", netboxapi.RefID(r.DeviceType))
 		d.Set("module_type_id", netboxapi.RefID(r.ModuleType))
 		d.Set("name", r.Name)

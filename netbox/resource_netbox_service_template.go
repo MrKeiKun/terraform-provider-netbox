@@ -3,6 +3,7 @@ package netbox
 import (
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func resourceNetboxServiceTemplate() *schema.Resource {
@@ -22,9 +23,26 @@ func resourceNetboxServiceTemplate() *schema.Resource {
 				Required: true,
 			},
 			"port_mappings": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:          schema.TypeSet,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"protocol", "ports"},
+				Elem:          &schema.Schema{Type: schema.TypeString},
+				Description:   "The ports as `protocol/port` strings, for example `tcp/80`. Use this for a template that spans more than one protocol. Needs NetBox 4.6 or newer. Use `protocol` and `ports` on older versions.",
+			},
+			"protocol": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				Description:  "One of [tcp, udp, sctp]",
+				ValidateFunc: validation.StringInSlice([]string{"tcp", "udp", "sctp"}, false),
+			},
+			"ports": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeInt},
+				Description: "The ports, together with `protocol`. Use `port_mappings` for a template that spans more than one protocol.",
 			},
 			"description": {
 				Type:     schema.TypeString,
@@ -51,7 +69,9 @@ const serviceTemplateAPIPath = "ipam/service-templates/"
 
 type serviceTemplateRequest struct {
 	Name         string             `json:"name"`
-	PortMappings []string           `json:"port_mappings"`
+	PortMappings []string           `json:"port_mappings,omitempty"`
+	Protocol     *string            `json:"protocol,omitempty"`
+	Ports        []int64            `json:"ports,omitempty"`
 	Description  string             `json:"description,omitempty"`
 	Owner        *int64             `json:"owner"`
 	Comments     string             `json:"comments,omitempty"`
@@ -62,6 +82,8 @@ type serviceTemplateRequest struct {
 type serviceTemplateResponse struct {
 	Name         string                 `json:"name"`
 	PortMappings []string               `json:"port_mappings"`
+	Protocol     *netboxapi.Choice      `json:"protocol"`
+	Ports        []int64                `json:"ports"`
 	Description  string                 `json:"description"`
 	Owner        *netboxapi.Ref         `json:"owner"`
 	Comments     string                 `json:"comments"`
@@ -75,15 +97,21 @@ func serviceTemplateRequestFromResourceData(api *providerState, d *schema.Resour
 		return nil, err
 	}
 	data := &serviceTemplateRequest{
-		Name:         d.Get("name").(string),
-		PortMappings: getStringSet(d, "port_mappings"),
-		Description:  getOptionalStr(d, "description", true),
-		Owner:        getOptionalInt(d, "owner_id"),
-		Comments:     getOptionalStr(d, "comments", true),
-		Tags:         tags,
+		Name:        d.Get("name").(string),
+		Description: getOptionalStr(d, "description", true),
+		Owner:       getOptionalInt(d, "owner_id"),
+		Comments:    getOptionalStr(d, "comments", true),
+		Tags:        tags,
 	}
-	if ct, ok := d.GetOk(customFieldsKey); ok {
+	if ct, ok := managedCustomFields(d); ok {
 		data.CustomFields = ct
+	}
+	// Either the port mappings or the protocol with the ports is sent, never both.
+	if raw := d.GetRawConfig(); !raw.IsNull() && !raw.GetAttr("port_mappings").IsNull() {
+		data.PortMappings = getStringSet(d, "port_mappings")
+	} else {
+		data.Protocol = getOptionalStrClear(d, "protocol")
+		data.Ports = getIDSet(d, "ports")
 	}
 	return data, nil
 }
@@ -101,13 +129,13 @@ func resourceNetboxServiceTemplateRead(d *schema.ResourceData, m interface{}) er
 	return readObject(d, m, serviceTemplateAPIPath, func(r *serviceTemplateResponse) {
 		d.Set("name", r.Name)
 		d.Set("port_mappings", r.PortMappings)
+		d.Set("protocol", netboxapi.ChoiceValue(r.Protocol))
+		d.Set("ports", r.Ports)
 		d.Set("description", r.Description)
 		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("comments", r.Comments)
 		api.readTagRefs(d, r.Tags)
-		if cf := getCustomFields(r.CustomFields); cf != nil {
-			d.Set(customFieldsKey, cf)
-		}
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
 	})
 }
 

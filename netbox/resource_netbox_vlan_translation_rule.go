@@ -79,7 +79,7 @@ func vlanTranslationRuleRequestFromResourceData(api *providerState, d *schema.Re
 		Description: getOptionalStr(d, "description", true),
 		Tags:        tags,
 	}
-	if ct, ok := d.GetOk(customFieldsKey); ok {
+	if ct, ok := managedCustomFields(d); ok {
 		data.CustomFields = ct
 	}
 	return data, nil
@@ -101,9 +101,7 @@ func resourceNetboxVlanTranslationRuleRead(d *schema.ResourceData, m interface{}
 		d.Set("remote_vid", r.RemoteVid)
 		d.Set("description", r.Description)
 		api.readTagRefs(d, r.Tags)
-		if cf := getCustomFields(r.CustomFields); cf != nil {
-			d.Set(customFieldsKey, cf)
-		}
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
 	})
 }
 

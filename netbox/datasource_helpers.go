@@ -405,18 +405,6 @@ func jIDs(o map[string]interface{}, k string) []int64 {
 	return ids
 }
 
-// jInts returns the numbers in a list field.
-func jInts(o map[string]interface{}, k string) []int64 {
-	out := []int64{}
-	list, _ := o[k].([]interface{})
-	for _, item := range list {
-		if f, ok := item.(float64); ok {
-			out = append(out, int64(f))
-		}
-	}
-	return out
-}
-
 // jStrs returns the strings in a list field.
 func jStrs(o map[string]interface{}, k string) []string {
 	out := []string{}
@@ -424,6 +412,18 @@ func jStrs(o map[string]interface{}, k string) []string {
 	for _, item := range list {
 		if s, ok := item.(string); ok {
 			out = append(out, s)
+		}
+	}
+	return out
+}
+
+// jInts returns the numbers in a list field.
+func jInts(o map[string]interface{}, k string) []int64 {
+	out := []int64{}
+	list, _ := o[k].([]interface{})
+	for _, item := range list {
+		if f, ok := item.(float64); ok {
+			out = append(out, int64(f))
 		}
 	}
 	return out

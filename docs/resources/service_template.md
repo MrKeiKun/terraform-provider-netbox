@@ -34,7 +34,9 @@ resource "netbox_service_template" "example" {
 - `custom_fields` (Map of String)
 - `description` (String)
 - `owner_id` (Number)
-- `port_mappings` (Set of String)
+- `port_mappings` (Set of String) The ports as `protocol/port` strings, for example `tcp/80`. Use this for a template that spans more than one protocol. Needs NetBox 4.6 or newer. Use `protocol` and `ports` on older versions. Conflicts with `protocol` and `ports`.
+- `ports` (Set of Number) The ports, together with `protocol`. Use `port_mappings` for a template that spans more than one protocol.
+- `protocol` (String) One of [tcp, udp, sctp].
 - `tags` (Set of String)
 
 ### Read-Only

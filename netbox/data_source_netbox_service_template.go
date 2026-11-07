@@ -23,6 +23,15 @@ func dataSourceNetboxServiceTemplate() *schema.Resource {
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
+			"protocol": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"ports": {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeInt},
+			},
 			"description": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -51,6 +60,8 @@ func dataSourceNetboxServiceTemplateRead(d *schema.ResourceData, m interface{}) 
 	d.SetId(strconv.FormatInt(jInt(*r, "id"), 10))
 	d.Set("name", jStr(*r, "name"))
 	d.Set("port_mappings", jStrs(*r, "port_mappings"))
+	d.Set("protocol", jChoice(*r, "protocol"))
+	d.Set("ports", jInts(*r, "ports"))
 	d.Set("description", jStr(*r, "description"))
 	d.Set("owner_id", jID(*r, "owner"))
 	d.Set("comments", jStr(*r, "comments"))

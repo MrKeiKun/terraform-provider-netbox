@@ -69,7 +69,7 @@ func l2VPNTerminationRequestFromResourceData(api *providerState, d *schema.Resou
 		AssignedObjectID:   int64(d.Get("assigned_object_id").(int)),
 		Tags:               tags,
 	}
-	if ct, ok := d.GetOk(customFieldsKey); ok {
+	if ct, ok := managedCustomFields(d); ok {
 		data.CustomFields = ct
 	}
 	return data, nil
@@ -90,9 +90,7 @@ func resourceNetboxL2VPNTerminationRead(d *schema.ResourceData, m interface{}) e
 		d.Set("assigned_object_type", r.AssignedObjectType)
 		d.Set("assigned_object_id", r.AssignedObjectID)
 		api.readTagRefs(d, r.Tags)
-		if cf := getCustomFields(r.CustomFields); cf != nil {
-			d.Set(customFieldsKey, cf)
-		}
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
 	})
 }
 

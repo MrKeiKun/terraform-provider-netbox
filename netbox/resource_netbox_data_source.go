@@ -129,7 +129,7 @@ func dataSourceRequestFromResourceData(api *providerState, d *schema.ResourceDat
 		Comments:     getOptionalStr(d, "comments", true),
 		Tags:         tags,
 	}
-	if ct, ok := d.GetOk(customFieldsKey); ok {
+	if ct, ok := managedCustomFields(d); ok {
 		data.CustomFields = ct
 	}
 	return data, nil
@@ -157,9 +157,7 @@ func resourceNetboxDataSourceRead(d *schema.ResourceData, m interface{}) error {
 		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("comments", r.Comments)
 		api.readTagRefs(d, r.Tags)
-		if cf := getCustomFields(r.CustomFields); cf != nil {
-			d.Set(customFieldsKey, cf)
-		}
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
 	})
 }
 

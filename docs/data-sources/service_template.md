@@ -32,4 +32,6 @@ data "netbox_service_template" "example" {
 - `id` (String) The ID of this resource.
 - `owner_id` (Number)
 - `port_mappings` (Set of String)
+- `ports` (Set of Number)
+- `protocol` (String)
 - `tags` (Set of String)

@@ -29,11 +29,13 @@ func TestAccNetboxServiceTemplate_basic(t *testing.T) {
 				Config: fmt.Sprintf(`%[2]s
 resource "netbox_service_template" "test" {
   name = "%[1]s"
-  port_mappings = ["tcp/80", "tcp/443"]
+  protocol = "tcp"
+  ports = [80, 443]
 }`, testName, deps),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("netbox_service_template.test", "name", testName),
-					resource.TestCheckResourceAttr("netbox_service_template.test", "port_mappings.#", "2"),
+					resource.TestCheckResourceAttr("netbox_service_template.test", "protocol", "tcp"),
+					resource.TestCheckResourceAttr("netbox_service_template.test", "ports.#", "2"),
 				),
 			},
 			{
@@ -58,7 +60,8 @@ func TestAccNetboxServiceTemplateDataSource_basic(t *testing.T) {
 				Config: fmt.Sprintf(`%[2]s
 resource "netbox_service_template" "test" {
   name = "%[1]s"
-  port_mappings = ["tcp/80", "tcp/443"]
+  protocol = "tcp"
+  ports = [80, 443]
 }
 
 data "netbox_service_template" "test" {

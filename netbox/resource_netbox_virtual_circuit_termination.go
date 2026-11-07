@@ -78,7 +78,7 @@ func virtualCircuitTerminationRequestFromResourceData(api *providerState, d *sch
 		Description:    getOptionalStr(d, "description", true),
 		Tags:           tags,
 	}
-	if ct, ok := d.GetOk(customFieldsKey); ok {
+	if ct, ok := managedCustomFields(d); ok {
 		data.CustomFields = ct
 	}
 	return data, nil
@@ -100,9 +100,7 @@ func resourceNetboxVirtualCircuitTerminationRead(d *schema.ResourceData, m inter
 		d.Set("interface_id", netboxapi.RefID(r.Interface))
 		d.Set("description", r.Description)
 		api.readTagRefs(d, r.Tags)
-		if cf := getCustomFields(r.CustomFields); cf != nil {
-			d.Set(customFieldsKey, cf)
-		}
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
 	})
 }
 
