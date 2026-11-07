@@ -99,7 +99,7 @@ func moduleTypeRequestFromResourceData(api *providerState, d *schema.ResourceDat
 		Comments:     getOptionalStr(d, "comments", true),
 		Tags:         tags,
 	}
-	if ct, ok := d.GetOk(customFieldsKey); ok {
+	if ct, ok := managedCustomFields(d); ok {
 		data.CustomFields = ct
 	}
 	return data, nil
@@ -123,9 +123,7 @@ func resourceNetboxModuleTypeRead(d *schema.ResourceData, m interface{}) error {
 		d.Set("weight_unit", netboxapi.ChoiceValue(r.WeightUnit))
 		d.Set("description", r.Description)
 		d.Set("comments", r.Comments)
-		if cf := getCustomFields(r.CustomFields); cf != nil {
-			d.Set(customFieldsKey, cf)
-		}
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
 		api.readTagRefs(d, r.Tags)
 	})
 }

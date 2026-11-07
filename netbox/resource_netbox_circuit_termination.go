@@ -147,7 +147,7 @@ func circuitTerminationRequestFromResourceData(api *providerState, d *schema.Res
 		data.TerminationType = nil
 		data.TerminationID = nil
 	}
-	if ct, ok := d.GetOk(customFieldsKey); ok {
+	if ct, ok := managedCustomFields(d); ok {
 		data.CustomFields = ct
 	}
 	return data, nil
@@ -189,9 +189,7 @@ func resourceNetboxCircuitTerminationRead(d *schema.ResourceData, m interface{})
 				d.Set("provider_network_id", *r.TerminationID)
 			}
 		}
-		if cf := getCustomFields(r.CustomFields); cf != nil {
-			d.Set(customFieldsKey, cf)
-		}
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
 		api.readTagRefs(d, r.Tags)
 	})
 }

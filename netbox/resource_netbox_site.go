@@ -212,7 +212,7 @@ func siteRequestFromResourceData(api *providerState, d *schema.ResourceData, isU
 		return nil, err
 	}
 
-	if cf, ok := d.GetOk(customFieldsKey); ok {
+	if cf, ok := managedCustomFields(d); ok {
 		data.CustomFields = cf
 	}
 
@@ -267,9 +267,7 @@ func resourceNetboxSiteRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("group_id", netboxapi.RefID(site.Group))
 	d.Set("tenant_id", netboxapi.RefID(site.Tenant))
 
-	if cf := getCustomFields(site.CustomFields); cf != nil {
-		d.Set(customFieldsKey, cf)
-	}
+	d.Set(customFieldsKey, getCustomFields(site.CustomFields))
 	api.readTagRefs(d, site.Tags)
 
 	return nil

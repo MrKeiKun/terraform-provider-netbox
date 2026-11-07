@@ -82,7 +82,7 @@ func circuitProviderNetworkRequestFromResourceData(api *providerState, d *schema
 		ServiceId:   d.Get("service_id").(string),
 		Tags:        tags,
 	}
-	if ct, ok := d.GetOk(customFieldsKey); ok {
+	if ct, ok := managedCustomFields(d); ok {
 		data.CustomFields = ct
 	}
 	return data, nil
@@ -104,9 +104,7 @@ func resourceNetboxCircuitProviderNetworkRead(d *schema.ResourceData, m interfac
 		d.Set("description", r.Description)
 		d.Set("provider_id", netboxapi.RefID(r.Provider))
 		d.Set("service_id", r.ServiceId)
-		if cf := getCustomFields(r.CustomFields); cf != nil {
-			d.Set(customFieldsKey, cf)
-		}
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
 		api.readTagRefs(d, r.Tags)
 	})
 }

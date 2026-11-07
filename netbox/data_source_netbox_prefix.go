@@ -189,9 +189,7 @@ func dataSourceNetboxPrefixRead(d *schema.ResourceData, m interface{}) error {
 		d.Set("family", int(result.Family.Value))
 	}
 	d.Set("tags", tagNames(result.Tags))
-	if cf := getCustomFields(result.CustomFields); cf != nil {
-		d.Set(customFieldsKey, cf)
-	}
+	d.Set(customFieldsKey, getCustomFields(result.CustomFields))
 	if result.Role != nil {
 		d.Set("role_id", result.Role.ID)
 	}

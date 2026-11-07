@@ -108,7 +108,7 @@ func locationRequestFromResourceData(api *providerState, d *schema.ResourceData)
 	if v, ok := d.GetOk("tenant_id"); ok {
 		data.Tenant = int64ToPtr(int64(v.(int)))
 	}
-	if ct, ok := d.GetOk(customFieldsKey); ok {
+	if ct, ok := managedCustomFields(d); ok {
 		data.CustomFields = ct
 	}
 	return data, nil
@@ -132,9 +132,7 @@ func resourceNetboxLocationRead(d *schema.ResourceData, m interface{}) error {
 		d.Set("site_id", netboxapi.RefID(r.Site))
 		d.Set("parent_id", netboxapi.RefID(r.Parent))
 		d.Set("tenant_id", netboxapi.RefID(r.Tenant))
-		if cf := getCustomFields(r.CustomFields); cf != nil {
-			d.Set(customFieldsKey, cf)
-		}
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
 		api.readTagRefs(d, r.Tags)
 	})
 }

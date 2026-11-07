@@ -246,7 +246,7 @@ func TestGetCustomFields(t *testing.T) {
 			},
 			expected: map[string]interface{}{
 				"field1": "value1",
-				"field2": 123,
+				"field2": "123",
 			},
 		},
 		{

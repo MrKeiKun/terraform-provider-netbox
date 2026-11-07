@@ -85,7 +85,7 @@ func virtualDiskRequestFromResourceData(api *providerState, d *schema.ResourceDa
 		Description:    getOptionalStr(d, "description", true),
 		Tags:           tags,
 	}
-	if ct, ok := d.GetOk(customFieldsKey); ok {
+	if ct, ok := managedCustomFields(d); ok {
 		data.CustomFields = ct
 	}
 	return data, nil
@@ -108,9 +108,7 @@ func resourceNetboxVirtualDisksRead(ctx context.Context, d *schema.ResourceData,
 			d.Set("virtual_machine_id", r.VirtualMachine.ID)
 		}
 		d.Set("description", r.Description)
-		if cf := getCustomFields(r.CustomFields); cf != nil {
-			d.Set(customFieldsKey, cf)
-		}
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
 		api.readTagRefs(d, r.Tags)
 	})
 }

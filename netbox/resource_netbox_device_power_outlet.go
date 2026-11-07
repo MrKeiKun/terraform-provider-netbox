@@ -117,7 +117,7 @@ func devicePowerOutletRequestFromResourceData(api *providerState, d *schema.Reso
 		MarkConnected: d.Get("mark_connected").(bool),
 		Tags:          tags,
 	}
-	if ct, ok := d.GetOk(customFieldsKey); ok {
+	if ct, ok := managedCustomFields(d); ok {
 		data.CustomFields = ct
 	}
 	return data, nil
@@ -143,9 +143,7 @@ func resourceNetboxDevicePowerOutletRead(d *schema.ResourceData, m interface{}) 
 		d.Set("feed_leg", netboxapi.ChoiceValue(r.FeedLeg))
 		d.Set("description", r.Description)
 		d.Set("mark_connected", r.MarkConnected)
-		if cf := getCustomFields(r.CustomFields); cf != nil {
-			d.Set(customFieldsKey, cf)
-		}
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
 		api.readTagRefs(d, r.Tags)
 	})
 }

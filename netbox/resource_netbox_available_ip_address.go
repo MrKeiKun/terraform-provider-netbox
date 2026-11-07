@@ -229,9 +229,7 @@ func resourceNetboxAvailableIPAddressRead(d *schema.ResourceData, m interface{})
 		d.Set("status", netboxapi.ChoiceValue(ipAddress.Status))
 		api.readTagRefs(d, ipAddress.Tags)
 
-		if cf := getCustomFields(ipAddress.CustomFields); cf != nil {
-			d.Set(customFieldsKey, cf)
-		}
+		d.Set(customFieldsKey, getCustomFields(ipAddress.CustomFields))
 	})
 }
 
@@ -253,7 +251,7 @@ func resourceNetboxAvailableIPAddressUpdate(d *schema.ResourceData, m interface{
 		Tenant:      getOptionalInt(d, "tenant_id"),
 		Tags:        tags,
 	}
-	if cf, ok := d.GetOk(customFieldsKey); ok {
+	if cf, ok := managedCustomFields(d); ok {
 		data.CustomFields = cf
 	}
 

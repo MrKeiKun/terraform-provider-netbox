@@ -148,7 +148,7 @@ func resourceNetboxAvailablePrefixCreate(d *schema.ResourceData, m interface{}) 
 	data := availablePrefixCreateRequest{
 		PrefixLength: int64(d.Get("prefix_length").(int)),
 	}
-	if cf, ok := d.GetOk(customFieldsKey); ok {
+	if cf, ok := managedCustomFields(d); ok {
 		data.CustomFields = cf
 	}
 

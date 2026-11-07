@@ -116,7 +116,7 @@ func deviceTypeRequestFromResourceData(api *providerState, d *schema.ResourceDat
 	if v, ok := d.GetOk("manufacturer_id"); ok {
 		data.Manufacturer = int64ToPtr(int64(v.(int)))
 	}
-	if ct, ok := d.GetOk(customFieldsKey); ok {
+	if ct, ok := managedCustomFields(d); ok {
 		data.CustomFields = ct
 	}
 	return data, nil
@@ -142,9 +142,7 @@ func resourceNetboxDeviceTypeRead(d *schema.ResourceData, m interface{}) error {
 		d.Set("subdevice_role", netboxapi.ChoiceValue(r.SubdeviceRole))
 		d.Set("description", r.Description)
 		d.Set("comments", r.Comments)
-		if cf := getCustomFields(r.CustomFields); cf != nil {
-			d.Set(customFieldsKey, cf)
-		}
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
 		api.readTagRefs(d, r.Tags)
 	})
 }

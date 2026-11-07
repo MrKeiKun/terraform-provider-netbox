@@ -82,7 +82,7 @@ func deviceBayRequestFromResourceData(api *providerState, d *schema.ResourceData
 		Description:     getOptionalStr(d, "description", true),
 		Tags:            tags,
 	}
-	if ct, ok := d.GetOk(customFieldsKey); ok {
+	if ct, ok := managedCustomFields(d); ok {
 		data.CustomFields = ct
 	}
 	return data, nil
@@ -106,9 +106,7 @@ func resourceNetboxDeviceBayRead(d *schema.ResourceData, m interface{}) error {
 			d.Set("installed_device_id", r.InstalledDevice.ID)
 		}
 		d.Set("description", r.Description)
-		if cf := getCustomFields(r.CustomFields); cf != nil {
-			d.Set(customFieldsKey, cf)
-		}
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
 		api.readTagRefs(d, r.Tags)
 	})
 }
