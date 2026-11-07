@@ -83,7 +83,7 @@ func wirelessLANGroupRequestFromResourceData(api *providerState, d *schema.Resou
 	if parentID := d.Get("parent_id").(int); parentID != 0 {
 		data.Parent = int64ToPtr(int64(parentID))
 	}
-	if cf, ok := d.GetOk(customFieldsKey); ok {
+	if cf, ok := managedCustomFields(d); ok {
 		data.CustomFields = cf
 	}
 	return data, nil
@@ -104,9 +104,7 @@ func resourceNetboxWirelessLANGroupRead(d *schema.ResourceData, m interface{}) e
 		d.Set("slug", group.Slug)
 		d.Set("description", group.Description)
 		d.Set("parent_id", netboxapi.RefID(group.Parent))
-		if cf := getCustomFields(group.CustomFields); cf != nil {
-			d.Set(customFieldsKey, cf)
-		}
+		d.Set(customFieldsKey, getCustomFields(group.CustomFields))
 		api.readTagRefs(d, group.Tags)
 	})
 }

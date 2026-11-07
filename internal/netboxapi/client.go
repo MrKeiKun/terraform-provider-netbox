@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 )
 
 // Client sends requests to the NetBox REST API.
@@ -20,6 +21,9 @@ type Client struct {
 	baseURL    *url.URL
 	token      string
 	httpClient *http.Client
+
+	cfMu    sync.Mutex
+	cfTypes map[string]string
 }
 
 // New creates a client. baseURL is the NetBox root URL (for example
@@ -66,7 +70,7 @@ func (c *Client) endpoint(path string, query url.Values) string {
 func (c *Client) Do(ctx context.Context, method, rawURL string, body, out any) error {
 	var reader io.Reader
 	if body != nil {
-		buf, err := json.Marshal(body)
+		buf, err := c.encodeBody(ctx, method, rawURL, body)
 		if err != nil {
 			return fmt.Errorf("encoding request body: %w", err)
 		}

@@ -154,7 +154,7 @@ func inventoryItemRequestFromResourceData(api *providerState, d *schema.Resource
 		data.ComponentType = &componentType
 		data.ComponentID = getOptionalInt(d, "component_id")
 	}
-	if ct, ok := d.GetOk(customFieldsKey); ok {
+	if ct, ok := managedCustomFields(d); ok {
 		data.CustomFields = ct
 	}
 	return data, nil
@@ -185,9 +185,7 @@ func resourceNetboxInventoryItemRead(d *schema.ResourceData, m interface{}) erro
 
 		d.Set("component_type", r.ComponentType)
 		d.Set("component_id", r.ComponentID)
-		if cf := getCustomFields(r.CustomFields); cf != nil {
-			d.Set(customFieldsKey, cf)
-		}
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
 		api.readTagRefs(d, r.Tags)
 	})
 }

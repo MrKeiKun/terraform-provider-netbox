@@ -120,7 +120,7 @@ func vlanRequestFromResourceData(api *providerState, d *schema.ResourceData) (*v
 	if v, ok := d.GetOk("role_id"); ok {
 		data.Role = int64ToPtr(int64(v.(int)))
 	}
-	if ct, ok := d.GetOk(customFieldsKey); ok {
+	if ct, ok := managedCustomFields(d); ok {
 		data.CustomFields = ct
 	}
 	return data, nil
@@ -153,9 +153,7 @@ func resourceNetboxVlanRead(d *schema.ResourceData, m interface{}) error {
 		if r.Role != nil {
 			d.Set("role_id", r.Role.ID)
 		}
-		if cf := getCustomFields(r.CustomFields); cf != nil {
-			d.Set(customFieldsKey, cf)
-		}
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
 		api.readTagRefs(d, r.Tags)
 	})
 }

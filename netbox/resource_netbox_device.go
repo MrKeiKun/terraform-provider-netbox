@@ -227,7 +227,7 @@ func deviceBody(api *providerState, d *schema.ResourceData, isUpdate bool) (map[
 			body["local_context_data"] = jsonObj
 		}
 	}
-	if cf, ok := d.GetOk(customFieldsKey); ok {
+	if cf, ok := managedCustomFields(d); ok {
 		body["custom_fields"] = cf
 	}
 
@@ -322,9 +322,7 @@ func resourceNetboxDeviceRead(ctx context.Context, d *schema.ResourceData, m int
 		d.Set("site_id", netboxapi.RefID(device.Site))
 		d.Set("config_template_id", netboxapi.RefID(device.ConfigTemplate))
 
-		if cf := getCustomFields(device.CustomFields); cf != nil {
-			d.Set(customFieldsKey, cf)
-		}
+		d.Set(customFieldsKey, getCustomFields(device.CustomFields))
 
 		d.Set("asset_tag", device.AssetTag)
 		d.Set("comments", device.Comments)

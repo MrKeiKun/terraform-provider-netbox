@@ -193,7 +193,7 @@ func ipAddressRequestFromResourceData(api *providerState, d *schema.ResourceData
 		data.AssignedObjectType = strToPtr("")
 		data.AssignedObjectID = nil
 	}
-	if ct, ok := d.GetOk(customFieldsKey); ok {
+	if ct, ok := managedCustomFields(d); ok {
 		data.CustomFields = ct
 	}
 	return data, nil
@@ -264,9 +264,7 @@ func resourceNetboxIPAddressRead(d *schema.ResourceData, m interface{}) error {
 		} else {
 			d.Set("nat_outside_addresses", nil)
 		}
-		if cf := getCustomFields(r.CustomFields); cf != nil {
-			d.Set(customFieldsKey, cf)
-		}
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
 		api.readTagRefs(d, r.Tags)
 	})
 }

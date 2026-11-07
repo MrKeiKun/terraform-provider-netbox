@@ -140,7 +140,7 @@ func cableRequestFromResourceData(api *providerState, d *schema.ResourceData) (*
 
 	data.ATerminations = getGenericObjectsFromSchemaSet(d.Get("a_termination").(*schema.Set))
 	data.BTerminations = getGenericObjectsFromSchemaSet(d.Get("b_termination").(*schema.Set))
-	if ct, ok := d.GetOk(customFieldsKey); ok {
+	if ct, ok := managedCustomFields(d); ok {
 		data.CustomFields = ct
 	}
 	return data, nil
@@ -169,9 +169,7 @@ func resourceNetboxCableRead(d *schema.ResourceData, m interface{}) error {
 
 		d.Set("a_termination", getSchemaSetFromGenericObjects(r.ATerminations))
 		d.Set("b_termination", getSchemaSetFromGenericObjects(r.BTerminations))
-		if cf := getCustomFields(r.CustomFields); cf != nil {
-			d.Set(customFieldsKey, cf)
-		}
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
 		api.readTagRefs(d, r.Tags)
 	})
 }

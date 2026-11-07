@@ -133,7 +133,7 @@ func wirelessLANBody(api *providerState, d *schema.ResourceData) (map[string]int
 		body["auth_psk"] = ""
 	}
 
-	if cf, ok := d.GetOk(customFieldsKey); ok {
+	if cf, ok := managedCustomFields(d); ok {
 		body["custom_fields"] = cf
 	}
 	return body, nil
@@ -160,9 +160,7 @@ func resourceNetboxWirelessLANRead(d *schema.ResourceData, m interface{}) error 
 		d.Set("group_id", netboxapi.RefID(wlan.Group))
 		d.Set("tenant_id", netboxapi.RefID(wlan.Tenant))
 		d.Set("vlan_id", netboxapi.RefID(wlan.Vlan))
-		if cf := getCustomFields(wlan.CustomFields); cf != nil {
-			d.Set(customFieldsKey, cf)
-		}
+		d.Set(customFieldsKey, getCustomFields(wlan.CustomFields))
 		api.readTagRefs(d, wlan.Tags)
 	})
 }

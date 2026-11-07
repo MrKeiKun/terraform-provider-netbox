@@ -102,8 +102,6 @@ func dataSourceNetboxVlanRead(d *schema.ResourceData, m interface{}) error {
 	if vlan.Tenant != nil {
 		d.Set("tenant", vlan.Tenant.ID)
 	}
-	if cf := getCustomFields(vlan.CustomFields); cf != nil {
-		d.Set(customFieldsKey, cf)
-	}
+	d.Set(customFieldsKey, getCustomFields(vlan.CustomFields))
 	return nil
 }

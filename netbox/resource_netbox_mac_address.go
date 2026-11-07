@@ -124,7 +124,7 @@ func macAddressRequestFromResourceData(api *providerState, d *schema.ResourceDat
 		data.AssignedObjectType = strToPtr("")
 		data.AssignedObjectID = nil
 	}
-	if ct, ok := d.GetOk(customFieldsKey); ok {
+	if ct, ok := managedCustomFields(d); ok {
 		data.CustomFields = ct
 	}
 	return data, nil
@@ -164,9 +164,7 @@ func resourceNetboxMACAddressRead(d *schema.ResourceData, m interface{}) error {
 			d.Set("interface_id", nil)
 			d.Set("object_type", "")
 		}
-		if cf := getCustomFields(r.CustomFields); cf != nil {
-			d.Set(customFieldsKey, cf)
-		}
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
 		api.readTagRefs(d, r.Tags)
 	})
 }

@@ -169,7 +169,7 @@ func virtualMachineBody(api *providerState, d *schema.ResourceData, isUpdate boo
 			body["local_context_data"] = jsonObj
 		}
 	}
-	if cf, ok := d.GetOk(customFieldsKey); ok {
+	if cf, ok := managedCustomFields(d); ok {
 		body["custom_fields"] = cf
 	}
 
@@ -242,9 +242,7 @@ func resourceNetboxVirtualMachineRead(ctx context.Context, d *schema.ResourceDat
 		}
 
 		api.readTagRefs(d, vm.Tags)
-		if cf := getCustomFields(vm.CustomFields); cf != nil {
-			d.Set(customFieldsKey, cf)
-		}
+		d.Set(customFieldsKey, getCustomFields(vm.CustomFields))
 	})
 }
 

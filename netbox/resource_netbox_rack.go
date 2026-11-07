@@ -249,7 +249,7 @@ func rackRequestFromResourceData(api *providerState, d *schema.ResourceData) (*r
 		RackType:      getOptionalInt(d, "rack_type_id"),
 		Tags:          tags,
 	}
-	if ct, ok := d.GetOk(customFieldsKey); ok {
+	if ct, ok := managedCustomFields(d); ok {
 		data.CustomFields = ct
 	}
 	return data, nil
@@ -293,9 +293,7 @@ func resourceNetboxRackRead(d *schema.ResourceData, m interface{}) error {
 		d.Set("comments", r.Comments)
 		d.Set("form_factor", netboxapi.ChoiceValue(r.FormFactor))
 		d.Set("rack_type_id", netboxapi.RefID(r.RackType))
-		if cf := getCustomFields(r.CustomFields); cf != nil {
-			d.Set(customFieldsKey, cf)
-		}
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
 		api.readTagRefs(d, r.Tags)
 	})
 }

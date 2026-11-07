@@ -112,7 +112,7 @@ func deviceRearPortRequestFromResourceData(api *providerState, d *schema.Resourc
 		MarkConnected: d.Get("mark_connected").(bool),
 		Tags:          tags,
 	}
-	if ct, ok := d.GetOk(customFieldsKey); ok {
+	if ct, ok := managedCustomFields(d); ok {
 		data.CustomFields = ct
 	}
 	return data, nil
@@ -138,9 +138,7 @@ func resourceNetboxDeviceRearPortRead(d *schema.ResourceData, m interface{}) err
 		d.Set("color_hex", r.Color)
 		d.Set("description", r.Description)
 		d.Set("mark_connected", r.MarkConnected)
-		if cf := getCustomFields(r.CustomFields); cf != nil {
-			d.Set(customFieldsKey, cf)
-		}
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
 		api.readTagRefs(d, r.Tags)
 	})
 }

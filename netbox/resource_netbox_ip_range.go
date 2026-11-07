@@ -129,7 +129,7 @@ func ipRangeRequestFromResourceData(api *providerState, d *schema.ResourceData) 
 	if v, ok := d.GetOk("role_id"); ok {
 		data.Role = int64ToPtr(int64(v.(int)))
 	}
-	if ct, ok := d.GetOk(customFieldsKey); ok {
+	if ct, ok := managedCustomFields(d); ok {
 		data.CustomFields = ct
 	}
 	return data, nil
@@ -166,9 +166,7 @@ func resourceNetboxIPRangeRead(d *schema.ResourceData, m interface{}) error {
 		if r.Size != 0 {
 			d.Set("size", r.Size)
 		}
-		if cf := getCustomFields(r.CustomFields); cf != nil {
-			d.Set(customFieldsKey, cf)
-		}
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
 		api.readTagRefs(d, r.Tags)
 	})
 }
