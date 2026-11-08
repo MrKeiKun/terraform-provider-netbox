@@ -61,7 +61,7 @@ type tenantRequest struct {
 	Name         string             `json:"name"`
 	Slug         string             `json:"slug"`
 	Description  string             `json:"description,omitempty"`
-	Group        *int64             `json:"group,omitempty"`
+	Group        *int64             `json:"group"`
 	Owner        *int64             `json:"owner"`
 	Comments     string             `json:"comments,omitempty"`
 	CustomFields interface{}        `json:"custom_fields,omitempty"`
@@ -76,6 +76,7 @@ type tenantResponse struct {
 	Owner        *netboxapi.Ref         `json:"owner"`
 	Comments     string                 `json:"comments"`
 	CustomFields map[string]interface{} `json:"custom_fields"`
+	Tags         []netboxapi.TagRef     `json:"tags"`
 }
 
 func tenantRequestFromResourceData(api *providerState, d *schema.ResourceData) (*tenantRequest, error) {
@@ -108,6 +109,7 @@ func resourceNetboxTenantCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceNetboxTenantRead(d *schema.ResourceData, m interface{}) error {
+	api := m.(*providerState)
 	return readObject(d, m, tenantAPIPath, func(r *tenantResponse) {
 		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
 		d.Set("comments", r.Comments)
@@ -115,9 +117,8 @@ func resourceNetboxTenantRead(d *schema.ResourceData, m interface{}) error {
 		d.Set("name", r.Name)
 		d.Set("slug", r.Slug)
 		d.Set("description", r.Description)
-		if r.Group != nil {
-			d.Set("group_id", r.Group.ID)
-		}
+		d.Set("group_id", netboxapi.RefID(r.Group))
+		api.readTagRefs(d, r.Tags)
 	})
 }
 

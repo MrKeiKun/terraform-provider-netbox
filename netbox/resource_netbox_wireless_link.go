@@ -31,11 +31,10 @@ func resourceNetboxWirelessLink() *schema.Resource {
 				Optional: true,
 			},
 			"status": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				Description:  "One of [connected, planned, decommissioning]",
-				ValidateFunc: validation.StringInSlice([]string{"connected", "planned", "decommissioning"}, false),
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "One of [connected, planned, decommissioning]",
 			},
 			"tenant_id": {
 				Type:     schema.TypeInt,

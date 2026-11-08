@@ -82,6 +82,16 @@ func dataSourceNetboxIPAddresses() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"assigned_object_type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Content type of the object the address is assigned to, for example dcim.interface.",
+						},
+						"assigned_object_id": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "ID of the object the address is assigned to.",
+						},
 
 						"tenant": {
 							Type:     schema.TypeList,
@@ -177,6 +187,8 @@ func dataSourceNetboxIPAddressesRead(d *schema.ResourceData, m interface{}) erro
 		mapping["tenant"] = jObjectList(v, "tenant", "id", "name", "slug")
 		mapping["tags"] = jObjectsList(v, "tags", "name", "display", "slug", "id")
 		mapping["role"] = jChoice(v, "role")
+		mapping["assigned_object_type"] = jStr(v, "assigned_object_type")
+		mapping["assigned_object_id"] = jInt(v, "assigned_object_id")
 
 		// fields that are missing in the response are left out of the state
 		for k, val := range mapping {

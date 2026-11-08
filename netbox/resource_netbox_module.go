@@ -3,7 +3,6 @@ package netbox
 import (
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func resourceNetboxModule() *schema.Resource {
@@ -33,10 +32,9 @@ Similar to devices, modules are instantiated from module types, and any componen
 				Required: true,
 			},
 			"status": {
-				Type:         schema.TypeString,
-				Required:     true,
-				Description:  "One of [offline, active, planned, staged, failed, decommissioning]",
-				ValidateFunc: validation.StringInSlice([]string{"offline", "active", "planned", "staged", "failed", "decommissioning"}, false),
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "One of [offline, active, planned, staged, failed, decommissioning]",
 			},
 			"serial": {
 				Type:     schema.TypeString,

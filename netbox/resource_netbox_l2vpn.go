@@ -40,11 +40,10 @@ func resourceNetboxL2VPN() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"vpws", "vpls", "vxlan", "vxlan-evpn", "mpls-evpn", "pbb-evpn", "evpn-vpws", "epl", "evpl", "ep-lan", "evp-lan", "ep-tree", "evp-tree", "spb"}, false),
 			},
 			"status": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				Description:  "One of [active, planned, decommissioning]",
-				ValidateFunc: validation.StringInSlice([]string{"active", "planned", "decommissioning"}, false),
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "One of [active, planned, decommissioning]",
 			},
 			"import_target_ids": {
 				Type:     schema.TypeSet,

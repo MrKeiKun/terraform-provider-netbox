@@ -3,7 +3,6 @@ package netbox
 import (
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 var resourceNetboxIPRangeStatusOptions = []string{"active", "reserved", "deprecated"}
@@ -29,11 +28,10 @@ func resourceNetboxIPRange() *schema.Resource {
 				Required: true,
 			},
 			"status": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Default:      "active",
-				ValidateFunc: validation.StringInSlice(resourceNetboxIPRangeStatusOptions, false),
-				Description:  buildValidValueDescription(resourceNetboxIPRangeStatusOptions),
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "active",
+				Description: buildValidValueDescription(resourceNetboxIPRangeStatusOptions),
 			},
 			"tenant_id": {
 				Type:     schema.TypeInt,

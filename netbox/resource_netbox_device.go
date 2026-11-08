@@ -88,11 +88,10 @@ func resourceNetboxDevice() *schema.Resource {
 				Computed: true,
 			},
 			"status": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validation.StringInSlice(resourceNetboxDeviceStatusOptions, false),
-				Description:  buildValidValueDescription(resourceNetboxDeviceStatusOptions),
-				Default:      "active",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: buildValidValueDescription(resourceNetboxDeviceStatusOptions),
+				Default:     "active",
 			},
 			"rack_id": {
 				Type:     schema.TypeInt,
@@ -108,6 +107,11 @@ func resourceNetboxDevice() *schema.Resource {
 			"rack_position": {
 				Type:     schema.TypeFloat,
 				Optional: true,
+			},
+			"airflow": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Airflow direction of the device. One of [front-to-rear, rear-to-front, left-to-right, right-to-left, side-to-rear, rear-to-side, bottom-to-top, top-to-bottom, passive, mixed]",
 			},
 			"virtual_chassis_id": {
 				Type:         schema.TypeInt,
@@ -160,6 +164,7 @@ type deviceResponse struct {
 	Serial         string            `json:"serial"`
 	Status         *netboxapi.Choice `json:"status"`
 	Face           *netboxapi.Choice `json:"face"`
+	Airflow        *netboxapi.Choice `json:"airflow"`
 	Position       *float64          `json:"position"`
 	VirtualChassis *struct {
 		ID     int64          `json:"id"`
@@ -210,6 +215,13 @@ func deviceBody(api *providerState, d *schema.ResourceData, isUpdate bool) (map[
 	}
 	if face := getOptionalStr(d, "rack_face", false); face != "" {
 		body["face"] = face
+	}
+	// airflow is sent as null when it is removed from the configuration, which
+	// clears it in NetBox.
+	if v, ok := d.GetOk("airflow"); ok {
+		body["airflow"] = v.(string)
+	} else if isUpdate && d.HasChange("airflow") {
+		body["airflow"] = nil
 	}
 	if vc := getOptionalInt(d, "virtual_chassis_id"); vc != nil {
 		body["virtual_chassis"] = *vc
@@ -330,6 +342,7 @@ func resourceNetboxDeviceRead(ctx context.Context, d *schema.ResourceData, m int
 		d.Set("serial", device.Serial)
 		d.Set("status", netboxapi.ChoiceValue(device.Status))
 		d.Set("rack_id", netboxapi.RefID(device.Rack))
+		d.Set("airflow", netboxapi.ChoiceValue(device.Airflow))
 		if device.Face != nil {
 			d.Set("rack_face", device.Face.Value)
 		} else {

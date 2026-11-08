@@ -46,6 +46,7 @@ func resourceNetboxIpamRole() *schema.Resource {
 				Optional: true,
 			},
 			customFieldsKey: customFieldsSchema,
+			tagsKey:         tagsSchema,
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -74,11 +75,16 @@ type ipamRoleResponse struct {
 	Owner        *netboxapi.Ref         `json:"owner"`
 	Comments     string                 `json:"comments"`
 	CustomFields map[string]interface{} `json:"custom_fields"`
+	Tags         []netboxapi.TagRef     `json:"tags"`
 }
 
-func ipamRoleRequestFromResourceData(d *schema.ResourceData) *ipamRoleRequest {
+func ipamRoleRequestFromResourceData(api *providerState, d *schema.ResourceData) (*ipamRoleRequest, error) {
 	name := d.Get("name").(string)
 	weight := int64(d.Get("weight").(int))
+	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
+	if err != nil {
+		return nil, err
+	}
 	return &ipamRoleRequest{
 		CustomFields: customFieldsRequest(d),
 		Comments:     getOptionalStr(d, "comments", true),
@@ -87,15 +93,20 @@ func ipamRoleRequestFromResourceData(d *schema.ResourceData) *ipamRoleRequest {
 		Slug:         slugFromResourceData(d, name),
 		Weight:       &weight,
 		Description:  d.Get("description").(string),
-		Tags:         []netboxapi.TagRef{},
-	}
+		Tags:         tags,
+	}, nil
 }
 
 func resourceNetboxIpamRoleCreate(d *schema.ResourceData, m interface{}) error {
-	return createObject(d, m, ipamRoleAPIPath, ipamRoleRequestFromResourceData(d), resourceNetboxIpamRoleUpdate)
+	data, err := ipamRoleRequestFromResourceData(m.(*providerState), d)
+	if err != nil {
+		return err
+	}
+	return createObject(d, m, ipamRoleAPIPath, data, resourceNetboxIpamRoleUpdate)
 }
 
 func resourceNetboxIpamRoleRead(d *schema.ResourceData, m interface{}) error {
+	api := m.(*providerState)
 	return readObject(d, m, ipamRoleAPIPath, func(res *ipamRoleResponse) {
 		d.Set(customFieldsKey, getCustomFields(res.CustomFields))
 		d.Set("comments", res.Comments)
@@ -112,11 +123,16 @@ func resourceNetboxIpamRoleRead(d *schema.ResourceData, m interface{}) error {
 		if res.Description != "" {
 			d.Set("description", res.Description)
 		}
+		api.readTagRefs(d, res.Tags)
 	})
 }
 
 func resourceNetboxIpamRoleUpdate(d *schema.ResourceData, m interface{}) error {
-	return putObject(d, m, ipamRoleAPIPath, ipamRoleRequestFromResourceData(d), resourceNetboxIpamRoleRead)
+	data, err := ipamRoleRequestFromResourceData(m.(*providerState), d)
+	if err != nil {
+		return err
+	}
+	return putObject(d, m, ipamRoleAPIPath, data, resourceNetboxIpamRoleRead)
 }
 
 func resourceNetboxIpamRoleDelete(d *schema.ResourceData, m interface{}) error {

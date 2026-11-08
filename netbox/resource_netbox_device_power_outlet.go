@@ -65,11 +65,10 @@ For example, imagine a PDU with one power port which draws from a three-phase fe
 				Optional: true,
 			},
 			"status": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				Description:  "One of [enabled, disabled, faulty]",
-				ValidateFunc: validation.StringInSlice([]string{"enabled", "disabled", "faulty"}, false),
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "One of [enabled, disabled, faulty]",
 			},
 			"color_hex": {
 				Type:     schema.TypeString,

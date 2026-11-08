@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"golang.org/x/exp/slices"
 )
 
@@ -256,6 +257,12 @@ func Provider() *schema.Provider {
 			"netbox_virtual_machines":          dataSourceNetboxVirtualMachine(),
 			"netbox_interfaces":                dataSourceNetboxInterfaces(),
 			"netbox_device_interfaces":         dataSourceNetboxDeviceInterfaces(),
+			"netbox_device_front_ports":        dataSourceNetboxDeviceFrontPorts(),
+			"netbox_device_rear_ports":         dataSourceNetboxDeviceRearPorts(),
+			"netbox_device_module_bays":        dataSourceNetboxDeviceModuleBays(),
+			"netbox_tunnels":                   dataSourceNetboxTunnels(),
+			"netbox_cables":                    dataSourceNetboxCables(),
+			"netbox_aggregates":                dataSourceNetboxAggregates(),
 			"netbox_device_power_ports":        dataSourceNetboxDevicePowerPorts(),
 			"netbox_device_power_outlets":      dataSourceNetboxDevicePowerOutlets(),
 			"netbox_ipam_role":                 dataSourceNetboxIPAMRole(),
@@ -359,6 +366,13 @@ func Provider() *schema.Provider {
 				DefaultFunc: schema.EnvDefaultFunc("NETBOX_REQUEST_TIMEOUT", 10),
 				Description: "Netbox API HTTP request timeout in seconds. Can be set via the `NETBOX_REQUEST_TIMEOUT` environment variable.",
 			},
+			"max_retries": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				DefaultFunc:  schema.EnvDefaultFunc("NETBOX_MAX_RETRIES", netboxapi.DefaultMaxRetries),
+				ValidateFunc: validation.IntAtLeast(0),
+				Description:  "How many times a failed GET, PUT or DELETE request is sent again after a connection error or a 502, 503 or 504 response. Requests that create objects are never repeated. Set to `0` to turn retries off. Can be set via the `NETBOX_MAX_RETRIES` environment variable. Defaults to `3`.",
+			},
 			"default_tags": {
 				Type: schema.TypeSet,
 				Elem: &schema.Schema{
@@ -400,6 +414,7 @@ func providerConfigure(ctx context.Context, data *schema.ResourceData) (interfac
 		AllowInsecureHTTPS:          data.Get("allow_insecure_https").(bool),
 		Headers:                     data.Get("headers").(map[string]interface{}),
 		RequestTimeout:              data.Get("request_timeout").(int),
+		MaxRetries:                  data.Get("max_retries").(int),
 		StripTrailingSlashesFromURL: data.Get("strip_trailing_slashes_from_url").(bool),
 		CACertFile:                  data.Get("ca_cert_file").(string),
 	}

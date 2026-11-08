@@ -56,11 +56,10 @@ Each location must have a name that is unique within its parent site and locatio
 				Optional: true,
 			},
 			"status": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				Description:  "One of [planned, staging, active, decommissioning, retired]",
-				ValidateFunc: validation.StringInSlice([]string{"planned", "staging", "active", "decommissioning", "retired"}, false),
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "One of [planned, staging, active, decommissioning, retired]",
 			},
 			tagsKey: tagsSchema,
 			"tenant_id": {

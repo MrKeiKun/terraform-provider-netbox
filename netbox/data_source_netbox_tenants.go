@@ -54,6 +54,7 @@ func dataSourceNetboxTenants() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"tags": tagsSchemaRead,
 						"created": {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -162,6 +163,7 @@ func dataSourceNetboxTenantsRead(d *schema.ResourceData, m interface{}) error {
 		mapping["name"] = jStr(v, "name")
 		mapping["slug"] = jStr(v, "slug")
 		mapping["description"] = jStr(v, "description")
+		mapping["tags"] = jTags(v)
 		mapping["created"] = jTime(v, "created")
 		mapping["last_updated"] = jTime(v, "last_updated")
 		mapping["comments"] = jStr(v, "comments")

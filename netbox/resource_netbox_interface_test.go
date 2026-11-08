@@ -250,3 +250,27 @@ func init() {
 		},
 	})
 }
+
+func TestAccNetboxInterface_clearDescription(t *testing.T) {
+	testName := testAccGetTestName("iface_cleardesc")
+	setUp := testAccNetboxInterfaceFullDependencies(testName)
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckInterfaceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: setUp + testAccNetboxInterfaceOpts(testName, "true"),
+				Check:  resource.TestCheckResourceAttr("netbox_interface.test", "description", testName),
+			},
+			{
+				Config: setUp + fmt.Sprintf(`
+resource "netbox_interface" "test" {
+  name = "%[1]s"
+  virtual_machine_id = netbox_virtual_machine.test.id
+}`, testName),
+				Check: resource.TestCheckResourceAttr("netbox_interface.test", "description", ""),
+			},
+		},
+	})
+}

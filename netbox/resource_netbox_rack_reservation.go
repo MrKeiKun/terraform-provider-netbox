@@ -3,7 +3,6 @@ package netbox
 import (
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func resourceNetboxRackReservation() *schema.Resource {
@@ -51,11 +50,10 @@ func resourceNetboxRackReservation() *schema.Resource {
 				Optional: true,
 			},
 			"status": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				Description:  "One of [pending, active, stale]",
-				ValidateFunc: validation.StringInSlice([]string{"pending", "active", "stale"}, false),
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "One of [pending, active, stale]",
 			},
 			customFieldsKey: customFieldsSchema,
 			tagsKey:         tagsSchema,

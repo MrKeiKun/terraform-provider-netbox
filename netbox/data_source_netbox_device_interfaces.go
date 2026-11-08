@@ -53,6 +53,11 @@ func dataSourceNetboxDeviceInterfaces() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"mgmt_only": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Whether this interface is used only for out-of-band management.",
+						},
 						"enabled": {
 							Type:     schema.TypeBool,
 							Computed: true,
@@ -195,6 +200,7 @@ func dataSourceNetboxDeviceInterfaceRead(d *schema.ResourceData, m interface{}) 
 		mapping["id"] = jInt(v, "id")
 		mapping["description"] = jStr(v, "description")
 		mapping["enabled"] = jBool(v, "enabled")
+		mapping["mgmt_only"] = jBool(v, "mgmt_only")
 		mapping["mac_address"] = jFirst(v, "mac_addresses", "mac_address")
 		mapping["mac_addresses"] = jObjectsList(v, "mac_addresses", "id", "description", "mac_address")
 		mapping["mode"] = jChoiceMap(v, "mode")

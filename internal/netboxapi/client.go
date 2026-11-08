@@ -14,6 +14,7 @@ import (
 	"net/url"
 	"strings"
 	"sync"
+	"time"
 )
 
 // Client sends requests to the NetBox REST API.
@@ -22,8 +23,19 @@ type Client struct {
 	token      string
 	httpClient *http.Client
 
+	maxRetries int
+
 	cfMu    sync.Mutex
 	cfTypes map[string]string
+}
+
+// SetMaxRetries sets how often a failed idempotent request is sent again.
+// Zero turns retries off.
+func (c *Client) SetMaxRetries(n int) {
+	if n < 0 {
+		n = 0
+	}
+	c.maxRetries = n
 }
 
 // New creates a client. baseURL is the NetBox root URL (for example
@@ -43,7 +55,7 @@ func New(baseURL, token string, httpClient *http.Client) (*Client, error) {
 	if httpClient == nil {
 		httpClient = http.DefaultClient
 	}
-	return &Client{baseURL: u, token: token, httpClient: httpClient}, nil
+	return &Client{baseURL: u, token: token, httpClient: httpClient, maxRetries: DefaultMaxRetries}, nil
 }
 
 // authHeader returns the Authorization header value. v2 tokens (nbt_ prefix)
@@ -65,46 +77,96 @@ func (c *Client) endpoint(path string, query url.Values) string {
 	return u.String()
 }
 
+// DefaultMaxRetries is how often an idempotent request is sent again when the
+// server or the connection fails temporarily.
+const DefaultMaxRetries = 3
+
+// retryDelay is the base wait between attempts. It grows with every attempt.
+var retryDelay = time.Second
+
+// idempotent reports whether a request can safely be sent again. POST and
+// PATCH are left out, since a lost response could create a duplicate.
+func idempotent(method string) bool {
+	switch method {
+	case http.MethodGet, http.MethodHead, http.MethodPut, http.MethodDelete:
+		return true
+	}
+	return false
+}
+
 // Do sends a request to rawURL. body is JSON encoded when not nil. When out
-// is not nil the JSON response is decoded into it.
+// is not nil the JSON response is decoded into it. Idempotent requests are
+// sent again (see SetMaxRetries) when the connection fails or NetBox (or a proxy in
+// front of it) answers 502, 503 or 504.
 func (c *Client) Do(ctx context.Context, method, rawURL string, body, out any) error {
-	var reader io.Reader
+	var buf []byte
 	if body != nil {
-		buf, err := c.encodeBody(ctx, method, rawURL, body)
+		var err error
+		buf, err = c.encodeBody(ctx, method, rawURL, body)
 		if err != nil {
 			return fmt.Errorf("encoding request body: %w", err)
 		}
+	}
+
+	attempts := 1
+	if idempotent(method) {
+		attempts = 1 + c.maxRetries
+	}
+	var err error
+	for attempt := 1; attempt <= attempts; attempt++ {
+		var retry bool
+		retry, err = c.doOnce(ctx, method, rawURL, buf, out)
+		if err == nil || !retry || attempt == attempts {
+			return err
+		}
+		select {
+		case <-ctx.Done():
+			return err
+		case <-time.After(time.Duration(attempt) * retryDelay):
+		}
+	}
+	return err
+}
+
+// doOnce sends the request a single time. The result tells whether a failure
+// is temporary.
+func (c *Client) doOnce(ctx context.Context, method, rawURL string, buf []byte, out any) (retry bool, err error) {
+	var reader io.Reader
+	if buf != nil {
 		reader = bytes.NewReader(buf)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, method, rawURL, reader)
 	if err != nil {
-		return err
+		return false, err
 	}
 	req.Header.Set("Authorization", c.authHeader())
 	req.Header.Set("Accept", "application/json")
-	if body != nil {
+	if buf != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return err
+		return ctx.Err() == nil, err
 	}
 	defer resp.Body.Close()
 
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("reading response: %w", err)
+		return ctx.Err() == nil, fmt.Errorf("reading response: %w", err)
 	}
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		return &APIError{Method: method, URL: rawURL, StatusCode: resp.StatusCode, Body: string(data)}
+		temporary := resp.StatusCode == http.StatusBadGateway ||
+			resp.StatusCode == http.StatusServiceUnavailable ||
+			resp.StatusCode == http.StatusGatewayTimeout
+		return temporary, &APIError{Method: method, URL: rawURL, StatusCode: resp.StatusCode, Body: string(data)}
 	}
 	if out == nil || len(data) == 0 {
-		return nil
+		return false, nil
 	}
 	if err := json.Unmarshal(data, out); err != nil {
-		return fmt.Errorf("decoding response from %s: %w", rawURL, err)
+		return false, fmt.Errorf("decoding response from %s: %w", rawURL, err)
 	}
-	return nil
+	return false, nil
 }

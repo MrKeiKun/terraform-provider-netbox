@@ -320,9 +320,6 @@ resource "netbox_available_ip_address" "test" {
 				ResourceName:      "netbox_available_ip_address.test",
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					"prefix_id",
-				},
 			},
 		},
 	})
@@ -334,6 +331,50 @@ func init() {
 		Dependencies: []string{},
 		F: func(region string) error {
 			return sweepByName(region, "ipam/ip-addresses/", "address")
+		},
+	})
+}
+
+func TestAccNetboxAvailableIPAddress_requiredCustomField(t *testing.T) {
+	testSlug := "av_ipa_reqcf"
+
+	resource.Test(t, resource.TestCase{
+		Providers: testAccProviders,
+		PreCheck:  func() { testAccPreCheck(t) },
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+resource "netbox_custom_field" "test" {
+  name          = "%[1]s"
+  type          = "text"
+  weight        = 100
+  required      = true
+  content_types = ["ipam.ipaddress"]
+}
+
+resource "netbox_tenant" "test" {
+  name = "%[1]s"
+}
+
+resource "netbox_prefix" "test" {
+  prefix  = "1.1.9.0/24"
+  status  = "active"
+  is_pool = false
+}
+
+resource "netbox_available_ip_address" "test" {
+  prefix_id = netbox_prefix.test.id
+  status    = "active"
+  tenant_id = netbox_tenant.test.id
+  custom_fields = {
+    "${netbox_custom_field.test.name}" = "value"
+  }
+}`, testSlug),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_available_ip_address.test", "ip_address", "1.1.9.1/24"),
+					resource.TestCheckResourceAttrPair("netbox_available_ip_address.test", "tenant_id", "netbox_tenant.test", "id"),
+				),
+			},
 		},
 	})
 }
