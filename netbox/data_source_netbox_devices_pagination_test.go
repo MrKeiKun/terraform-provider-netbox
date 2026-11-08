@@ -83,7 +83,7 @@ func TestDataSourceNetboxDevicesPagination(t *testing.T) {
 	}
 }
 
-// minimalDeviceJSON returns the minimum fields required by the go-netbox swagger
+// minimalDeviceJSON returns the minimum fields required by the old swagger
 // validator for a DeviceWithConfigContext response item.
 func minimalDeviceJSON(id int, name string) map[string]interface{} {
 	return map[string]interface{}{

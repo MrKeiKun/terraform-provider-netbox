@@ -107,3 +107,43 @@ func init() {
 		},
 	})
 }
+
+func TestAccNetboxToken_v2(t *testing.T) {
+	if !testAccNetboxVersionAtLeast("4.5.0") {
+		t.Skip("v2 tokens need NetBox 4.5 or later")
+	}
+	testName := testAccGetTestName("token_v2")
+	resource.ParallelTest(t, resource.TestCase{
+		Providers: testAccProviders,
+		PreCheck:  func() { testAccPreCheck(t) },
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+resource "netbox_user" "test" {
+  username = "%s"
+  password = "Abcdefghijkl1"
+}
+
+resource "netbox_token" "test" {
+  user_id       = netbox_user.test.id
+  write_enabled = false
+  description   = "v2 token"
+}
+
+resource "netbox_token" "expiring" {
+  user_id     = netbox_user.test.id
+  description = "v2 token with expiry"
+  expires     = "2036-01-02T15:04:05.000Z"
+}`, testName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("netbox_token.test", "key"),
+					// without expires the token must not expire (upstream issue 772)
+					resource.TestCheckNoResourceAttr("netbox_token.test", "expires"),
+					resource.TestCheckResourceAttr("netbox_token.expiring", "expires", "2036-01-02T15:04:05.000Z"),
+					resource.TestCheckResourceAttr("netbox_token.test", "write_enabled", "false"),
+					resource.TestCheckResourceAttr("netbox_token.test", "description", "v2 token"),
+				),
+			},
+		},
+	})
+}

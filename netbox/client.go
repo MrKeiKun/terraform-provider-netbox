@@ -20,6 +20,7 @@ type Config struct {
 	AllowInsecureHTTPS          bool
 	Headers                     map[string]interface{}
 	RequestTimeout              int
+	MaxRetries                  int
 	StripTrailingSlashesFromURL bool
 	CACertFile                  string
 }
@@ -52,7 +53,12 @@ func (cfg *Config) Client() (*netboxapi.Client, error) {
 		return nil, err
 	}
 
-	return netboxapi.New(parsedURL.String(), cfg.APIToken, httpClient)
+	client, err := netboxapi.New(parsedURL.String(), cfg.APIToken, httpClient)
+	if err != nil {
+		return nil, err
+	}
+	client.SetMaxRetries(cfg.MaxRetries)
+	return client, nil
 }
 
 // httpClient builds the HTTP client: TLS options, proxy, custom headers and timeout.

@@ -149,6 +149,13 @@ func deviceFrontPortRequestFromResourceData(api *providerState, d *schema.Resour
 	if raw := d.GetRawConfig(); data.RearPorts == nil || (!raw.IsNull() && !raw.GetAttr("rear_port_id").IsNull()) {
 		data.RearPorts = legacyPortMapping(d, "rear_port")
 	}
+	// NetBox rejects an update that sends the mapping it already has, so the
+	// mapping is only sent when it changed.
+	if d.Id() != "" && !d.HasChanges("rear_ports", "rear_port_id", "rear_port_position") {
+		data.RearPorts = nil
+		data.RearPort = nil
+		data.RearPortPosition = 0
+	}
 	return data, nil
 }
 
@@ -171,8 +178,15 @@ func resourceNetboxDeviceFrontPortRead(d *schema.ResourceData, m interface{}) er
 		d.Set("module_id", netboxapi.RefID(r.Module))
 		d.Set("label", r.Label)
 		d.Set("type", netboxapi.ChoiceValue(r.Type))
-		d.Set("rear_port_id", netboxapi.RefID(r.RearPort))
-		d.Set("rear_port_position", r.RearPortPosition)
+		if r.RearPort == nil && len(r.RearPorts) > 0 {
+			// NetBox 4.5 and later only return the mapping list. Keep the
+			// single rear port attributes in sync with its first entry.
+			d.Set("rear_port_id", int(jInt(r.RearPorts[0], "rear_port")))
+			d.Set("rear_port_position", int(jInt(r.RearPorts[0], "rear_port_position")))
+		} else {
+			d.Set("rear_port_id", netboxapi.RefID(r.RearPort))
+			d.Set("rear_port_position", r.RearPortPosition)
+		}
 		d.Set("color_hex", r.Color)
 		d.Set("description", r.Description)
 		d.Set("mark_connected", r.MarkConnected)

@@ -58,6 +58,7 @@ resource "netbox_device" "test" {
 
 ### Optional
 
+- `airflow` (String) Airflow direction of the device. One of [front-to-rear, rear-to-front, left-to-right, right-to-left, side-to-rear, rear-to-side, bottom-to-top, top-to-bottom, passive, mixed].
 - `asset_tag` (String)
 - `cluster_id` (Number)
 - `comments` (String)

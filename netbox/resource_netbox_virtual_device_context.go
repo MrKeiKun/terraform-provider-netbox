@@ -44,10 +44,9 @@ func resourceNetboxVirtualDeviceContext() *schema.Resource {
 				Optional: true,
 			},
 			"status": {
-				Type:         schema.TypeString,
-				Required:     true,
-				Description:  "One of [active, planned, offline]",
-				ValidateFunc: validation.StringInSlice([]string{"active", "planned", "offline"}, false),
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "One of [active, planned, offline]",
 			},
 			"description": {
 				Type:     schema.TypeString,

@@ -29,11 +29,10 @@ func resourceNetboxVlan() *schema.Resource {
 				Required: true,
 			},
 			"status": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Default:      "active",
-				ValidateFunc: validation.StringInSlice(resourceNetboxVlanStatusOptions, false),
-				Description:  buildValidValueDescription(resourceNetboxVlanStatusOptions),
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "active",
+				Description: buildValidValueDescription(resourceNetboxVlanStatusOptions),
 			},
 			"group_id": {
 				Type:     schema.TypeInt,

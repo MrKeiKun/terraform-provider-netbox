@@ -31,6 +31,7 @@ func resourceNetboxToken() *schema.Resource {
 				Type:         schema.TypeString,
 				Sensitive:    true,
 				Optional:     true,
+				Computed:     true,
 				ValidateFunc: validation.StringLenBetween(40, 256),
 			},
 			"allowed_ips": {

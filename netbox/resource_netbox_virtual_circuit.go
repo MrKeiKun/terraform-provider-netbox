@@ -3,7 +3,6 @@ package netbox
 import (
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func resourceNetboxVirtualCircuit() *schema.Resource {
@@ -36,11 +35,10 @@ func resourceNetboxVirtualCircuit() *schema.Resource {
 				Required: true,
 			},
 			"status": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				Description:  "One of [planned, provisioning, active, offline, deprovisioning, decommissioned]",
-				ValidateFunc: validation.StringInSlice([]string{"planned", "provisioning", "active", "offline", "deprovisioning", "decommissioned"}, false),
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "One of [planned, provisioning, active, offline, deprovisioning, decommissioned]",
 			},
 			"tenant_id": {
 				Type:     schema.TypeInt,

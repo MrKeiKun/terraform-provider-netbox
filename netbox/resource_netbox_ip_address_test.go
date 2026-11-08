@@ -157,7 +157,7 @@ resource "netbox_ip_address" "test" {
   status = "provoke_error"
   tags = [netbox_tag.test.name]
 }`, testIP),
-				ExpectError: regexp.MustCompile("expected status to be one of .*"),
+				ExpectError: regexp.MustCompile("provoke_error.*is not a valid choice"),
 			},
 			{
 				Config: testAccNetboxIPAddressFullDependencies(testName) + fmt.Sprintf(`

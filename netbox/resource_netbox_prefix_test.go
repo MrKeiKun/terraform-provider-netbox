@@ -81,7 +81,7 @@ resource "netbox_prefix" "test" {
   tags = [netbox_tag.test.name]
   mark_utilized = true
 }`, testPrefix, testDesc),
-				ExpectError: regexp.MustCompile("expected status to be one of .*"),
+				ExpectError: regexp.MustCompile("provoke_error.*is not a valid choice"),
 			},
 			{
 				Config: testAccNetboxPrefixFullDependencies(testName, randomSlug, testVid) + fmt.Sprintf(`

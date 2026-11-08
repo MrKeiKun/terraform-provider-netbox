@@ -3,7 +3,6 @@ package netbox
 import (
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func resourceNetboxCluster() *schema.Resource {
@@ -66,11 +65,10 @@ func resourceNetboxCluster() *schema.Resource {
 				Optional: true,
 			},
 			"status": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				Description:  "One of [planned, staging, active, decommissioning, offline]",
-				ValidateFunc: validation.StringInSlice([]string{"planned", "staging", "active", "decommissioning", "offline"}, false),
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "One of [planned, staging, active, decommissioning, offline]",
 			},
 			customFieldsKey: customFieldsSchema,
 			tagsKey:         tagsSchema,

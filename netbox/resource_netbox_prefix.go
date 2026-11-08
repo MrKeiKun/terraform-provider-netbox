@@ -28,10 +28,9 @@ func resourceNetboxPrefix() *schema.Resource {
 				ValidateFunc: validation.IsCIDR,
 			},
 			"status": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validation.StringInSlice(resourceNetboxPrefixStatusOptions, false),
-				Description:  buildValidValueDescription(resourceNetboxPrefixStatusOptions),
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: buildValidValueDescription(resourceNetboxPrefixStatusOptions),
 			},
 			"description": {
 				Type:     schema.TypeString,

@@ -28,11 +28,10 @@ func resourceNetboxWirelessLAN() *schema.Resource {
 				ValidateFunc: validation.StringLenBetween(1, 32),
 			},
 			"status": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Default:      "active",
-				ValidateFunc: validation.StringInSlice(resourceNetboxWirelessLANStatusOptions, false),
-				Description:  buildValidValueDescription(resourceNetboxWirelessLANStatusOptions),
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "active",
+				Description: buildValidValueDescription(resourceNetboxWirelessLANStatusOptions),
 			},
 			"group_id": {
 				Type:     schema.TypeInt,

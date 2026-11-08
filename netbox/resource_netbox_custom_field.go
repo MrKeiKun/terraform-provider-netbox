@@ -60,9 +60,12 @@ func resourceCustomField() *schema.Resource {
 				Required: true,
 				ValidateFunc: validation.StringInSlice([]string{
 					"text",
+					"longtext",
 					"integer",
+					"decimal",
 					"boolean",
 					"date",
+					"datetime",
 					"url",
 					"select",
 					"multiselect",

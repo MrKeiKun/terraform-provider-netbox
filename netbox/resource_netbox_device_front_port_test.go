@@ -2,7 +2,6 @@ package netbox
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -74,12 +73,6 @@ resource "netbox_device_rear_port" "test" {
 }
 
 func TestAccNetboxDeviceFrontPort_basic(t *testing.T) {
-	// NetBox v4.5 changed the front port API (migration dcim.0223_frontport_positions):
-	// the rear_port field is no longer returned as a nested object by the go-netbox
-	// client, causing rear_port_id to always read as 0. Skip until go-netbox is updated.
-	if testAccNetboxVersionAtLeast("4.5.0") {
-		t.Skipf("Skipping front port test on NetBox %s: rear_port response format incompatible with current go-netbox client", os.Getenv("NETBOX_VERSION"))
-	}
 	testSlug := "device_front_port_basic"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{

@@ -33,16 +33,18 @@ func dataSourceNetboxTenant() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"tags": tagsSchemaRead,
 		},
 	}
 }
 
 type tenantDataSourceResponse struct {
-	ID          int64          `json:"id"`
-	Name        string         `json:"name"`
-	Slug        string         `json:"slug"`
-	Description string         `json:"description"`
-	Group       *netboxapi.Ref `json:"group"`
+	ID          int64              `json:"id"`
+	Name        string             `json:"name"`
+	Slug        string             `json:"slug"`
+	Description string             `json:"description"`
+	Group       *netboxapi.Ref     `json:"group"`
+	Tags        []netboxapi.TagRef `json:"tags"`
 }
 
 func dataSourceNetboxTenantRead(d *schema.ResourceData, m interface{}) error {
@@ -61,5 +63,6 @@ func dataSourceNetboxTenantRead(d *schema.ResourceData, m interface{}) error {
 	if r.Group != nil {
 		d.Set("group_id", r.Group.ID)
 	}
+	d.Set("tags", tagNames(r.Tags))
 	return nil
 }

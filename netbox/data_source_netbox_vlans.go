@@ -121,6 +121,8 @@ func dataSourceNetboxVlansRead(d *schema.ResourceData, m interface{}) error {
 		"tenant_group_id__n": "tenant_group_id__n",
 		"tenant_id":          "tenant_id",
 		"tenant_id__n":       "tenant_id__n",
+		"site":               "site",
+		"site__n":            "site__n",
 		"site_id":            "site_id",
 		"site_id__n":         "site_id__n",
 		"status":             "status",

@@ -35,8 +35,10 @@ resource "netbox_ipam_role" "test_basic" {
 - `description` (String)
 - `owner_id` (Number)
 - `slug` (String)
+- `tags` (Set of String)
 - `weight` (Number)
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `tags_all` (Set of String)

@@ -54,6 +54,7 @@ Read-Only:
 - `rack_count` (Number)
 - `site_count` (Number)
 - `slug` (String)
+- `tags` (Set of String)
 - `tenant_group` (List of Object) (see [below for nested schema](#nestedobjatt--tenants--tenant_group))
 - `vlan_count` (Number)
 - `vm_count` (Number)

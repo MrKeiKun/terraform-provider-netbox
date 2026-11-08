@@ -39,10 +39,9 @@ func resourceNetboxCircuit() *schema.Resource {
 				Optional: true,
 			},
 			"status": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validation.StringInSlice(resourceNetboxCircuitStatusOptions, false),
-				Description:  buildValidValueDescription(resourceNetboxCircuitStatusOptions),
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: buildValidValueDescription(resourceNetboxCircuitStatusOptions),
 			},
 			"description": {
 				Type:     schema.TypeString,
