@@ -807,7 +807,9 @@ resource "netbox_device_primary_ip" "test_v4_4" {
 					resource.TestCheckResourceAttrPair("netbox_device.test4", "primary_ipv4", "netbox_ip_address.test_v4_4_3", "id"),
 				),
 			},
-			// Make a new primary IP
+			// Rename the primary IP resource. The device and IP address stay the same, so
+			// the state is moved. Without it the old resource is destroyed at the same
+			// time as the new one is created, and the destroy can clear the primary IP.
 			{
 				Config: testAccNetboxDevicePrimaryIPFullDependencies(testName) + fmt.Sprintf(`
 resource "netbox_device" "test4" {
@@ -842,6 +844,11 @@ resource "netbox_ip_address" "test_v4_4_3" {
   status = "active"
   interface_id = netbox_device_interface.test4_3.id
   object_type = "dcim.interface"
+}
+
+moved {
+  from = netbox_device_primary_ip.test_v4_4
+  to   = netbox_device_primary_ip.test_v4_4_2
 }
 
 resource "netbox_device_primary_ip" "test_v4_4_2" {
