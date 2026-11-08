@@ -6,7 +6,6 @@ version: 2
 
 before:
   hooks:
-    # this is just an example and not a requirement for provider building/publishing
     - go mod tidy
 
 builds:
@@ -19,7 +18,7 @@ builds:
     flags:
       - -trimpath
     ldflags:
-      - "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}}"
+      - "-s -w"
     goos:
       # - freebsd
       - windows
@@ -36,10 +35,13 @@ builds:
     binary: "{{ .ProjectName }}_v{{ .Version }}"
 
 archives:
-  - format: zip
+  - formats: [zip]
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
 checksum:
+  extra_files:
+    - glob: "terraform-registry-manifest.json"
+      name_template: "{{ .ProjectName }}_{{ .Version }}_manifest.json"
   name_template: "{{ .ProjectName }}_{{ .Version }}_SHA256SUMS"
   algorithm: sha256
 
@@ -57,6 +59,9 @@ signs:
       - "${artifact}"
 
 release:
+  extra_files:
+    - glob: "terraform-registry-manifest.json"
+      name_template: "{{ .ProjectName }}_{{ .Version }}_manifest.json"
   # If you want to manually examine the release before its live, uncomment this line:
   # draft: true
 

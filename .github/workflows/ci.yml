@@ -1,5 +1,6 @@
 ---
-name: ci-testing
+name: CI
+
 on:
   push:
     branches:
@@ -8,19 +9,44 @@ on:
     branches:
       - master
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
 jobs:
-  test:
+  pre-commit:
+    name: Pre-commit
+    uses: ./.github/workflows/pre-commit.yml
+  lint:
+    name: Lint
+    uses: ./.github/workflows/lint.yml
+  docs:
+    name: Docs
+    uses: ./.github/workflows/docs.yml
+
+  unit-test:
+    name: Unit tests
+    needs: [pre-commit, lint, docs]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout repository
+        uses: actions/checkout@v7
       - name: Set up Go
         uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
-      - name: test
+      - name: Run unit tests
         run: make test
 
-  testacc:
+  acceptance-test:
+    name: Acceptance tests (NetBox ${{ matrix.netbox-version }})
+    needs: unit-test
+    env:
+      COVERAGE_NETBOX_VERSION: v4.7.4
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
@@ -61,12 +87,13 @@ jobs:
           - v4.7.3
           - v4.7.4
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout repository
+        uses: actions/checkout@v7
       - name: Set up Go
         uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
-      - name: testacc
+      - name: Run acceptance tests
         # Retry once on failure. Netbox itself is occasionally flaky at startup
         # or hits transient server-side bugs on a specific patch version; a
         # single retry (with a clean teardown in between) clears those without
@@ -82,3 +109,12 @@ jobs:
           exit 1
         env:
           NETBOX_VERSION: ${{ matrix.netbox-version }}
+          # Coverage is the same on every NetBox version, so collect it once.
+          TESTACC_ARGS: ${{ matrix.netbox-version == env.COVERAGE_NETBOX_VERSION && '-coverprofile=coverage.out -coverpkg=./...' || '' }}
+      - name: Upload coverage to Codecov
+        if: matrix.netbox-version == env.COVERAGE_NETBOX_VERSION
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.out
+          fail_ci_if_error: false
