@@ -17,22 +17,26 @@ func dataSourceNetboxVpnTunnelTerminations() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"limit": {
 				Type:             schema.TypeInt,
+				Description:      "The maximum number of items to return. Defaults to 0, which returns all items.",
 				Optional:         true,
 				ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
 				Default:          0,
 			},
 			"terminations": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Description: "The terminations of the vpn tunnel terminations.",
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The numeric ID of the vpn tunnel terminations.",
+							Computed:    true,
 						},
 						"tunnel_id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The ID of the tunnel associated with the vpn tunnel terminations.",
+							Computed:    true,
 						},
 						"role": {
 							Type:        schema.TypeString,
@@ -40,12 +44,14 @@ func dataSourceNetboxVpnTunnelTerminations() *schema.Resource {
 							Description: buildValidValueDescription(datasourceNetboxVpnTunnelTerminationRoleOptions),
 						},
 						"termination_type": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "The termination type of the vpn tunnel terminations.",
+							Computed:    true,
 						},
 						"termination_id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The ID of the termination associated with the vpn tunnel terminations.",
+							Computed:    true,
 						},
 						tagsKey: tagsSchema,
 					},

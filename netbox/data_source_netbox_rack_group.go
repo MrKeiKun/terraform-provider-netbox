@@ -14,27 +14,32 @@ func dataSourceNetboxRackGroup() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
+				Description:  "The name of the rack group.",
 				Optional:     true,
 				Computed:     true,
 				AtLeastOneOf: []string{"name", "slug"},
 			},
 			"slug": {
 				Type:         schema.TypeString,
+				Description:  "The URL-friendly slug of the rack group.",
 				Optional:     true,
 				Computed:     true,
 				AtLeastOneOf: []string{"name", "slug"},
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "A description of the rack group.",
+				Computed:    true,
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the rack group.",
+				Computed:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the rack group.",
+				Computed:    true,
 			},
 			tagsKey: tagsSchemaRead,
 		},

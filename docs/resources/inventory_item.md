@@ -54,28 +54,39 @@ resource "netbox_inventory_item" "test" {
 
 ### Required
 
-- `device_id` (Number)
-- `name` (String)
+- `device_id` (Number) The ID of the device associated with the inventory item.
+- `name` (String) The name of the inventory item.
 
 ### Optional
 
-- `asset_tag` (String)
-- `component_id` (Number) Required when `component_type` is set.
-- `component_type` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `discovered` (Boolean) Defaults to `false`.
-- `label` (String)
-- `manufacturer_id` (Number)
-- `owner_id` (Number)
-- `parent_id` (Number)
-- `part_id` (String)
-- `role_id` (Number)
-- `serial` (String)
+- `asset_tag` (String) The asset tag of the inventory item.
+- `component_id` (Number) The ID of the component associated with the inventory item. Required when `component_type` is set.
+- `component_type` (String) The component type of the inventory item.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the inventory item.
+- `discovered` (Boolean) Whether discovered is enabled for the inventory item. Defaults to `false`.
+- `label` (String) The label of the inventory item.
+- `manufacturer_id` (Number) The ID of the manufacturer associated with the inventory item.
+- `owner_id` (Number) The ID of the owner associated with the inventory item.
+- `parent_id` (Number) The ID of the parent associated with the inventory item.
+- `part_id` (String) The ID of the part associated with the inventory item.
+- `role_id` (Number) The ID of the role associated with the inventory item.
+- `serial` (String) The serial number of the inventory item.
 - `status` (String) One of [offline, active, planned, staged, failed, decommissioning].
-- `tags` (Set of String)
+- `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_inventory_item.example 1
+```

@@ -3,12 +3,12 @@
 page_title: "netbox_vrf Data Source - terraform-provider-netbox"
 subcategory: "IP Address Management (IPAM)"
 description: |-
-  
+  Retrieves a single vrf from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_vrf (Data Source)
 
-
+Retrieves a single vrf from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -23,11 +23,11 @@ data "netbox_vrf" "cust_a_prod" {
 
 ### Required
 
-- `name` (String)
+- `name` (String) The name of the vrf.
 
 ### Optional
 
-- `tenant_id` (Number)
+- `tenant_id` (Number) The ID of the tenant associated with the vrf.
 
 ### Read-Only
 

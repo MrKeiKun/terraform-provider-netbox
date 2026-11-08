@@ -50,30 +50,30 @@ resource "netbox_cable" "test" {
 
 ### Required
 
-- `a_termination` (Block Set, Min: 1) (see [below for nested schema](#nestedblock--a_termination))
-- `b_termination` (Block Set, Min: 1) (see [below for nested schema](#nestedblock--b_termination))
+- `a_termination` (Block Set, Min: 1) The a termination of the cable. (see [below for nested schema](#nestedblock--a_termination))
+- `b_termination` (Block Set, Min: 1) The b termination of the cable. (see [below for nested schema](#nestedblock--b_termination))
 - `status` (String) One of [connected, planned, decommissioning].
 
 ### Optional
 
-- `bundle_id` (Number)
-- `color_hex` (String)
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `label` (String)
-- `length` (Number)
+- `bundle_id` (Number) The ID of the bundle associated with the cable.
+- `color_hex` (String) The color hex of the cable.
+- `comments` (String) Free-form comments about the cable.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the cable.
+- `label` (String) The label of the cable.
+- `length` (Number) The length of the cable.
 - `length_unit` (String) One of [km, m, cm, mi, ft, in]. Required when `length` is set.
-- `owner_id` (Number)
+- `owner_id` (Number) The ID of the owner associated with the cable.
 - `profile` (String) One of [single-1c1p, single-1c2p, single-1c4p, single-1c6p, single-1c8p, single-1c12p, single-1c16p, trunk-2c1p, trunk-2c2p, trunk-2c4p, trunk-2c4p-shuffle, trunk-2c6p, trunk-2c8p, trunk-2c12p, trunk-4c1p, trunk-4c2p, trunk-4c4p, trunk-4c4p-shuffle, trunk-4c6p, trunk-4c8p, trunk-8c1p, trunk-8c4p, trunk-12c1p, trunk-24c1p, breakout-1c2p-2c1p, breakout-1c4p-4c1p, breakout-1c6p-6c1p, breakout-1c8p-8c1p, breakout-2c4p-8c1p-shuffle].
-- `tags` (Set of String)
-- `tenant_id` (Number)
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the cable.
 - `type` (String) One of [cat3, cat5, cat5e, cat6, cat6a, cat7, cat7a, cat8, dac-active, dac-passive, mrj21-trunk, coaxial, mmf, mmf-om1, mmf-om2, mmf-om3, mmf-om4, mmf-om5, smf, smf-os1, smf-os2, aoc, power, usb].
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 <a id="nestedblock--a_termination"></a>
 ### Nested Schema for `a_termination`
@@ -91,3 +91,14 @@ Required:
 
 - `object_id` (Number)
 - `object_type` (String)
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_cable.example 1
+```

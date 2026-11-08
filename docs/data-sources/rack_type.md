@@ -29,23 +29,23 @@ data "netbox_rack_type" "ex2" {
 
 ### Optional
 
-- `model` (String) At least one of `model` or `slug` must be given.
-- `slug` (String) At least one of `model` or `slug` must be given.
+- `model` (String) The model of the rack type. At least one of `model` or `slug` must be given.
+- `slug` (String) The URL-friendly slug of the rack type. At least one of `model` or `slug` must be given.
 
 ### Read-Only
 
-- `comments` (String)
-- `description` (String)
-- `form_factor` (String)
+- `comments` (String) Free-form comments about the rack type.
+- `description` (String) A description of the rack type.
+- `form_factor` (String) The form factor of the rack type.
 - `id` (String) The ID of this resource.
-- `manufacturer_id` (Number)
-- `max_weight` (Number)
-- `mounting_depth_mm` (Number)
-- `outer_depth` (Number)
-- `outer_unit` (String)
-- `outer_width` (Number)
-- `starting_unit` (Number)
-- `u_height` (Number)
-- `weight` (Number)
-- `weight_unit` (String)
-- `width` (Number)
+- `manufacturer_id` (Number) The ID of the manufacturer associated with the rack type.
+- `max_weight` (Number) The max weight of the rack type.
+- `mounting_depth_mm` (Number) The mounting depth mm of the rack type.
+- `outer_depth` (Number) The outer depth of the rack type.
+- `outer_unit` (String) The outer unit of the rack type.
+- `outer_width` (Number) The outer width of the rack type.
+- `starting_unit` (Number) The starting unit of the rack type.
+- `u_height` (Number) The height of the rack type in rack units.
+- `weight` (Number) The weight of the rack type.
+- `weight_unit` (String) The unit of the weight.
+- `width` (Number) The width of the rack type.

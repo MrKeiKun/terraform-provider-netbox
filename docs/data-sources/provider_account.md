@@ -3,12 +3,12 @@
 page_title: "netbox_provider_account Data Source - terraform-provider-netbox"
 subcategory: "Circuits"
 description: |-
-  
+  Retrieves a single provider account from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_provider_account (Data Source)
 
-
+Retrieves a single provider account from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -23,14 +23,14 @@ data "netbox_provider_account" "example" {
 
 ### Optional
 
-- `account` (String) At least one of `account` must be given.
+- `account` (String) The account of the provider account. At least one of `account` must be given.
 
 ### Read-Only
 
-- `comments` (String)
-- `description` (String)
+- `comments` (String) Free-form comments about the provider account.
+- `description` (String) A description of the provider account.
 - `id` (String) The ID of this resource.
-- `name` (String)
-- `owner_id` (Number)
-- `provider_id` (Number)
-- `tags` (Set of String)
+- `name` (String) The name of the provider account.
+- `owner_id` (Number) The ID of the owner associated with the provider account.
+- `provider_id` (Number) The ID of the provider associated with the provider account.
+- `tags` (Set of String) Tags assigned to the object, by name.

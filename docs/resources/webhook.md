@@ -28,22 +28,33 @@ resource "netbox_webhook" "test" {
 
 ### Required
 
-- `name` (String)
-- `payload_url` (String)
+- `name` (String) The name of the webhook.
+- `payload_url` (String) The payload url of the webhook.
 
 ### Optional
 
-- `additional_headers` (String)
-- `body_template` (String)
-- `ca_file_path` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
+- `additional_headers` (String) The additional headers of the webhook.
+- `body_template` (String) The body template of the webhook.
+- `ca_file_path` (String) The ca file path of the webhook.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the webhook.
 - `http_content_type` (String) The complete list of official content types is available [here](https://www.iana.org/assignments/media-types/media-types.xhtml). Defaults to `application/json`.
 - `http_method` (String) Valid values are `GET`, `POST`, `PUT`, `PATCH` and `DELETE`. Defaults to `POST`.
-- `owner_id` (Number)
+- `owner_id` (Number) The ID of the owner associated with the webhook.
 - `ssl_verification` (Boolean) Enable SSL certificate verification. Disable with caution!.
 - `timeout` (Number) The maximum time (in seconds) to wait for a response before failing the request. Leave blank to use the system default (60 seconds).
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_webhook.example 1
+```

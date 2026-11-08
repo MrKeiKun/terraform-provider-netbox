@@ -20,8 +20,9 @@ func resourceNetboxVpnTunnelTermination() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"tunnel_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the tunnel associated with the vpn tunnel termination.",
+				Required:    true,
 			},
 			"role": {
 				Type:        schema.TypeString,
@@ -30,17 +31,20 @@ func resourceNetboxVpnTunnelTermination() *schema.Resource {
 			},
 			"virtual_machine_interface_id": {
 				Type:         schema.TypeInt,
+				Description:  "The ID of the virtual machine interface associated with the vpn tunnel termination.",
 				Optional:     true,
 				ExactlyOneOf: []string{"virtual_machine_interface_id", "device_interface_id"},
 			},
 			"device_interface_id": {
 				Type:         schema.TypeInt,
+				Description:  "The ID of the device interface associated with the vpn tunnel termination.",
 				Optional:     true,
 				ExactlyOneOf: []string{"virtual_machine_interface_id", "device_interface_id"},
 			},
 			"outside_ip_address_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the outside ip address associated with the vpn tunnel termination.",
+				Optional:    true,
 			},
 			customFieldsKey: customFieldsSchema,
 			tagsKey:         tagsSchema,

@@ -23,29 +23,35 @@ func resourceNetboxDeviceInterface() *schema.Resource {
 > Interfaces in NetBox represent network interfaces used to exchange data with connected devices. On modern networks, these are most commonly Ethernet, but other types are supported as well. IP addresses and VLANs can be assigned to interfaces.`,
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the device interface.",
+				Required:    true,
 			},
 			"device_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the device associated with the device interface.",
+				Required:    true,
 			},
 			"module_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the module associated with the device interface.",
+				Optional:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the device interface.",
+				Optional:    true,
 			},
 			"label": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The label of the device interface.",
+				Optional:    true,
 			},
 			"enabled": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  true,
+				Type:        schema.TypeBool,
+				Description: "Whether the device interface is enabled.",
+				Optional:    true,
+				Default:     true,
 			},
 			"lag_device_interface_id": {
 				Type:        schema.TypeInt,
@@ -58,21 +64,25 @@ func resourceNetboxDeviceInterface() *schema.Resource {
 				Description: "The MAC address as string from the first MAC address assigned to this interface, if any.",
 			},
 			"mac_addresses": {
-				Type:     schema.TypeSet,
-				Computed: true,
+				Type:        schema.TypeSet,
+				Description: "The mac addresses of the device interface.",
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The numeric ID of the device interface.",
+							Computed:    true,
 						},
 						"mac_address": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "The MAC address of the device interface.",
+							Computed:    true,
 						},
 						"description": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "A description of the device interface.",
+							Computed:    true,
 						},
 					},
 				},
@@ -83,8 +93,9 @@ func resourceNetboxDeviceInterface() *schema.Resource {
 				Description: "The primary MAC address id.",
 			},
 			"mgmtonly": {
-				Type:     schema.TypeBool,
-				Optional: true,
+				Type:        schema.TypeBool,
+				Description: "Whether mgmtonly is enabled for the device interface.",
+				Optional:    true,
 			},
 			"mode": {
 				Type:         schema.TypeString,
@@ -94,6 +105,7 @@ func resourceNetboxDeviceInterface() *schema.Resource {
 			},
 			"mtu": {
 				Type:         schema.TypeInt,
+				Description:  "The MTU of the device interface.",
 				Optional:     true,
 				ValidateFunc: validation.IntBetween(1, 65536),
 			},
@@ -103,32 +115,38 @@ func resourceNetboxDeviceInterface() *schema.Resource {
 				Description: "The netbox_device_interface id of the parent interface. Useful if this interface is a logical interface.",
 			},
 			"speed": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The speed of the device interface.",
+				Optional:    true,
 			},
 			"type": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The type of the device interface.",
+				Required:    true,
 			},
 			tagsKey: tagsSchema,
 			"tagged_vlans": {
-				Type:     schema.TypeSet,
-				Optional: true,
+				Type:        schema.TypeSet,
+				Description: "The tagged vlans of the device interface.",
+				Optional:    true,
 				Elem: &schema.Schema{
 					Type: schema.TypeInt,
 				},
 			},
 			"untagged_vlan": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The untagged vlan of the device interface.",
+				Optional:    true,
 			},
 			"vrf_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the vrf associated with the device interface.",
+				Optional:    true,
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the device interface.",
+				Optional:    true,
 			},
 			"channel_id": {
 				Type:         schema.TypeInt,
@@ -137,8 +155,9 @@ func resourceNetboxDeviceInterface() *schema.Resource {
 				Description:  "The channel on the parent interface to which this subinterface is bound",
 			},
 			"bridge": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The bridge of the device interface.",
+				Optional:    true,
 			},
 			"duplex": {
 				Type:         schema.TypeString,
@@ -147,8 +166,9 @@ func resourceNetboxDeviceInterface() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"half", "full", "auto"}, false),
 			},
 			"wwn": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The wwn of the device interface.",
+				Optional:    true,
 			},
 			"rf_role": {
 				Type:         schema.TypeString,
@@ -186,16 +206,19 @@ func resourceNetboxDeviceInterface() *schema.Resource {
 			},
 			"tx_power": {
 				Type:         schema.TypeInt,
+				Description:  "The tx power of the device interface.",
 				Optional:     true,
 				ValidateFunc: validation.IntBetween(-40, 127),
 			},
 			"qinq_svlan_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the qinq svlan associated with the device interface.",
+				Optional:    true,
 			},
 			"vlan_translation_policy_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the vlan translation policy associated with the device interface.",
+				Optional:    true,
 			},
 			"mark_connected": {
 				Type:        schema.TypeBool,

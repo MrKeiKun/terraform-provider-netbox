@@ -24,18 +24,18 @@ data "netbox_cooling_outflow" "example" {
 
 ### Optional
 
-- `device_id` (Number)
-- `name` (String) At least one of `name` must be given.
+- `device_id` (Number) The ID of the device associated with the cooling outflow.
+- `name` (String) The name of the cooling outflow. At least one of `name` must be given.
 
 ### Read-Only
 
-- `cooling_intake_id` (Number)
-- `description` (String)
-- `diameter` (Number)
-- `diameter_unit` (String)
+- `cooling_intake_id` (Number) The ID of the cooling intake associated with the cooling outflow.
+- `description` (String) A description of the cooling outflow.
+- `diameter` (Number) The diameter of the cooling outflow.
+- `diameter_unit` (String) The diameter unit of the cooling outflow.
 - `id` (String) The ID of this resource.
-- `label` (String)
-- `module_id` (Number)
-- `owner_id` (Number)
-- `tags` (Set of String)
-- `type` (String)
+- `label` (String) The label of the cooling outflow.
+- `module_id` (Number) The ID of the module associated with the cooling outflow.
+- `owner_id` (Number) The ID of the owner associated with the cooling outflow.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `type` (String) The type of the cooling outflow.

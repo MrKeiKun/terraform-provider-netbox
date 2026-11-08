@@ -16,7 +16,8 @@ const (
 )
 
 var tagsSchema = &schema.Schema{
-	Type: schema.TypeSet,
+	Type:        schema.TypeSet,
+	Description: "Tags assigned to the object, by name.",
 	Elem: &schema.Schema{
 		Type: schema.TypeString,
 	},
@@ -25,7 +26,8 @@ var tagsSchema = &schema.Schema{
 }
 
 var tagsAllSchema = &schema.Schema{
-	Type: schema.TypeSet,
+	Type:        schema.TypeSet,
+	Description: "All tags assigned to the object, including those not managed by Terraform.",
 	Elem: &schema.Schema{
 		Type: schema.TypeString,
 	},
@@ -34,7 +36,8 @@ var tagsAllSchema = &schema.Schema{
 }
 
 var tagsSchemaRead = &schema.Schema{
-	Type: schema.TypeSet,
+	Type:        schema.TypeSet,
+	Description: "Tags assigned to the object, by name.",
 	Elem: &schema.Schema{
 		Type: schema.TypeString,
 	},

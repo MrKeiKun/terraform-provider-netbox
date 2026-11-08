@@ -36,25 +36,36 @@ resource "netbox_cluster" "vmw_cluster_01" {
 
 ### Required
 
-- `cluster_type_id` (Number)
-- `name` (String)
+- `cluster_type_id` (Number) The ID of the cluster type associated with the cluster.
+- `name` (String) The name of the cluster.
 
 ### Optional
 
-- `cluster_group_id` (Number)
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `location_id` (Number) Conflicts with `site_id`, `site_group_id` and `region_id`.
-- `owner_id` (Number)
-- `region_id` (Number) Conflicts with `location_id`, `site_id` and `site_group_id`.
-- `site_group_id` (Number) Conflicts with `location_id`, `site_id` and `region_id`.
-- `site_id` (Number) Conflicts with `location_id`, `site_group_id` and `region_id`.
+- `cluster_group_id` (Number) The ID of the cluster group associated with the cluster.
+- `comments` (String) Free-form comments about the cluster.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the cluster.
+- `location_id` (Number) The ID of the location associated with the cluster. Conflicts with `site_id`, `site_group_id` and `region_id`.
+- `owner_id` (Number) The ID of the owner associated with the cluster.
+- `region_id` (Number) The ID of the region associated with the cluster. Conflicts with `location_id`, `site_id` and `site_group_id`.
+- `site_group_id` (Number) The ID of the site group associated with the cluster. Conflicts with `location_id`, `site_id` and `region_id`.
+- `site_id` (Number) The ID of the site associated with the cluster. Conflicts with `location_id`, `site_group_id` and `region_id`.
 - `status` (String) One of [planned, staging, active, decommissioning, offline].
-- `tags` (Set of String)
-- `tenant_id` (Number)
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the cluster.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_cluster.example 1
+```

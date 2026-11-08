@@ -39,18 +39,29 @@ resource "netbox_virtual_disk" "example" {
 
 ### Required
 
-- `name` (String)
-- `size_mb` (Number)
-- `virtual_machine_id` (Number)
+- `name` (String) The name of the virtual disk.
+- `size_mb` (Number) The size mb of the virtual disk.
+- `virtual_machine_id` (Number) The ID of the virtual machine associated with the virtual disk.
 
 ### Optional
 
-- `custom_fields` (Map of String)
-- `description` (String)
-- `owner_id` (Number)
-- `tags` (Set of String)
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the virtual disk.
+- `owner_id` (Number) The ID of the owner associated with the virtual disk.
+- `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_virtual_disk.example 1
+```

@@ -10,35 +10,41 @@ import (
 func dataSourceNetboxVirtualCircuitType() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxVirtualCircuitTypeRead,
-		Description: `:meta:subcategory:Circuits:`,
+		Description: `:meta:subcategory:Circuits:Retrieves a single virtual circuit type from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
+				Description:  "The name of the virtual circuit type.",
 				Optional:     true,
 				Computed:     true,
 				AtLeastOneOf: []string{"name", "slug"},
 			},
 			"slug": {
 				Type:         schema.TypeString,
+				Description:  "The URL-friendly slug of the virtual circuit type.",
 				Optional:     true,
 				Computed:     true,
 				AtLeastOneOf: []string{"name", "slug"},
 			},
 			"color_hex": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The color hex of the virtual circuit type.",
+				Computed:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "A description of the virtual circuit type.",
+				Computed:    true,
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the virtual circuit type.",
+				Computed:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the virtual circuit type.",
+				Computed:    true,
 			},
 			tagsKey: tagsSchemaRead,
 		},

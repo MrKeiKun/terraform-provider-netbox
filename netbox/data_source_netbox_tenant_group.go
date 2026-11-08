@@ -11,23 +11,27 @@ import (
 func dataSourceNetboxTenantGroup() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxTenantGroupRead,
-		Description: `:meta:subcategory:Tenancy:`,
+		Description: `:meta:subcategory:Tenancy:Retrieves a single tenant group from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the tenant group.",
+				Required:    true,
 			},
 			"slug": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The URL-friendly slug of the tenant group.",
+				Computed:    true,
 			},
 			"parent_id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the parent associated with the tenant group.",
+				Computed:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "A description of the tenant group.",
+				Computed:    true,
 			},
 		},
 	}

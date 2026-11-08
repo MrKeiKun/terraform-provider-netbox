@@ -52,26 +52,37 @@ resource "netbox_circuit_termination" "test" {
 
 ### Required
 
-- `circuit_id` (Number)
+- `circuit_id` (Number) The ID of the circuit associated with the circuit termination.
 - `term_side` (String) Valid values are `A` and `Z`.
 
 ### Optional
 
-- `custom_fields` (Map of String)
-- `description` (String)
-- `location_id` (Number) Exactly one of `site_id`, `site_group_id`, `region_id` or `provider_network_id` must be given.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the circuit termination.
+- `location_id` (Number) The ID of the location associated with the circuit termination. Exactly one of `site_id`, `site_group_id`, `region_id` or `provider_network_id` must be given.
 - `mark_connected` (Boolean) Treat as if a cable is connected.
-- `port_speed` (Number)
+- `port_speed` (Number) The port speed of the circuit termination.
 - `pp_info` (String) Patch panel ID and port number(s).
-- `provider_network_id` (Number) Exactly one of `location_id`, `site_id`, `site_group_id` or `region_id` must be given.
-- `region_id` (Number) Exactly one of `location_id`, `site_id`, `site_group_id` or `provider_network_id` must be given.
-- `site_group_id` (Number) Exactly one of `location_id`, `site_id`, `region_id` or `provider_network_id` must be given.
-- `site_id` (Number) Exactly one of `location_id`, `site_group_id`, `region_id` or `provider_network_id` must be given.
-- `tags` (Set of String)
-- `upstream_speed` (Number)
+- `provider_network_id` (Number) The ID of the provider network associated with the circuit termination. Exactly one of `location_id`, `site_id`, `site_group_id` or `region_id` must be given.
+- `region_id` (Number) The ID of the region associated with the circuit termination. Exactly one of `location_id`, `site_id`, `site_group_id` or `provider_network_id` must be given.
+- `site_group_id` (Number) The ID of the site group associated with the circuit termination. Exactly one of `location_id`, `site_id`, `region_id` or `provider_network_id` must be given.
+- `site_id` (Number) The ID of the site associated with the circuit termination. Exactly one of `location_id`, `site_group_id`, `region_id` or `provider_network_id` must be given.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `upstream_speed` (Number) The upstream speed of the circuit termination.
 - `xconnect_id` (String) ID of the local cross-connect.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_circuit_termination.example 1
+```

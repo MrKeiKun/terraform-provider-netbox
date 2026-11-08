@@ -3,12 +3,12 @@
 page_title: "netbox_module_type_profile Data Source - terraform-provider-netbox"
 subcategory: "Data Center Inventory Management (DCIM)"
 description: |-
-  
+  Retrieves a single module type profile from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_module_type_profile (Data Source)
 
-
+Retrieves a single module type profile from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -23,13 +23,13 @@ data "netbox_module_type_profile" "example" {
 
 ### Optional
 
-- `name` (String) At least one of `name` must be given.
+- `name` (String) The name of the module type profile. At least one of `name` must be given.
 
 ### Read-Only
 
-- `comments` (String)
-- `description` (String)
+- `comments` (String) Free-form comments about the module type profile.
+- `description` (String) A description of the module type profile.
 - `id` (String) The ID of this resource.
-- `owner_id` (Number)
-- `schema` (String)
-- `tags` (Set of String)
+- `owner_id` (Number) The ID of the owner associated with the module type profile.
+- `schema` (String) The schema of the module type profile.
+- `tags` (Set of String) Tags assigned to the object, by name.

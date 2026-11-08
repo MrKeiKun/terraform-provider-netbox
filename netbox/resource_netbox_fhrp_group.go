@@ -51,8 +51,9 @@ func resourceNetboxFhrpGroup() *schema.Resource {
 				Description: "Comments",
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the fhrp group.",
+				Optional:    true,
 			},
 			customFieldsKey: customFieldsSchema,
 			tagsKey:         tagsSchema,

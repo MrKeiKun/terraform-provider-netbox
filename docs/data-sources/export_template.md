@@ -3,12 +3,12 @@
 page_title: "netbox_export_template Data Source - terraform-provider-netbox"
 subcategory: "Extras"
 description: |-
-  
+  Retrieves a single export template from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_export_template (Data Source)
 
-
+Retrieves a single export template from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -23,19 +23,19 @@ data "netbox_export_template" "example" {
 
 ### Optional
 
-- `name` (String) At least one of `name` must be given.
+- `name` (String) The name of the export template. At least one of `name` must be given.
 
 ### Read-Only
 
-- `as_attachment` (Boolean)
-- `auto_sync_enabled` (Boolean)
-- `data_source_id` (Number)
-- `description` (String)
-- `environment_params` (String)
-- `file_extension` (String)
-- `file_name` (String)
+- `as_attachment` (Boolean) Whether as attachment is enabled for the export template.
+- `auto_sync_enabled` (Boolean) Whether auto sync enabled is enabled for the export template.
+- `data_source_id` (Number) The ID of the data source associated with the export template.
+- `description` (String) A description of the export template.
+- `environment_params` (String) The environment params of the export template.
+- `file_extension` (String) The file extension of the export template.
+- `file_name` (String) The file name of the export template.
 - `id` (String) The ID of this resource.
-- `mime_type` (String)
-- `object_types` (Set of String)
-- `owner_id` (Number)
-- `template_code` (String)
+- `mime_type` (String) The mime type of the export template.
+- `object_types` (Set of String) The object types the export template applies to.
+- `owner_id` (Number) The ID of the owner associated with the export template.
+- `template_code` (String) The template code of the export template.

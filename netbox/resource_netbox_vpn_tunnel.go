@@ -21,8 +21,9 @@ func resourceNetboxVpnTunnel() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the vpn tunnel.",
+				Required:    true,
 			},
 			"encapsulation": {
 				Type:        schema.TypeString,
@@ -35,32 +36,39 @@ func resourceNetboxVpnTunnel() *schema.Resource {
 				Description: buildValidValueDescription(resourceNetboxVpnTunnelStatusOptions),
 			},
 			"tunnel_group_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the tunnel group associated with the vpn tunnel.",
+				Required:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the vpn tunnel.",
+				Optional:    true,
 			},
 			"tunnel_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the tunnel associated with the vpn tunnel.",
+				Optional:    true,
 			},
 			"tenant_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the tenant associated with the vpn tunnel.",
+				Optional:    true,
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the vpn tunnel.",
+				Optional:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the vpn tunnel.",
+				Optional:    true,
 			},
 			"ipsec_profile_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the ipsec profile associated with the vpn tunnel.",
+				Optional:    true,
 			},
 			customFieldsKey: customFieldsSchema,
 			tagsKey:         tagsSchema,

@@ -128,6 +128,12 @@ resource "netbox_device_primary_ip" "test_v4" {
 					resource.TestCheckResourceAttr("netbox_device.test", "status", "planned"),
 				),
 			},
+			{
+				ResourceName:            "netbox_device_primary_ip.test_v4",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"ip_address_version"},
+			},
 		},
 	})
 }

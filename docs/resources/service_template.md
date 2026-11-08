@@ -26,20 +26,31 @@ resource "netbox_service_template" "example" {
 
 ### Required
 
-- `name` (String)
+- `name` (String) The name of the service template.
 
 ### Optional
 
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `owner_id` (Number)
+- `comments` (String) Free-form comments about the service template.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the service template.
+- `owner_id` (Number) The ID of the owner associated with the service template.
 - `port_mappings` (Set of String) The ports as `protocol/port` strings, for example `tcp/80`. Use this for a template that spans more than one protocol. Needs NetBox 4.6 or newer. Use `protocol` and `ports` on older versions. Conflicts with `protocol` and `ports`.
 - `ports` (Set of Number) The ports, together with `protocol`. Use `port_mappings` for a template that spans more than one protocol.
 - `protocol` (String) One of [tcp, udp, sctp].
-- `tags` (Set of String)
+- `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_service_template.example 1
+```

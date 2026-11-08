@@ -12,7 +12,7 @@ import (
 func dataSourceNetboxLocations() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxLocationsRead,
-		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):`,
+		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):Retrieves all locations from NetBox. Narrow the result with filter blocks and cap it with limit.`,
 		Schema: map[string]*schema.Schema{
 			"filter": {
 				Type:        schema.TypeSet,
@@ -49,45 +49,55 @@ func dataSourceNetboxLocations() *schema.Resource {
 				Description:      "The limit of objects to return from the API lookup.",
 			},
 			"locations": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Description: "The locations of the locations.",
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "The numeric ID of the locations.",
+							Computed:    true,
 						},
 						"name": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Description: "The name of the locations.",
+							Optional:    true,
 						},
 						"slug": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Description: "The URL-friendly slug of the locations.",
+							Optional:    true,
 						},
 						"description": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "A description of the locations.",
+							Computed:    true,
 						},
 						"facility": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "The facility of the locations.",
+							Computed:    true,
 						},
 						"tenant_id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The ID of the tenant associated with the locations.",
+							Computed:    true,
 						},
 						"status": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "The status of the locations.",
+							Computed:    true,
 						},
 						"site_id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The ID of the site associated with the locations.",
+							Computed:    true,
 						},
 						"parent_id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The ID of the parent associated with the locations.",
+							Computed:    true,
 						},
 					},
 				},

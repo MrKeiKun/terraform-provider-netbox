@@ -41,16 +41,27 @@ resource "netbox_console_server_port_template" "test" {
 
 ### Required
 
-- `name` (String)
+- `name` (String) The name of the console server port template.
 
 ### Optional
 
-- `description` (String)
-- `device_type_id` (Number) Exactly one of `device_type_id` or `module_type_id` must be given.
-- `label` (String)
-- `module_type_id` (Number) Exactly one of `device_type_id` or `module_type_id` must be given.
+- `description` (String) A description of the console server port template.
+- `device_type_id` (Number) The ID of the device type associated with the console server port template. Exactly one of `device_type_id` or `module_type_id` must be given.
+- `label` (String) The label of the console server port template.
+- `module_type_id` (Number) The ID of the module type associated with the console server port template. Exactly one of `device_type_id` or `module_type_id` must be given.
 - `type` (String) One of [de-9, db-25, rj-11, rj-12, rj-45, mini-din-8, usb-a, usb-b, usb-c, usb-mini-a, usb-mini-b, usb-micro-a, usb-micro-b, usb-micro-ab, other].
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_console_server_port_template.example 1
+```

@@ -39,22 +39,33 @@ resource "netbox_device_console_port" "test" {
 
 ### Required
 
-- `device_id` (Number)
-- `name` (String)
+- `device_id` (Number) The ID of the device associated with the device console port.
+- `name` (String) The name of the device console port.
 
 ### Optional
 
-- `custom_fields` (Map of String)
-- `description` (String)
-- `label` (String)
-- `mark_connected` (Boolean) Defaults to `false`.
-- `module_id` (Number)
-- `owner_id` (Number)
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the device console port.
+- `label` (String) The label of the device console port.
+- `mark_connected` (Boolean) Whether the device console port is marked as connected even without a cable. Defaults to `false`.
+- `module_id` (Number) The ID of the module associated with the device console port.
+- `owner_id` (Number) The ID of the owner associated with the device console port.
 - `speed` (Number) One of [1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200].
-- `tags` (Set of String)
+- `tags` (Set of String) Tags assigned to the object, by name.
 - `type` (String) One of [de-9, db-25, rj-11, rj-12, rj-45, mini-din-8, usb-a, usb-b, usb-c, usb-mini-a, usb-mini-b, usb-micro-a, usb-micro-b, usb-micro-ab, other].
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_device_console_port.example 1
+```

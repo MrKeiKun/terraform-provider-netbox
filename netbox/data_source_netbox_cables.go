@@ -9,88 +9,108 @@ import (
 func dataSourceNetboxCables() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxCablesRead,
-		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):`,
+		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):Retrieves all cables from NetBox. Narrow the result with filter blocks and cap it with limit.`,
 		Schema: map[string]*schema.Schema{
 			"filter": {
-				Type:     schema.TypeSet,
-				Optional: true,
+				Type:        schema.TypeSet,
+				Description: "Filters that select which items are returned. Each filter is a name/value pair.",
+				Optional:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Description: "The name of the field to filter by.",
+							Required:    true,
 						},
 						"value": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Description: "The value of the field to filter by.",
+							Required:    true,
 						},
 					},
 				},
 			},
 			"limit": {
 				Type:             schema.TypeInt,
+				Description:      "The maximum number of items to return. Defaults to 0, which returns all items.",
 				Optional:         true,
 				ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
 				Default:          0,
 			},
 			"cables": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Description: "The cables of the cables.",
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The numeric ID of the cables.",
+							Computed:    true,
 						},
 						"label": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "The label of the cables.",
+							Computed:    true,
 						},
 						"type": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "The type of the cables.",
+							Computed:    true,
 						},
 						"status": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "The status of the cables.",
+							Computed:    true,
 						},
 						"tenant_id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The ID of the tenant associated with the cables.",
+							Computed:    true,
 						},
 						"color": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "The color of the cables as a hex string without the leading #.",
+							Computed:    true,
 						},
 						"length": {
-							Type:     schema.TypeFloat,
-							Computed: true,
+							Type:        schema.TypeFloat,
+							Description: "The length of the cables.",
+							Computed:    true,
 						},
 						"length_unit": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "The length unit of the cables.",
+							Computed:    true,
 						},
 						"description": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "A description of the cables.",
+							Computed:    true,
 						},
 						"a_terminations": {
-							Type:     schema.TypeList,
-							Computed: true,
+							Type:        schema.TypeList,
+							Description: "The a terminations of the cables.",
+							Computed:    true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"object_type": {Type: schema.TypeString, Computed: true},
-									"object_id":   {Type: schema.TypeInt, Computed: true},
+									"object_type": {Type: schema.TypeString,
+										Description: "The object type of the cables.", Computed: true},
+									"object_id": {Type: schema.TypeInt,
+										Description: "The ID of the object associated with the cables.", Computed: true},
 								},
 							},
 						},
 						"b_terminations": {
-							Type:     schema.TypeList,
-							Computed: true,
+							Type:        schema.TypeList,
+							Description: "The b terminations of the cables.",
+							Computed:    true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"object_type": {Type: schema.TypeString, Computed: true},
-									"object_id":   {Type: schema.TypeInt, Computed: true},
+									"object_type": {Type: schema.TypeString,
+										Description: "The object type of the cables.", Computed: true},
+									"object_id": {Type: schema.TypeInt,
+										Description: "The ID of the object associated with the cables.", Computed: true},
 								},
 							},
 						},

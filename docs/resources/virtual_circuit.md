@@ -29,21 +29,32 @@ resource "netbox_virtual_circuit" "example" {
 ### Required
 
 - `cid` (String) Unique circuit ID.
-- `provider_network_id` (Number)
-- `type_id` (Number)
+- `provider_network_id` (Number) The ID of the provider network associated with the virtual circuit.
+- `type_id` (Number) The ID of the type associated with the virtual circuit.
 
 ### Optional
 
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `owner_id` (Number)
-- `provider_account_id` (Number)
+- `comments` (String) Free-form comments about the virtual circuit.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the virtual circuit.
+- `owner_id` (Number) The ID of the owner associated with the virtual circuit.
+- `provider_account_id` (Number) The ID of the provider account associated with the virtual circuit.
 - `status` (String) One of [planned, provisioning, active, offline, deprovisioning, decommissioned].
-- `tags` (Set of String)
-- `tenant_id` (Number)
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the virtual circuit.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_virtual_circuit.example 1
+```

@@ -28,23 +28,34 @@ resource "netbox_virtual_device_context" "example" {
 
 ### Required
 
-- `device_id` (Number)
-- `name` (String)
+- `device_id` (Number) The ID of the device associated with the virtual device context.
+- `name` (String) The name of the virtual device context.
 - `status` (String) One of [active, planned, offline].
 
 ### Optional
 
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `identifier` (Number)
-- `owner_id` (Number)
-- `primary_ip4_id` (Number)
-- `primary_ip6_id` (Number)
-- `tags` (Set of String)
-- `tenant_id` (Number)
+- `comments` (String) Free-form comments about the virtual device context.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the virtual device context.
+- `identifier` (Number) The identifier of the virtual device context.
+- `owner_id` (Number) The ID of the owner associated with the virtual device context.
+- `primary_ip4_id` (Number) The ID of the primary ip4 associated with the virtual device context.
+- `primary_ip6_id` (Number) The ID of the primary ip6 associated with the virtual device context.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the virtual device context.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_virtual_device_context.example 1
+```

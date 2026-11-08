@@ -3,12 +3,12 @@
 page_title: "netbox_virtual_circuit Data Source - terraform-provider-netbox"
 subcategory: "Circuits"
 description: |-
-  
+  Retrieves a single virtual circuit from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_virtual_circuit (Data Source)
 
-
+Retrieves a single virtual circuit from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -23,17 +23,17 @@ data "netbox_virtual_circuit" "example" {
 
 ### Optional
 
-- `cid` (String) At least one of `cid` must be given.
+- `cid` (String) The circuit ID of the virtual circuit. At least one of `cid` must be given.
 
 ### Read-Only
 
-- `comments` (String)
-- `description` (String)
+- `comments` (String) Free-form comments about the virtual circuit.
+- `description` (String) A description of the virtual circuit.
 - `id` (String) The ID of this resource.
-- `owner_id` (Number)
-- `provider_account_id` (Number)
-- `provider_network_id` (Number)
-- `status` (String)
-- `tags` (Set of String)
-- `tenant_id` (Number)
-- `type_id` (Number)
+- `owner_id` (Number) The ID of the owner associated with the virtual circuit.
+- `provider_account_id` (Number) The ID of the provider account associated with the virtual circuit.
+- `provider_network_id` (Number) The ID of the provider network associated with the virtual circuit.
+- `status` (String) The status of the virtual circuit.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the virtual circuit.
+- `type_id` (Number) The ID of the type associated with the virtual circuit.

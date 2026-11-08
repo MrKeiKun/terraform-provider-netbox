@@ -23,13 +23,13 @@ data "netbox_rack_group" "example" {
 
 ### Optional
 
-- `name` (String) At least one of `name` or `slug` must be given.
-- `slug` (String) At least one of `name` or `slug` must be given.
+- `name` (String) The name of the rack group. At least one of `name` or `slug` must be given.
+- `slug` (String) The URL-friendly slug of the rack group. At least one of `name` or `slug` must be given.
 
 ### Read-Only
 
-- `comments` (String)
-- `description` (String)
+- `comments` (String) Free-form comments about the rack group.
+- `description` (String) A description of the rack group.
 - `id` (String) The ID of this resource.
-- `owner_id` (Number)
-- `tags` (Set of String)
+- `owner_id` (Number) The ID of the owner associated with the rack group.
+- `tags` (Set of String) Tags assigned to the object, by name.

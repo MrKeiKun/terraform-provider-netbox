@@ -19,15 +19,18 @@ func resourceNetboxCircuitGroupAssignment() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"group_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the group associated with the circuit group assignment.",
+				Required:    true,
 			},
 			"member_type": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The member type of the circuit group assignment.",
+				Required:    true,
 			},
 			"member_id": {
 				Type:         schema.TypeInt,
+				Description:  "The ID of the member associated with the circuit group assignment.",
 				Required:     true,
 				ValidateFunc: validation.IntBetween(0, 9223372036854775807),
 			},

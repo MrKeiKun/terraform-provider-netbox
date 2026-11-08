@@ -22,16 +22,19 @@ func resourceNetboxPowerOutletTemplate() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
+				Description:  "The name of the power outlet template.",
 				Required:     true,
 				ValidateFunc: validation.StringLenBetween(1, 64),
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the power outlet template.",
+				Optional:    true,
 			},
 			"label": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The label of the power outlet template.",
+				Optional:    true,
 			},
 			"type": {
 				Type:        schema.TypeString,
@@ -51,19 +54,22 @@ func resourceNetboxPowerOutletTemplate() *schema.Resource {
 			},
 			"device_type_id": {
 				Type:         schema.TypeInt,
+				Description:  "The ID of the device type associated with the power outlet template.",
 				Optional:     true,
 				ExactlyOneOf: []string{"device_type_id", "module_type_id"},
 				ForceNew:     true,
 			},
 			"module_type_id": {
 				Type:         schema.TypeInt,
+				Description:  "The ID of the module type associated with the power outlet template.",
 				Optional:     true,
 				ExactlyOneOf: []string{"device_type_id", "module_type_id"},
 				ForceNew:     true,
 			},
 			"color_hex": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The color hex of the power outlet template.",
+				Optional:    true,
 			},
 		},
 		Importer: &schema.ResourceImporter{

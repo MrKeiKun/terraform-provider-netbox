@@ -19,8 +19,9 @@ func resourceNetboxVirtualCircuitTermination() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"virtual_circuit_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the virtual circuit associated with the virtual circuit termination.",
+				Required:    true,
 			},
 			"role": {
 				Type:         schema.TypeString,
@@ -30,12 +31,14 @@ func resourceNetboxVirtualCircuitTermination() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"peer", "hub", "spoke"}, false),
 			},
 			"interface_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the interface associated with the virtual circuit termination.",
+				Required:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the virtual circuit termination.",
+				Optional:    true,
 			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,

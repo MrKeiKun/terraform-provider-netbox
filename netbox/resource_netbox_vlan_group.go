@@ -21,11 +21,13 @@ func resourceNetboxVlanGroup() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the vlan group.",
+				Required:    true,
 			},
 			"slug": {
 				Type:         schema.TypeString,
+				Description:  "The URL-friendly slug of the vlan group.",
 				Required:     true,
 				ValidateFunc: validation.StringLenBetween(1, 100),
 			},
@@ -37,16 +39,19 @@ func resourceNetboxVlanGroup() *schema.Resource {
 			},
 			"scope_id": {
 				Type:         schema.TypeInt,
+				Description:  "The ID of the scope associated with the vlan group.",
 				Optional:     true,
 				RequiredWith: []string{"scope_type"},
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "",
+				Type:        schema.TypeString,
+				Description: "A description of the vlan group.",
+				Optional:    true,
+				Default:     "",
 			},
 			"vid_ranges": {
-				Type: schema.TypeList,
+				Type:        schema.TypeList,
+				Description: "The vid ranges of the vlan group.",
 				Elem: &schema.Schema{
 					Type: schema.TypeList,
 					Elem: &schema.Schema{
@@ -56,16 +61,19 @@ func resourceNetboxVlanGroup() *schema.Resource {
 				Required: true,
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the vlan group.",
+				Optional:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the vlan group.",
+				Optional:    true,
 			},
 			"tenant_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the tenant associated with the vlan group.",
+				Optional:    true,
 			},
 			customFieldsKey: customFieldsSchema,
 			tagsKey:         tagsSchema,

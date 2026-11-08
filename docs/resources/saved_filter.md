@@ -26,20 +26,31 @@ resource "netbox_saved_filter" "example" {
 
 ### Required
 
-- `name` (String)
-- `object_types` (Set of String)
-- `parameters` (String)
+- `name` (String) The name of the saved filter.
+- `object_types` (Set of String) The object types the saved filter applies to.
+- `parameters` (String) The parameters of the saved filter.
 
 ### Optional
 
-- `description` (String)
-- `enabled` (Boolean) Defaults to `false`.
-- `owner_id` (Number)
-- `shared` (Boolean) Defaults to `false`.
-- `slug` (String)
-- `user_id` (Number)
-- `weight` (Number)
+- `description` (String) A description of the saved filter.
+- `enabled` (Boolean) Whether the saved filter is enabled. Defaults to `false`.
+- `owner_id` (Number) The ID of the owner associated with the saved filter.
+- `shared` (Boolean) Whether shared is enabled for the saved filter. Defaults to `false`.
+- `slug` (String) The URL-friendly slug of the saved filter.
+- `user_id` (Number) The ID of the user associated with the saved filter.
+- `weight` (Number) The weight of the saved filter.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_saved_filter.example 1
+```

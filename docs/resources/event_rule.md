@@ -53,22 +53,33 @@ resource "netbox_event_rule" "script" {
 
 ### Required
 
-- `action_object_id` (Number)
+- `action_object_id` (Number) The ID of the action object associated with the event rule.
 - `action_type` (String) Valid values are `webhook` and `script`.
-- `content_types` (Set of String)
+- `content_types` (Set of String) The object types the event rule applies to.
 - `event_types` (Set of String) The types of event which will trigger this rule. By default, valid values are `object_created`, `oject_updated`, `object_deleted`, `job_started`, `job_completed`, `job_failed` and `job_errored`.
-- `name` (String)
+- `name` (String) The name of the event rule.
 
 ### Optional
 
-- `conditions` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `enabled` (Boolean) Defaults to `true`.
-- `owner_id` (Number)
-- `tags` (Set of String)
+- `conditions` (String) The conditions of the event rule.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the event rule.
+- `enabled` (Boolean) Whether the event rule is enabled. Defaults to `true`.
+- `owner_id` (Number) The ID of the owner associated with the event rule.
+- `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_event_rule.example 1
+```

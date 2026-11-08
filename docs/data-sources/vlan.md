@@ -3,12 +3,12 @@
 page_title: "netbox_vlan Data Source - terraform-provider-netbox"
 subcategory: "IP Address Management (IPAM)"
 description: |-
-  
+  Retrieves a single vlan from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_vlan (Data Source)
 
-
+Retrieves a single vlan from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -36,16 +36,16 @@ data "netbox_vlan" "vlan3" {
 
 ### Optional
 
-- `custom_fields` (Map of String)
-- `group_id` (Number)
-- `name` (String)
-- `role` (Number)
-- `tenant` (Number)
-- `vid` (Number)
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `group_id` (Number) The ID of the group associated with the vlan.
+- `name` (String) The name of the vlan.
+- `role` (Number) The role of the vlan.
+- `tenant` (Number) The tenant of the vlan.
+- `vid` (Number) The VLAN ID (1-4094).
 
 ### Read-Only
 
-- `description` (String)
+- `description` (String) A description of the vlan.
 - `id` (String) The ID of this resource.
-- `site` (Number)
-- `status` (String)
+- `site` (Number) The site of the vlan.
+- `status` (String) The status of the vlan.

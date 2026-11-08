@@ -3,12 +3,12 @@
 page_title: "netbox_data_source Data Source - terraform-provider-netbox"
 subcategory: "Extras"
 description: |-
-  
+  Retrieves a single data source from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_data_source (Data Source)
 
-
+Retrieves a single data source from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -23,18 +23,18 @@ data "netbox_data_source" "example" {
 
 ### Optional
 
-- `name` (String) At least one of `name` must be given.
+- `name` (String) The name of the data source. At least one of `name` must be given.
 
 ### Read-Only
 
-- `comments` (String)
-- `description` (String)
-- `enabled` (Boolean)
+- `comments` (String) Free-form comments about the data source.
+- `description` (String) A description of the data source.
+- `enabled` (Boolean) Whether the data source is enabled.
 - `id` (String) The ID of this resource.
-- `ignore_rules` (String)
-- `owner_id` (Number)
-- `parameters` (String)
-- `source_url` (String)
-- `sync_interval` (Number)
-- `tags` (Set of String)
-- `type` (String)
+- `ignore_rules` (String) The ignore rules of the data source.
+- `owner_id` (Number) The ID of the owner associated with the data source.
+- `parameters` (String) The parameters of the data source.
+- `source_url` (String) The source url of the data source.
+- `sync_interval` (Number) The sync interval of the data source.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `type` (String) The type of the data source.

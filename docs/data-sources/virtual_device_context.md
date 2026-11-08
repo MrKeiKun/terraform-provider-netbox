@@ -3,12 +3,12 @@
 page_title: "netbox_virtual_device_context Data Source - terraform-provider-netbox"
 subcategory: "Data Center Inventory Management (DCIM)"
 description: |-
-  
+  Retrieves a single virtual device context from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_virtual_device_context (Data Source)
 
-
+Retrieves a single virtual device context from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -23,18 +23,18 @@ data "netbox_virtual_device_context" "example" {
 
 ### Optional
 
-- `device_id` (Number)
-- `name` (String) At least one of `name` must be given.
+- `device_id` (Number) The ID of the device associated with the virtual device context.
+- `name` (String) The name of the virtual device context. At least one of `name` must be given.
 
 ### Read-Only
 
-- `comments` (String)
-- `description` (String)
+- `comments` (String) Free-form comments about the virtual device context.
+- `description` (String) A description of the virtual device context.
 - `id` (String) The ID of this resource.
-- `identifier` (Number)
-- `owner_id` (Number)
-- `primary_ip4_id` (Number)
-- `primary_ip6_id` (Number)
-- `status` (String)
-- `tags` (Set of String)
-- `tenant_id` (Number)
+- `identifier` (Number) The identifier of the virtual device context.
+- `owner_id` (Number) The ID of the owner associated with the virtual device context.
+- `primary_ip4_id` (Number) The ID of the primary ip4 associated with the virtual device context.
+- `primary_ip6_id` (Number) The ID of the primary ip6 associated with the virtual device context.
+- `status` (String) The status of the virtual device context.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the virtual device context.

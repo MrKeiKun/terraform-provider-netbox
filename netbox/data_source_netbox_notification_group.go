@@ -13,27 +13,31 @@ import (
 func dataSourceNetboxNotificationGroup() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxNotificationGroupRead,
-		Description: `:meta:subcategory:Extras:`,
+		Description: `:meta:subcategory:Extras:Retrieves a single notification group from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
+				Description:  "The name of the notification group.",
 				Optional:     true,
 				Computed:     true,
 				AtLeastOneOf: []string{"name"},
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "A description of the notification group.",
+				Computed:    true,
 			},
 			"group_ids": {
-				Type:     schema.TypeSet,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeInt},
+				Type:        schema.TypeSet,
+				Description: "The IDs of the group associated with the notification group.",
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeInt},
 			},
 			"user_ids": {
-				Type:     schema.TypeSet,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeInt},
+				Type:        schema.TypeSet,
+				Description: "The IDs of the user associated with the notification group.",
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeInt},
 			},
 		},
 	}

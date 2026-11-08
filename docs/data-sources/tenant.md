@@ -3,12 +3,12 @@
 page_title: "netbox_tenant Data Source - terraform-provider-netbox"
 subcategory: "Tenancy"
 description: |-
-  
+  Retrieves a single tenant from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_tenant (Data Source)
 
-
+Retrieves a single tenant from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -23,12 +23,12 @@ data "netbox_tenant" "customer_a" {
 
 ### Optional
 
-- `description` (String)
-- `name` (String) At least one of `name` or `slug` must be given.
-- `slug` (String) At least one of `name` or `slug` must be given.
+- `description` (String) A description of the tenant.
+- `name` (String) The name of the tenant. At least one of `name` or `slug` must be given.
+- `slug` (String) The URL-friendly slug of the tenant. At least one of `name` or `slug` must be given.
 
 ### Read-Only
 
-- `group_id` (Number)
+- `group_id` (Number) The ID of the group associated with the tenant.
 - `id` (String) The ID of this resource.
-- `tags` (Set of String)
+- `tags` (Set of String) Tags assigned to the object, by name.

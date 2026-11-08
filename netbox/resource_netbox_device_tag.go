@@ -26,14 +26,16 @@ This resource performs a read-modify-write of the device's tag list. If the same
 
 		Schema: map[string]*schema.Schema{
 			"device_id": {
-				Type:     schema.TypeInt,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the device associated with the device tag.",
+				Required:    true,
+				ForceNew:    true,
 			},
 			"tag": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Description: "The tag of the device tag.",
+				Required:    true,
+				ForceNew:    true,
 			},
 		},
 		Importer: &schema.ResourceImporter{

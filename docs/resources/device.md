@@ -51,38 +51,49 @@ resource "netbox_device" "test" {
 
 ### Required
 
-- `device_type_id` (Number)
-- `name` (String)
-- `role_id` (Number)
-- `site_id` (Number)
+- `device_type_id` (Number) The ID of the device type associated with the device.
+- `name` (String) The name of the device.
+- `role_id` (Number) The ID of the role associated with the device.
+- `site_id` (Number) The ID of the site associated with the device.
 
 ### Optional
 
 - `airflow` (String) Airflow direction of the device. One of [front-to-rear, rear-to-front, left-to-right, right-to-left, side-to-rear, rear-to-side, bottom-to-top, top-to-bottom, passive, mixed].
-- `asset_tag` (String)
-- `cluster_id` (Number)
-- `comments` (String)
-- `config_template_id` (Number)
-- `custom_fields` (Map of String)
-- `description` (String)
+- `asset_tag` (String) The asset tag of the device.
+- `cluster_id` (Number) The ID of the cluster associated with the device.
+- `comments` (String) Free-form comments about the device.
+- `config_template_id` (Number) The ID of the config template associated with the device.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the device.
 - `local_context_data` (String) This is best managed through the use of `jsonencode` and a map of settings.
-- `location_id` (Number)
-- `platform_id` (Number)
+- `location_id` (Number) The ID of the location associated with the device.
+- `platform_id` (Number) The ID of the platform associated with the device.
 - `rack_face` (String) Valid values are `front` and `rear`. Required when `rack_position` is set.
-- `rack_id` (Number)
-- `rack_position` (Number)
-- `serial` (String)
+- `rack_id` (Number) The ID of the rack associated with the device.
+- `rack_position` (Number) The rack position of the device.
+- `serial` (String) The serial number of the device.
 - `status` (String) Valid values are `offline`, `active`, `planned`, `staged`, `failed`, `inventory` and `decommissioning`. Defaults to `active`.
-- `tags` (Set of String)
-- `tenant_id` (Number)
-- `virtual_chassis_id` (Number) Required when `virtual_chassis_master` and `virtual_chassis_id` is set.
-- `virtual_chassis_master` (Boolean) Required when `virtual_chassis_master` and `virtual_chassis_id` is set.
-- `virtual_chassis_position` (Number)
-- `virtual_chassis_priority` (Number)
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the device.
+- `virtual_chassis_id` (Number) The ID of the virtual chassis associated with the device. Required when `virtual_chassis_master` and `virtual_chassis_id` is set.
+- `virtual_chassis_master` (Boolean) Whether virtual chassis master is enabled for the device. Required when `virtual_chassis_master` and `virtual_chassis_id` is set.
+- `virtual_chassis_position` (Number) The virtual chassis position of the device.
+- `virtual_chassis_priority` (Number) The virtual chassis priority of the device.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `primary_ipv4` (Number)
-- `primary_ipv6` (Number)
-- `tags_all` (Set of String)
+- `primary_ipv4` (Number) The primary ipv4 of the device.
+- `primary_ipv6` (Number) The primary ipv6 of the device.
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_device.example 1
+```

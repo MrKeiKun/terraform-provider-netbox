@@ -39,13 +39,24 @@ resource "netbox_device_primary_ip" "test_v4" {
 
 ### Required
 
-- `device_id` (Number)
-- `ip_address_id` (Number)
+- `device_id` (Number) The ID of the device associated with the device primary ip.
+- `ip_address_id` (Number) The ID of the ip address associated with the device primary ip.
 
 ### Optional
 
-- `ip_address_version` (Number) Defaults to `4`.
+- `ip_address_version` (Number) The ip address version of the device primary ip. Defaults to `4`.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the ID of the device
+terraform import netbox_device_primary_ip.example 1
+```

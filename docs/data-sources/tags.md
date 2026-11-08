@@ -3,12 +3,12 @@
 page_title: "netbox_tags Data Source - terraform-provider-netbox"
 subcategory: "Extras"
 description: |-
-  
+  Retrieves all tags from NetBox. Narrow the result with filter blocks and cap it with limit.
 ---
 
 # netbox_tags (Data Source)
 
-
+Retrieves all tags from NetBox. Narrow the result with filter blocks and cap it with limit.
 
 ## Example Usage
 
@@ -36,21 +36,21 @@ data "netbox_tags" "not_ansible_tags" {
 
 ### Optional
 
-- `filter` (Block Set) (see [below for nested schema](#nestedblock--filter))
-- `limit` (Number) Defaults to `0`.
+- `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
+- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items. Defaults to `0`.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags` (List of Object) (see [below for nested schema](#nestedatt--tags))
+- `tags` (List of Object) Tags to assign to the tags. (see [below for nested schema](#nestedatt--tags))
 
 <a id="nestedblock--filter"></a>
 ### Nested Schema for `filter`
 
 Required:
 
-- `name` (String)
-- `value` (String)
+- `name` (String) The name of the field to filter by.
+- `value` (String) The value of the field to filter by.
 
 
 <a id="nestedatt--tags"></a>

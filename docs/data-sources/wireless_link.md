@@ -3,12 +3,12 @@
 page_title: "netbox_wireless_link Data Source - terraform-provider-netbox"
 subcategory: "Wireless"
 description: |-
-  
+  Retrieves a single wireless link from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_wireless_link (Data Source)
 
-
+Retrieves a single wireless link from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -23,21 +23,21 @@ data "netbox_wireless_link" "example" {
 
 ### Optional
 
-- `ssid` (String) At least one of `ssid` must be given.
+- `ssid` (String) The ssid of the wireless link. At least one of `ssid` must be given.
 
 ### Read-Only
 
-- `auth_cipher` (String)
-- `auth_psk` (String)
-- `auth_type` (String)
-- `comments` (String)
-- `description` (String)
-- `distance` (Number)
-- `distance_unit` (String)
+- `auth_cipher` (String) The auth cipher of the wireless link.
+- `auth_psk` (String) The auth psk of the wireless link.
+- `auth_type` (String) The auth type of the wireless link.
+- `comments` (String) Free-form comments about the wireless link.
+- `description` (String) A description of the wireless link.
+- `distance` (Number) The distance of the wireless link.
+- `distance_unit` (String) The distance unit of the wireless link.
 - `id` (String) The ID of this resource.
-- `interface_a_id` (Number)
-- `interface_b_id` (Number)
-- `owner_id` (Number)
-- `status` (String)
-- `tags` (Set of String)
-- `tenant_id` (Number)
+- `interface_a_id` (Number) The ID of the interface a associated with the wireless link.
+- `interface_b_id` (Number) The ID of the interface b associated with the wireless link.
+- `owner_id` (Number) The ID of the owner associated with the wireless link.
+- `status` (String) The status of the wireless link.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the wireless link.

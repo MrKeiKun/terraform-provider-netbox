@@ -28,19 +28,30 @@ resource "netbox_tenant" "customer_a" {
 
 ### Required
 
-- `name` (String)
+- `name` (String) The name of the tenant.
 
 ### Optional
 
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `group_id` (Number)
-- `owner_id` (Number)
-- `slug` (String)
-- `tags` (Set of String)
+- `comments` (String) Free-form comments about the tenant.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the tenant.
+- `group_id` (Number) The ID of the group associated with the tenant.
+- `owner_id` (Number) The ID of the owner associated with the tenant.
+- `slug` (String) The URL-friendly slug of the tenant.
+- `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_tenant.example 1
+```

@@ -18,20 +18,24 @@ func resourceNetboxDeviceConsolePort() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"device_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the device associated with the device console port.",
+				Required:    true,
 			},
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the device console port.",
+				Required:    true,
 			},
 			"module_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the module associated with the device console port.",
+				Optional:    true,
 			},
 			"label": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The label of the device console port.",
+				Optional:    true,
 			},
 			"type": {
 				Type:        schema.TypeString,
@@ -44,17 +48,20 @@ func resourceNetboxDeviceConsolePort() *schema.Resource {
 				Description: "One of [1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200]",
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the device console port.",
+				Optional:    true,
 			},
 			"mark_connected": {
-				Type:     schema.TypeBool,
-				Default:  false,
-				Optional: true,
+				Type:        schema.TypeBool,
+				Description: "Whether the device console port is marked as connected even without a cable.",
+				Default:     false,
+				Optional:    true,
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the device console port.",
+				Optional:    true,
 			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,

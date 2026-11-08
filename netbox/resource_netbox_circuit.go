@@ -23,20 +23,24 @@ func resourceNetboxCircuit() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"provider_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the provider associated with the circuit.",
+				Required:    true,
 			},
 			"cid": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The circuit ID of the circuit.",
+				Required:    true,
 			},
 			"type_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the type associated with the circuit.",
+				Required:    true,
 			},
 			"tenant_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the tenant associated with the circuit.",
+				Optional:    true,
 			},
 			"status": {
 				Type:        schema.TypeString,
@@ -44,28 +48,34 @@ func resourceNetboxCircuit() *schema.Resource {
 				Description: buildValidValueDescription(resourceNetboxCircuitStatusOptions),
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the circuit.",
+				Optional:    true,
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the circuit.",
+				Optional:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the circuit.",
+				Optional:    true,
 			},
 			"provider_account_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the provider account associated with the circuit.",
+				Optional:    true,
 			},
 			"install_date": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The installation date of the circuit, in YYYY-MM-DD format.",
+				Optional:    true,
 			},
 			"termination_date": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The termination date of the circuit, in YYYY-MM-DD format.",
+				Optional:    true,
 			},
 			"commit_rate": {
 				Type:         schema.TypeInt,
@@ -74,8 +84,9 @@ func resourceNetboxCircuit() *schema.Resource {
 				Description:  "Committed rate",
 			},
 			"distance": {
-				Type:     schema.TypeFloat,
-				Optional: true,
+				Type:        schema.TypeFloat,
+				Description: "The distance of the circuit.",
+				Optional:    true,
 			},
 			"distance_unit": {
 				Type:         schema.TypeString,

@@ -30,17 +30,28 @@ resource "netbox_cable_bundle" "example" {
 
 ### Required
 
-- `name` (String)
+- `name` (String) The name of the cable bundle.
 
 ### Optional
 
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `owner_id` (Number)
-- `tags` (Set of String)
+- `comments` (String) Free-form comments about the cable bundle.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the cable bundle.
+- `owner_id` (Number) The ID of the owner associated with the cable bundle.
+- `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_cable_bundle.example 1
+```

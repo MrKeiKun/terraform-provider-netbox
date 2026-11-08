@@ -19,15 +19,18 @@ func resourceNetboxL2VPNTermination() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"l2vpn_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the l2vpn associated with the l2vpn termination.",
+				Required:    true,
 			},
 			"assigned_object_type": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The assigned object type of the l2vpn termination.",
+				Required:    true,
 			},
 			"assigned_object_id": {
 				Type:         schema.TypeInt,
+				Description:  "The ID of the assigned object associated with the l2vpn termination.",
 				Required:     true,
 				ValidateFunc: validation.IntBetween(0, 9223372036854775807),
 			},

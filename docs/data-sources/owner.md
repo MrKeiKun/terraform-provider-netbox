@@ -23,12 +23,12 @@ data "netbox_owner" "example" {
 
 ### Optional
 
-- `name` (String) At least one of `name` must be given.
+- `name` (String) The name of the owner. At least one of `name` must be given.
 
 ### Read-Only
 
-- `description` (String)
-- `group_id` (Number)
+- `description` (String) A description of the owner.
+- `group_id` (Number) The ID of the group associated with the owner.
 - `id` (String) The ID of this resource.
-- `user_group_ids` (Set of Number)
-- `user_ids` (Set of Number)
+- `user_group_ids` (Set of Number) The IDs of the user group associated with the owner.
+- `user_ids` (Set of Number) The IDs of the user associated with the owner.

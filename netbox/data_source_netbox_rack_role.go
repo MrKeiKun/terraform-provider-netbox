@@ -11,23 +11,27 @@ import (
 func dataSourceNetboxRackRole() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxRackRoleRead,
-		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):`,
+		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):Retrieves a single rack role from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the rack role.",
+				Required:    true,
 			},
 			"slug": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The URL-friendly slug of the rack role.",
+				Computed:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "A description of the rack role.",
+				Computed:    true,
 			},
 			"color_hex": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The color hex of the rack role.",
+				Computed:    true,
 			},
 			tagsKey: tagsSchemaRead,
 		},

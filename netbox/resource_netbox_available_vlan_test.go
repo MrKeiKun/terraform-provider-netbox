@@ -345,3 +345,31 @@ resource "netbox_available_vlan" "vlan" {
 		},
 	})
 }
+
+func TestAccNetboxAvailableVLAN_import(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+resource "netbox_vlan_group" "group" {
+  name       = "VLAN Import Test"
+  slug       = "vlan-import-test"
+  vid_ranges = [[500, 505]]
+}
+
+resource "netbox_available_vlan" "vlan" {
+  name     = "vlan-import"
+  group_id = netbox_vlan_group.group.id
+  status   = "active"
+}
+`,
+			},
+			{
+				ResourceName:      "netbox_available_vlan.vlan",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}

@@ -22,16 +22,19 @@ func resourceNetboxModuleBayTemplate() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
+				Description:  "The name of the module bay template.",
 				Required:     true,
 				ValidateFunc: validation.StringLenBetween(1, 64),
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the module bay template.",
+				Optional:    true,
 			},
 			"label": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The label of the module bay template.",
+				Optional:    true,
 			},
 			"position": {
 				Type:        schema.TypeString,
@@ -39,23 +42,27 @@ func resourceNetboxModuleBayTemplate() *schema.Resource {
 				Description: "Identifier to reference when renaming installed components.",
 			},
 			"device_type_id": {
-				Type:     schema.TypeInt,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the device type associated with the module bay template.",
+				Required:    true,
+				ForceNew:    true,
 			},
 			"module_type_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the module type associated with the module bay template.",
+				Optional:    true,
 			},
 			"enabled": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeBool,
+				Description: "Whether the module bay template is enabled.",
+				Optional:    true,
+				Computed:    true,
 			},
 			"module_bay_type_ids": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeInt},
+				Type:        schema.TypeSet,
+				Description: "The IDs of the module bay type associated with the module bay template.",
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeInt},
 			},
 		},
 		Importer: &schema.ResourceImporter{

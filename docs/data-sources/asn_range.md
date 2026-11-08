@@ -3,12 +3,12 @@
 page_title: "netbox_asn_range Data Source - terraform-provider-netbox"
 subcategory: "IP Address Management (IPAM)"
 description: |-
-  
+  Retrieves a single asn range from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_asn_range (Data Source)
 
-
+Retrieves a single asn range from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -23,17 +23,17 @@ data "netbox_asn_range" "example" {
 
 ### Optional
 
-- `name` (String) At least one of `name` or `slug` must be given.
-- `slug` (String) At least one of `name` or `slug` must be given.
+- `name` (String) The name of the asn range. At least one of `name` or `slug` must be given.
+- `slug` (String) The URL-friendly slug of the asn range. At least one of `name` or `slug` must be given.
 
 ### Read-Only
 
-- `comments` (String)
-- `description` (String)
-- `end` (Number)
+- `comments` (String) Free-form comments about the asn range.
+- `description` (String) A description of the asn range.
+- `end` (Number) The end of the asn range.
 - `id` (String) The ID of this resource.
-- `owner_id` (Number)
-- `rir_id` (Number)
-- `start` (Number)
-- `tags` (Set of String)
-- `tenant_id` (Number)
+- `owner_id` (Number) The ID of the owner associated with the asn range.
+- `rir_id` (Number) The ID of the rir associated with the asn range.
+- `start` (Number) The start of the asn range.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the asn range.

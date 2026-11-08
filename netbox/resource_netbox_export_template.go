@@ -21,17 +21,20 @@ func resourceNetboxExportTemplate() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"object_types": {
-				Type:     schema.TypeSet,
-				Required: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeSet,
+				Description: "The object types the export template applies to.",
+				Required:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the export template.",
+				Required:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the export template.",
+				Optional:    true,
 			},
 			"environment_params": {
 				Type:             schema.TypeString,
@@ -67,8 +70,9 @@ func resourceNetboxExportTemplate() *schema.Resource {
 				Description: "Download file as attachment",
 			},
 			"data_source_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the data source associated with the export template.",
+				Optional:    true,
 			},
 			"auto_sync_enabled": {
 				Type:        schema.TypeBool,
@@ -77,8 +81,9 @@ func resourceNetboxExportTemplate() *schema.Resource {
 				Description: "Enable automatic synchronization of data when the data file is updated",
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the export template.",
+				Optional:    true,
 			},
 		},
 		Importer: &schema.ResourceImporter{

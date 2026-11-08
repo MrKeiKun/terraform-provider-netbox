@@ -10,37 +10,44 @@ import (
 func dataSourceNetboxIPSecProfile() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxIPSecProfileRead,
-		Description: `:meta:subcategory:VPN Tunnels:`,
+		Description: `:meta:subcategory:VPN Tunnels:Retrieves a single ipsec profile from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
+				Description:  "The name of the ipsec profile.",
 				Optional:     true,
 				Computed:     true,
 				AtLeastOneOf: []string{"name"},
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "A description of the ipsec profile.",
+				Computed:    true,
 			},
 			"mode": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The mode of the ipsec profile.",
+				Computed:    true,
 			},
 			"ike_policy_id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the ike policy associated with the ipsec profile.",
+				Computed:    true,
 			},
 			"ipsec_policy_id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the ipsec policy associated with the ipsec profile.",
+				Computed:    true,
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the ipsec profile.",
+				Computed:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the ipsec profile.",
+				Computed:    true,
 			},
 			tagsKey: tagsSchemaRead,
 		},

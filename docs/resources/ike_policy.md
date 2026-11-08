@@ -26,21 +26,32 @@ resource "netbox_ike_policy" "example" {
 
 ### Required
 
-- `name` (String)
+- `name` (String) The name of the ike policy.
 
 ### Optional
 
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
+- `comments` (String) Free-form comments about the ike policy.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the ike policy.
 - `mode` (String) One of [aggressive, main].
-- `owner_id` (Number)
-- `preshared_key` (String)
-- `proposal_ids` (Set of Number)
-- `tags` (Set of String)
+- `owner_id` (Number) The ID of the owner associated with the ike policy.
+- `preshared_key` (String) The preshared key of the ike policy.
+- `proposal_ids` (Set of Number) The IDs of the proposal associated with the ike policy.
+- `tags` (Set of String) Tags assigned to the object, by name.
 - `version` (Number) One of [1, 2].
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_ike_policy.example 1
+```

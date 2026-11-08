@@ -10,23 +10,27 @@ import (
 func dataSourceNetboxIPAMRole() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxIPAMRoleRead,
-		Description: `:meta:subcategory:IP Address Management (IPAM):`,
+		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves a single ipam role from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the ipam role.",
+				Required:    true,
 			},
 			"slug": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The URL-friendly slug of the ipam role.",
+				Computed:    true,
 			},
 			"weight": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The weight of the ipam role.",
+				Computed:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "A description of the ipam role.",
+				Computed:    true,
 			},
 		},
 	}

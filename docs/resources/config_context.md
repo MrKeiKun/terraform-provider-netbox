@@ -27,31 +27,42 @@ resource "netbox_config_context" "test" {
 
 ### Required
 
-- `data` (String)
-- `name` (String)
+- `data` (String) The data of the config context.
+- `name` (String) The name of the config context.
 
 ### Optional
 
-- `cluster_groups` (Set of Number)
-- `cluster_types` (Set of Number)
-- `clusters` (Set of Number)
-- `description` (String)
-- `device_types` (Set of Number)
-- `is_active` (Boolean)
-- `locations` (Set of Number)
-- `owner_id` (Number)
-- `platforms` (Set of Number)
-- `profile_id` (Number)
-- `regions` (Set of Number)
-- `roles` (Set of Number)
-- `site_groups` (Set of Number)
-- `sites` (Set of Number)
-- `tags` (Set of String)
-- `tenant_groups` (Set of Number)
-- `tenants` (Set of Number)
-- `weight` (Number) Defaults to `1000`.
+- `cluster_groups` (Set of Number) The cluster groups of the config context.
+- `cluster_types` (Set of Number) The cluster types of the config context.
+- `clusters` (Set of Number) The clusters of the config context.
+- `description` (String) A description of the config context.
+- `device_types` (Set of Number) The device types of the config context.
+- `is_active` (Boolean) Whether the config context is active.
+- `locations` (Set of Number) The locations of the config context.
+- `owner_id` (Number) The ID of the owner associated with the config context.
+- `platforms` (Set of Number) The platforms of the config context.
+- `profile_id` (Number) The ID of the profile associated with the config context.
+- `regions` (Set of Number) The regions of the config context.
+- `roles` (Set of Number) The roles of the config context.
+- `site_groups` (Set of Number) The site groups of the config context.
+- `sites` (Set of Number) The sites of the config context.
+- `tags` (Set of String) Tags to assign to the config context.
+- `tenant_groups` (Set of Number) The tenant groups of the config context.
+- `tenants` (Set of Number) The tenants of the config context.
+- `weight` (Number) The weight of the config context. Defaults to `1000`.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_config_context.example 1
+```

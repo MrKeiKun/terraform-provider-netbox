@@ -24,50 +24,61 @@ func resourceNetboxVirtualMachine() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the virtual machine.",
+				Required:    true,
 			},
 			"cluster_id": {
 				Type:         schema.TypeInt,
+				Description:  "The ID of the cluster associated with the virtual machine.",
 				Optional:     true,
 				AtLeastOneOf: []string{"site_id", "cluster_id"},
 			},
 			"tenant_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the tenant associated with the virtual machine.",
+				Optional:    true,
 			},
 			"device_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the device associated with the virtual machine.",
+				Optional:    true,
 			},
 			"platform_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the platform associated with the virtual machine.",
+				Optional:    true,
 			},
 			"role_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the role associated with the virtual machine.",
+				Optional:    true,
 			},
 			"site_id": {
 				Type:         schema.TypeInt,
+				Description:  "The ID of the site associated with the virtual machine.",
 				Optional:     true,
 				AtLeastOneOf: []string{"site_id", "cluster_id"},
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the virtual machine.",
+				Optional:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the virtual machine.",
+				Optional:    true,
 			},
 			"memory_mb": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The memory mb of the virtual machine.",
+				Optional:    true,
 			},
 			"vcpus": {
-				Type:     schema.TypeFloat,
-				Optional: true,
+				Type:        schema.TypeFloat,
+				Description: "The vcpus of the virtual machine.",
+				Optional:    true,
 			},
 			"disk_size_mb": {
 				Type:        schema.TypeInt,
@@ -83,12 +94,14 @@ func resourceNetboxVirtualMachine() *schema.Resource {
 			},
 			tagsKey: tagsSchema,
 			"primary_ipv4": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The primary ipv4 of the virtual machine.",
+				Computed:    true,
 			},
 			"primary_ipv6": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The primary ipv6 of the virtual machine.",
+				Computed:    true,
 			},
 			"local_context_data": {
 				Type:        schema.TypeString,

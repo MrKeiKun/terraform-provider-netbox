@@ -38,22 +38,26 @@ This resource will retrieve the next available IP address from a given prefix or
 		Schema: map[string]*schema.Schema{
 			"prefix_id": {
 				Type:         schema.TypeInt,
+				Description:  "The ID of the prefix associated with the available ip address.",
 				Optional:     true,
 				ForceNew:     true,
 				ExactlyOneOf: []string{"prefix_id", "ip_range_id"},
 			},
 			"ip_range_id": {
 				Type:         schema.TypeInt,
+				Description:  "The ID of the ip range associated with the available ip address.",
 				Optional:     true,
 				ForceNew:     true,
 				ExactlyOneOf: []string{"prefix_id", "ip_range_id"},
 			},
 			"ip_address": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The IP address of the available ip address, in CIDR notation.",
+				Computed:    true,
 			},
 			"interface_id": {
 				Type:         schema.TypeInt,
+				Description:  "The ID of the interface associated with the available ip address.",
 				Optional:     true,
 				RequiredWith: []string{"object_type"},
 			},
@@ -66,17 +70,20 @@ This resource will retrieve the next available IP address from a given prefix or
 			},
 			"virtual_machine_interface_id": {
 				Type:          schema.TypeInt,
+				Description:   "The ID of the virtual machine interface associated with the available ip address.",
 				Optional:      true,
 				ConflictsWith: []string{"interface_id", "device_interface_id"},
 			},
 			"device_interface_id": {
 				Type:          schema.TypeInt,
+				Description:   "The ID of the device interface associated with the available ip address.",
 				Optional:      true,
 				ConflictsWith: []string{"interface_id", "virtual_machine_interface_id"},
 			},
 			"vrf_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the vrf associated with the available ip address.",
+				Optional:    true,
 			},
 			"nat_inside_address_id": {
 				Type:        schema.TypeInt,
@@ -84,8 +91,9 @@ This resource will retrieve the next available IP address from a given prefix or
 				Description: "The ID of the IP address this address is the NAT outside address of.",
 			},
 			"tenant_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the tenant associated with the available ip address.",
+				Optional:    true,
 			},
 			"status": {
 				Type:        schema.TypeString,
@@ -94,16 +102,18 @@ This resource will retrieve the next available IP address from a given prefix or
 				Default:     "active",
 			},
 			"dns_name": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The DNS name of the available ip address.",
+				Optional:    true,
 				// NetBox always converts DNS names to lowercase
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					return strings.EqualFold(old, new)
 				},
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the available ip address.",
+				Optional:    true,
 			},
 			tagsKey: tagsSchema,
 			"role": {

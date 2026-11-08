@@ -28,11 +28,13 @@ func resourceNetboxIPAddress() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"ip_address": {
 				Type:         schema.TypeString,
+				Description:  "The IP address of the ip address, in CIDR notation.",
 				Required:     true,
 				ValidateFunc: validation.IsCIDR,
 			},
 			"interface_id": {
 				Type:         schema.TypeInt,
+				Description:  "The ID of the interface associated with the ip address.",
 				Optional:     true,
 				RequiredWith: []string{"object_type"},
 			},
@@ -45,21 +47,25 @@ func resourceNetboxIPAddress() *schema.Resource {
 			},
 			"virtual_machine_interface_id": {
 				Type:          schema.TypeInt,
+				Description:   "The ID of the virtual machine interface associated with the ip address.",
 				Optional:      true,
 				ConflictsWith: []string{"interface_id", "device_interface_id"},
 			},
 			"device_interface_id": {
 				Type:          schema.TypeInt,
+				Description:   "The ID of the device interface associated with the ip address.",
 				Optional:      true,
 				ConflictsWith: []string{"interface_id", "virtual_machine_interface_id"},
 			},
 			"vrf_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the vrf associated with the ip address.",
+				Optional:    true,
 			},
 			"tenant_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the tenant associated with the ip address.",
+				Optional:    true,
 			},
 			"status": {
 				Type:        schema.TypeString,
@@ -67,25 +73,29 @@ func resourceNetboxIPAddress() *schema.Resource {
 				Description: buildValidValueDescription(resourceNetboxIPAddressStatusOptions),
 			},
 			"dns_name": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The DNS name of the ip address.",
+				Optional:    true,
 				// NetBox always converts DNS names to lowercase
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					return strings.EqualFold(old, new)
 				},
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the ip address.",
+				Optional:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the ip address.",
+				Optional:    true,
 			},
 			tagsKey: tagsSchema,
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the ip address.",
+				Optional:    true,
 			},
 			"role": {
 				Type:         schema.TypeString,
@@ -94,25 +104,30 @@ func resourceNetboxIPAddress() *schema.Resource {
 				Description:  buildValidValueDescription(resourceNetboxIPAddressRoleOptions),
 			},
 			"nat_inside_address_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the nat inside address associated with the ip address.",
+				Optional:    true,
 			},
 			"nat_outside_addresses": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Description: "The nat outside addresses of the ip address.",
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The numeric ID of the ip address.",
+							Computed:    true,
 						},
 						"ip_address": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "The IP address of the ip address, in CIDR notation.",
+							Computed:    true,
 						},
 						"address_family": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The address family of the ip address.",
+							Computed:    true,
 						},
 					},
 				},

@@ -3,12 +3,12 @@
 page_title: "netbox_circuit_provider_network Data Source - terraform-provider-netbox"
 subcategory: "Circuits"
 description: |-
-  
+  Retrieves a single circuit provider network from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_circuit_provider_network (Data Source)
 
-
+Retrieves a single circuit provider network from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -49,14 +49,14 @@ data "netbox_circuit_provider_network" "tags" {
 
 ### Optional
 
-- `id` (String) At least one of `id` or `name` must be given.
-- `name` (String) At least one of `id` or `name` must be given.
+- `id` (String) The numeric ID of the circuit provider network. At least one of `id` or `name` must be given.
+- `name` (String) The name of the circuit provider network. At least one of `id` or `name` must be given.
 
 ### Read-Only
 
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `provider_id` (Number)
-- `service_id` (String)
-- `tags` (Set of String)
+- `comments` (String) Free-form comments about the circuit provider network.
+- `custom_fields` (Map of String) Custom field values of the circuit provider network, as a map of field name to value.
+- `description` (String) A description of the circuit provider network.
+- `provider_id` (Number) The ID of the provider associated with the circuit provider network.
+- `service_id` (String) The ID of the service associated with the circuit provider network.
+- `tags` (Set of String) Tags assigned to the object, by name.

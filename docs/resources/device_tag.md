@@ -40,9 +40,20 @@ resource "netbox_device_tag" "example" {
 
 ### Required
 
-- `device_id` (Number)
-- `tag` (String)
+- `device_id` (Number) The ID of the device associated with the device tag.
+- `tag` (String) The tag of the device tag.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is "<device_id>:<tag_name>"
+terraform import netbox_device_tag.example 1:my-tag
+```

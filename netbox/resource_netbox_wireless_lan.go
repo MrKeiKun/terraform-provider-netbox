@@ -24,6 +24,7 @@ func resourceNetboxWirelessLAN() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"ssid": {
 				Type:         schema.TypeString,
+				Description:  "The ssid of the wireless lan.",
 				Required:     true,
 				ValidateFunc: validation.StringLenBetween(1, 32),
 			},
@@ -34,16 +35,19 @@ func resourceNetboxWirelessLAN() *schema.Resource {
 				Description: buildValidValueDescription(resourceNetboxWirelessLANStatusOptions),
 			},
 			"group_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the group associated with the wireless lan.",
+				Optional:    true,
 			},
 			"tenant_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the tenant associated with the wireless lan.",
+				Optional:    true,
 			},
 			"vlan_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the vlan associated with the wireless lan.",
+				Optional:    true,
 			},
 			"auth_type": {
 				Type:         schema.TypeString,
@@ -59,31 +63,37 @@ func resourceNetboxWirelessLAN() *schema.Resource {
 			},
 			"auth_psk": {
 				Type:         schema.TypeString,
+				Description:  "The auth psk of the wireless lan.",
 				Optional:     true,
 				Sensitive:    true,
 				ValidateFunc: validation.StringLenBetween(0, 64),
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the wireless lan.",
+				Optional:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the wireless lan.",
+				Optional:    true,
 			},
 			customFieldsKey: customFieldsSchema,
 			tagsKey:         tagsSchema,
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the wireless lan.",
+				Optional:    true,
 			},
 			"scope_type": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The scope type of the wireless lan.",
+				Optional:    true,
 			},
 			"scope_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the scope associated with the wireless lan.",
+				Optional:    true,
 			},
 		},
 		Importer: &schema.ResourceImporter{

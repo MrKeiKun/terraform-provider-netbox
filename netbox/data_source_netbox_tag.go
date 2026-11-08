@@ -10,19 +10,22 @@ import (
 func dataSourceNetboxTag() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxTagRead,
-		Description: `:meta:subcategory:Extras:`,
+		Description: `:meta:subcategory:Extras:Retrieves a single tag from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the tag.",
+				Required:    true,
 			},
 			"slug": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The URL-friendly slug of the tag.",
+				Computed:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the tag.",
+				Optional:    true,
 			},
 		},
 	}

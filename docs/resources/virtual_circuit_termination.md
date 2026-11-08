@@ -28,17 +28,28 @@ resource "netbox_virtual_circuit_termination" "example" {
 
 ### Required
 
-- `interface_id` (Number)
-- `virtual_circuit_id` (Number)
+- `interface_id` (Number) The ID of the interface associated with the virtual circuit termination.
+- `virtual_circuit_id` (Number) The ID of the virtual circuit associated with the virtual circuit termination.
 
 ### Optional
 
-- `custom_fields` (Map of String)
-- `description` (String)
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the virtual circuit termination.
 - `role` (String) One of [peer, hub, spoke].
-- `tags` (Set of String)
+- `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_virtual_circuit_termination.example 1
+```

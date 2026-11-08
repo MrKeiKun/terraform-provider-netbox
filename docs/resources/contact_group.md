@@ -26,17 +26,28 @@ resource "netbox_contact_group" "test" {
 
 ### Required
 
-- `name` (String)
+- `name` (String) The name of the contact group.
 
 ### Optional
 
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `owner_id` (Number)
-- `parent_id` (Number)
-- `slug` (String)
+- `comments` (String) Free-form comments about the contact group.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the contact group.
+- `owner_id` (Number) The ID of the owner associated with the contact group.
+- `parent_id` (Number) The ID of the parent associated with the contact group.
+- `slug` (String) The URL-friendly slug of the contact group.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_contact_group.example 1
+```

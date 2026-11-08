@@ -32,23 +32,34 @@ resource "netbox_config_template" "test" {
 
 ### Required
 
-- `name` (String)
-- `template_code` (String)
+- `name` (String) The name of the config template.
+- `template_code` (String) The template code of the config template.
 
 ### Optional
 
 - `as_attachment` (Boolean) Download file as attachment.
 - `auto_sync_enabled` (Boolean) Enable automatic synchronization of data when the data file is updated.
 - `debug` (Boolean) Enable verbose error output when rendering this template. Not recommended for production use.
-- `description` (String)
-- `environment_params` (String) Defaults to `{}`.
+- `description` (String) A description of the config template.
+- `environment_params` (String) The environment params of the config template. Defaults to `{}`.
 - `file_extension` (String) Extension to append to the rendered filename.
 - `file_name` (String) Filename to give to the rendered export file.
 - `mime_type` (String) Defaults to <code>text/plain; charset=utf-8</code>.
-- `owner_id` (Number)
-- `tags` (Set of String)
+- `owner_id` (Number) The ID of the owner associated with the config template.
+- `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_config_template.example 1
+```

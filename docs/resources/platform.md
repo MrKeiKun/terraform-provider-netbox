@@ -27,20 +27,31 @@ resource "netbox_platform" "PANOS" {
 
 ### Required
 
-- `name` (String)
+- `name` (String) The name of the platform.
 
 ### Optional
 
-- `comments` (String)
-- `config_template_id` (Number)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `manufacturer_id` (Number)
-- `owner_id` (Number)
-- `slug` (String)
-- `tags` (Set of String)
+- `comments` (String) Free-form comments about the platform.
+- `config_template_id` (Number) The ID of the config template associated with the platform.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the platform.
+- `manufacturer_id` (Number) The ID of the manufacturer associated with the platform.
+- `owner_id` (Number) The ID of the owner associated with the platform.
+- `slug` (String) The URL-friendly slug of the platform.
+- `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_platform.example 1
+```

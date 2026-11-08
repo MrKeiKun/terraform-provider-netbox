@@ -3,12 +3,12 @@
 page_title: "netbox_virtual_disk Data Source - terraform-provider-netbox"
 subcategory: "Virtualization"
 description: |-
-  
+  Retrieves all virtual disk from NetBox. Narrow the result with filter blocks and cap it with limit.
 ---
 
 # netbox_virtual_disk (Data Source)
 
-
+Retrieves all virtual disk from NetBox. Narrow the result with filter blocks and cap it with limit.
 
 ## Example Usage
 
@@ -70,23 +70,23 @@ data "netbox_virtual_disk" "disk_regex" {
 
 ### Optional
 
-- `filter` (Block List) (see [below for nested schema](#nestedblock--filter))
-- `limit` (Number) Defaults to `0`.
-- `name_regex` (String)
+- `filter` (Block List) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
+- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items. Defaults to `0`.
+- `name_regex` (String) The name regex of the virtual disk.
 - `ordering` (List of String) One or more fields to use for ordering the results. Prefix a field name with `-` to reverse the order. E.g. `id`, `-name`.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `virtual_disks` (List of Object) (see [below for nested schema](#nestedatt--virtual_disks))
+- `virtual_disks` (List of Object) The virtual disks of the virtual disk. (see [below for nested schema](#nestedatt--virtual_disks))
 
 <a id="nestedblock--filter"></a>
 ### Nested Schema for `filter`
 
 Required:
 
-- `name` (String)
-- `value` (String)
+- `name` (String) The name of the field to filter by.
+- `value` (String) The value of the field to filter by.
 
 
 <a id="nestedatt--virtual_disks"></a>

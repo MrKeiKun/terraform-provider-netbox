@@ -18,11 +18,13 @@ func resourceNetboxRackReservation() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"rack_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the rack associated with the rack reservation.",
+				Required:    true,
 			},
 			"units": {
-				Type: schema.TypeSet,
+				Type:        schema.TypeSet,
+				Description: "The units of the rack reservation.",
 				Elem: &schema.Schema{
 					Type: schema.TypeInt,
 				},
@@ -30,24 +32,29 @@ func resourceNetboxRackReservation() *schema.Resource {
 				Set:      schema.HashInt,
 			},
 			"user_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the user associated with the rack reservation.",
+				Required:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "A description of the rack reservation.",
+				Required:    true,
 			},
 			"tenant_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the tenant associated with the rack reservation.",
+				Optional:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the rack reservation.",
+				Optional:    true,
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the rack reservation.",
+				Optional:    true,
 			},
 			"status": {
 				Type:        schema.TypeString,

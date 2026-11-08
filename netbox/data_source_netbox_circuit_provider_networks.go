@@ -11,67 +11,80 @@ import (
 func dataSourceNetboxCircuitProviderNetworks() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxCircuitProviderNetworksRead,
-		Description: `:meta:subcategory:Circuits:`,
+		Description: `:meta:subcategory:Circuits:Retrieves all circuit provider networks from NetBox. Narrow the result with filter blocks and cap it with limit.`,
 		Schema: map[string]*schema.Schema{
 			"filter": {
-				Type:     schema.TypeSet,
-				Optional: true,
+				Type:        schema.TypeSet,
+				Description: "Filters that select which items are returned. Each filter is a name/value pair.",
+				Optional:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Description: "The name of the field to filter by.",
+							Required:    true,
 						},
 						"value": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Description: "The value of the field to filter by.",
+							Required:    true,
 						},
 					},
 				},
 			},
 			"name_regex": {
 				Type:         schema.TypeString,
+				Description:  "The name regex of the circuit provider networks.",
 				Optional:     true,
 				ValidateFunc: validation.StringIsValidRegExp,
 			},
 			"limit": {
 				Type:             schema.TypeInt,
+				Description:      "The maximum number of items to return. Defaults to 0, which returns all items.",
 				Optional:         true,
 				ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
 				Default:          0,
 			},
 			"provider_networks": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Description: "The provider networks of the circuit provider networks.",
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"comments": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "Free-form comments about the circuit provider networks.",
+							Computed:    true,
 						},
 						"custom_fields": {
-							Type:     schema.TypeMap,
-							Computed: true,
+							Type:        schema.TypeMap,
+							Description: "Custom field values of the circuit provider networks, as a map of field name to value.",
+							Computed:    true,
 						},
 						"description": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "A description of the circuit provider networks.",
+							Computed:    true,
 						},
 						"name": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "The name of the circuit provider networks.",
+							Computed:    true,
 						},
 						"provider_network_id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The ID of the provider network associated with the circuit provider networks.",
+							Computed:    true,
 						},
 						"provider_id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The ID of the provider associated with the circuit provider networks.",
+							Computed:    true,
 						},
 						"service_id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "The ID of the service associated with the circuit provider networks.",
+							Computed:    true,
 						},
 						tagsKey: tagsSchemaRead,
 					},

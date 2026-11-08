@@ -3,12 +3,12 @@
 page_title: "netbox_ipsec_profile Data Source - terraform-provider-netbox"
 subcategory: "VPN Tunnels"
 description: |-
-  
+  Retrieves a single ipsec profile from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_ipsec_profile (Data Source)
 
-
+Retrieves a single ipsec profile from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -23,15 +23,15 @@ data "netbox_ipsec_profile" "example" {
 
 ### Optional
 
-- `name` (String) At least one of `name` must be given.
+- `name` (String) The name of the ipsec profile. At least one of `name` must be given.
 
 ### Read-Only
 
-- `comments` (String)
-- `description` (String)
+- `comments` (String) Free-form comments about the ipsec profile.
+- `description` (String) A description of the ipsec profile.
 - `id` (String) The ID of this resource.
-- `ike_policy_id` (Number)
-- `ipsec_policy_id` (Number)
-- `mode` (String)
-- `owner_id` (Number)
-- `tags` (Set of String)
+- `ike_policy_id` (Number) The ID of the ike policy associated with the ipsec profile.
+- `ipsec_policy_id` (Number) The ID of the ipsec policy associated with the ipsec profile.
+- `mode` (String) The mode of the ipsec profile.
+- `owner_id` (Number) The ID of the owner associated with the ipsec profile.
+- `tags` (Set of String) Tags assigned to the object, by name.

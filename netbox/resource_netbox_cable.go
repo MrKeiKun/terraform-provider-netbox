@@ -19,14 +19,16 @@ func resourceNetboxCable() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"a_termination": {
-				Type:     schema.TypeSet,
-				Required: true,
-				Elem:     genericObjectSchema,
+				Type:        schema.TypeSet,
+				Description: "The a termination of the cable.",
+				Required:    true,
+				Elem:        genericObjectSchema,
 			},
 			"b_termination": {
-				Type:     schema.TypeSet,
-				Required: true,
-				Elem:     genericObjectSchema,
+				Type:        schema.TypeSet,
+				Description: "The b termination of the cable.",
+				Required:    true,
+				Elem:        genericObjectSchema,
 			},
 			"status": {
 				Type:        schema.TypeString,
@@ -44,20 +46,24 @@ func resourceNetboxCable() *schema.Resource {
 				}, false),
 			},
 			"tenant_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the tenant associated with the cable.",
+				Optional:    true,
 			},
 			"label": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The label of the cable.",
+				Optional:    true,
 			},
 			"color_hex": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The color hex of the cable.",
+				Optional:    true,
 			},
 			"length": {
-				Type:     schema.TypeFloat,
-				Optional: true,
+				Type:        schema.TypeFloat,
+				Description: "The length of the cable.",
+				Optional:    true,
 			},
 			"length_unit": {
 				Type:         schema.TypeString,
@@ -68,16 +74,19 @@ func resourceNetboxCable() *schema.Resource {
 			},
 			"description": {
 				Type:         schema.TypeString,
+				Description:  "A description of the cable.",
 				Optional:     true,
 				ValidateFunc: validation.StringLenBetween(0, 200),
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the cable.",
+				Optional:    true,
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the cable.",
+				Optional:    true,
 			},
 			"profile": {
 				Type:         schema.TypeString,
@@ -86,8 +95,9 @@ func resourceNetboxCable() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"single-1c1p", "single-1c2p", "single-1c4p", "single-1c6p", "single-1c8p", "single-1c12p", "single-1c16p", "trunk-2c1p", "trunk-2c2p", "trunk-2c4p", "trunk-2c4p-shuffle", "trunk-2c6p", "trunk-2c8p", "trunk-2c12p", "trunk-4c1p", "trunk-4c2p", "trunk-4c4p", "trunk-4c4p-shuffle", "trunk-4c6p", "trunk-4c8p", "trunk-8c1p", "trunk-8c4p", "trunk-12c1p", "trunk-24c1p", "breakout-1c2p-2c1p", "breakout-1c4p-4c1p", "breakout-1c6p-6c1p", "breakout-1c8p-8c1p", "breakout-2c4p-8c1p-shuffle"}, false),
 			},
 			"bundle_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the bundle associated with the cable.",
+				Optional:    true,
 			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,

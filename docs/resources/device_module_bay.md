@@ -36,22 +36,33 @@ resource "netbox_device_module_bay" "test" {
 
 ### Required
 
-- `device_id` (Number)
-- `name` (String)
+- `device_id` (Number) The ID of the device associated with the device module bay.
+- `name` (String) The name of the device module bay.
 
 ### Optional
 
-- `custom_fields` (Map of String)
-- `description` (String)
-- `enabled` (Boolean)
-- `label` (String)
-- `module_bay_type_ids` (Set of Number)
-- `module_id` (Number)
-- `owner_id` (Number)
-- `position` (String)
-- `tags` (Set of String)
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the device module bay.
+- `enabled` (Boolean) Whether the device module bay is enabled.
+- `label` (String) The label of the device module bay.
+- `module_bay_type_ids` (Set of Number) The IDs of the module bay type associated with the device module bay.
+- `module_id` (Number) The ID of the module associated with the device module bay.
+- `owner_id` (Number) The ID of the owner associated with the device module bay.
+- `position` (String) The position of the device module bay.
+- `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_device_module_bay.example 1
+```

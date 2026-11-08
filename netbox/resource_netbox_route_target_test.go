@@ -20,7 +20,7 @@ resource "netbox_route_target" "rt_acctest_basic" {
 }`, rtName, tenantName)
 }
 
-func Test_resourceNetboxRouteTarget(t *testing.T) {
+func TestAccNetboxRouteTarget_lifecycle(t *testing.T) {
 	testSlug := "rt"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{

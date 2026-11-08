@@ -67,29 +67,40 @@ resource "netbox_virtual_machine" "full_vm" {
 
 ### Required
 
-- `name` (String)
+- `name` (String) The name of the virtual machine.
 
 ### Optional
 
-- `cluster_id` (Number) At least one of `site_id` or `cluster_id` must be given.
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `device_id` (Number)
+- `cluster_id` (Number) The ID of the cluster associated with the virtual machine. At least one of `site_id` or `cluster_id` must be given.
+- `comments` (String) Free-form comments about the virtual machine.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the virtual machine.
+- `device_id` (Number) The ID of the device associated with the virtual machine.
 - `disk_size_mb` (Number) The disk size in MB. When virtual disks are attached to this VM, NetBox automatically computes this as the aggregate of those disks and rejects manual values. In that case, omit this field from the configuration and let it be computed.
 - `local_context_data` (String) This is best managed through the use of `jsonencode` and a map of settings.
-- `memory_mb` (Number)
-- `platform_id` (Number)
-- `role_id` (Number)
-- `site_id` (Number) At least one of `site_id` or `cluster_id` must be given.
+- `memory_mb` (Number) The memory mb of the virtual machine.
+- `platform_id` (Number) The ID of the platform associated with the virtual machine.
+- `role_id` (Number) The ID of the role associated with the virtual machine.
+- `site_id` (Number) The ID of the site associated with the virtual machine. At least one of `site_id` or `cluster_id` must be given.
 - `status` (String) Valid values are `offline`, `active`, `planned`, `staged`, `failed` and `decommissioning`. Defaults to `active`.
-- `tags` (Set of String)
-- `tenant_id` (Number)
-- `vcpus` (Number)
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the virtual machine.
+- `vcpus` (Number) The vcpus of the virtual machine.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `primary_ipv4` (Number)
-- `primary_ipv6` (Number)
-- `tags_all` (Set of String)
+- `primary_ipv4` (Number) The primary ipv4 of the virtual machine.
+- `primary_ipv6` (Number) The primary ipv6 of the virtual machine.
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_virtual_machine.example 1
+```

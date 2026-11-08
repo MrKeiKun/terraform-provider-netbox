@@ -26,18 +26,29 @@ resource "netbox_user" "test" {
 
 ### Required
 
-- `password` (String, Sensitive)
-- `username` (String)
+- `password` (String, Sensitive) The password of the user.
+- `username` (String) The username of the user.
 
 ### Optional
 
-- `active` (Boolean) Defaults to `true`.
-- `email` (String) Defaults to `""`.
-- `first_name` (String) Defaults to `""`.
-- `group_ids` (Set of Number)
-- `last_name` (String) Defaults to `""`.
-- `staff` (Boolean, Deprecated) Defaults to `false`.
+- `active` (Boolean) Whether active is enabled for the user. Defaults to `true`.
+- `email` (String) The email address of the user. Defaults to `""`.
+- `first_name` (String) The first name of the user. Defaults to `""`.
+- `group_ids` (Set of Number) The IDs of the group associated with the user.
+- `last_name` (String) The last name of the user. Defaults to `""`.
+- `staff` (Boolean, Deprecated) Whether staff is enabled for the user. Defaults to `false`.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_user.example 1
+```

@@ -3,12 +3,12 @@
 page_title: "netbox_interfaces Data Source - terraform-provider-netbox"
 subcategory: "Virtualization"
 description: |-
-  
+  Retrieves all interfaces from NetBox. Narrow the result with filter blocks and cap it with limit.
 ---
 
 # netbox_interfaces (Data Source)
 
-
+Retrieves all interfaces from NetBox. Narrow the result with filter blocks and cap it with limit.
 
 ## Example Usage
 
@@ -27,22 +27,22 @@ data "netbox_interfaces" "myvm_eth0" {
 
 ### Optional
 
-- `filter` (Block Set) (see [below for nested schema](#nestedblock--filter))
+- `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
 - `limit` (Number) The limit of objects to return from the API lookup. Defaults to `0`.
-- `name_regex` (String)
+- `name_regex` (String) The name regex of the interfaces.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `interfaces` (List of Object) (see [below for nested schema](#nestedatt--interfaces))
+- `interfaces` (List of Object) The interfaces of the interfaces. (see [below for nested schema](#nestedatt--interfaces))
 
 <a id="nestedblock--filter"></a>
 ### Nested Schema for `filter`
 
 Required:
 
-- `name` (String)
-- `value` (String)
+- `name` (String) The name of the field to filter by.
+- `value` (String) The value of the field to filter by.
 
 
 <a id="nestedatt--interfaces"></a>

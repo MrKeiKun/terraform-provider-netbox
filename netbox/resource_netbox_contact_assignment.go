@@ -21,20 +21,24 @@ func resourceNetboxContactAssignment() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"content_type": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The content type of the contact assignment.",
+				Required:    true,
 			},
 			"object_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the object associated with the contact assignment.",
+				Required:    true,
 			},
 			"contact_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the contact associated with the contact assignment.",
+				Required:    true,
 			},
 			"role_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the role associated with the contact assignment.",
+				Required:    true,
 			},
 			"priority": {
 				Type:         schema.TypeString,

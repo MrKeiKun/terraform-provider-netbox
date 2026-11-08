@@ -3,12 +3,12 @@
 page_title: "netbox_fhrp_group Data Source - terraform-provider-netbox"
 subcategory: "IP Address Management (IPAM)"
 description: |-
-  
+  Retrieves a single fhrp group from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_fhrp_group (Data Source)
 
-
+Retrieves a single fhrp group from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -24,18 +24,18 @@ data "netbox_fhrp_group" "test" {
 
 ### Required
 
-- `group_id` (Number)
+- `group_id` (Number) The ID of the group associated with the fhrp group.
 
 ### Optional
 
-- `protocol` (String)
+- `protocol` (String) The protocol of the fhrp group.
 
 ### Read-Only
 
-- `auth_key` (String)
-- `auth_type` (String)
-- `comments` (String)
-- `description` (String)
-- `id` (Number) The ID of this resource.
-- `name` (String)
-- `tags` (Set of String)
+- `auth_key` (String) The auth key of the fhrp group.
+- `auth_type` (String) The auth type of the fhrp group.
+- `comments` (String) Free-form comments about the fhrp group.
+- `description` (String) A description of the fhrp group.
+- `id` (Number) The numeric ID of the fhrp group.
+- `name` (String) The name of the fhrp group.
+- `tags` (Set of String) Tags assigned to the object, by name.

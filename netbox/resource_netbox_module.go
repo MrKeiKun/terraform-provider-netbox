@@ -20,16 +20,19 @@ Similar to devices, modules are instantiated from module types, and any componen
 
 		Schema: map[string]*schema.Schema{
 			"device_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the device associated with the module.",
+				Required:    true,
 			},
 			"module_bay_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the module bay associated with the module.",
+				Required:    true,
 			},
 			"module_type_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the module type associated with the module.",
+				Required:    true,
 			},
 			"status": {
 				Type:        schema.TypeString,
@@ -37,24 +40,29 @@ Similar to devices, modules are instantiated from module types, and any componen
 				Description: "One of [offline, active, planned, staged, failed, decommissioning]",
 			},
 			"serial": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The serial number of the module.",
+				Optional:    true,
 			},
 			"asset_tag": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The asset tag of the module.",
+				Optional:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the module.",
+				Optional:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the module.",
+				Optional:    true,
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the module.",
+				Optional:    true,
 			},
 			"replicate_components": {
 				Type:        schema.TypeBool,

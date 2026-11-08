@@ -30,11 +30,11 @@ data "netbox_rir" "rir_2" {
 
 ### Optional
 
-- `name` (String) At least one of `name` or `slug` must be given.
-- `slug` (String) At least one of `name` or `slug` must be given.
+- `name` (String) The name of the rir. At least one of `name` or `slug` must be given.
+- `slug` (String) The URL-friendly slug of the rir. At least one of `name` or `slug` must be given.
 
 ### Read-Only
 
-- `description` (String)
-- `id` (Number) The ID of this resource.
-- `is_private` (Boolean)
+- `description` (String) A description of the rir.
+- `id` (Number) The numeric ID of the rir.
+- `is_private` (Boolean) Whether the rir is private.

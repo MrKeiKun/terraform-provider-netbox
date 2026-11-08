@@ -19,18 +19,21 @@ func resourceNetboxCustomLink() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"object_types": {
-				Type:     schema.TypeSet,
-				Required: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeSet,
+				Description: "The object types the custom link applies to.",
+				Required:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the custom link.",
+				Required:    true,
 			},
 			"enabled": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
+				Type:        schema.TypeBool,
+				Description: "Whether the custom link is enabled.",
+				Optional:    true,
+				Default:     false,
 			},
 			"link_text": {
 				Type:        schema.TypeString,
@@ -44,6 +47,7 @@ func resourceNetboxCustomLink() *schema.Resource {
 			},
 			"weight": {
 				Type:         schema.TypeInt,
+				Description:  "The weight of the custom link.",
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.IntBetween(0, 32767),
@@ -67,8 +71,9 @@ func resourceNetboxCustomLink() *schema.Resource {
 				Description: "Force link to open in a new window",
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the custom link.",
+				Optional:    true,
 			},
 		},
 		Importer: &schema.ResourceImporter{

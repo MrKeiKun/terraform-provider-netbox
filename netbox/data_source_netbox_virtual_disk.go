@@ -16,31 +16,36 @@ import (
 func dataSourceNetboxVirtualDisk() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxVirtualDiskRead,
-		Description: `:meta:subcategory:Virtualization:`,
+		Description: `:meta:subcategory:Virtualization:Retrieves all virtual disk from NetBox. Narrow the result with filter blocks and cap it with limit.`,
 		Schema: map[string]*schema.Schema{
 			"filter": {
-				Type:     schema.TypeList,
-				Optional: true,
+				Type:        schema.TypeList,
+				Description: "Filters that select which items are returned. Each filter is a name/value pair.",
+				Optional:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Description: "The name of the field to filter by.",
+							Required:    true,
 						},
 						"value": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Description: "The value of the field to filter by.",
+							Required:    true,
 						},
 					},
 				},
 			},
 			"name_regex": {
 				Type:         schema.TypeString,
+				Description:  "The name regex of the virtual disk.",
 				Optional:     true,
 				ValidateFunc: validation.StringIsValidRegExp,
 			},
 			"limit": {
 				Type:             schema.TypeInt,
+				Description:      "The maximum number of items to return. Defaults to 0, which returns all items.",
 				Optional:         true,
 				ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
 				Default:          0,
@@ -52,29 +57,35 @@ func dataSourceNetboxVirtualDisk() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"virtual_disks": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Description: "The virtual disks of the virtual disk.",
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The numeric ID of the virtual disk.",
+							Computed:    true,
 						},
 						"name": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "The name of the virtual disk.",
+							Computed:    true,
 						},
 						"description": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "A description of the virtual disk.",
+							Computed:    true,
 						},
 						"size_mb": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The size mb of the virtual disk.",
+							Computed:    true,
 						},
 						"virtual_machine_id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The ID of the virtual machine associated with the virtual disk.",
+							Computed:    true,
 						},
 						tagsKey: {
 							Type:     schema.TypeList,

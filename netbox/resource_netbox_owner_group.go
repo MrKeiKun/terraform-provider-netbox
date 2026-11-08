@@ -19,12 +19,14 @@ Requires NetBox v4.5.0 or newer.`,
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the owner group.",
+				Required:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the owner group.",
+				Optional:    true,
 			},
 		},
 		Importer: &schema.ResourceImporter{

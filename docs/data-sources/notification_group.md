@@ -3,12 +3,12 @@
 page_title: "netbox_notification_group Data Source - terraform-provider-netbox"
 subcategory: "Extras"
 description: |-
-  
+  Retrieves a single notification group from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_notification_group (Data Source)
 
-
+Retrieves a single notification group from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -23,11 +23,11 @@ data "netbox_notification_group" "example" {
 
 ### Optional
 
-- `name` (String) At least one of `name` must be given.
+- `name` (String) The name of the notification group. At least one of `name` must be given.
 
 ### Read-Only
 
-- `description` (String)
-- `group_ids` (Set of Number)
+- `description` (String) A description of the notification group.
+- `group_ids` (Set of Number) The IDs of the group associated with the notification group.
 - `id` (String) The ID of this resource.
-- `user_ids` (Set of Number)
+- `user_ids` (Set of Number) The IDs of the user associated with the notification group.

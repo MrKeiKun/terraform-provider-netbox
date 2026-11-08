@@ -24,16 +24,16 @@ data "netbox_cooling_outflow_template" "example" {
 
 ### Optional
 
-- `device_type_id` (Number)
-- `name` (String) At least one of `name` must be given.
+- `device_type_id` (Number) The ID of the device type associated with the cooling outflow template.
+- `name` (String) The name of the cooling outflow template. At least one of `name` must be given.
 
 ### Read-Only
 
-- `cooling_intake_id` (Number)
-- `description` (String)
-- `diameter` (Number)
-- `diameter_unit` (String)
+- `cooling_intake_id` (Number) The ID of the cooling intake associated with the cooling outflow template.
+- `description` (String) A description of the cooling outflow template.
+- `diameter` (Number) The diameter of the cooling outflow template.
+- `diameter_unit` (String) The diameter unit of the cooling outflow template.
 - `id` (String) The ID of this resource.
-- `label` (String)
-- `module_type_id` (Number)
-- `type` (String)
+- `label` (String) The label of the cooling outflow template.
+- `module_type_id` (Number) The ID of the module type associated with the cooling outflow template.
+- `type` (String) The type of the cooling outflow template.

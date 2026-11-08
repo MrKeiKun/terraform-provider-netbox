@@ -11,38 +11,45 @@ import (
 func dataSourceNetboxCircuitProviderNetwork() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxCircuitProviderNetworkRead,
-		Description: `:meta:subcategory:Circuits:`,
+		Description: `:meta:subcategory:Circuits:Retrieves a single circuit provider network from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"comments": {
-				Computed: true,
-				Type:     schema.TypeString,
+				Computed:    true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the circuit provider network.",
 			},
 			"custom_fields": {
-				Computed: true,
-				Type:     schema.TypeMap,
+				Computed:    true,
+				Type:        schema.TypeMap,
+				Description: "Custom field values of the circuit provider network, as a map of field name to value.",
 			},
 			"description": {
-				Computed: true,
-				Type:     schema.TypeString,
+				Computed:    true,
+				Type:        schema.TypeString,
+				Description: "A description of the circuit provider network.",
 			},
 			"name": {
 				AtLeastOneOf: []string{"id", "name"},
 				Optional:     true,
 				Type:         schema.TypeString,
+				Description:  "The name of the circuit provider network.",
 			},
 			"id": {
 				AtLeastOneOf: []string{"id", "name"},
 				Computed:     true,
 				Optional:     true,
 				Type:         schema.TypeString,
+				Description:  "The numeric ID of the circuit provider network.",
 			},
 			"provider_id": {
-				Computed: true,
-				Type:     schema.TypeInt,
+				Computed:    true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the provider associated with the circuit provider network.",
 			},
 			"service_id": {
-				Computed: true,
-				Type:     schema.TypeString,
+				Computed:    true,
+				Type:        schema.TypeString,
+				Description: "The ID of the service associated with the circuit provider network.",
 			},
 			tagsKey: tagsSchemaRead,
 		},

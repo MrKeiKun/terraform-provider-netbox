@@ -24,15 +24,18 @@ func resourceNetboxRackType() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"model": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The model of the rack type.",
+				Required:    true,
 			},
 			"manufacturer_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the manufacturer associated with the rack type.",
+				Optional:    true,
 			},
 			"slug": {
 				Type:         schema.TypeString,
+				Description:  "The URL-friendly slug of the rack type.",
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.StringLenBetween(1, 100),
@@ -51,16 +54,19 @@ func resourceNetboxRackType() *schema.Resource {
 			},
 			"u_height": {
 				Type:         schema.TypeInt,
+				Description:  "The height of the rack type in rack units.",
 				Required:     true,
 				ValidateFunc: validation.IntBetween(1, 100),
 			},
 			"starting_unit": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The starting unit of the rack type.",
+				Required:    true,
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the rack type.",
+				Optional:    true,
 			},
 			"desc_units": {
 				Type:        schema.TypeBool,
@@ -89,16 +95,19 @@ func resourceNetboxRackType() *schema.Resource {
 			tagsKey:         tagsSchema,
 			"description": {
 				Type:         schema.TypeString,
+				Description:  "A description of the rack type.",
 				Optional:     true,
 				ValidateFunc: validation.StringLenBetween(0, 200),
 			},
 			"outer_width": {
 				Type:         schema.TypeInt,
+				Description:  "The outer width of the rack type.",
 				Optional:     true,
 				ValidateFunc: validatePositiveInt16,
 			},
 			"outer_depth": {
 				Type:         schema.TypeInt,
+				Description:  "The outer depth of the rack type.",
 				Optional:     true,
 				ValidateFunc: validatePositiveInt16,
 			},
@@ -110,15 +119,18 @@ func resourceNetboxRackType() *schema.Resource {
 				Description:  buildValidValueDescription(resourceNetboxRackTypeOuterUnitOptions),
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the rack type.",
+				Optional:    true,
 			},
 			"weight": {
-				Type:     schema.TypeFloat,
-				Optional: true,
+				Type:        schema.TypeFloat,
+				Description: "The weight of the rack type.",
+				Optional:    true,
 			},
 			"max_weight": {
 				Type:         schema.TypeInt,
+				Description:  "The max weight of the rack type.",
 				Optional:     true,
 				ValidateFunc: validatePositiveInt32,
 			},
@@ -131,6 +143,7 @@ func resourceNetboxRackType() *schema.Resource {
 			},
 			"mounting_depth_mm": {
 				Type:         schema.TypeInt,
+				Description:  "The mounting depth mm of the rack type.",
 				Optional:     true,
 				ValidateFunc: validatePositiveInt16,
 			},

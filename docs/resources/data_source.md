@@ -26,23 +26,34 @@ resource "netbox_data_source" "example" {
 
 ### Required
 
-- `name` (String)
-- `source_url` (String)
-- `type` (String)
+- `name` (String) The name of the data source.
+- `source_url` (String) The source url of the data source.
+- `type` (String) The type of the data source.
 
 ### Optional
 
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `enabled` (Boolean) Defaults to `false`.
+- `comments` (String) Free-form comments about the data source.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the data source.
+- `enabled` (Boolean) Whether the data source is enabled. Defaults to `false`.
 - `ignore_rules` (String) Patterns (one per line) matching files or paths to ignore when syncing.
-- `owner_id` (Number)
-- `parameters` (String)
+- `owner_id` (Number) The ID of the owner associated with the data source.
+- `parameters` (String) The parameters of the data source.
 - `sync_interval` (Number) One of [1, 60, 720, 1440, 10080, 43200].
-- `tags` (Set of String)
+- `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_data_source.example 1
+```

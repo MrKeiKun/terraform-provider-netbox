@@ -30,23 +30,34 @@ resource "netbox_cooling_outflow" "example" {
 
 ### Required
 
-- `device_id` (Number)
-- `name` (String)
+- `device_id` (Number) The ID of the device associated with the cooling outflow.
+- `name` (String) The name of the cooling outflow.
 
 ### Optional
 
-- `cooling_intake_id` (Number)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `diameter` (Number)
+- `cooling_intake_id` (Number) The ID of the cooling intake associated with the cooling outflow.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the cooling outflow.
+- `diameter` (Number) The diameter of the cooling outflow.
 - `diameter_unit` (String) One of [mm, cm, in].
 - `label` (String) Physical label.
-- `module_id` (Number)
-- `owner_id` (Number)
-- `tags` (Set of String)
+- `module_id` (Number) The ID of the module associated with the cooling outflow.
+- `owner_id` (Number) The ID of the owner associated with the cooling outflow.
+- `tags` (Set of String) Tags assigned to the object, by name.
 - `type` (String) One of [uqd, uqdb, qdc, camlock, npt, bsp, proprietary].
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_cooling_outflow.example 1
+```

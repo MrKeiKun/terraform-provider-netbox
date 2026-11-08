@@ -28,17 +28,28 @@ resource "netbox_circuit_group_assignment" "example" {
 
 ### Required
 
-- `group_id` (Number)
-- `member_id` (Number)
-- `member_type` (String)
+- `group_id` (Number) The ID of the group associated with the circuit group assignment.
+- `member_id` (Number) The ID of the member associated with the circuit group assignment.
+- `member_type` (String) The member type of the circuit group assignment.
 
 ### Optional
 
-- `custom_fields` (Map of String)
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `priority` (String) One of [primary, secondary, tertiary, inactive].
-- `tags` (Set of String)
+- `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_circuit_group_assignment.example 1
+```

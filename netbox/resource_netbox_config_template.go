@@ -25,26 +25,31 @@ func resourceNetboxConfigTemplate() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
+				Description:  "The name of the config template.",
 				Required:     true,
 				ValidateFunc: validation.StringLenBetween(1, 100),
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the config template.",
+				Optional:    true,
 			},
 			"template_code": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The template code of the config template.",
+				Required:    true,
 			},
 			"environment_params": {
 				Type:         schema.TypeString,
+				Description:  "The environment params of the config template.",
 				Optional:     true,
 				Default:      "{}",
 				ValidateFunc: validation.StringIsJSON,
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the config template.",
+				Optional:    true,
 			},
 			"mime_type": {
 				Type:        schema.TypeString,

@@ -93,23 +93,30 @@ resource "netbox_mac_address" "this" {
 
 ### Required
 
-- `mac_address` (String)
+- `mac_address` (String) The MAC address of the mac address.
 
 ### Optional
 
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `device_interface_id` (Number) Conflicts with `interface_id` and `virtual_machine_interface_id`.
-- `interface_id` (Number) Required when `object_type` is set.
+- `comments` (String) Free-form comments about the mac address.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the mac address.
+- `device_interface_id` (Number) The ID of the device interface associated with the mac address. Conflicts with `interface_id` and `virtual_machine_interface_id`.
+- `interface_id` (Number) The ID of the interface associated with the mac address. Required when `object_type` is set.
 - `object_type` (String) Valid values are `virtualization.vminterface` and `dcim.interface`. Required when `interface_id` is set.
-- `owner_id` (Number)
-- `tags` (Set of String)
-- `virtual_machine_interface_id` (Number) Conflicts with `interface_id` and `device_interface_id`.
+- `owner_id` (Number) The ID of the owner associated with the mac address.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `virtual_machine_interface_id` (Number) The ID of the virtual machine interface associated with the mac address. Conflicts with `interface_id` and `device_interface_id`.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_mac_address.example 1
+```

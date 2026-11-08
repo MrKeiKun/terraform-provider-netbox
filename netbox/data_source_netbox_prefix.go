@@ -29,14 +29,16 @@ func dataSourceNetboxPrefix() *schema.Resource {
 	customFieldsFilterSchema.AtLeastOneOf = filterAtLeastOneOf
 	return &schema.Resource{
 		Read:        dataSourceNetboxPrefixRead,
-		Description: `:meta:subcategory:IP Address Management (IPAM):`,
+		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves a single prefix from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The numeric ID of the prefix.",
+				Computed:    true,
 			},
 			"cidr": {
 				Type:          schema.TypeString,
+				Description:   "The cidr of the prefix.",
 				Optional:      true,
 				Deprecated:    "The `cidr` parameter is deprecated in favor of the canonical `prefix` attribute.",
 				ConflictsWith: []string{"prefix"},
@@ -61,12 +63,14 @@ func dataSourceNetboxPrefix() *schema.Resource {
 			},
 			"role_id": {
 				Type:         schema.TypeInt,
+				Description:  "The ID of the role associated with the prefix.",
 				Optional:     true,
 				Computed:     true,
 				AtLeastOneOf: filterAtLeastOneOf,
 			},
 			"prefix": {
 				Type:          schema.TypeString,
+				Description:   "The prefix in CIDR notation.",
 				Optional:      true,
 				ValidateFunc:  validation.IsCIDR,
 				ConflictsWith: []string{"cidr"},
@@ -74,41 +78,49 @@ func dataSourceNetboxPrefix() *schema.Resource {
 			},
 			"vlan_vid": {
 				Type:         schema.TypeFloat,
+				Description:  "The vlan vid of the prefix.",
 				Optional:     true,
 				AtLeastOneOf: filterAtLeastOneOf,
 				ValidateFunc: validation.FloatBetween(1, 4094),
 			},
 			"vrf_id": {
 				Type:         schema.TypeInt,
+				Description:  "The ID of the vrf associated with the prefix.",
 				Optional:     true,
 				AtLeastOneOf: filterAtLeastOneOf,
 			},
 			"vlan_id": {
 				Type:         schema.TypeInt,
+				Description:  "The ID of the vlan associated with the prefix.",
 				Optional:     true,
 				AtLeastOneOf: filterAtLeastOneOf,
 			},
 			"tenant_id": {
 				Type:         schema.TypeInt,
+				Description:  "The ID of the tenant associated with the prefix.",
 				Optional:     true,
 				AtLeastOneOf: filterAtLeastOneOf,
 			},
 			"site_id": {
 				Type:         schema.TypeInt,
+				Description:  "The ID of the site associated with the prefix.",
 				Optional:     true,
 				AtLeastOneOf: filterAtLeastOneOf,
 			},
 			"site_group_id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the site group associated with the prefix.",
+				Computed:    true,
 			},
 			"location_id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the location associated with the prefix.",
+				Computed:    true,
 			},
 			"region_id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the region associated with the prefix.",
+				Computed:    true,
 			},
 			"tag": {
 				Type:         schema.TypeString,
@@ -125,6 +137,7 @@ for more information on available lookup expressions.`,
 			},
 			"status": {
 				Type:         schema.TypeString,
+				Description:  "The status of the prefix.",
 				Optional:     true,
 				AtLeastOneOf: filterAtLeastOneOf,
 			},

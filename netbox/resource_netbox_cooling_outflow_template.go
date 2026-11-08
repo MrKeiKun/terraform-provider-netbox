@@ -21,12 +21,14 @@ Requires NetBox v4.7.0 or newer.`,
 
 		Schema: map[string]*schema.Schema{
 			"device_type_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the device type associated with the cooling outflow template.",
+				Optional:    true,
 			},
 			"module_type_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the module type associated with the cooling outflow template.",
+				Optional:    true,
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -45,8 +47,9 @@ Requires NetBox v4.7.0 or newer.`,
 				ValidateFunc: validation.StringInSlice([]string{"uqd", "uqdb", "qdc", "camlock", "npt", "bsp", "proprietary"}, false),
 			},
 			"diameter": {
-				Type:     schema.TypeFloat,
-				Optional: true,
+				Type:        schema.TypeFloat,
+				Description: "The diameter of the cooling outflow template.",
+				Optional:    true,
 			},
 			"diameter_unit": {
 				Type:         schema.TypeString,
@@ -55,12 +58,14 @@ Requires NetBox v4.7.0 or newer.`,
 				ValidateFunc: validation.StringInSlice([]string{"mm", "cm", "in"}, false),
 			},
 			"cooling_intake_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the cooling intake associated with the cooling outflow template.",
+				Optional:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the cooling outflow template.",
+				Optional:    true,
 			},
 		},
 		Importer: &schema.ResourceImporter{

@@ -40,18 +40,29 @@ resource "netbox_module_bay_template" "test" {
 
 ### Required
 
-- `device_type_id` (Number)
-- `name` (String)
+- `device_type_id` (Number) The ID of the device type associated with the module bay template.
+- `name` (String) The name of the module bay template.
 
 ### Optional
 
-- `description` (String)
-- `enabled` (Boolean)
-- `label` (String)
-- `module_bay_type_ids` (Set of Number)
-- `module_type_id` (Number)
+- `description` (String) A description of the module bay template.
+- `enabled` (Boolean) Whether the module bay template is enabled.
+- `label` (String) The label of the module bay template.
+- `module_bay_type_ids` (Set of Number) The IDs of the module bay type associated with the module bay template.
+- `module_type_id` (Number) The ID of the module type associated with the module bay template.
 - `position` (String) Identifier to reference when renaming installed components.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_module_bay_template.example 1
+```

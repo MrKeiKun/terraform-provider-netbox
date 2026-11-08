@@ -39,15 +39,26 @@ resource "netbox_device_bay_template" "example" {
 
 ### Required
 
-- `device_type_id` (Number)
-- `name` (String)
+- `device_type_id` (Number) The ID of the device type associated with the device bay template.
+- `name` (String) The name of the device bay template.
 
 ### Optional
 
-- `description` (String)
-- `enabled` (Boolean)
-- `label` (String)
+- `description` (String) A description of the device bay template.
+- `enabled` (Boolean) Whether the device bay template is enabled.
+- `label` (String) The label of the device bay template.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_device_bay_template.example 1
+```

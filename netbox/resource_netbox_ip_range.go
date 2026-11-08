@@ -20,12 +20,14 @@ func resourceNetboxIPRange() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"start_address": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The start address of the ip range.",
+				Required:    true,
 			},
 			"end_address": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The end address of the ip range.",
+				Required:    true,
 			},
 			"status": {
 				Type:        schema.TypeString,
@@ -34,30 +36,36 @@ func resourceNetboxIPRange() *schema.Resource {
 				Description: buildValidValueDescription(resourceNetboxIPRangeStatusOptions),
 			},
 			"tenant_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the tenant associated with the ip range.",
+				Optional:    true,
 			},
 			"role_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the role associated with the ip range.",
+				Optional:    true,
 			},
 			"vrf_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the vrf associated with the ip range.",
+				Optional:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the ip range.",
+				Optional:    true,
 			},
 			"mark_populated": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeBool,
+				Description: "Whether mark populated is enabled for the ip range.",
+				Optional:    true,
+				Computed:    true,
 			},
 			"mark_utilized": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeBool,
+				Description: "Whether the ip range is treated as fully utilized.",
+				Optional:    true,
+				Computed:    true,
 			},
 			"size": {
 				Type:        schema.TypeInt,
@@ -65,12 +73,14 @@ func resourceNetboxIPRange() *schema.Resource {
 				Description: "The total member count of the IP range",
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the ip range.",
+				Optional:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the ip range.",
+				Optional:    true,
 			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,

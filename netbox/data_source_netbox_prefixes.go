@@ -9,7 +9,7 @@ import (
 func dataSourceNetboxPrefixes() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxPrefixesRead,
-		Description: `:meta:subcategory:IP Address Management (IPAM):`,
+		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves all prefixes from NetBox. Narrow the result with filter blocks and cap it with limit.`,
 		Schema: map[string]*schema.Schema{
 			"filter": {
 				Type:        schema.TypeSet,
@@ -38,61 +38,75 @@ func dataSourceNetboxPrefixes() *schema.Resource {
 				Description:      "The limit of objects to return from the API lookup.",
 			},
 			"prefixes": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Description: "The prefixes of the prefixes.",
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The numeric ID of the prefixes.",
+							Computed:    true,
 						},
 						"prefix": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "The prefix in CIDR notation.",
+							Computed:    true,
 						},
 						"description": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "A description of the prefixes.",
+							Computed:    true,
 						},
 						"tenant_id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The ID of the tenant associated with the prefixes.",
+							Computed:    true,
 						},
 						"site_id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The ID of the site associated with the prefixes.",
+							Computed:    true,
 						},
 						"site_group_id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The ID of the site group associated with the prefixes.",
+							Computed:    true,
 						},
 						"location_id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The ID of the location associated with the prefixes.",
+							Computed:    true,
 						},
 						"region_id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The ID of the region associated with the prefixes.",
+							Computed:    true,
 						},
 						"role_id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The ID of the role associated with the prefixes.",
+							Computed:    true,
 						},
 						"vlan_vid": {
-							Type:     schema.TypeFloat,
-							Computed: true,
+							Type:        schema.TypeFloat,
+							Description: "The vlan vid of the prefixes.",
+							Computed:    true,
 						},
 						"vrf_id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The ID of the vrf associated with the prefixes.",
+							Computed:    true,
 						},
 						"vlan_id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The ID of the vlan associated with the prefixes.",
+							Computed:    true,
 						},
 						"status": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "The status of the prefixes.",
+							Computed:    true,
 						},
 						"tags": tagsSchemaRead,
 						customFieldsKey: {

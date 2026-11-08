@@ -3,12 +3,12 @@
 page_title: "netbox_l2vpn Data Source - terraform-provider-netbox"
 subcategory: "VPN Tunnels"
 description: |-
-  
+  Retrieves a single l2vpn from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_l2vpn (Data Source)
 
-
+Retrieves a single l2vpn from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -23,19 +23,19 @@ data "netbox_l2vpn" "example" {
 
 ### Optional
 
-- `name` (String) At least one of `name` or `slug` must be given.
-- `slug` (String) At least one of `name` or `slug` must be given.
+- `name` (String) The name of the l2vpn. At least one of `name` or `slug` must be given.
+- `slug` (String) The URL-friendly slug of the l2vpn. At least one of `name` or `slug` must be given.
 
 ### Read-Only
 
-- `comments` (String)
-- `description` (String)
-- `export_target_ids` (Set of Number)
+- `comments` (String) Free-form comments about the l2vpn.
+- `description` (String) A description of the l2vpn.
+- `export_target_ids` (Set of Number) The IDs of the export target associated with the l2vpn.
 - `id` (String) The ID of this resource.
-- `identifier` (Number)
-- `import_target_ids` (Set of Number)
-- `owner_id` (Number)
-- `status` (String)
-- `tags` (Set of String)
-- `tenant_id` (Number)
-- `type` (String)
+- `identifier` (Number) The identifier of the l2vpn.
+- `import_target_ids` (Set of Number) The IDs of the import target associated with the l2vpn.
+- `owner_id` (Number) The ID of the owner associated with the l2vpn.
+- `status` (String) The status of the l2vpn.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the l2vpn.
+- `type` (String) The type of the l2vpn.

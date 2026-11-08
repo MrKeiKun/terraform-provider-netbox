@@ -44,29 +44,40 @@ resource "netbox_interface" "myvm_eth1" {
 
 ### Required
 
-- `name` (String)
-- `virtual_machine_id` (Number)
+- `name` (String) The name of the interface.
+- `virtual_machine_id` (Number) The ID of the virtual machine associated with the interface.
 
 ### Optional
 
 - `bridge_interface_id` (Number) ID of the bridge interface this interface belongs to.
-- `description` (String)
-- `enabled` (Boolean) Defaults to `true`.
+- `description` (String) A description of the interface.
+- `enabled` (Boolean) Whether the interface is enabled. Defaults to `true`.
 - `mode` (String) Valid values are `access`, `tagged` and `tagged-all`.
-- `mtu` (Number)
-- `owner_id` (Number)
-- `parent` (Number)
-- `qinq_svlan_id` (Number)
-- `tagged_vlans` (Set of Number)
-- `tags` (Set of String)
-- `type` (String, Deprecated)
-- `untagged_vlan` (Number)
-- `vlan_translation_policy_id` (Number)
-- `vrf_id` (Number)
+- `mtu` (Number) The MTU of the interface.
+- `owner_id` (Number) The ID of the owner associated with the interface.
+- `parent` (Number) The parent of the interface.
+- `qinq_svlan_id` (Number) The ID of the qinq svlan associated with the interface.
+- `tagged_vlans` (Set of Number) The tagged vlans of the interface.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `type` (String, Deprecated) The type of the interface.
+- `untagged_vlan` (Number) The untagged vlan of the interface.
+- `vlan_translation_policy_id` (Number) The ID of the vlan translation policy associated with the interface.
+- `vrf_id` (Number) The ID of the vrf associated with the interface.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `mac_address` (String)
+- `mac_address` (String) The MAC address of the interface.
 - `primary_mac_address_id` (Number) The primary MAC address id.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_interface.example 1
+```

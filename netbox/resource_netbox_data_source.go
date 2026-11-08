@@ -21,25 +21,30 @@ func resourceNetboxDataSource() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the data source.",
+				Required:    true,
 			},
 			"type": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The type of the data source.",
+				Required:    true,
 			},
 			"source_url": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The source url of the data source.",
+				Required:    true,
 			},
 			"enabled": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
+				Type:        schema.TypeBool,
+				Description: "Whether the data source is enabled.",
+				Optional:    true,
+				Default:     false,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the data source.",
+				Optional:    true,
 			},
 			"sync_interval": {
 				Type:         schema.TypeInt,
@@ -49,6 +54,7 @@ func resourceNetboxDataSource() *schema.Resource {
 			},
 			"parameters": {
 				Type:             schema.TypeString,
+				Description:      "The parameters of the data source.",
 				Optional:         true,
 				ValidateFunc:     validation.StringIsJSON,
 				DiffSuppressFunc: suppressEquivalentJSON,
@@ -59,12 +65,14 @@ func resourceNetboxDataSource() *schema.Resource {
 				Description: "Patterns (one per line) matching files or paths to ignore when syncing",
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the data source.",
+				Optional:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the data source.",
+				Optional:    true,
 			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,

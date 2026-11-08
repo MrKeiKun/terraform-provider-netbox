@@ -32,33 +32,44 @@ resource "netbox_custom_field" "test" {
 
 ### Required
 
-- `content_types` (Set of String)
-- `name` (String)
-- `type` (String)
+- `content_types` (Set of String) The object types the custom field applies to.
+- `name` (String) The name of the custom field.
+- `type` (String) The type of the custom field.
 
 ### Optional
 
-- `choice_set_id` (Number)
-- `comments` (String)
-- `default` (String)
-- `description` (String)
+- `choice_set_id` (Number) The ID of the choice set associated with the custom field.
+- `comments` (String) Free-form comments about the custom field.
+- `default` (String) The default value of the custom field.
+- `description` (String) A description of the custom field.
 - `filter_logic` (String) One of [disabled, loose, exact].
-- `group_name` (String)
+- `group_name` (String) The group the custom field is shown in.
 - `is_cloneable` (Boolean) Replicate this value when cloning objects.
-- `label` (String)
+- `label` (String) The label of the custom field.
 - `nulls_first` (Boolean) Sort null values before non-null values when ordering by this field.
-- `owner_id` (Number)
-- `related_object_type` (String)
-- `required` (Boolean)
+- `owner_id` (Number) The ID of the owner associated with the custom field.
+- `related_object_type` (String) The related object type of the custom field.
+- `required` (Boolean) Whether a value is required for the custom field.
 - `search_weight` (Number) Weighting for search. Lower values are considered more important. Fields with a search weight of zero will be ignored.
 - `ui_editable` (String) One of [yes, no, hidden].
 - `ui_visible` (String) One of [always, if-set, hidden].
 - `unique` (Boolean) The value of this field must be unique for the assigned object.
-- `validation_maximum` (Number)
-- `validation_minimum` (Number)
-- `validation_regex` (String)
-- `weight` (Number)
+- `validation_maximum` (Number) The maximum allowed value.
+- `validation_minimum` (Number) The minimum allowed value.
+- `validation_regex` (String) A regular expression that values must match.
+- `weight` (Number) The weight of the custom field.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_custom_field.example 1
+```

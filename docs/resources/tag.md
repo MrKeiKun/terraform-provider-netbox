@@ -28,18 +28,29 @@ resource "netbox_tag" "dmz" {
 
 ### Required
 
-- `name` (String)
+- `name` (String) The name of the tag.
 
 ### Optional
 
-- `color_hex` (String) Defaults to `9e9e9e`.
-- `description` (String)
+- `color_hex` (String) The color hex of the tag. Defaults to `9e9e9e`.
+- `description` (String) A description of the tag.
 - `object_types` (Set of String) Restricts the tag to these object types, for example `dcim.site`. The tag can be used on every object type when this is empty.
-- `slug` (String)
-- `tags` (Set of String)
+- `slug` (String) The URL-friendly slug of the tag.
+- `tags` (Set of String) Tags assigned to the object, by name.
 - `weight` (Number) Weight of the tag. Tags with a higher weight are shown after tags with a lower weight.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_tag.example 1
+```
