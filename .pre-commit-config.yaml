@@ -1,6 +1,6 @@
 ---
 default_stages:
-  - commit
+  - pre-commit
 
 default_install_hook_types:
   - commit-msg
@@ -11,7 +11,7 @@ exclude: "^docs/|^CHANGELOG.md$"
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: "v4.5.0"
+    rev: "v6.0.0"
     hooks:
       - id: check-added-large-files
       - id: check-case-conflict
@@ -38,30 +38,30 @@ repos:
         exclude: "^project/"
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: "v0.38.0"
+    rev: "v0.50.0"
     hooks:
       - id: markdownlint-fix
         name: markdownlint
 
   - repo: https://github.com/adrienverge/yamllint
-    rev: "v1.33.0"
+    rev: "v1.38.0"
     hooks:
       - id: yamllint
         entry: yamllint --strict
 
   - repo: https://github.com/pecigonzalo/pre-commit-shfmt
-    rev: "v2.1.0"
+    rev: "v2.2.0"
     hooks:
       - id: shell-fmt-go
 
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: "v0.9.0.6"
+    rev: "v0.11.0.1-1"
     hooks:
       - id: shellcheck
         # Ignore one-line "terraform import ..." doc snippets
         exclude: '^examples/.*/import\.sh$'
 
   - repo: https://github.com/rhysd/actionlint
-    rev: "v1.6.26"
+    rev: "v1.7.12"
     hooks:
       - id: actionlint

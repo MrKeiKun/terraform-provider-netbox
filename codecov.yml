@@ -1,0 +1,14 @@
+---
+ignore:
+  - main.go
+  - scripts/
+  - "**/*_test.go"
+
+coverage:
+  status:
+    project:
+      default:
+        informational: true
+    patch:
+      default:
+        informational: true

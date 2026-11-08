@@ -1,45 +1,36 @@
 # Issue Reporting Guide
 
-Hi there,
+Thank you for opening an issue. Please use the issue tracker for bug reports and feature requests. For general Terraform usage questions, see the [Terraform community page](https://www.terraform.io/community).
 
-Thank you for opening an issue. Please note that we try to keep the Terraform
-issue tracker reserved for bug reports and feature requests. For general usage
-questions, please see: <https://www.terraform.io/community.html>.
+Before you open an issue, check that it is not already reported and that you are using the latest provider version.
 
-## Terraform Version
+## Versions
 
-Run `terraform -v` to show the version. If you are not running the latest
-version of Terraform, please upgrade because your issue may have already been
-fixed.
+- Terraform version (`terraform -v`):
+- Provider version:
+- NetBox version:
 
-## Affected Resource(s)
+## Affected Resource(s) or Data Source(s)
 
-Please list the resources as a list, for example:
+Please list them, for example:
 
-- opc_instance
-- opc_storage_volume
+- netbox_site
+- netbox_prefix
 
-If this issue appears to affect multiple resources, it may be an issue with
-Terraform's core, so please mention this.
-
-## Terraform Configuration Files
+## Terraform Configuration
 
 ```hcl
-# Copy-paste your Terraform configurations here - for large Terraform configs,
-# please use a service like Dropbox and share a link to the ZIP file. For
-# security, you can also encrypt the files using our GPG public key.
+# Paste the smallest configuration that shows the problem.
+# Remove tokens and other secrets first.
 ```
 
 ## Debug Output
 
-Please provide a link to a GitHub Gist containing the complete debug output:
-<https://www.terraform.io/docs/internals/debugging.html>. Please do NOT paste
-the debug output in the issue; just paste a link to the Gist.
+Run with `TF_LOG=DEBUG` and share the output as a link to a GitHub Gist. Please do not paste it into the issue. Remove tokens and other secrets first.
 
 ## Panic Output
 
-If Terraform produced a panic, please provide a link to a GitHub Gist containing
-the output of the `crash.log`.
+If Terraform crashed, link a Gist with the `crash.log`.
 
 ## Expected Behavior
 
@@ -47,22 +38,16 @@ What should have happened?
 
 ## Actual Behavior
 
-What actually happened?
+What happened instead?
 
 ## Steps to Reproduce
 
-Please list the steps required to reproduce the issue, for example:
-
 1. `terraform apply`
 
-## Important Factoids
+## Additional Context
 
-Are there anything atypical about your accounts that we should know? For
-example: Running in EC2 Classic? Custom version of OpenStack? Tight ACLs?
+Anything unusual about your NetBox setup, such as plugins, custom fields or a proxy in front of it.
 
 ## References
 
-Are there any other GitHub issues (open or closed) or Pull Requests that should
-be linked here? For example:
-
-- GH-1234
+Related issues or pull requests, for example `#123`.

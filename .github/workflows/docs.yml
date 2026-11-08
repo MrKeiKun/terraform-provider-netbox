@@ -1,0 +1,43 @@
+---
+name: Docs
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  generated-docs:
+    name: Generated docs are up to date
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - name: Regenerate docs and fail on changes
+        run: |
+          make docs
+          git add --intent-to-add --all
+          git diff --exit-code || (echo "::error title=Doc generation changes detected::Please update the docs and commit them to the PR" && exit 1)
+
+  examples:
+    name: Docs examples exist
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+      - name: Ensure docs examples
+        run: bash scripts/ensure_docs_examples.sh
+
+  subcategories:
+    name: Docs subcategories are allowed
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+      - name: Check allowed subcategories
+        run: bash scripts/allowed_subcategories.sh
