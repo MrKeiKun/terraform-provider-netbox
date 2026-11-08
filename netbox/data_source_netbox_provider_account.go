@@ -10,33 +10,39 @@ import (
 func dataSourceNetboxProviderAccount() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxProviderAccountRead,
-		Description: `:meta:subcategory:Circuits:`,
+		Description: `:meta:subcategory:Circuits:Retrieves a single provider account from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"provider_id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the provider associated with the provider account.",
+				Computed:    true,
 			},
 			"name": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The name of the provider account.",
+				Computed:    true,
 			},
 			"account": {
 				Type:         schema.TypeString,
+				Description:  "The account of the provider account.",
 				Optional:     true,
 				Computed:     true,
 				AtLeastOneOf: []string{"account"},
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "A description of the provider account.",
+				Computed:    true,
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the provider account.",
+				Computed:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the provider account.",
+				Computed:    true,
 			},
 			tagsKey: tagsSchemaRead,
 		},

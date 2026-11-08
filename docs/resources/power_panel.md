@@ -38,19 +38,30 @@ resource "netbox_power_panel" "test" {
 
 ### Required
 
-- `name` (String)
-- `site_id` (Number)
+- `name` (String) The name of the power panel.
+- `site_id` (Number) The ID of the site associated with the power panel.
 
 ### Optional
 
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `location_id` (Number)
-- `owner_id` (Number)
-- `tags` (Set of String)
+- `comments` (String) Free-form comments about the power panel.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the power panel.
+- `location_id` (Number) The ID of the location associated with the power panel.
+- `owner_id` (Number) The ID of the owner associated with the power panel.
+- `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_power_panel.example 1
+```

@@ -27,26 +27,37 @@ resource "netbox_wireless_lan" "guest" {
 
 ### Required
 
-- `ssid` (String)
+- `ssid` (String) The ssid of the wireless lan.
 
 ### Optional
 
 - `auth_cipher` (String) Valid values are `auto`, `tkip` and `aes`.
-- `auth_psk` (String, Sensitive)
+- `auth_psk` (String, Sensitive) The auth psk of the wireless lan.
 - `auth_type` (String) Valid values are `open`, `wep`, `wpa-personal` and `wpa-enterprise`.
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `group_id` (Number)
-- `owner_id` (Number)
-- `scope_id` (Number)
-- `scope_type` (String)
+- `comments` (String) Free-form comments about the wireless lan.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the wireless lan.
+- `group_id` (Number) The ID of the group associated with the wireless lan.
+- `owner_id` (Number) The ID of the owner associated with the wireless lan.
+- `scope_id` (Number) The ID of the scope associated with the wireless lan.
+- `scope_type` (String) The scope type of the wireless lan.
 - `status` (String) Valid values are `active`, `reserved`, `disabled` and `deprecated`. Defaults to `active`.
-- `tags` (Set of String)
-- `tenant_id` (Number)
-- `vlan_id` (Number)
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the wireless lan.
+- `vlan_id` (Number) The ID of the vlan associated with the wireless lan.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_wireless_lan.example 1
+```

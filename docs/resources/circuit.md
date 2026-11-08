@@ -43,25 +43,36 @@ resource "netbox_circuit" "test" {
 
 ### Required
 
-- `cid` (String)
-- `provider_id` (Number)
+- `cid` (String) The circuit ID of the circuit.
+- `provider_id` (Number) The ID of the provider associated with the circuit.
 - `status` (String) Valid values are `planned`, `provisioning`, `active`, `offline`, `deprovisioning` and `decommissioning`.
-- `type_id` (Number)
+- `type_id` (Number) The ID of the type associated with the circuit.
 
 ### Optional
 
-- `comments` (String)
+- `comments` (String) Free-form comments about the circuit.
 - `commit_rate` (Number) Committed rate.
-- `custom_fields` (Map of String)
-- `description` (String)
-- `distance` (Number)
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the circuit.
+- `distance` (Number) The distance of the circuit.
 - `distance_unit` (String) One of [km, m, mi, ft].
-- `install_date` (String)
-- `owner_id` (Number)
-- `provider_account_id` (Number)
-- `tenant_id` (Number)
-- `termination_date` (String)
+- `install_date` (String) The installation date of the circuit, in YYYY-MM-DD format.
+- `owner_id` (Number) The ID of the owner associated with the circuit.
+- `provider_account_id` (Number) The ID of the provider account associated with the circuit.
+- `tenant_id` (Number) The ID of the tenant associated with the circuit.
+- `termination_date` (String) The termination date of the circuit, in YYYY-MM-DD format.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_circuit.example 1
+```

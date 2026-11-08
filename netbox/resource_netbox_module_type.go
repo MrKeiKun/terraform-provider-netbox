@@ -19,20 +19,24 @@ func resourceNetboxModuleType() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"manufacturer_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the manufacturer associated with the module type.",
+				Required:    true,
 			},
 			"model": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The model of the module type.",
+				Required:    true,
 			},
 			"part_number": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The part number of the module type.",
+				Optional:    true,
 			},
 			"weight": {
-				Type:     schema.TypeFloat,
-				Optional: true,
+				Type:        schema.TypeFloat,
+				Description: "The weight of the module type.",
+				Optional:    true,
 			},
 			"weight_unit": {
 				Type:         schema.TypeString,
@@ -42,20 +46,24 @@ func resourceNetboxModuleType() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"kg", "g", "lb", "oz"}, false),
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the module type.",
+				Optional:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the module type.",
+				Optional:    true,
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the module type.",
+				Optional:    true,
 			},
 			"profile_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the profile associated with the module type.",
+				Optional:    true,
 			},
 			"airflow": {
 				Type:         schema.TypeString,
@@ -75,9 +83,10 @@ func resourceNetboxModuleType() *schema.Resource {
 				Description: "The date after which this module type is no longer supported by the manufacturer",
 			},
 			"module_bay_type_ids": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeInt},
+				Type:        schema.TypeSet,
+				Description: "The IDs of the module bay type associated with the module type.",
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeInt},
 			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,

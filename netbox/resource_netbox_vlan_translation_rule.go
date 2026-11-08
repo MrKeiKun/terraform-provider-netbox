@@ -19,8 +19,9 @@ func resourceNetboxVlanTranslationRule() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"policy_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the policy associated with the vlan translation rule.",
+				Required:    true,
 			},
 			"local_vid": {
 				Type:         schema.TypeInt,
@@ -35,8 +36,9 @@ func resourceNetboxVlanTranslationRule() *schema.Resource {
 				Description:  "Numeric VLAN ID (1-4094)",
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the vlan translation rule.",
+				Optional:    true,
 			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,

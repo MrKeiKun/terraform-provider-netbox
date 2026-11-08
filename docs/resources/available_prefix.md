@@ -3,12 +3,12 @@
 page_title: "netbox_available_prefix Resource - terraform-provider-netbox"
 subcategory: "IP Address Management (IPAM)"
 description: |-
-  
+  Allocates the next free prefix of the requested length from a parent prefix. Import with "<parent_prefix_id> <prefix_id> <prefix_length>".
 ---
 
 # netbox_available_prefix (Resource)
 
-
+Allocates the next free prefix of the requested length from a parent prefix. Import with "<parent_prefix_id> <prefix_id> <prefix_length>".
 
 ## Example Usage
 
@@ -29,30 +29,41 @@ resource "netbox_available_prefix" "test" {
 
 ### Required
 
-- `parent_prefix_id` (Number)
-- `prefix_length` (Number)
+- `parent_prefix_id` (Number) The ID of the parent prefix associated with the available prefix.
+- `prefix_length` (Number) The prefix length of the available prefix.
 - `status` (String) Valid values are `active`, `container`, `reserved` and `deprecated`.
 
 ### Optional
 
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `is_pool` (Boolean)
-- `location_id` (Number) Conflicts with `site_id`, `site_group_id` and `region_id`.
-- `mark_utilized` (Boolean)
-- `owner_id` (Number)
-- `region_id` (Number) Conflicts with `location_id`, `site_id` and `site_group_id`.
-- `role_id` (Number)
-- `site_group_id` (Number) Conflicts with `location_id`, `site_id` and `region_id`.
-- `site_id` (Number) Conflicts with `location_id`, `site_group_id` and `region_id`.
-- `tags` (Set of String)
-- `tenant_id` (Number)
-- `vlan_id` (Number)
-- `vrf_id` (Number)
+- `comments` (String) Free-form comments about the available prefix.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the available prefix.
+- `is_pool` (Boolean) Whether all addresses of the available prefix, including network and broadcast addresses, are usable.
+- `location_id` (Number) The ID of the location associated with the available prefix. Conflicts with `site_id`, `site_group_id` and `region_id`.
+- `mark_utilized` (Boolean) Whether the available prefix is treated as fully utilized.
+- `owner_id` (Number) The ID of the owner associated with the available prefix.
+- `region_id` (Number) The ID of the region associated with the available prefix. Conflicts with `location_id`, `site_id` and `site_group_id`.
+- `role_id` (Number) The ID of the role associated with the available prefix.
+- `site_group_id` (Number) The ID of the site group associated with the available prefix. Conflicts with `location_id`, `site_id` and `region_id`.
+- `site_id` (Number) The ID of the site associated with the available prefix. Conflicts with `location_id`, `site_group_id` and `region_id`.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the available prefix.
+- `vlan_id` (Number) The ID of the vlan associated with the available prefix.
+- `vrf_id` (Number) The ID of the vrf associated with the available prefix.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `prefix` (String)
-- `tags_all` (Set of String)
+- `prefix` (String) The prefix in CIDR notation.
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is "<parent_prefix_id> <prefix_id> <prefix_length>"
+terraform import netbox_available_prefix.example "1 2 28"
+```

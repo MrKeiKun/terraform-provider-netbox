@@ -10,34 +10,40 @@ import (
 func dataSourceNetboxConfigContextProfile() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxConfigContextProfileRead,
-		Description: `:meta:subcategory:Extras:`,
+		Description: `:meta:subcategory:Extras:Retrieves a single config context profile from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
+				Description:  "The name of the config context profile.",
 				Optional:     true,
 				Computed:     true,
 				AtLeastOneOf: []string{"name"},
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "A description of the config context profile.",
+				Computed:    true,
 			},
 			"schema": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The schema of the config context profile.",
+				Computed:    true,
 			},
 			tagsKey: tagsSchemaRead,
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the config context profile.",
+				Computed:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the config context profile.",
+				Computed:    true,
 			},
 			"data_source_id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the data source associated with the config context profile.",
+				Computed:    true,
 			},
 		},
 	}

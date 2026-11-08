@@ -50,28 +50,39 @@ resource "netbox_power_feed" "test" {
 
 ### Required
 
-- `amperage` (Number)
-- `max_percent_utilization` (Number)
-- `name` (String)
+- `amperage` (Number) The amperage of the device power feed.
+- `max_percent_utilization` (Number) The max percent utilization of the device power feed.
+- `name` (String) The name of the device power feed.
 - `phase` (String) One of [single-phase, three-phase].
-- `power_panel_id` (Number)
+- `power_panel_id` (Number) The ID of the power panel associated with the device power feed.
 - `status` (String) One of [offline, active, planned, failed].
 - `supply` (String) One of [ac, dc].
 - `type` (String) One of [primary, redundant].
-- `voltage` (Number)
+- `voltage` (Number) The voltage of the device power feed.
 
 ### Optional
 
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `mark_connected` (Boolean) Defaults to `false`.
-- `owner_id` (Number)
-- `rack_id` (Number)
-- `tags` (Set of String)
-- `tenant_id` (Number)
+- `comments` (String) Free-form comments about the device power feed.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the device power feed.
+- `mark_connected` (Boolean) Whether the device power feed is marked as connected even without a cable. Defaults to `false`.
+- `owner_id` (Number) The ID of the owner associated with the device power feed.
+- `rack_id` (Number) The ID of the rack associated with the device power feed.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the device power feed.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_power_feed.example 1
+```

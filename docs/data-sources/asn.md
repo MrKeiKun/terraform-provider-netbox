@@ -3,12 +3,12 @@
 page_title: "netbox_asn Data Source - terraform-provider-netbox"
 subcategory: "IP Address Management (IPAM)"
 description: |-
-  
+  Retrieves a single asn from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_asn (Data Source)
 
-
+Retrieves a single asn from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -29,7 +29,7 @@ data "netbox_asn" "asn_2" {
 
 ### Optional
 
-- `asn` (String) At least one of `asn` or `tag` must be given.
+- `asn` (String) The AS number. At least one of `asn` or `tag` must be given.
 - `tag` (String) Tag to include in the data source filter (must match the tag's slug). At least one of `asn` or `tag` must be given.
 - `tag__n` (String) Tag to exclude from the data source filter (must match the tag's slug).
 Refer to [Netbox's documentation](https://demo.netbox.dev/static/docs/rest-api/filtering/#lookup-expressions)
@@ -37,6 +37,6 @@ for more information on available lookup expressions.
 
 ### Read-Only
 
-- `description` (String)
-- `id` (Number) The ID of this resource.
-- `tags` (Set of String)
+- `description` (String) A description of the asn.
+- `id` (Number) The numeric ID of the asn.
+- `tags` (Set of String) Tags assigned to the object, by name.

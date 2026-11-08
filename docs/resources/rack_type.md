@@ -45,33 +45,44 @@ resource "netbox_rack_type" "test" {
 ### Required
 
 - `form_factor` (String) Valid values are `2-post-frame`, `4-post-frame`, `4-post-cabinet`, `wall-frame`, `wall-frame-vertical`, `wall-cabinet` and `wall-cabinet-vertical`.
-- `model` (String)
-- `starting_unit` (Number)
-- `u_height` (Number)
+- `model` (String) The model of the rack type.
+- `starting_unit` (Number) The starting unit of the rack type.
+- `u_height` (Number) The height of the rack type in rack units.
 - `width` (Number) Valid values are `10`, `19`, `21` and `23`.
 
 ### Optional
 
-- `comments` (String)
+- `comments` (String) Free-form comments about the rack type.
 - `cooling_capability` (String) One of [air-only, hybrid, liquid-only].
 - `cooling_capacity` (Number) Cooling capacity (kW).
-- `custom_fields` (Map of String)
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `desc_units` (Boolean) Units are numbered top-to-bottom.
-- `description` (String)
-- `manufacturer_id` (Number)
-- `max_weight` (Number)
-- `mounting_depth_mm` (Number)
-- `outer_depth` (Number)
+- `description` (String) A description of the rack type.
+- `manufacturer_id` (Number) The ID of the manufacturer associated with the rack type.
+- `max_weight` (Number) The max weight of the rack type.
+- `mounting_depth_mm` (Number) The mounting depth mm of the rack type.
+- `outer_depth` (Number) The outer depth of the rack type.
 - `outer_height` (Number) Outer dimension of rack (height).
 - `outer_unit` (String) Valid values are `mm` and `in`. Required when `outer_width` and `outer_depth` is set.
-- `outer_width` (Number)
-- `owner_id` (Number)
-- `slug` (String)
-- `tags` (Set of String)
-- `weight` (Number)
+- `outer_width` (Number) The outer width of the rack type.
+- `owner_id` (Number) The ID of the owner associated with the rack type.
+- `slug` (String) The URL-friendly slug of the rack type.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `weight` (Number) The weight of the rack type.
 - `weight_unit` (String) Valid values are `kg`, `g`, `lb` and `oz`. Required when `weight` and `max_weight` is set.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_rack_type.example 1
+```

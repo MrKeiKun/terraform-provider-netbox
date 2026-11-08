@@ -19,12 +19,14 @@ func resourceNetboxVirtualMachineInterfacePrimaryMACAddress() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"interface_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the interface associated with the virtual machine interface primary mac address.",
+				Required:    true,
 			},
 			"mac_address_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the mac address associated with the virtual machine interface primary mac address.",
+				Required:    true,
 			},
 		},
 		Importer: &schema.ResourceImporter{

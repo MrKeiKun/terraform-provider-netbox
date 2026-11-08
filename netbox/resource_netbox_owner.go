@@ -20,26 +20,31 @@ Requires NetBox v4.5.0 or newer.`,
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the owner.",
+				Required:    true,
 			},
 			"group_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the group associated with the owner.",
+				Optional:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the owner.",
+				Optional:    true,
 			},
 			"user_group_ids": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeInt},
+				Type:        schema.TypeSet,
+				Description: "The IDs of the user group associated with the owner.",
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeInt},
 			},
 			"user_ids": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeInt},
+				Type:        schema.TypeSet,
+				Description: "The IDs of the user associated with the owner.",
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeInt},
 			},
 		},
 		Importer: &schema.ResourceImporter{

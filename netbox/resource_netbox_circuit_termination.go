@@ -23,41 +23,49 @@ func resourceNetboxCircuitTermination() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"circuit_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the circuit associated with the circuit termination.",
+				Required:    true,
 			},
 			"location_id": {
 				Type:         schema.TypeInt,
+				Description:  "The ID of the location associated with the circuit termination.",
 				Optional:     true,
 				ExactlyOneOf: []string{"site_id", "site_group_id", "region_id", "provider_network_id"},
 			},
 			"site_id": {
 				Type:         schema.TypeInt,
+				Description:  "The ID of the site associated with the circuit termination.",
 				Optional:     true,
 				ExactlyOneOf: []string{"location_id", "site_group_id", "region_id", "provider_network_id"},
 			},
 			"site_group_id": {
 				Type:         schema.TypeInt,
+				Description:  "The ID of the site group associated with the circuit termination.",
 				Optional:     true,
 				ExactlyOneOf: []string{"location_id", "site_id", "region_id", "provider_network_id"},
 			},
 			"region_id": {
 				Type:         schema.TypeInt,
+				Description:  "The ID of the region associated with the circuit termination.",
 				Optional:     true,
 				ExactlyOneOf: []string{"location_id", "site_id", "site_group_id", "provider_network_id"},
 			},
 			"provider_network_id": {
 				Type:         schema.TypeInt,
+				Description:  "The ID of the provider network associated with the circuit termination.",
 				Optional:     true,
 				ExactlyOneOf: []string{"location_id", "site_id", "site_group_id", "region_id"},
 			},
 			"port_speed": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The port speed of the circuit termination.",
+				Optional:    true,
 			},
 			"upstream_speed": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The upstream speed of the circuit termination.",
+				Optional:    true,
 			},
 			"term_side": {
 				Type:         schema.TypeString,
@@ -66,8 +74,9 @@ func resourceNetboxCircuitTermination() *schema.Resource {
 				Description:  buildValidValueDescription(resourceNetboxCircuitTerminationTermSideOptions),
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the circuit termination.",
+				Optional:    true,
 			},
 			"xconnect_id": {
 				Type:        schema.TypeString,

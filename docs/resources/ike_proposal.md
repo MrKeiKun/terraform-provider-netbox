@@ -29,19 +29,30 @@ resource "netbox_ike_proposal" "example" {
 - `authentication_method` (String) One of [preshared-keys, certificates, rsa-signatures, dsa-signatures].
 - `encryption_algorithm` (String) One of [aes-128-cbc, aes-128-gcm, aes-192-cbc, aes-192-gcm, aes-256-cbc, aes-256-gcm, 3des-cbc, des-cbc].
 - `group` (Number) One of [1, 2, 5, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34].
-- `name` (String)
+- `name` (String) The name of the ike proposal.
 
 ### Optional
 
 - `authentication_algorithm` (String) One of [hmac-sha1, hmac-sha256, hmac-sha384, hmac-sha512, hmac-md5].
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `owner_id` (Number)
+- `comments` (String) Free-form comments about the ike proposal.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the ike proposal.
+- `owner_id` (Number) The ID of the owner associated with the ike proposal.
 - `sa_lifetime` (Number) Security association lifetime (in seconds).
-- `tags` (Set of String)
+- `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_ike_proposal.example 1
+```

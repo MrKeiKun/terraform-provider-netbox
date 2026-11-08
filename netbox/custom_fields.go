@@ -14,9 +14,10 @@ import (
 const customFieldsKey = "custom_fields"
 
 var customFieldsSchema = &schema.Schema{
-	Type:     schema.TypeMap,
-	Optional: true,
-	Default:  nil,
+	Type:        schema.TypeMap,
+	Description: "Custom field values of the object, as a map of field name to value.",
+	Optional:    true,
+	Default:     nil,
 	Elem: &schema.Schema{
 		Type:    schema.TypeString,
 		Default: nil,

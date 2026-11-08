@@ -3,12 +3,12 @@
 page_title: "netbox_vlan_translation_policy Data Source - terraform-provider-netbox"
 subcategory: "IP Address Management (IPAM)"
 description: |-
-  
+  Retrieves a single vlan translation policy from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_vlan_translation_policy (Data Source)
 
-
+Retrieves a single vlan translation policy from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -23,12 +23,12 @@ data "netbox_vlan_translation_policy" "example" {
 
 ### Optional
 
-- `name` (String) At least one of `name` must be given.
+- `name` (String) The name of the vlan translation policy. At least one of `name` must be given.
 
 ### Read-Only
 
-- `comments` (String)
-- `description` (String)
+- `comments` (String) Free-form comments about the vlan translation policy.
+- `description` (String) A description of the vlan translation policy.
 - `id` (String) The ID of this resource.
-- `owner_id` (Number)
-- `tags` (Set of String)
+- `owner_id` (Number) The ID of the owner associated with the vlan translation policy.
+- `tags` (Set of String) Tags assigned to the object, by name.

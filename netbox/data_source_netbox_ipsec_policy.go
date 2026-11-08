@@ -10,34 +10,40 @@ import (
 func dataSourceNetboxIPSecPolicy() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxIPSecPolicyRead,
-		Description: `:meta:subcategory:VPN Tunnels:`,
+		Description: `:meta:subcategory:VPN Tunnels:Retrieves a single ipsec policy from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
+				Description:  "The name of the ipsec policy.",
 				Optional:     true,
 				Computed:     true,
 				AtLeastOneOf: []string{"name"},
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "A description of the ipsec policy.",
+				Computed:    true,
 			},
 			"proposal_ids": {
-				Type:     schema.TypeSet,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeInt},
+				Type:        schema.TypeSet,
+				Description: "The IDs of the proposal associated with the ipsec policy.",
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeInt},
 			},
 			"pfs_group": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The pfs group of the ipsec policy.",
+				Computed:    true,
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the ipsec policy.",
+				Computed:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the ipsec policy.",
+				Computed:    true,
 			},
 			tagsKey: tagsSchemaRead,
 		},

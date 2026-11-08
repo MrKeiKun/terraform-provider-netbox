@@ -11,14 +11,16 @@ import (
 func dataSourceNetboxAsn() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxAsnRead,
-		Description: `:meta:subcategory:IP Address Management (IPAM):`,
+		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves a single asn from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The numeric ID of the asn.",
+				Computed:    true,
 			},
 			"asn": {
 				Type:         schema.TypeString,
+				Description:  "The AS number.",
 				Optional:     true,
 				AtLeastOneOf: []string{"asn", "tag"},
 			},
@@ -36,8 +38,9 @@ Refer to [Netbox's documentation](https://demo.netbox.dev/static/docs/rest-api/f
 for more information on available lookup expressions.`,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "A description of the asn.",
+				Computed:    true,
 			},
 			"tags": tagsSchemaRead,
 		},

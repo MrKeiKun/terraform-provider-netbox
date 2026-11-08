@@ -19,23 +19,26 @@ func resourceNetboxAvailablePrefix() *schema.Resource {
 		Update: resourceNetboxPrefixUpdate,
 		Delete: resourceNetboxPrefixDelete,
 
-		Description: `:meta:subcategory:IP Address Management (IPAM):`,
+		Description: `:meta:subcategory:IP Address Management (IPAM):Allocates the next free prefix of the requested length from a parent prefix. Import with "<parent_prefix_id> <prefix_id> <prefix_length>".`,
 
 		Schema: map[string]*schema.Schema{
 			"parent_prefix_id": {
-				Type:     schema.TypeInt,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the parent prefix associated with the available prefix.",
+				Required:    true,
+				ForceNew:    true,
 			},
 			"prefix_length": {
 				Type:         schema.TypeInt,
+				Description:  "The prefix length of the available prefix.",
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.IntBetween(0, 128),
 			},
 			"prefix": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The prefix in CIDR notation.",
+				Computed:    true,
 			},
 			"status": {
 				Type:        schema.TypeString,
@@ -43,60 +46,73 @@ func resourceNetboxAvailablePrefix() *schema.Resource {
 				Description: buildValidValueDescription(resourceNetboxPrefixStatusOptions),
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the available prefix.",
+				Optional:    true,
 			},
 			"is_pool": {
-				Type:     schema.TypeBool,
-				Optional: true,
+				Type:        schema.TypeBool,
+				Description: "Whether all addresses of the available prefix, including network and broadcast addresses, are usable.",
+				Optional:    true,
 			},
 			"mark_utilized": {
-				Type:     schema.TypeBool,
-				Optional: true,
+				Type:        schema.TypeBool,
+				Description: "Whether the available prefix is treated as fully utilized.",
+				Optional:    true,
 			},
 			"vrf_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the vrf associated with the available prefix.",
+				Optional:    true,
 			},
 			"tenant_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the tenant associated with the available prefix.",
+				Optional:    true,
 			},
 			"location_id": {
 				Type:          schema.TypeInt,
+				Description:   "The ID of the location associated with the available prefix.",
 				Optional:      true,
 				ConflictsWith: []string{"site_id", "site_group_id", "region_id"},
 			},
 			"site_id": {
 				Type:          schema.TypeInt,
+				Description:   "The ID of the site associated with the available prefix.",
 				Optional:      true,
 				ConflictsWith: []string{"location_id", "site_group_id", "region_id"},
 			},
 			"site_group_id": {
 				Type:          schema.TypeInt,
+				Description:   "The ID of the site group associated with the available prefix.",
 				Optional:      true,
 				ConflictsWith: []string{"location_id", "site_id", "region_id"},
 			},
 			"region_id": {
 				Type:          schema.TypeInt,
+				Description:   "The ID of the region associated with the available prefix.",
 				Optional:      true,
 				ConflictsWith: []string{"location_id", "site_id", "site_group_id"},
 			},
 			"vlan_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the vlan associated with the available prefix.",
+				Optional:    true,
 			},
 			"role_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the role associated with the available prefix.",
+				Optional:    true,
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the available prefix.",
+				Optional:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the available prefix.",
+				Optional:    true,
 			},
 			customFieldsKey: customFieldsSchema,
 			tagsKey:         tagsSchema,
@@ -131,7 +147,7 @@ func resourceNetboxAvailablePrefixParseImport(importStr string) (int, string, in
 	}
 	prefixLength, err := strconv.Atoi(parts[2])
 	if err != nil {
-		return 0, "", 0, fmt.Errorf("prefix_length (%s) is not an integer", parts[1])
+		return 0, "", 0, fmt.Errorf("prefix_length (%s) is not an integer", parts[2])
 	}
 
 	return parentID, parts[1], prefixLength, nil

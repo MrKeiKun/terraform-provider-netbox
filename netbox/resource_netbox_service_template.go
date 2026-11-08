@@ -19,8 +19,9 @@ func resourceNetboxServiceTemplate() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the service template.",
+				Required:    true,
 			},
 			"port_mappings": {
 				Type:          schema.TypeSet,
@@ -45,16 +46,19 @@ func resourceNetboxServiceTemplate() *schema.Resource {
 				Description: "The ports, together with `protocol`. Use `port_mappings` for a template that spans more than one protocol.",
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the service template.",
+				Optional:    true,
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the service template.",
+				Optional:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the service template.",
+				Optional:    true,
 			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,

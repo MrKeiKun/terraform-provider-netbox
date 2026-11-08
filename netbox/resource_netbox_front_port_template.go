@@ -19,12 +19,14 @@ func resourceNetboxFrontPortTemplate() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"device_type_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the device type associated with the front port template.",
+				Optional:    true,
 			},
 			"module_type_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the module type associated with the front port template.",
+				Optional:    true,
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -43,18 +45,21 @@ func resourceNetboxFrontPortTemplate() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"8p8c", "8p6c", "8p4c", "8p2c", "6p6c", "6p4c", "6p2c", "4p4c", "4p2c", "gg45", "tera-4p", "tera-2p", "tera-1p", "110-punch", "bnc", "f", "n", "mrj21", "fc", "fc-pc", "fc-upc", "fc-apc", "lc", "lc-pc", "lc-upc", "lc-apc", "mu", "mu-pc", "mu-upc", "mu-apc", "lsh", "lsh-pc", "lsh-upc", "lsh-apc", "lx5", "lx5-pc", "lx5-upc", "lx5-apc", "mpo", "mtrj", "sc", "sc-pc", "sc-upc", "sc-apc", "st", "cs", "sn", "mdc", "sma-905", "sma-906", "urm-p2", "urm-p4", "urm-p8", "splice", "usb-a", "usb-b", "usb-c", "usb-mini-a", "usb-mini-b", "usb-micro-a", "usb-micro-b", "usb-micro-ab", "other"}, false),
 			},
 			"color_hex": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The color hex of the front port template.",
+				Optional:    true,
 			},
 			"positions": {
 				Type:         schema.TypeInt,
+				Description:  "The positions of the front port template.",
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.IntBetween(1, 1024),
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the front port template.",
+				Optional:    true,
 			},
 			"rear_port_id": {
 				Type:          schema.TypeInt,
@@ -64,9 +69,10 @@ func resourceNetboxFrontPortTemplate() *schema.Resource {
 				Description:   "ID of the rear port template this port is mapped to. Use `rear_ports` to map more than one position.",
 			},
 			"rear_port_position": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The rear port position of the front port template.",
+				Optional:    true,
+				Computed:    true,
 			},
 			"rear_ports": portMappingsSchema("rear_port"),
 		},

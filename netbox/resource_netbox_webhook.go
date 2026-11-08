@@ -21,16 +21,19 @@ func resourceNetboxWebhook() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the webhook.",
+				Required:    true,
 			},
 			"payload_url": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The payload url of the webhook.",
+				Required:    true,
 			},
 			"body_template": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The body template of the webhook.",
+				Optional:    true,
 				DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
 					equal, _ := jsonSemanticCompare(oldValue, newValue)
 					return equal
@@ -51,20 +54,24 @@ func resourceNetboxWebhook() *schema.Resource {
 				Default:     "application/json",
 			},
 			"additional_headers": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The additional headers of the webhook.",
+				Optional:    true,
 			},
 			"ca_file_path": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The ca file path of the webhook.",
+				Optional:    true,
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the webhook.",
+				Optional:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the webhook.",
+				Optional:    true,
 			},
 			"ssl_verification": {
 				Type:        schema.TypeBool,

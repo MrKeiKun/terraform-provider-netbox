@@ -26,24 +26,35 @@ resource "netbox_l2vpn" "example" {
 
 ### Required
 
-- `name` (String)
+- `name` (String) The name of the l2vpn.
 - `type` (String) One of [vpws, vpls, vxlan, vxlan-evpn, mpls-evpn, pbb-evpn, evpn-vpws, epl, evpl, ep-lan, evp-lan, ep-tree, evp-tree, spb].
 
 ### Optional
 
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `export_target_ids` (Set of Number)
-- `identifier` (Number)
-- `import_target_ids` (Set of Number)
-- `owner_id` (Number)
-- `slug` (String)
+- `comments` (String) Free-form comments about the l2vpn.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the l2vpn.
+- `export_target_ids` (Set of Number) The IDs of the export target associated with the l2vpn.
+- `identifier` (Number) The identifier of the l2vpn.
+- `import_target_ids` (Set of Number) The IDs of the import target associated with the l2vpn.
+- `owner_id` (Number) The ID of the owner associated with the l2vpn.
+- `slug` (String) The URL-friendly slug of the l2vpn.
 - `status` (String) One of [active, planned, decommissioning].
-- `tags` (Set of String)
-- `tenant_id` (Number)
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the l2vpn.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_l2vpn.example 1
+```

@@ -13,28 +13,33 @@ import (
 func dataSourceNetboxAvailablePrefix() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxAvailablePrefixRead,
-		Description: `:meta:subcategory:IP Address Management (IPAM):`,
+		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves a single available prefix from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"prefix_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the prefix associated with the available prefix.",
+				Required:    true,
 			},
 			"prefixes_available": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Description: "The prefixes available of the available prefix.",
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"family": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The IP family, 4 or 6.",
+							Computed:    true,
 						},
 						"prefix": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "The prefix in CIDR notation.",
+							Computed:    true,
 						},
 						"vrf_id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The ID of the vrf associated with the available prefix.",
+							Computed:    true,
 						},
 					},
 				},

@@ -3,12 +3,12 @@
 page_title: "netbox_ike_policy Data Source - terraform-provider-netbox"
 subcategory: "VPN Tunnels"
 description: |-
-  
+  Retrieves a single ike policy from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_ike_policy (Data Source)
 
-
+Retrieves a single ike policy from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -23,16 +23,16 @@ data "netbox_ike_policy" "example" {
 
 ### Optional
 
-- `name` (String) At least one of `name` must be given.
+- `name` (String) The name of the ike policy. At least one of `name` must be given.
 
 ### Read-Only
 
-- `comments` (String)
-- `description` (String)
+- `comments` (String) Free-form comments about the ike policy.
+- `description` (String) A description of the ike policy.
 - `id` (String) The ID of this resource.
-- `mode` (String)
-- `owner_id` (Number)
-- `preshared_key` (String)
-- `proposal_ids` (Set of Number)
-- `tags` (Set of String)
-- `version` (Number)
+- `mode` (String) The mode of the ike policy.
+- `owner_id` (Number) The ID of the owner associated with the ike policy.
+- `preshared_key` (String) The preshared key of the ike policy.
+- `proposal_ids` (Set of Number) The IDs of the proposal associated with the ike policy.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `version` (Number) The version of the ike policy.

@@ -15,13 +15,15 @@ func resourceNetboxGroup() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the group.",
+				Required:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "",
+				Type:        schema.TypeString,
+				Description: "A description of the group.",
+				Optional:    true,
+				Default:     "",
 			},
 		},
 		Importer: &schema.ResourceImporter{

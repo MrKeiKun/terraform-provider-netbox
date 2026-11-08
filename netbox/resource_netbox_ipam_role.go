@@ -19,31 +19,37 @@ func resourceNetboxIpamRole() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the ipam role.",
+				Required:    true,
 			},
 			"slug": {
 				Type:         schema.TypeString,
+				Description:  "The URL-friendly slug of the ipam role.",
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.StringLenBetween(1, 100),
 			},
 			"weight": {
 				Type:         schema.TypeInt,
+				Description:  "The weight of the ipam role.",
 				Optional:     true,
 				ValidateFunc: validation.IntBetween(0, 32767),
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the ipam role.",
+				Optional:    true,
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the ipam role.",
+				Optional:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the ipam role.",
+				Optional:    true,
 			},
 			customFieldsKey: customFieldsSchema,
 			tagsKey:         tagsSchema,

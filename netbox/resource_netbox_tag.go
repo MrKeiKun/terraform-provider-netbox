@@ -24,24 +24,28 @@ func resourceNetboxTag() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the tag.",
+				Required:    true,
 			},
 			"slug": {
 				Type:         schema.TypeString,
+				Description:  "The URL-friendly slug of the tag.",
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.StringLenBetween(1, 100),
 			},
 			"color_hex": {
 				Type:         schema.TypeString,
+				Description:  "The color hex of the tag.",
 				Optional:     true,
 				Default:      "9e9e9e",
 				ValidateFunc: validation.StringMatch(regexp.MustCompile("^[0-9a-f]{6}$"), "Must be hex color string"),
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the tag.",
+				Optional:    true,
 			},
 			"weight": {
 				Type:         schema.TypeInt,

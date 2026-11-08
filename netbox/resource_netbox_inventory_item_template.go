@@ -19,12 +19,14 @@ func resourceNetboxInventoryItemTemplate() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"device_type_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the device type associated with the inventory item template.",
+				Required:    true,
 			},
 			"parent_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the parent associated with the inventory item template.",
+				Optional:    true,
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -37,12 +39,14 @@ func resourceNetboxInventoryItemTemplate() *schema.Resource {
 				Description: "Physical label",
 			},
 			"role_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the role associated with the inventory item template.",
+				Optional:    true,
 			},
 			"manufacturer_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the manufacturer associated with the inventory item template.",
+				Optional:    true,
 			},
 			"part_id": {
 				Type:        schema.TypeString,
@@ -50,15 +54,18 @@ func resourceNetboxInventoryItemTemplate() *schema.Resource {
 				Description: "Manufacturer-assigned part identifier",
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the inventory item template.",
+				Optional:    true,
 			},
 			"component_type": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The component type of the inventory item template.",
+				Optional:    true,
 			},
 			"component_id": {
 				Type:         schema.TypeInt,
+				Description:  "The ID of the component associated with the inventory item template.",
 				Optional:     true,
 				ValidateFunc: validation.IntBetween(0, 9223372036854775807),
 			},

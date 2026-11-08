@@ -21,12 +21,14 @@ func resourceNetboxVlan() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the vlan.",
+				Required:    true,
 			},
 			"vid": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The VLAN ID (1-4094).",
+				Required:    true,
 			},
 			"status": {
 				Type:        schema.TypeString,
@@ -35,35 +37,42 @@ func resourceNetboxVlan() *schema.Resource {
 				Description: buildValidValueDescription(resourceNetboxVlanStatusOptions),
 			},
 			"group_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the group associated with the vlan.",
+				Optional:    true,
 			},
 			"tenant_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the tenant associated with the vlan.",
+				Optional:    true,
 			},
 
 			"role_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the role associated with the vlan.",
+				Optional:    true,
 			},
 
 			"site_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the site associated with the vlan.",
+				Optional:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "",
+				Type:        schema.TypeString,
+				Description: "A description of the vlan.",
+				Optional:    true,
+				Default:     "",
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the vlan.",
+				Optional:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the vlan.",
+				Optional:    true,
 			},
 			"qinq_role": {
 				Type:         schema.TypeString,
@@ -72,8 +81,9 @@ func resourceNetboxVlan() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"svlan", "cvlan"}, false),
 			},
 			"qinq_svlan": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The qinq svlan of the vlan.",
+				Optional:    true,
 			},
 			customFieldsKey: customFieldsSchema,
 			tagsKey:         tagsSchema,

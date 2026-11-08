@@ -3,12 +3,12 @@
 page_title: "netbox_site_group Data Source - terraform-provider-netbox"
 subcategory: "Data Center Inventory Management (DCIM)"
 description: |-
-  
+  Retrieves a single site group from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_site_group (Data Source)
 
-
+Retrieves a single site group from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -28,10 +28,10 @@ data "netbox_site_group" "get_by_slug" {
 
 ### Optional
 
-- `name` (String) At least one of `name` or `slug` must be given.
-- `slug` (String) At least one of `name` or `slug` must be given.
+- `name` (String) The name of the site group. At least one of `name` or `slug` must be given.
+- `slug` (String) The URL-friendly slug of the site group. At least one of `name` or `slug` must be given.
 
 ### Read-Only
 
-- `description` (String)
+- `description` (String) A description of the site group.
 - `id` (String) The ID of this resource.

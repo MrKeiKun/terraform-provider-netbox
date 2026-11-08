@@ -3,12 +3,12 @@
 page_title: "netbox_ike_proposal Data Source - terraform-provider-netbox"
 subcategory: "VPN Tunnels"
 description: |-
-  
+  Retrieves a single ike proposal from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_ike_proposal (Data Source)
 
-
+Retrieves a single ike proposal from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -23,17 +23,17 @@ data "netbox_ike_proposal" "example" {
 
 ### Optional
 
-- `name` (String) At least one of `name` must be given.
+- `name` (String) The name of the ike proposal. At least one of `name` must be given.
 
 ### Read-Only
 
-- `authentication_algorithm` (String)
-- `authentication_method` (String)
-- `comments` (String)
-- `description` (String)
-- `encryption_algorithm` (String)
-- `group` (Number)
+- `authentication_algorithm` (String) The authentication algorithm of the ike proposal.
+- `authentication_method` (String) The authentication method of the ike proposal.
+- `comments` (String) Free-form comments about the ike proposal.
+- `description` (String) A description of the ike proposal.
+- `encryption_algorithm` (String) The encryption algorithm of the ike proposal.
+- `group` (Number) The group of the ike proposal.
 - `id` (String) The ID of this resource.
-- `owner_id` (Number)
-- `sa_lifetime` (Number)
-- `tags` (Set of String)
+- `owner_id` (Number) The ID of the owner associated with the ike proposal.
+- `sa_lifetime` (Number) The sa lifetime of the ike proposal.
+- `tags` (Set of String) Tags assigned to the object, by name.

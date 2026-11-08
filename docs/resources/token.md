@@ -35,17 +35,28 @@ resource "netbox_token" "test_basic" {
 
 ### Required
 
-- `user_id` (Number)
+- `user_id` (Number) The ID of the user associated with the token.
 
 ### Optional
 
-- `allowed_ips` (List of String)
-- `description` (String)
-- `expires` (String)
-- `key` (String, Sensitive)
-- `write_enabled` (Boolean)
+- `allowed_ips` (List of String) The allowed ips of the token.
+- `description` (String) A description of the token.
+- `expires` (String) The expires of the token.
+- `key` (String, Sensitive) The key of the token.
+- `write_enabled` (Boolean) Whether write enabled is enabled for the token.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `last_used` (String)
+- `last_used` (String) The last used of the token.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_token.example 1
+```

@@ -10,25 +10,29 @@ import (
 func dataSourceNetboxVlanTranslationPolicy() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxVlanTranslationPolicyRead,
-		Description: `:meta:subcategory:IP Address Management (IPAM):`,
+		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves a single vlan translation policy from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
+				Description:  "The name of the vlan translation policy.",
 				Optional:     true,
 				Computed:     true,
 				AtLeastOneOf: []string{"name"},
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "A description of the vlan translation policy.",
+				Computed:    true,
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the vlan translation policy.",
+				Computed:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the vlan translation policy.",
+				Computed:    true,
 			},
 			tagsKey: tagsSchemaRead,
 		},

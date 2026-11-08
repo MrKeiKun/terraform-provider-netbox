@@ -9,54 +9,64 @@ import (
 func dataSourceNetboxVrfs() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxVrfsRead,
-		Description: `:meta:subcategory:IP Address Management (IPAM):`,
+		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves all vrfs from NetBox. Narrow the result with filter blocks and cap it with limit.`,
 		Schema: map[string]*schema.Schema{
 			"filter": {
-				Type:     schema.TypeSet,
-				Optional: true,
+				Type:        schema.TypeSet,
+				Description: "Filters that select which items are returned. Each filter is a name/value pair.",
+				Optional:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Description: "The name of the field to filter by.",
+							Required:    true,
 						},
 						"value": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Description: "The value of the field to filter by.",
+							Required:    true,
 						},
 					},
 				},
 			},
 			"limit": {
 				Type:             schema.TypeInt,
+				Description:      "The maximum number of items to return. Defaults to 0, which returns all items.",
 				Optional:         true,
 				ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
 				Default:          0,
 			},
 			"vrfs": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Description: "The vrfs of the vrfs.",
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The numeric ID of the vrfs.",
+							Computed:    true,
 						},
 						"name": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "The name of the vrfs.",
+							Computed:    true,
 						},
 						"description": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "A description of the vrfs.",
+							Computed:    true,
 						},
 						"rd": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "The route distinguisher of the vrfs.",
+							Computed:    true,
 						},
 						"tenant": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The tenant of the vrfs.",
+							Computed:    true,
 						},
 					},
 				},

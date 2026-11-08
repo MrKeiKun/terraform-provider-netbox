@@ -19,12 +19,14 @@ func resourceNetboxIPSecProfile() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the ipsec profile.",
+				Required:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the ipsec profile.",
+				Optional:    true,
 			},
 			"mode": {
 				Type:         schema.TypeString,
@@ -33,20 +35,24 @@ func resourceNetboxIPSecProfile() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"esp", "ah"}, false),
 			},
 			"ike_policy_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the ike policy associated with the ipsec profile.",
+				Required:    true,
 			},
 			"ipsec_policy_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the ipsec policy associated with the ipsec profile.",
+				Required:    true,
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the ipsec profile.",
+				Optional:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the ipsec profile.",
+				Optional:    true,
 			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,

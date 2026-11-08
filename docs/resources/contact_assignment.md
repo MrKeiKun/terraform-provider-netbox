@@ -39,16 +39,27 @@ resource "netbox_contact_assignment" "test" {
 
 ### Required
 
-- `contact_id` (Number)
-- `content_type` (String)
-- `object_id` (Number)
-- `role_id` (Number)
+- `contact_id` (Number) The ID of the contact associated with the contact assignment.
+- `content_type` (String) The content type of the contact assignment.
+- `object_id` (Number) The ID of the object associated with the contact assignment.
+- `role_id` (Number) The ID of the role associated with the contact assignment.
 
 ### Optional
 
-- `custom_fields` (Map of String)
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `priority` (String) Valid values are `primary`, `secondary`, `tertiary` and `inactive`.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_contact_assignment.example 1
+```

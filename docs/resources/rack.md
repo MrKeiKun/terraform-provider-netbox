@@ -41,43 +41,54 @@ resource "netbox_rack" "test" {
 
 ### Required
 
-- `name` (String)
-- `site_id` (Number)
+- `name` (String) The name of the rack.
+- `site_id` (Number) The ID of the site associated with the rack.
 - `status` (String) Valid values are `reserved`, `available`, `planned`, `active` and `deprecated`.
 
 ### Optional
 
 - `airflow` (String) One of [front-to-rear, rear-to-front].
-- `asset_tag` (String)
-- `comments` (String)
+- `asset_tag` (String) The asset tag of the rack.
+- `comments` (String) Free-form comments about the rack.
 - `cooling_capability` (String) One of [air-only, hybrid, liquid-only].
 - `cooling_capacity` (Number) Cooling capacity (kW).
-- `custom_fields` (Map of String)
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `desc_units` (Boolean) If rack units are descending. Defaults to `false`.
-- `description` (String)
-- `facility_id` (String)
+- `description` (String) A description of the rack.
+- `facility_id` (String) The ID of the facility associated with the rack.
 - `form_factor` (String) Valid values are `2-post-frame`, `4-post-frame`, `4-post-cabinet`, `wall-frame`, `wall-frame-vertical`, `wall-cabinet` and `wall-cabinet-vertical`. Conflicts with `rack_type_id`.
-- `group_id` (Number)
-- `location_id` (Number)
-- `max_weight` (Number)
-- `mounting_depth` (Number)
-- `outer_depth` (Number)
+- `group_id` (Number) The ID of the group associated with the rack.
+- `location_id` (Number) The ID of the location associated with the rack.
+- `max_weight` (Number) The max weight of the rack.
+- `mounting_depth` (Number) The mounting depth of the rack.
+- `outer_depth` (Number) The outer depth of the rack.
 - `outer_height` (Number) Outer dimension of rack (height).
 - `outer_unit` (String) Valid values are `mm` and `in`. Required when `outer_width` and `outer_depth` is set.
-- `outer_width` (Number)
-- `owner_id` (Number)
+- `outer_width` (Number) The outer width of the rack.
+- `owner_id` (Number) The ID of the owner associated with the rack.
 - `rack_type_id` (Number) Reference to a `netbox_rack_type`. When set, the rack's physical dimensions (such as `width`, `u_height` and `form_factor`) are inherited from the rack type. Conflicts with `width`, `u_height` and `form_factor`.
-- `role_id` (Number)
-- `serial` (String)
+- `role_id` (Number) The ID of the role associated with the rack.
+- `serial` (String) The serial number of the rack.
 - `starting_unit` (Number) Starting unit for rack.
-- `tags` (Set of String)
-- `tenant_id` (Number)
-- `u_height` (Number) Conflicts with `rack_type_id`.
-- `weight` (Number)
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the rack.
+- `u_height` (Number) The height of the rack in rack units. Conflicts with `rack_type_id`.
+- `weight` (Number) The weight of the rack.
 - `weight_unit` (String) Valid values are `kg`, `g`, `lb` and `oz`. Required when `weight` and `max_weight` is set.
 - `width` (Number) Valid values are `10`, `19`, `21` and `23`. Inherited from `rack_type_id` when set. Conflicts with `rack_type_id`.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_rack.example 1
+```

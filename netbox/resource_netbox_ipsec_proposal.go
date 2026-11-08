@@ -19,12 +19,14 @@ func resourceNetboxIPSecProposal() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the ipsec proposal.",
+				Required:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the ipsec proposal.",
+				Optional:    true,
 			},
 			"encryption_algorithm": {
 				Type:         schema.TypeString,
@@ -51,12 +53,14 @@ func resourceNetboxIPSecProposal() *schema.Resource {
 				Description:  "Security association lifetime (in kilobytes)",
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the ipsec proposal.",
+				Optional:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the ipsec proposal.",
+				Optional:    true,
 			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,

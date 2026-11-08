@@ -29,16 +29,27 @@ resource "netbox_vlan_translation_rule" "example" {
 ### Required
 
 - `local_vid` (Number) Numeric VLAN ID (1-4094).
-- `policy_id` (Number)
+- `policy_id` (Number) The ID of the policy associated with the vlan translation rule.
 - `remote_vid` (Number) Numeric VLAN ID (1-4094).
 
 ### Optional
 
-- `custom_fields` (Map of String)
-- `description` (String)
-- `tags` (Set of String)
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the vlan translation rule.
+- `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_vlan_translation_rule.example 1
+```

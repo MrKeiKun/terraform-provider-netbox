@@ -3,12 +3,12 @@
 page_title: "netbox_device_role Data Source - terraform-provider-netbox"
 subcategory: "Data Center Inventory Management (DCIM)"
 description: |-
-  
+  Retrieves a single device role from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_device_role (Data Source)
 
-
+Retrieves a single device role from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -23,11 +23,11 @@ data "netbox_device_role" "core_sw" {
 
 ### Required
 
-- `name` (String)
+- `name` (String) The name of the device role.
 
 ### Read-Only
 
-- `color_hex` (String)
+- `color_hex` (String) The color hex of the device role.
 - `id` (String) The ID of this resource.
-- `slug` (String)
-- `tags` (Set of String)
+- `slug` (String) The URL-friendly slug of the device role.
+- `tags` (Set of String) Tags assigned to the object, by name.

@@ -26,22 +26,33 @@ resource "netbox_asn_range" "example" {
 
 ### Required
 
-- `end` (Number)
-- `name` (String)
-- `rir_id` (Number)
-- `start` (Number)
+- `end` (Number) The end of the asn range.
+- `name` (String) The name of the asn range.
+- `rir_id` (Number) The ID of the rir associated with the asn range.
+- `start` (Number) The start of the asn range.
 
 ### Optional
 
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `owner_id` (Number)
-- `slug` (String)
-- `tags` (Set of String)
-- `tenant_id` (Number)
+- `comments` (String) Free-form comments about the asn range.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the asn range.
+- `owner_id` (Number) The ID of the owner associated with the asn range.
+- `slug` (String) The URL-friendly slug of the asn range.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the asn range.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_asn_range.example 1
+```

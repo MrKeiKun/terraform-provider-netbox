@@ -3,12 +3,12 @@
 page_title: "netbox_site Data Source - terraform-provider-netbox"
 subcategory: "Data Center Inventory Management (DCIM)"
 description: |-
-  
+  Retrieves a single site from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_site (Data Source)
 
-
+Retrieves a single site from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -27,20 +27,20 @@ data "netbox_site" "get_by_slug" {
 
 ### Optional
 
-- `facility` (String)
-- `name` (String)
-- `slug` (String)
+- `facility` (String) The facility of the site.
+- `id` (String) The numeric ID of the site.
+- `name` (String) The name of the site.
+- `slug` (String) The URL-friendly slug of the site.
 
 ### Read-Only
 
-- `asn_ids` (Set of Number)
-- `comments` (String)
-- `description` (String)
-- `group_id` (Number)
-- `id` (String) The ID of this resource.
-- `physical_address` (String)
-- `region_id` (Number)
-- `site_id` (Number)
-- `status` (String)
-- `tenant_id` (Number)
-- `time_zone` (String)
+- `asn_ids` (Set of Number) The IDs of the asn associated with the site.
+- `comments` (String) Free-form comments about the site.
+- `description` (String) A description of the site.
+- `group_id` (Number) The ID of the group associated with the site.
+- `physical_address` (String) The physical address of the site.
+- `region_id` (Number) The ID of the region associated with the site.
+- `site_id` (Number) The ID of the site associated with the site.
+- `status` (String) The status of the site.
+- `tenant_id` (Number) The ID of the tenant associated with the site.
+- `time_zone` (String) The time zone of the site.

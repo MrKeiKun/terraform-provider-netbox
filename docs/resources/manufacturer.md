@@ -26,16 +26,27 @@ resource "netbox_manufacturer" "test" {
 
 ### Required
 
-- `name` (String)
+- `name` (String) The name of the manufacturer.
 
 ### Optional
 
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `owner_id` (Number)
-- `slug` (String)
+- `comments` (String) Free-form comments about the manufacturer.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the manufacturer.
+- `owner_id` (Number) The ID of the owner associated with the manufacturer.
+- `slug` (String) The URL-friendly slug of the manufacturer.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_manufacturer.example 1
+```

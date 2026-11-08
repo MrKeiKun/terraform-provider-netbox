@@ -32,19 +32,30 @@ resource "netbox_circuit_provider_network" "networka" {
 
 ### Required
 
-- `name` (String)
-- `provider_id` (Number)
+- `name` (String) The name of the circuit provider network.
+- `provider_id` (Number) The ID of the provider associated with the circuit provider network.
 
 ### Optional
 
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `owner_id` (Number)
-- `service_id` (String)
-- `tags` (Set of String)
+- `comments` (String) Free-form comments about the circuit provider network.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the circuit provider network.
+- `owner_id` (Number) The ID of the owner associated with the circuit provider network.
+- `service_id` (String) The ID of the service associated with the circuit provider network.
+- `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_circuit_provider_network.example 1
+```

@@ -34,17 +34,28 @@ resource "netbox_custom_field_choice_set" "test" {
 
 ### Required
 
-- `name` (String)
+- `name` (String) The name of the custom field choice set.
 
 ### Optional
 
 - `base_choices` (String) Valid values are `IATA`, `ISO_3166` and `UN_LOCODE`. At least one of `base_choices` or `extra_choices` must be given.
-- `custom_fields` (Map of String)
-- `description` (String)
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the custom field choice set.
 - `extra_choices` (List of List of String) This length of the inner lists must be exactly two, where the first value is the value of a choice and the second value is the label of the choice. At least one of `base_choices` or `extra_choices` must be given.
 - `order_alphabetically` (Boolean) experimental. Defaults to `false`.
-- `owner_id` (Number)
+- `owner_id` (Number) The ID of the owner associated with the custom field choice set.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_custom_field_choice_set.example 1
+```

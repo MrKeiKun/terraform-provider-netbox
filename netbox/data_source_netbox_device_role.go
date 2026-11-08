@@ -11,19 +11,22 @@ import (
 func dataSourceNetboxDeviceRole() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxDeviceRoleRead,
-		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):`,
+		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):Retrieves a single device role from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the device role.",
+				Required:    true,
 			},
 			"slug": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The URL-friendly slug of the device role.",
+				Computed:    true,
 			},
 			"color_hex": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The color hex of the device role.",
+				Computed:    true,
 			},
 			tagsKey: tagsSchemaRead,
 		},

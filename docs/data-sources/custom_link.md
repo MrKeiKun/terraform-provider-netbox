@@ -3,12 +3,12 @@
 page_title: "netbox_custom_link Data Source - terraform-provider-netbox"
 subcategory: "Extras"
 description: |-
-  
+  Retrieves a single custom link from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_custom_link (Data Source)
 
-
+Retrieves a single custom link from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -23,17 +23,17 @@ data "netbox_custom_link" "example" {
 
 ### Optional
 
-- `name` (String) At least one of `name` must be given.
+- `name` (String) The name of the custom link. At least one of `name` must be given.
 
 ### Read-Only
 
-- `button_class` (String)
-- `enabled` (Boolean)
-- `group_name` (String)
+- `button_class` (String) The button class of the custom link.
+- `enabled` (Boolean) Whether the custom link is enabled.
+- `group_name` (String) The group the custom link is shown in.
 - `id` (String) The ID of this resource.
-- `link_text` (String)
-- `link_url` (String)
-- `new_window` (Boolean)
-- `object_types` (Set of String)
-- `owner_id` (Number)
-- `weight` (Number)
+- `link_text` (String) The link text of the custom link.
+- `link_url` (String) The link url of the custom link.
+- `new_window` (Boolean) Whether new window is enabled for the custom link.
+- `object_types` (Set of String) The object types the custom link applies to.
+- `owner_id` (Number) The ID of the owner associated with the custom link.
+- `weight` (Number) The weight of the custom link.

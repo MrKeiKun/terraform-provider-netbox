@@ -23,15 +23,15 @@ data "netbox_module_bay_type" "example" {
 
 ### Optional
 
-- `name` (String) At least one of `name` or `slug` must be given.
-- `slug` (String) At least one of `name` or `slug` must be given.
+- `name` (String) The name of the module bay type. At least one of `name` or `slug` must be given.
+- `slug` (String) The URL-friendly slug of the module bay type. At least one of `name` or `slug` must be given.
 
 ### Read-Only
 
-- `color_hex` (String)
-- `comments` (String)
-- `description` (String)
+- `color_hex` (String) The color hex of the module bay type.
+- `comments` (String) Free-form comments about the module bay type.
+- `description` (String) A description of the module bay type.
 - `id` (String) The ID of this resource.
-- `manufacturer_id` (Number)
-- `owner_id` (Number)
-- `tags` (Set of String)
+- `manufacturer_id` (Number) The ID of the manufacturer associated with the module bay type.
+- `owner_id` (Number) The ID of the owner associated with the module bay type.
+- `tags` (Set of String) Tags assigned to the object, by name.

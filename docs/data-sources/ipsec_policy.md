@@ -3,12 +3,12 @@
 page_title: "netbox_ipsec_policy Data Source - terraform-provider-netbox"
 subcategory: "VPN Tunnels"
 description: |-
-  
+  Retrieves a single ipsec policy from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_ipsec_policy (Data Source)
 
-
+Retrieves a single ipsec policy from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -23,14 +23,14 @@ data "netbox_ipsec_policy" "example" {
 
 ### Optional
 
-- `name` (String) At least one of `name` must be given.
+- `name` (String) The name of the ipsec policy. At least one of `name` must be given.
 
 ### Read-Only
 
-- `comments` (String)
-- `description` (String)
+- `comments` (String) Free-form comments about the ipsec policy.
+- `description` (String) A description of the ipsec policy.
 - `id` (String) The ID of this resource.
-- `owner_id` (Number)
-- `pfs_group` (Number)
-- `proposal_ids` (Set of Number)
-- `tags` (Set of String)
+- `owner_id` (Number) The ID of the owner associated with the ipsec policy.
+- `pfs_group` (Number) The pfs group of the ipsec policy.
+- `proposal_ids` (Set of Number) The IDs of the proposal associated with the ipsec policy.
+- `tags` (Set of String) Tags assigned to the object, by name.

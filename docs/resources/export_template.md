@@ -26,22 +26,33 @@ resource "netbox_export_template" "example" {
 
 ### Required
 
-- `name` (String)
-- `object_types` (Set of String)
+- `name` (String) The name of the export template.
+- `object_types` (Set of String) The object types the export template applies to.
 - `template_code` (String) Jinja template code.
 
 ### Optional
 
 - `as_attachment` (Boolean) Download file as attachment. Defaults to `false`.
 - `auto_sync_enabled` (Boolean) Enable automatic synchronization of data when the data file is updated. Defaults to `false`.
-- `data_source_id` (Number)
-- `description` (String)
+- `data_source_id` (Number) The ID of the data source associated with the export template.
+- `description` (String) A description of the export template.
 - `environment_params` (String) Any <a href="https://jinja.palletsprojects.com/en/stable/api/#jinja2.Environment">additional parameters</a> to pass when constructing the Jinja environment.
 - `file_extension` (String) Extension to append to the rendered filename.
 - `file_name` (String) Filename to give to the rendered export file.
 - `mime_type` (String) Defaults to <code>text/plain; charset=utf-8</code>.
-- `owner_id` (Number)
+- `owner_id` (Number) The ID of the owner associated with the export template.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_export_template.example 1
+```

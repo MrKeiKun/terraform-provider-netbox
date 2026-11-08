@@ -24,17 +24,17 @@ data "netbox_cooling_intake_template" "example" {
 
 ### Optional
 
-- `device_type_id` (Number)
-- `name` (String) At least one of `name` must be given.
+- `device_type_id` (Number) The ID of the device type associated with the cooling intake template.
+- `name` (String) The name of the cooling intake template. At least one of `name` must be given.
 
 ### Read-Only
 
-- `description` (String)
-- `diameter` (Number)
-- `diameter_unit` (String)
+- `description` (String) A description of the cooling intake template.
+- `diameter` (Number) The diameter of the cooling intake template.
+- `diameter_unit` (String) The diameter unit of the cooling intake template.
 - `id` (String) The ID of this resource.
-- `label` (String)
-- `max_flow` (Number)
-- `max_flow_unit` (String)
-- `module_type_id` (Number)
-- `type` (String)
+- `label` (String) The label of the cooling intake template.
+- `max_flow` (Number) The max flow of the cooling intake template.
+- `max_flow_unit` (String) The max flow unit of the cooling intake template.
+- `module_type_id` (Number) The ID of the module type associated with the cooling intake template.
+- `type` (String) The type of the cooling intake template.

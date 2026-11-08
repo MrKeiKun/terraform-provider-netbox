@@ -19,29 +19,35 @@ func resourceNetboxVirtualDeviceContext() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the virtual device context.",
+				Required:    true,
 			},
 			"device_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the device associated with the virtual device context.",
+				Required:    true,
 			},
 			"identifier": {
 				Type:         schema.TypeInt,
+				Description:  "The identifier of the virtual device context.",
 				Optional:     true,
 				ValidateFunc: validation.IntBetween(0, 32767),
 			},
 			"tenant_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the tenant associated with the virtual device context.",
+				Optional:    true,
 			},
 			"primary_ip4_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the primary ip4 associated with the virtual device context.",
+				Optional:    true,
 			},
 			"primary_ip6_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the primary ip6 associated with the virtual device context.",
+				Optional:    true,
 			},
 			"status": {
 				Type:        schema.TypeString,
@@ -49,16 +55,19 @@ func resourceNetboxVirtualDeviceContext() *schema.Resource {
 				Description: "One of [active, planned, offline]",
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the virtual device context.",
+				Optional:    true,
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the virtual device context.",
+				Optional:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the virtual device context.",
+				Optional:    true,
 			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,

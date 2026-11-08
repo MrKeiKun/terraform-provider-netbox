@@ -3,12 +3,12 @@
 page_title: "netbox_saved_filter Data Source - terraform-provider-netbox"
 subcategory: "Extras"
 description: |-
-  
+  Retrieves a single saved filter from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_saved_filter (Data Source)
 
-
+Retrieves a single saved filter from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -23,17 +23,17 @@ data "netbox_saved_filter" "example" {
 
 ### Optional
 
-- `name` (String) At least one of `name` or `slug` must be given.
-- `slug` (String) At least one of `name` or `slug` must be given.
+- `name` (String) The name of the saved filter. At least one of `name` or `slug` must be given.
+- `slug` (String) The URL-friendly slug of the saved filter. At least one of `name` or `slug` must be given.
 
 ### Read-Only
 
-- `description` (String)
-- `enabled` (Boolean)
+- `description` (String) A description of the saved filter.
+- `enabled` (Boolean) Whether the saved filter is enabled.
 - `id` (String) The ID of this resource.
-- `object_types` (Set of String)
-- `owner_id` (Number)
-- `parameters` (String)
-- `shared` (Boolean)
-- `user_id` (Number)
-- `weight` (Number)
+- `object_types` (Set of String) The object types the saved filter applies to.
+- `owner_id` (Number) The ID of the owner associated with the saved filter.
+- `parameters` (String) The parameters of the saved filter.
+- `shared` (Boolean) Whether shared is enabled for the saved filter.
+- `user_id` (Number) The ID of the user associated with the saved filter.
+- `weight` (Number) The weight of the saved filter.

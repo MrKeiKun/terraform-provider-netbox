@@ -3,12 +3,12 @@
 page_title: "netbox_cluster Data Source - terraform-provider-netbox"
 subcategory: "Virtualization"
 description: |-
-  
+  Retrieves a single cluster from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_cluster (Data Source)
 
-
+Retrieves a single cluster from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -23,21 +23,21 @@ data "netbox_cluster" "vmw_cluster_01" {
 
 ### Optional
 
-- `cluster_group_id` (Number)
-- `id` (String) At least one of `name`, `site_id` or `id` must be given.
-- `name` (String) At least one of `name`, `site_id` or `id` must be given.
-- `site_id` (Number) At least one of `name`, `site_id` or `id` must be given.
+- `cluster_group_id` (Number) The ID of the cluster group associated with the cluster.
+- `id` (String) The numeric ID of the cluster. At least one of `name`, `site_id` or `id` must be given.
+- `name` (String) The name of the cluster. At least one of `name`, `site_id` or `id` must be given.
+- `site_id` (Number) The ID of the site associated with the cluster. At least one of `name`, `site_id` or `id` must be given.
 
 ### Read-Only
 
-- `cluster_id` (Number)
-- `cluster_type_id` (Number)
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `location_id` (Number)
-- `region_id` (Number)
-- `scope_id` (Number)
-- `scope_type` (String)
-- `site_group_id` (Number)
-- `tags` (Set of String)
+- `cluster_id` (Number) The ID of the cluster associated with the cluster.
+- `cluster_type_id` (Number) The ID of the cluster type associated with the cluster.
+- `comments` (String) Free-form comments about the cluster.
+- `custom_fields` (Map of String) Custom field values of the cluster, as a map of field name to value.
+- `description` (String) A description of the cluster.
+- `location_id` (Number) The ID of the location associated with the cluster.
+- `region_id` (Number) The ID of the region associated with the cluster.
+- `scope_id` (Number) The ID of the scope associated with the cluster.
+- `scope_type` (String) The scope type of the cluster.
+- `site_group_id` (Number) The ID of the site group associated with the cluster.
+- `tags` (Set of String) Tags assigned to the object, by name.

@@ -20,25 +20,30 @@ func resourceNetboxRouteTarget() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
+				Description:  "The name of the route target.",
 				Required:     true,
 				ValidateFunc: validation.StringLenBetween(1, 21),
 			},
 			"tenant_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the tenant associated with the route target.",
+				Optional:    true,
 			},
 			"description": {
 				Type:         schema.TypeString,
+				Description:  "A description of the route target.",
 				Optional:     true,
 				ValidateFunc: validation.StringLenBetween(0, 200),
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the route target.",
+				Optional:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the route target.",
+				Optional:    true,
 			},
 			customFieldsKey: customFieldsSchema,
 			tagsKey:         tagsSchema,

@@ -21,39 +21,47 @@ Each location must have a name that is unique within its parent site and locatio
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the location.",
+				Required:    true,
 			},
 			"slug": {
 				Type:         schema.TypeString,
+				Description:  "The URL-friendly slug of the location.",
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.StringLenBetween(1, 100),
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the location.",
+				Optional:    true,
 			},
 			"facility": {
 				Type:         schema.TypeString,
+				Description:  "The facility of the location.",
 				Optional:     true,
 				ValidateFunc: validation.StringLenBetween(1, 50),
 			},
 			"site_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the site associated with the location.",
+				Required:    true,
 			},
 			"parent_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the parent associated with the location.",
+				Optional:    true,
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the location.",
+				Optional:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the location.",
+				Optional:    true,
 			},
 			"status": {
 				Type:        schema.TypeString,
@@ -63,8 +71,9 @@ Each location must have a name that is unique within its parent site and locatio
 			},
 			tagsKey: tagsSchema,
 			"tenant_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the tenant associated with the location.",
+				Optional:    true,
 			},
 			customFieldsKey: customFieldsSchema,
 		},

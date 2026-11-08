@@ -26,14 +26,25 @@ resource "netbox_notification_group" "example" {
 
 ### Required
 
-- `name` (String)
+- `name` (String) The name of the notification group.
 
 ### Optional
 
-- `description` (String)
-- `group_ids` (Set of Number)
-- `user_ids` (Set of Number)
+- `description` (String) A description of the notification group.
+- `group_ids` (Set of Number) The IDs of the group associated with the notification group.
+- `user_ids` (Set of Number) The IDs of the user associated with the notification group.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_notification_group.example 1
+```

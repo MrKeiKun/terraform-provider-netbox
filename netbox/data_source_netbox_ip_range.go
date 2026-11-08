@@ -22,22 +22,26 @@ func dataSourceNetboxIPRange() *schema.Resource {
 	}
 	return &schema.Resource{
 		Read:        dataSourceNetboxIPRangeRead,
-		Description: `:meta:subcategory:IP Address Management (IPAM):`,
+		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves a single ip range from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The numeric ID of the ip range.",
+				Computed:    true,
 			},
 			"start_address": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The start address of the ip range.",
+				Computed:    true,
 			},
 			"end_address": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The end address of the ip range.",
+				Computed:    true,
 			},
 			"contains": {
 				Type:         schema.TypeString,
+				Description:  "The contains of the ip range.",
 				Optional:     true,
 				AtLeastOneOf: filterAtLeastOneOf,
 				ValidateFunc: validation.IsCIDR,
@@ -52,21 +56,25 @@ func dataSourceNetboxIPRange() *schema.Resource {
 			},
 			"vrf_id": {
 				Type:         schema.TypeInt,
+				Description:  "The ID of the vrf associated with the ip range.",
 				Optional:     true,
 				AtLeastOneOf: filterAtLeastOneOf,
 			},
 			"tenant_id": {
 				Type:         schema.TypeInt,
+				Description:  "The ID of the tenant associated with the ip range.",
 				Optional:     true,
 				AtLeastOneOf: filterAtLeastOneOf,
 			},
 			"status": {
 				Type:         schema.TypeString,
+				Description:  "The status of the ip range.",
 				Optional:     true,
 				AtLeastOneOf: filterAtLeastOneOf,
 			},
 			"role_id": {
 				Type:         schema.TypeInt,
+				Description:  "The ID of the role associated with the ip range.",
 				Optional:     true,
 				Computed:     true,
 				AtLeastOneOf: filterAtLeastOneOf,

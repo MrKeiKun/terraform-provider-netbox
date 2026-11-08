@@ -39,9 +39,20 @@ resource "netbox_virtual_machine_interface_primary_mac_address" "myvm_primary_ma
 
 ### Required
 
-- `interface_id` (Number)
-- `mac_address_id` (Number)
+- `interface_id` (Number) The ID of the interface associated with the virtual machine interface primary mac address.
+- `mac_address_id` (Number) The ID of the mac address associated with the virtual machine interface primary mac address.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the ID of the interface
+terraform import netbox_virtual_machine_interface_primary_mac_address.example 1
+```

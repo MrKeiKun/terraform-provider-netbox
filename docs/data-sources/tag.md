@@ -3,12 +3,12 @@
 page_title: "netbox_tag Data Source - terraform-provider-netbox"
 subcategory: "Extras"
 description: |-
-  
+  Retrieves a single tag from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_tag (Data Source)
 
-
+Retrieves a single tag from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -23,13 +23,13 @@ data "netbox_tag" "dmz" {
 
 ### Required
 
-- `name` (String)
+- `name` (String) The name of the tag.
 
 ### Optional
 
-- `description` (String)
+- `description` (String) A description of the tag.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `slug` (String)
+- `slug` (String) The URL-friendly slug of the tag.

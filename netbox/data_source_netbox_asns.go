@@ -9,46 +9,54 @@ import (
 func dataSourceNetboxAsns() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxAsnsRead,
-		Description: `:meta:subcategory:IP Address Management (IPAM):`,
+		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves all asns from NetBox. Narrow the result with filter blocks and cap it with limit.`,
 		Schema: map[string]*schema.Schema{
 			"filter": {
-				Type:     schema.TypeSet,
-				Optional: true,
+				Type:        schema.TypeSet,
+				Description: "Filters that select which items are returned. Each filter is a name/value pair.",
+				Optional:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Description: "The name of the field to filter by.",
+							Required:    true,
 						},
 						"value": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Description: "The value of the field to filter by.",
+							Required:    true,
 						},
 					},
 				},
 			},
 			"limit": {
 				Type:             schema.TypeInt,
+				Description:      "The maximum number of items to return. Defaults to 0, which returns all items.",
 				Optional:         true,
 				ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
 				Default:          0,
 			},
 			"asns": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Description: "The asns of the asns.",
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The numeric ID of the asns.",
+							Computed:    true,
 						},
 						"asn": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The AS number.",
+							Computed:    true,
 						},
 						"rir_id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The ID of the rir associated with the asns.",
+							Computed:    true,
 						},
 						"tags": tagsSchemaRead,
 					},

@@ -30,24 +30,35 @@ resource "netbox_contact" "test" {
 
 ### Required
 
-- `name` (String)
+- `name` (String) The name of the contact.
 
 ### Optional
 
-- `address` (String)
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `email` (String)
-- `group_id` (Number, Deprecated)
-- `group_ids` (List of Number)
-- `link` (String)
-- `owner_id` (Number)
-- `phone` (String)
-- `tags` (Set of String)
-- `title` (String)
+- `address` (String) The address of the contact.
+- `comments` (String) Free-form comments about the contact.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the contact.
+- `email` (String) The email address of the contact.
+- `group_id` (Number, Deprecated) The ID of the group associated with the contact.
+- `group_ids` (List of Number) The IDs of the group associated with the contact.
+- `link` (String) A link associated with the contact.
+- `owner_id` (Number) The ID of the owner associated with the contact.
+- `phone` (String) The phone number of the contact.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `title` (String) The title of the contact.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_contact.example 1
+```

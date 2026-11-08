@@ -11,39 +11,47 @@ import (
 func dataSourceNetboxDeviceType() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxDeviceTypeRead,
-		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):`,
+		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):Retrieves a single device type from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"is_full_depth": {
-				Type:     schema.TypeBool,
-				Computed: true,
+				Type:        schema.TypeBool,
+				Description: "Whether the device type is full depth.",
+				Computed:    true,
 			},
 			"manufacturer": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The manufacturer of the device type.",
+				Optional:    true,
 			},
 			"manufacturer_id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the manufacturer associated with the device type.",
+				Computed:    true,
 			},
 			"model": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The model of the device type.",
+				Optional:    true,
 			},
 			"part_number": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The part number of the device type.",
+				Optional:    true,
 			},
 			"slug": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The URL-friendly slug of the device type.",
+				Optional:    true,
 			},
 			"subdevice_role": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The subdevice role of the device type.",
+				Optional:    true,
 			},
 			"u_height": {
-				Type:     schema.TypeFloat,
-				Computed: true,
+				Type:        schema.TypeFloat,
+				Description: "The height of the device type in rack units.",
+				Computed:    true,
 			},
 		},
 	}

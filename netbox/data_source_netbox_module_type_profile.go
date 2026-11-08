@@ -10,29 +10,34 @@ import (
 func dataSourceNetboxModuleTypeProfile() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxModuleTypeProfileRead,
-		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):`,
+		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):Retrieves a single module type profile from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
+				Description:  "The name of the module type profile.",
 				Optional:     true,
 				Computed:     true,
 				AtLeastOneOf: []string{"name"},
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "A description of the module type profile.",
+				Computed:    true,
 			},
 			"schema": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The schema of the module type profile.",
+				Computed:    true,
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the module type profile.",
+				Computed:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the module type profile.",
+				Computed:    true,
 			},
 			tagsKey: tagsSchemaRead,
 		},

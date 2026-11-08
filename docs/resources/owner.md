@@ -29,15 +29,26 @@ resource "netbox_owner" "example" {
 
 ### Required
 
-- `name` (String)
+- `name` (String) The name of the owner.
 
 ### Optional
 
-- `description` (String)
-- `group_id` (Number)
-- `user_group_ids` (Set of Number)
-- `user_ids` (Set of Number)
+- `description` (String) A description of the owner.
+- `group_id` (Number) The ID of the group associated with the owner.
+- `user_group_ids` (Set of Number) The IDs of the user group associated with the owner.
+- `user_ids` (Set of Number) The IDs of the user associated with the owner.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_owner.example 1
+```

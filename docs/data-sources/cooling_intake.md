@@ -24,20 +24,20 @@ data "netbox_cooling_intake" "example" {
 
 ### Optional
 
-- `device_id` (Number)
-- `name` (String) At least one of `name` must be given.
+- `device_id` (Number) The ID of the device associated with the cooling intake.
+- `name` (String) The name of the cooling intake. At least one of `name` must be given.
 
 ### Read-Only
 
-- `cooling_outflow_id` (Number)
-- `description` (String)
-- `diameter` (Number)
-- `diameter_unit` (String)
+- `cooling_outflow_id` (Number) The ID of the cooling outflow associated with the cooling intake.
+- `description` (String) A description of the cooling intake.
+- `diameter` (Number) The diameter of the cooling intake.
+- `diameter_unit` (String) The diameter unit of the cooling intake.
 - `id` (String) The ID of this resource.
-- `label` (String)
-- `max_flow` (Number)
-- `max_flow_unit` (String)
-- `module_id` (Number)
-- `owner_id` (Number)
-- `tags` (Set of String)
-- `type` (String)
+- `label` (String) The label of the cooling intake.
+- `max_flow` (Number) The max flow of the cooling intake.
+- `max_flow_unit` (String) The max flow unit of the cooling intake.
+- `module_id` (Number) The ID of the module associated with the cooling intake.
+- `owner_id` (Number) The ID of the owner associated with the cooling intake.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `type` (String) The type of the cooling intake.

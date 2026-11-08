@@ -39,27 +39,27 @@ resource "netbox_device_rear_port" "test" {
 
 ### Required
 
-- `device_id` (Number)
-- `name` (String)
-- `positions` (Number)
+- `device_id` (Number) The ID of the device associated with the device rear port.
+- `name` (String) The name of the device rear port.
+- `positions` (Number) The positions of the device rear port.
 - `type` (String) One of [8p8c, 8p6c, 8p4c, 8p2c, 6p6c, 6p4c, 6p2c, 4p4c, 4p2c, gg45, tera-4p, tera-2p, tera-1p, 110-punch, bnc, f, n, mrj21, fc, lc, lc-pc, lc-upc, lc-apc, lsh, lsh-pc, lsh-upc, lsh-apc, mpo, mtrj, sc, sc-pc, sc-upc, sc-apc, st, cs, sn, sma-905, sma-906, urm-p2, urm-p4, urm-p8, splice, other].
 
 ### Optional
 
-- `color_hex` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
+- `color_hex` (String) The color hex of the device rear port.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the device rear port.
 - `front_ports` (Block List) The ports and positions this port is mapped to. Needs NetBox 4.5 or newer. (see [below for nested schema](#nestedblock--front_ports))
-- `label` (String)
-- `mark_connected` (Boolean) Defaults to `false`.
-- `module_id` (Number)
-- `owner_id` (Number)
-- `tags` (Set of String)
+- `label` (String) The label of the device rear port.
+- `mark_connected` (Boolean) Whether the device rear port is marked as connected even without a cable. Defaults to `false`.
+- `module_id` (Number) The ID of the module associated with the device rear port.
+- `owner_id` (Number) The ID of the owner associated with the device rear port.
+- `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 <a id="nestedblock--front_ports"></a>
 ### Nested Schema for `front_ports`
@@ -72,3 +72,14 @@ Required:
 Optional:
 
 - `front_port_position` (Number) Position on the other port. Defaults to `1`.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_device_rear_port.example 1
+```

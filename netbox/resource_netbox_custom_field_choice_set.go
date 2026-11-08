@@ -25,12 +25,14 @@ A choice set must define a base choice set and/or a set of arbitrary extra choic
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the custom field choice set.",
+				Required:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the custom field choice set.",
+				Optional:    true,
 			},
 			"base_choices": {
 				Type:         schema.TypeString,
@@ -74,8 +76,9 @@ A choice set must define a base choice set and/or a set of arbitrary extra choic
 				Default:     false,
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the custom field choice set.",
+				Optional:    true,
 			},
 			customFieldsKey: customFieldsSchema,
 		},

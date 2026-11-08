@@ -14,27 +14,32 @@ func dataSourceNetboxOwner() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
+				Description:  "The name of the owner.",
 				Optional:     true,
 				Computed:     true,
 				AtLeastOneOf: []string{"name"},
 			},
 			"group_id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the group associated with the owner.",
+				Computed:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "A description of the owner.",
+				Computed:    true,
 			},
 			"user_group_ids": {
-				Type:     schema.TypeSet,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeInt},
+				Type:        schema.TypeSet,
+				Description: "The IDs of the user group associated with the owner.",
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeInt},
 			},
 			"user_ids": {
-				Type:     schema.TypeSet,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeInt},
+				Type:        schema.TypeSet,
+				Description: "The IDs of the user associated with the owner.",
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeInt},
 			},
 		},
 	}

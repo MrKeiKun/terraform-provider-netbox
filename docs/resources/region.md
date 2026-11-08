@@ -29,17 +29,28 @@ resource "netbox_region" "test" {
 
 ### Required
 
-- `name` (String)
+- `name` (String) The name of the region.
 
 ### Optional
 
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `owner_id` (Number)
-- `parent_region_id` (Number)
-- `slug` (String)
+- `comments` (String) Free-form comments about the region.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the region.
+- `owner_id` (Number) The ID of the owner associated with the region.
+- `parent_region_id` (Number) The ID of the parent region associated with the region.
+- `slug` (String) The URL-friendly slug of the region.
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) The numeric ID of the region.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_region.example 1
+```

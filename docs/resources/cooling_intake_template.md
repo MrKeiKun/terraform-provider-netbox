@@ -34,16 +34,27 @@ resource "netbox_cooling_intake_template" "example" {
 
 ### Optional
 
-- `description` (String)
-- `device_type_id` (Number)
-- `diameter` (Number)
+- `description` (String) A description of the cooling intake template.
+- `device_type_id` (Number) The ID of the device type associated with the cooling intake template.
+- `diameter` (Number) The diameter of the cooling intake template.
 - `diameter_unit` (String) One of [mm, cm, in].
 - `label` (String) Physical label.
-- `max_flow` (Number)
+- `max_flow` (Number) The max flow of the cooling intake template.
 - `max_flow_unit` (String) One of [lpm, m3ph, gpm].
-- `module_type_id` (Number)
+- `module_type_id` (Number) The ID of the module type associated with the cooling intake template.
 - `type` (String) One of [uqd, uqdb, qdc, camlock, npt, bsp, proprietary].
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_cooling_intake_template.example 1
+```

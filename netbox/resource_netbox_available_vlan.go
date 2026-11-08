@@ -31,42 +31,54 @@ This resource will retrieve the next available VLAN ID from a given VLAN group (
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the available vlan.",
+				Required:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the available vlan.",
+				Optional:    true,
 			},
 			"group_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the group associated with the available vlan.",
+				Optional:    true,
 			},
 			"role_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the role associated with the available vlan.",
+				Optional:    true,
 			},
 			"site_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the site associated with the available vlan.",
+				Optional:    true,
 			},
 			"status": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The status of the available vlan.",
+				Optional:    true,
 			},
 			"tenant_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the tenant associated with the available vlan.",
+				Optional:    true,
 			},
 			"vid": {
-				Type:     schema.TypeInt,
-				Computed: true, // it's auto-assigned by NetBox, not user-supplied
+				Type:        schema.TypeInt,
+				Description: "The VLAN ID (1-4094).",
+				Computed:    true, // it's auto-assigned by NetBox, not user-supplied
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the available vlan.",
+				Computed:    true,
 			},
 			tagsKey: tagsSchema,
+		},
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 	}
 }

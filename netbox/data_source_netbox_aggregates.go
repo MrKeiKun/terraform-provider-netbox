@@ -9,58 +9,69 @@ import (
 func dataSourceNetboxAggregates() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxAggregatesRead,
-		Description: `:meta:subcategory:IP Address Management (IPAM):`,
+		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves all aggregates from NetBox. Narrow the result with filter blocks and cap it with limit.`,
 		Schema: map[string]*schema.Schema{
 			"filter": {
-				Type:     schema.TypeSet,
-				Optional: true,
+				Type:        schema.TypeSet,
+				Description: "Filters that select which items are returned. Each filter is a name/value pair.",
+				Optional:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Description: "The name of the field to filter by.",
+							Required:    true,
 						},
 						"value": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Description: "The value of the field to filter by.",
+							Required:    true,
 						},
 					},
 				},
 			},
 			"limit": {
 				Type:             schema.TypeInt,
+				Description:      "The maximum number of items to return. Defaults to 0, which returns all items.",
 				Optional:         true,
 				ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
 				Default:          0,
 			},
 			"aggregates": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Description: "The aggregates of the aggregates.",
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The numeric ID of the aggregates.",
+							Computed:    true,
 						},
 						"prefix": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "The prefix in CIDR notation.",
+							Computed:    true,
 						},
 						"rir_id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The ID of the rir associated with the aggregates.",
+							Computed:    true,
 						},
 						"tenant_id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The ID of the tenant associated with the aggregates.",
+							Computed:    true,
 						},
 						"date_added": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "The date added of the aggregates.",
+							Computed:    true,
 						},
 						"description": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "A description of the aggregates.",
+							Computed:    true,
 						},
 						"tags": tagsSchemaRead,
 					},

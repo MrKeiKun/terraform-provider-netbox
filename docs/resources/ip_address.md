@@ -106,31 +106,31 @@ resource "netbox_ip_address" "this" {
 
 ### Required
 
-- `ip_address` (String)
+- `ip_address` (String) The IP address of the ip address, in CIDR notation.
 - `status` (String) Valid values are `active`, `reserved`, `deprecated`, `dhcp` and `slaac`.
 
 ### Optional
 
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `device_interface_id` (Number) Conflicts with `interface_id` and `virtual_machine_interface_id`.
-- `dns_name` (String)
-- `interface_id` (Number) Required when `object_type` is set.
-- `nat_inside_address_id` (Number)
+- `comments` (String) Free-form comments about the ip address.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the ip address.
+- `device_interface_id` (Number) The ID of the device interface associated with the ip address. Conflicts with `interface_id` and `virtual_machine_interface_id`.
+- `dns_name` (String) The DNS name of the ip address.
+- `interface_id` (Number) The ID of the interface associated with the ip address. Required when `object_type` is set.
+- `nat_inside_address_id` (Number) The ID of the nat inside address associated with the ip address.
 - `object_type` (String) Valid values are `virtualization.vminterface`, `dcim.interface` and `ipam.fhrpgroup`. Required when `interface_id` is set.
-- `owner_id` (Number)
+- `owner_id` (Number) The ID of the owner associated with the ip address.
 - `role` (String) Valid values are `loopback`, `secondary`, `anycast`, `vip`, `vrrp`, `hsrp`, `glbp` and `carp`.
-- `tags` (Set of String)
-- `tenant_id` (Number)
-- `virtual_machine_interface_id` (Number) Conflicts with `interface_id` and `device_interface_id`.
-- `vrf_id` (Number)
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the ip address.
+- `virtual_machine_interface_id` (Number) The ID of the virtual machine interface associated with the ip address. Conflicts with `interface_id` and `device_interface_id`.
+- `vrf_id` (Number) The ID of the vrf associated with the ip address.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `nat_outside_addresses` (List of Object) (see [below for nested schema](#nestedatt--nat_outside_addresses))
-- `tags_all` (Set of String)
+- `nat_outside_addresses` (List of Object) The nat outside addresses of the ip address. (see [below for nested schema](#nestedatt--nat_outside_addresses))
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 <a id="nestedatt--nat_outside_addresses"></a>
 ### Nested Schema for `nat_outside_addresses`
@@ -141,4 +141,11 @@ Read-Only:
 - `id` (Number)
 - `ip_address` (String)
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_ip_address.example 1
+```

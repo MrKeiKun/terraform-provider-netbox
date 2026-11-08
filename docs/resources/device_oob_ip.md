@@ -39,9 +39,20 @@ resource "netbox_device_oob_ip" "test" {
 
 ### Required
 
-- `device_id` (Number)
-- `ip_address_id` (Number)
+- `device_id` (Number) The ID of the device associated with the device oob ip.
+- `ip_address_id` (Number) The ID of the ip address associated with the device oob ip.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_device_oob_ip.example 1
+```

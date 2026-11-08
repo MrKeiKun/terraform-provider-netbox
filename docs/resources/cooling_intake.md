@@ -30,25 +30,36 @@ resource "netbox_cooling_intake" "example" {
 
 ### Required
 
-- `device_id` (Number)
-- `name` (String)
+- `device_id` (Number) The ID of the device associated with the cooling intake.
+- `name` (String) The name of the cooling intake.
 
 ### Optional
 
 - `cooling_outflow_id` (Number) The upstream cooling outflow supplying this intake.
-- `custom_fields` (Map of String)
-- `description` (String)
-- `diameter` (Number)
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the cooling intake.
+- `diameter` (Number) The diameter of the cooling intake.
 - `diameter_unit` (String) One of [mm, cm, in].
 - `label` (String) Physical label.
-- `max_flow` (Number)
+- `max_flow` (Number) The max flow of the cooling intake.
 - `max_flow_unit` (String) One of [lpm, m3ph, gpm].
-- `module_id` (Number)
-- `owner_id` (Number)
-- `tags` (Set of String)
+- `module_id` (Number) The ID of the module associated with the cooling intake.
+- `owner_id` (Number) The ID of the owner associated with the cooling intake.
+- `tags` (Set of String) Tags assigned to the object, by name.
 - `type` (String) One of [uqd, uqdb, qdc, camlock, npt, bsp, proprietary].
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_cooling_intake.example 1
+```

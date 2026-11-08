@@ -28,25 +28,36 @@ resource "netbox_ip_range" "cust_a_prod" {
 
 ### Required
 
-- `end_address` (String)
-- `start_address` (String)
+- `end_address` (String) The end address of the ip range.
+- `start_address` (String) The start address of the ip range.
 
 ### Optional
 
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `mark_populated` (Boolean)
-- `mark_utilized` (Boolean)
-- `owner_id` (Number)
-- `role_id` (Number)
+- `comments` (String) Free-form comments about the ip range.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the ip range.
+- `mark_populated` (Boolean) Whether mark populated is enabled for the ip range.
+- `mark_utilized` (Boolean) Whether the ip range is treated as fully utilized.
+- `owner_id` (Number) The ID of the owner associated with the ip range.
+- `role_id` (Number) The ID of the role associated with the ip range.
 - `status` (String) Valid values are `active`, `reserved` and `deprecated`. Defaults to `active`.
-- `tags` (Set of String)
-- `tenant_id` (Number)
-- `vrf_id` (Number)
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the ip range.
+- `vrf_id` (Number) The ID of the vrf associated with the ip range.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
 - `size` (Number) The total member count of the IP range.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_ip_range.example 1
+```

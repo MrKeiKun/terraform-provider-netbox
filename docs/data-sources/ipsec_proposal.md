@@ -3,12 +3,12 @@
 page_title: "netbox_ipsec_proposal Data Source - terraform-provider-netbox"
 subcategory: "VPN Tunnels"
 description: |-
-  
+  Retrieves a single ipsec proposal from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_ipsec_proposal (Data Source)
 
-
+Retrieves a single ipsec proposal from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -23,16 +23,16 @@ data "netbox_ipsec_proposal" "example" {
 
 ### Optional
 
-- `name` (String) At least one of `name` must be given.
+- `name` (String) The name of the ipsec proposal. At least one of `name` must be given.
 
 ### Read-Only
 
-- `authentication_algorithm` (String)
-- `comments` (String)
-- `description` (String)
-- `encryption_algorithm` (String)
+- `authentication_algorithm` (String) The authentication algorithm of the ipsec proposal.
+- `comments` (String) Free-form comments about the ipsec proposal.
+- `description` (String) A description of the ipsec proposal.
+- `encryption_algorithm` (String) The encryption algorithm of the ipsec proposal.
 - `id` (String) The ID of this resource.
-- `owner_id` (Number)
-- `sa_lifetime_data` (Number)
-- `sa_lifetime_seconds` (Number)
-- `tags` (Set of String)
+- `owner_id` (Number) The ID of the owner associated with the ipsec proposal.
+- `sa_lifetime_data` (Number) The sa lifetime data of the ipsec proposal.
+- `sa_lifetime_seconds` (Number) The sa lifetime seconds of the ipsec proposal.
+- `tags` (Set of String) Tags assigned to the object, by name.

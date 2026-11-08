@@ -3,12 +3,12 @@
 page_title: "netbox_cluster_group Data Source - terraform-provider-netbox"
 subcategory: "Virtualization"
 description: |-
-  
+  Retrieves a single cluster group from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_cluster_group (Data Source)
 
-
+Retrieves a single cluster group from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -23,9 +23,9 @@ data "netbox_cluster_group" "dc_west" {
 
 ### Required
 
-- `name` (String)
+- `name` (String) The name of the cluster group.
 
 ### Read-Only
 
-- `cluster_group_id` (Number)
+- `cluster_group_id` (Number) The ID of the cluster group associated with the cluster group.
 - `id` (String) The ID of this resource.

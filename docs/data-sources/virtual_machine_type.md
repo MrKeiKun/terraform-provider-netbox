@@ -23,16 +23,16 @@ data "netbox_virtual_machine_type" "example" {
 
 ### Optional
 
-- `name` (String) At least one of `name` or `slug` must be given.
-- `slug` (String) At least one of `name` or `slug` must be given.
+- `name` (String) The name of the virtual machine type. At least one of `name` or `slug` must be given.
+- `slug` (String) The URL-friendly slug of the virtual machine type. At least one of `name` or `slug` must be given.
 
 ### Read-Only
 
-- `comments` (String)
-- `default_memory` (Number)
-- `default_platform_id` (Number)
-- `default_vcpus` (Number)
-- `description` (String)
+- `comments` (String) Free-form comments about the virtual machine type.
+- `default_memory` (Number) The default memory of the virtual machine type.
+- `default_platform_id` (Number) The ID of the default platform associated with the virtual machine type.
+- `default_vcpus` (Number) The default vcpus of the virtual machine type.
+- `description` (String) A description of the virtual machine type.
 - `id` (String) The ID of this resource.
-- `owner_id` (Number)
-- `tags` (Set of String)
+- `owner_id` (Number) The ID of the owner associated with the virtual machine type.
+- `tags` (Set of String) Tags assigned to the object, by name.

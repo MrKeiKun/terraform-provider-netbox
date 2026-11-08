@@ -21,35 +21,42 @@ func resourceNetboxRegion() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the region.",
+				Required:    true,
 			},
 			"slug": {
 				Type:         schema.TypeString,
+				Description:  "The URL-friendly slug of the region.",
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.StringLenBetween(1, 100),
 			},
 			"parent_region_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the parent region associated with the region.",
+				Optional:    true,
 			},
 			"description": {
 				Type:         schema.TypeString,
+				Description:  "A description of the region.",
 				Optional:     true,
 				ValidateFunc: validation.StringLenBetween(0, 200),
 			},
 			"id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The numeric ID of the region.",
+				Computed:    true,
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the region.",
+				Optional:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the region.",
+				Optional:    true,
 			},
 			customFieldsKey: customFieldsSchema,
 		},

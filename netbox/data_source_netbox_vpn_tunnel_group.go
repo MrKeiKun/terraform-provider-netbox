@@ -12,26 +12,30 @@ import (
 func dataSourceNetboxVpnTunnelGroup() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxVpnTunnelGroupRead,
-		Description: `:meta:subcategory:VPN Tunnels:`,
+		Description: `:meta:subcategory:VPN Tunnels:Retrieves a single vpn tunnel group from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The numeric ID of the vpn tunnel group.",
+				Computed:    true,
 			},
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the vpn tunnel group.",
+				Required:    true,
 			},
 			"slug": {
 				Type:         schema.TypeString,
+				Description:  "The URL-friendly slug of the vpn tunnel group.",
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.StringLenBetween(1, 100),
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "A description of the vpn tunnel group.",
+				Optional:    true,
+				Computed:    true,
 			},
 			"tags": tagsSchemaRead,
 		},

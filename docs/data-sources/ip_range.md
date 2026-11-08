@@ -3,12 +3,12 @@
 page_title: "netbox_ip_range Data Source - terraform-provider-netbox"
 subcategory: "IP Address Management (IPAM)"
 description: |-
-  
+  Retrieves a single ip range from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_ip_range (Data Source)
 
-
+Retrieves a single ip range from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -23,21 +23,21 @@ data "netbox_ip_range" "cust_a_prod" {
 
 ### Optional
 
-- `contains` (String) At least one of `contains`, `family`, `vrf_id`, `tenant_id`, `status`, `role_id`, `description` or `tag` must be given.
+- `contains` (String) The contains of the ip range. At least one of `contains`, `family`, `vrf_id`, `tenant_id`, `status`, `role_id`, `description` or `tag` must be given.
 - `description` (String) Description to include in the data source filter. At least one of `contains`, `family`, `vrf_id`, `tenant_id`, `status`, `role_id`, `description` or `tag` must be given.
 - `family` (Number) The IP family of the IP range. One of 4 or 6. At least one of `contains`, `family`, `vrf_id`, `tenant_id`, `status`, `role_id`, `description` or `tag` must be given.
-- `role_id` (Number) At least one of `contains`, `family`, `vrf_id`, `tenant_id`, `status`, `role_id`, `description` or `tag` must be given.
-- `status` (String) At least one of `contains`, `family`, `vrf_id`, `tenant_id`, `status`, `role_id`, `description` or `tag` must be given.
+- `role_id` (Number) The ID of the role associated with the ip range. At least one of `contains`, `family`, `vrf_id`, `tenant_id`, `status`, `role_id`, `description` or `tag` must be given.
+- `status` (String) The status of the ip range. At least one of `contains`, `family`, `vrf_id`, `tenant_id`, `status`, `role_id`, `description` or `tag` must be given.
 - `tag` (String) Tag to include in the data source filter (must match the tag's slug). At least one of `contains`, `family`, `vrf_id`, `tenant_id`, `status`, `role_id`, `description` or `tag` must be given.
 - `tag__n` (String) Tag to exclude from the data source filter (must match the tag's slug).
 Refer to [Netbox's documentation](https://netboxlabs.com/docs/netbox/reference/filtering/#lookup-expressions)
 for more information on available lookup expressions.
-- `tenant_id` (Number) At least one of `contains`, `family`, `vrf_id`, `tenant_id`, `status`, `role_id`, `description` or `tag` must be given.
-- `vrf_id` (Number) At least one of `contains`, `family`, `vrf_id`, `tenant_id`, `status`, `role_id`, `description` or `tag` must be given.
+- `tenant_id` (Number) The ID of the tenant associated with the ip range. At least one of `contains`, `family`, `vrf_id`, `tenant_id`, `status`, `role_id`, `description` or `tag` must be given.
+- `vrf_id` (Number) The ID of the vrf associated with the ip range. At least one of `contains`, `family`, `vrf_id`, `tenant_id`, `status`, `role_id`, `description` or `tag` must be given.
 
 ### Read-Only
 
-- `end_address` (String)
-- `id` (Number) The ID of this resource.
-- `start_address` (String)
-- `tags` (Set of String)
+- `end_address` (String) The end address of the ip range.
+- `id` (Number) The numeric ID of the ip range.
+- `start_address` (String) The start address of the ip range.
+- `tags` (Set of String) Tags assigned to the object, by name.

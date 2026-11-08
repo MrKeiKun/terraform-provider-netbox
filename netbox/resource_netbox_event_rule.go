@@ -29,17 +29,20 @@ func resourceNetboxEventRule() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the event rule.",
+				Required:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the event rule.",
+				Optional:    true,
 			},
 			"content_types": {
-				Type:     schema.TypeSet,
-				Required: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeSet,
+				Description: "The object types the event rule applies to.",
+				Required:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"event_types": {
 				Type:     schema.TypeSet,
@@ -51,13 +54,15 @@ func resourceNetboxEventRule() *schema.Resource {
 				Description: "The types of event which will trigger this rule. By default, valid values are `object_created`, `oject_updated`, `object_deleted`, `job_started`, `job_completed`, `job_failed` and `job_errored`",
 			},
 			"enabled": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  true,
+				Type:        schema.TypeBool,
+				Description: "Whether the event rule is enabled.",
+				Optional:    true,
+				Default:     true,
 			},
 			"conditions": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The conditions of the event rule.",
+				Optional:    true,
 				DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
 					equal, _ := jsonSemanticCompare(oldValue, newValue)
 					return equal
@@ -71,12 +76,14 @@ func resourceNetboxEventRule() *schema.Resource {
 				Description:  buildValidValueDescription(resourceNetboxEventRuleActionTypeOptions),
 			},
 			"action_object_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the action object associated with the event rule.",
+				Required:    true,
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the event rule.",
+				Optional:    true,
 			},
 			customFieldsKey: customFieldsSchema,
 			tagsKey:         tagsSchema,

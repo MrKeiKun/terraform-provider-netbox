@@ -31,19 +31,30 @@ resource "netbox_wireless_lan_group" "child" {
 
 ### Required
 
-- `name` (String)
+- `name` (String) The name of the wireless lan group.
 
 ### Optional
 
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `owner_id` (Number)
-- `parent_id` (Number)
-- `slug` (String)
-- `tags` (Set of String)
+- `comments` (String) Free-form comments about the wireless lan group.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the wireless lan group.
+- `owner_id` (Number) The ID of the owner associated with the wireless lan group.
+- `parent_id` (Number) The ID of the parent associated with the wireless lan group.
+- `slug` (String) The URL-friendly slug of the wireless lan group.
+- `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_wireless_lan_group.example 1
+```

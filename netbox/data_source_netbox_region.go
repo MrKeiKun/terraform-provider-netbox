@@ -11,47 +11,56 @@ import (
 func dataSourceNetboxRegion() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxRegionRead,
-		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):`,
+		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):Retrieves all region from NetBox. Narrow the result with filter blocks and cap it with limit.`,
 		Schema: map[string]*schema.Schema{
 			"filter": {
-				Type:     schema.TypeSet,
-				Optional: true,
+				Type:        schema.TypeSet,
+				Description: "Filters that select which items are returned. Each filter is a name/value pair.",
+				Optional:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:     schema.TypeInt,
-							Optional: true,
+							Type:        schema.TypeInt,
+							Description: "The numeric ID of the region.",
+							Optional:    true,
 						},
 						"name": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Description: "The name of the field to filter by.",
+							Optional:    true,
 						},
 						"slug": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Description: "The URL-friendly slug of the region.",
+							Optional:    true,
 						},
 					},
 				},
 			},
 			"id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The numeric ID of the region.",
+				Computed:    true,
 			},
 			"name": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The name of the region.",
+				Computed:    true,
 			},
 			"slug": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The URL-friendly slug of the region.",
+				Computed:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "A description of the region.",
+				Computed:    true,
 			},
 			"parent_region_id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the parent region associated with the region.",
+				Computed:    true,
 			},
 		},
 	}

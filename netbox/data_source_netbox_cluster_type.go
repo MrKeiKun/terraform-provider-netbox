@@ -10,15 +10,17 @@ import (
 func dataSourceNetboxClusterType() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxClusterTypeRead,
-		Description: `:meta:subcategory:Virtualization:`,
+		Description: `:meta:subcategory:Virtualization:Retrieves a single cluster type from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"cluster_type_id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the cluster type associated with the cluster type.",
+				Computed:    true,
 			},
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the cluster type.",
+				Required:    true,
 			},
 		},
 	}

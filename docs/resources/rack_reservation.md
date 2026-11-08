@@ -41,21 +41,32 @@ resource "netbox_rack_reservation" "test" {
 
 ### Required
 
-- `description` (String)
-- `rack_id` (Number)
-- `units` (Set of Number)
-- `user_id` (Number)
+- `description` (String) A description of the rack reservation.
+- `rack_id` (Number) The ID of the rack associated with the rack reservation.
+- `units` (Set of Number) The units of the rack reservation.
+- `user_id` (Number) The ID of the user associated with the rack reservation.
 
 ### Optional
 
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `owner_id` (Number)
+- `comments` (String) Free-form comments about the rack reservation.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `owner_id` (Number) The ID of the owner associated with the rack reservation.
 - `status` (String) One of [pending, active, stale].
-- `tags` (Set of String)
-- `tenant_id` (Number)
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the rack reservation.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_rack_reservation.example 1
+```

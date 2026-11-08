@@ -20,15 +20,18 @@ func resourceNetboxDevicePrimaryIP() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"device_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the device associated with the device primary ip.",
+				Required:    true,
 			},
 			"ip_address_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the ip address associated with the device primary ip.",
+				Required:    true,
 			},
 			"ip_address_version": {
 				Type:         schema.TypeInt,
+				Description:  "The ip address version of the device primary ip.",
 				ValidateFunc: validation.IntInSlice([]int{4, 6}),
 				Optional:     true,
 				Default:      4,
@@ -80,6 +83,14 @@ func resourceNetboxDevicePrimaryIPRead(d *schema.ResourceData, m interface{}) er
 	}
 
 	IPAddressVersion := d.Get("ip_address_version")
+	// On import the version is unknown; infer it from whichever primary IP is set.
+	if IPAddressVersion == 0 {
+		if device.PrimaryIp4 != nil {
+			IPAddressVersion = 4
+		} else if device.PrimaryIp6 != nil {
+			IPAddressVersion = 6
+		}
+	}
 	d.Set("ip_address_version", IPAddressVersion)
 	if IPAddressVersion == 4 && device.PrimaryIp4 != nil {
 		d.Set("ip_address_id", device.PrimaryIp4.ID)

@@ -3,12 +3,12 @@
 page_title: "netbox_asns Data Source - terraform-provider-netbox"
 subcategory: "IP Address Management (IPAM)"
 description: |-
-  
+  Retrieves all asns from NetBox. Narrow the result with filter blocks and cap it with limit.
 ---
 
 # netbox_asns (Data Source)
 
-
+Retrieves all asns from NetBox. Narrow the result with filter blocks and cap it with limit.
 
 ## Example Usage
 
@@ -30,12 +30,12 @@ data "netbox_asns" "asns" {
 
 ### Optional
 
-- `filter` (Block Set) (see [below for nested schema](#nestedblock--filter))
-- `limit` (Number) Defaults to `0`.
+- `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
+- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items. Defaults to `0`.
 
 ### Read-Only
 
-- `asns` (List of Object) (see [below for nested schema](#nestedatt--asns))
+- `asns` (List of Object) The asns of the asns. (see [below for nested schema](#nestedatt--asns))
 - `id` (String) The ID of this resource.
 
 <a id="nestedblock--filter"></a>
@@ -43,8 +43,8 @@ data "netbox_asns" "asns" {
 
 Required:
 
-- `name` (String)
-- `value` (String)
+- `name` (String) The name of the field to filter by.
+- `value` (String) The value of the field to filter by.
 
 
 <a id="nestedatt--asns"></a>

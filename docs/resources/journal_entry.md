@@ -28,17 +28,28 @@ resource "netbox_journal_entry" "example" {
 
 ### Required
 
-- `assigned_object_id` (Number)
-- `assigned_object_type` (String)
-- `comments` (String)
+- `assigned_object_id` (Number) The ID of the assigned object associated with the journal entry.
+- `assigned_object_type` (String) The assigned object type of the journal entry.
+- `comments` (String) Free-form comments about the journal entry.
 
 ### Optional
 
-- `custom_fields` (Map of String)
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `kind` (String) One of [info, success, warning, danger].
-- `tags` (Set of String)
+- `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_journal_entry.example 1
+```

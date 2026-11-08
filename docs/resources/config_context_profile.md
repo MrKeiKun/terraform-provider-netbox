@@ -26,18 +26,29 @@ resource "netbox_config_context_profile" "example" {
 
 ### Required
 
-- `name` (String)
+- `name` (String) The name of the config context profile.
 
 ### Optional
 
-- `comments` (String)
-- `data_source_id` (Number)
-- `description` (String)
-- `owner_id` (Number)
+- `comments` (String) Free-form comments about the config context profile.
+- `data_source_id` (Number) The ID of the data source associated with the config context profile.
+- `description` (String) A description of the config context profile.
+- `owner_id` (Number) The ID of the owner associated with the config context profile.
 - `schema` (String) A JSON schema specifying the structure of the context data for this profile.
-- `tags` (Set of String)
+- `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_config_context_profile.example 1
+```

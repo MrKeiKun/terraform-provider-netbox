@@ -21,26 +21,31 @@ func resourceNetboxDeviceBayTemplate() *schema.Resource {
 > A template for a device bay that will be created on all instantiations of the parent device type.`,
 		Schema: map[string]*schema.Schema{
 			"device_type_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the device type associated with the device bay template.",
+				Required:    true,
 			},
 			"name": {
 				Type:         schema.TypeString,
+				Description:  "The name of the device bay template.",
 				Required:     true,
 				ValidateFunc: validation.StringLenBetween(1, 64),
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the device bay template.",
+				Optional:    true,
 			},
 			"label": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The label of the device bay template.",
+				Optional:    true,
 			},
 			"enabled": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeBool,
+				Description: "Whether the device bay template is enabled.",
+				Optional:    true,
+				Computed:    true,
 			},
 		},
 		Importer: &schema.ResourceImporter{

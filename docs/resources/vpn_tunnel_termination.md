@@ -47,17 +47,28 @@ resource "netbox_vpn_tunnel_termination" "vm" {
 ### Required
 
 - `role` (String) Valid values are `peer`, `hub` and `spoke`.
-- `tunnel_id` (Number)
+- `tunnel_id` (Number) The ID of the tunnel associated with the vpn tunnel termination.
 
 ### Optional
 
-- `custom_fields` (Map of String)
-- `device_interface_id` (Number) Exactly one of `virtual_machine_interface_id` or `device_interface_id` must be given.
-- `outside_ip_address_id` (Number)
-- `tags` (Set of String)
-- `virtual_machine_interface_id` (Number) Exactly one of `virtual_machine_interface_id` or `device_interface_id` must be given.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `device_interface_id` (Number) The ID of the device interface associated with the vpn tunnel termination. Exactly one of `virtual_machine_interface_id` or `device_interface_id` must be given.
+- `outside_ip_address_id` (Number) The ID of the outside ip address associated with the vpn tunnel termination.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `virtual_machine_interface_id` (Number) The ID of the virtual machine interface associated with the vpn tunnel termination. Exactly one of `virtual_machine_interface_id` or `device_interface_id` must be given.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_vpn_tunnel_termination.example 1
+```

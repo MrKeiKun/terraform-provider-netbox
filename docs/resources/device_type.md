@@ -32,30 +32,41 @@ resource "netbox_device_type" "test" {
 
 ### Required
 
-- `manufacturer_id` (Number)
-- `model` (String)
+- `manufacturer_id` (Number) The ID of the manufacturer associated with the device type.
+- `model` (String) The model of the device type.
 
 ### Optional
 
 - `airflow` (String) One of [front-to-rear, rear-to-front, left-to-right, right-to-left, side-to-rear, rear-to-side, bottom-to-top, top-to-bottom, passive, mixed].
-- `comments` (String)
+- `comments` (String) Free-form comments about the device type.
 - `cooling_method` (String) One of [air, liquid, hybrid, immersion].
-- `custom_fields` (Map of String)
-- `default_platform_id` (Number)
-- `description` (String)
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `default_platform_id` (Number) The ID of the default platform associated with the device type.
+- `description` (String) A description of the device type.
 - `end_of_life` (String) The date after which this device type is no longer supported by the manufacturer.
 - `exclude_from_utilization` (Boolean) Devices of this type are excluded when calculating rack utilization.
-- `is_full_depth` (Boolean)
-- `owner_id` (Number)
-- `part_number` (String)
-- `slug` (String)
-- `subdevice_role` (String)
-- `tags` (Set of String)
-- `u_height` (Number) Defaults to `1.0`.
-- `weight` (Number)
+- `is_full_depth` (Boolean) Whether the device type is full depth.
+- `owner_id` (Number) The ID of the owner associated with the device type.
+- `part_number` (String) The part number of the device type.
+- `slug` (String) The URL-friendly slug of the device type.
+- `subdevice_role` (String) The subdevice role of the device type.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `u_height` (Number) The height of the device type in rack units. Defaults to `1.0`.
+- `weight` (Number) The weight of the device type.
 - `weight_unit` (String) One of [kg, g, lb, oz].
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_device_type.example 1
+```

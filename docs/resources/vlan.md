@@ -40,25 +40,36 @@ resource "netbox_vlan" "example2" {
 
 ### Required
 
-- `name` (String)
-- `vid` (Number)
+- `name` (String) The name of the vlan.
+- `vid` (Number) The VLAN ID (1-4094).
 
 ### Optional
 
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String) Defaults to `""`.
-- `group_id` (Number)
-- `owner_id` (Number)
+- `comments` (String) Free-form comments about the vlan.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the vlan. Defaults to `""`.
+- `group_id` (Number) The ID of the group associated with the vlan.
+- `owner_id` (Number) The ID of the owner associated with the vlan.
 - `qinq_role` (String) One of [svlan, cvlan].
-- `qinq_svlan` (Number)
-- `role_id` (Number)
-- `site_id` (Number)
+- `qinq_svlan` (Number) The qinq svlan of the vlan.
+- `role_id` (Number) The ID of the role associated with the vlan.
+- `site_id` (Number) The ID of the site associated with the vlan.
 - `status` (String) Valid values are `active`, `reserved` and `deprecated`. Defaults to `active`.
-- `tags` (Set of String)
-- `tenant_id` (Number)
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the vlan.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_vlan.example 1
+```

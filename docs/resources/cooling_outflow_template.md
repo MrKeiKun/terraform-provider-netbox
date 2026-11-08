@@ -34,15 +34,26 @@ resource "netbox_cooling_outflow_template" "example" {
 
 ### Optional
 
-- `cooling_intake_id` (Number)
-- `description` (String)
-- `device_type_id` (Number)
-- `diameter` (Number)
+- `cooling_intake_id` (Number) The ID of the cooling intake associated with the cooling outflow template.
+- `description` (String) A description of the cooling outflow template.
+- `device_type_id` (Number) The ID of the device type associated with the cooling outflow template.
+- `diameter` (Number) The diameter of the cooling outflow template.
 - `diameter_unit` (String) One of [mm, cm, in].
 - `label` (String) Physical label.
-- `module_type_id` (Number)
+- `module_type_id` (Number) The ID of the module type associated with the cooling outflow template.
 - `type` (String) One of [uqd, uqdb, qdc, camlock, npt, bsp, proprietary].
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_cooling_outflow_template.example 1
+```

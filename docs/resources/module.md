@@ -57,24 +57,35 @@ resource "netbox_module" "test" {
 
 ### Required
 
-- `device_id` (Number)
-- `module_bay_id` (Number)
-- `module_type_id` (Number)
+- `device_id` (Number) The ID of the device associated with the module.
+- `module_bay_id` (Number) The ID of the module bay associated with the module.
+- `module_type_id` (Number) The ID of the module type associated with the module.
 - `status` (String) One of [offline, active, planned, staged, failed, decommissioning].
 
 ### Optional
 
 - `adopt_components` (Boolean) Adopt already existing components.
-- `asset_tag` (String)
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `owner_id` (Number)
+- `asset_tag` (String) The asset tag of the module.
+- `comments` (String) Free-form comments about the module.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the module.
+- `owner_id` (Number) The ID of the owner associated with the module.
 - `replicate_components` (Boolean) Automatically populate components associated with this module type (default: true).
-- `serial` (String)
-- `tags` (Set of String)
+- `serial` (String) The serial number of the module.
+- `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_module.example 1
+```

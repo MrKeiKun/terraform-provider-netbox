@@ -34,29 +34,40 @@ resource "netbox_site" "example1" {
 
 ### Required
 
-- `name` (String)
+- `name` (String) The name of the site.
 
 ### Optional
 
-- `asn_ids` (Set of Number)
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `facility` (String)
-- `group_id` (Number)
-- `latitude` (Number)
-- `longitude` (Number)
-- `owner_id` (Number)
-- `physical_address` (String)
-- `region_id` (Number)
-- `shipping_address` (String)
-- `slug` (String)
+- `asn_ids` (Set of Number) The IDs of the asn associated with the site.
+- `comments` (String) Free-form comments about the site.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the site.
+- `facility` (String) The facility of the site.
+- `group_id` (Number) The ID of the group associated with the site.
+- `latitude` (Number) The latitude of the site.
+- `longitude` (Number) The longitude of the site.
+- `owner_id` (Number) The ID of the owner associated with the site.
+- `physical_address` (String) The physical address of the site.
+- `region_id` (Number) The ID of the region associated with the site.
+- `shipping_address` (String) The shipping address of the site.
+- `slug` (String) The URL-friendly slug of the site.
 - `status` (String) Valid values are `planned`, `staging`, `active`, `decommissioning` and `retired`. Defaults to `active`.
-- `tags` (Set of String)
-- `tenant_id` (Number)
-- `timezone` (String)
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the site.
+- `timezone` (String) The timezone of the site.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_site.example 1
+```

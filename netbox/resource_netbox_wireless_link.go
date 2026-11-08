@@ -19,16 +19,19 @@ func resourceNetboxWirelessLink() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"interface_a_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the interface a associated with the wireless link.",
+				Required:    true,
 			},
 			"interface_b_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the interface b associated with the wireless link.",
+				Required:    true,
 			},
 			"ssid": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The ssid of the wireless link.",
+				Optional:    true,
 			},
 			"status": {
 				Type:        schema.TypeString,
@@ -37,8 +40,9 @@ func resourceNetboxWirelessLink() *schema.Resource {
 				Description: "One of [connected, planned, decommissioning]",
 			},
 			"tenant_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the tenant associated with the wireless link.",
+				Optional:    true,
 			},
 			"auth_type": {
 				Type:         schema.TypeString,
@@ -53,12 +57,14 @@ func resourceNetboxWirelessLink() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"auto", "tkip", "aes"}, false),
 			},
 			"auth_psk": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The auth psk of the wireless link.",
+				Optional:    true,
 			},
 			"distance": {
-				Type:     schema.TypeFloat,
-				Optional: true,
+				Type:        schema.TypeFloat,
+				Description: "The distance of the wireless link.",
+				Optional:    true,
 			},
 			"distance_unit": {
 				Type:         schema.TypeString,
@@ -67,16 +73,19 @@ func resourceNetboxWirelessLink() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"km", "m", "mi", "ft"}, false),
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the wireless link.",
+				Optional:    true,
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the wireless link.",
+				Optional:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the wireless link.",
+				Optional:    true,
 			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,

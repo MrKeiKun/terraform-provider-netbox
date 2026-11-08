@@ -28,16 +28,27 @@ resource "netbox_l2vpn_termination" "example" {
 
 ### Required
 
-- `assigned_object_id` (Number)
-- `assigned_object_type` (String)
-- `l2vpn_id` (Number)
+- `assigned_object_id` (Number) The ID of the assigned object associated with the l2vpn termination.
+- `assigned_object_type` (String) The assigned object type of the l2vpn termination.
+- `l2vpn_id` (Number) The ID of the l2vpn associated with the l2vpn termination.
 
 ### Optional
 
-- `custom_fields` (Map of String)
-- `tags` (Set of String)
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_l2vpn_termination.example 1
+```

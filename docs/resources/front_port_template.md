@@ -33,14 +33,14 @@ resource "netbox_front_port_template" "example" {
 
 ### Optional
 
-- `color_hex` (String)
-- `description` (String)
-- `device_type_id` (Number)
+- `color_hex` (String) The color hex of the front port template.
+- `description` (String) A description of the front port template.
+- `device_type_id` (Number) The ID of the device type associated with the front port template.
 - `label` (String) Physical label.
-- `module_type_id` (Number)
-- `positions` (Number)
+- `module_type_id` (Number) The ID of the module type associated with the front port template.
+- `positions` (Number) The positions of the front port template.
 - `rear_port_id` (Number) ID of the rear port template this port is mapped to. Use `rear_ports` to map more than one position. Conflicts with `rear_ports`.
-- `rear_port_position` (Number)
+- `rear_port_position` (Number) The rear port position of the front port template.
 - `rear_ports` (Block List) The ports and positions this port is mapped to. Needs NetBox 4.5 or newer. (see [below for nested schema](#nestedblock--rear_ports))
 
 ### Read-Only
@@ -58,3 +58,14 @@ Required:
 Optional:
 
 - `rear_port_position` (Number) Position on the other port. Defaults to `1`.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_front_port_template.example 1
+```

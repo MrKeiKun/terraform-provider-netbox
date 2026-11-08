@@ -3,12 +3,12 @@
 page_title: "netbox_circuit_provider_networks Data Source - terraform-provider-netbox"
 subcategory: "Circuits"
 description: |-
-  
+  Retrieves all circuit provider networks from NetBox. Narrow the result with filter blocks and cap it with limit.
 ---
 
 # netbox_circuit_provider_networks (Data Source)
 
-
+Retrieves all circuit provider networks from NetBox. Narrow the result with filter blocks and cap it with limit.
 
 ## Example Usage
 
@@ -62,22 +62,22 @@ data "netbox_circuit_provider_networks" "limit" {
 
 ### Optional
 
-- `filter` (Block Set) (see [below for nested schema](#nestedblock--filter))
-- `limit` (Number) Defaults to `0`.
-- `name_regex` (String)
+- `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
+- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items. Defaults to `0`.
+- `name_regex` (String) The name regex of the circuit provider networks.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `provider_networks` (List of Object) (see [below for nested schema](#nestedatt--provider_networks))
+- `provider_networks` (List of Object) The provider networks of the circuit provider networks. (see [below for nested schema](#nestedatt--provider_networks))
 
 <a id="nestedblock--filter"></a>
 ### Nested Schema for `filter`
 
 Required:
 
-- `name` (String)
-- `value` (String)
+- `name` (String) The name of the field to filter by.
+- `value` (String) The value of the field to filter by.
 
 
 <a id="nestedatt--provider_networks"></a>

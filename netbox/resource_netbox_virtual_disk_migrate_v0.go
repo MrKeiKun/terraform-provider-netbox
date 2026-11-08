@@ -11,20 +11,24 @@ func resourceNetboxVirtualDiskResourceV0() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the virtual disk migrate v0.",
+				Required:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the virtual disk migrate v0.",
+				Optional:    true,
 			},
 			"size_mb": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The size mb of the virtual disk migrate v0.",
+				Required:    true,
 			},
 			"virtual_machine_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the virtual machine associated with the virtual disk migrate v0.",
+				Required:    true,
 			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,

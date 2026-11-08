@@ -42,20 +42,20 @@ resource "netbox_interface_template" "test" {
 
 ### Required
 
-- `name` (String)
-- `type` (String)
+- `name` (String) The name of the interface template.
+- `type` (String) The type of the interface template.
 
 ### Optional
 
-- `bridge` (Number)
+- `bridge` (Number) The bridge of the interface template.
 - `channel_id` (Number) The channel on the parent interface to which this subinterface is bound.
 - `channels` (Number) The number of channels into which this interface is channelized.
-- `description` (String)
-- `device_type_id` (Number) Exactly one of `device_type_id` or `module_type_id` must be given.
-- `enabled` (Boolean)
-- `label` (String)
-- `mgmt_only` (Boolean)
-- `module_type_id` (Number) Exactly one of `device_type_id` or `module_type_id` must be given.
+- `description` (String) A description of the interface template.
+- `device_type_id` (Number) The ID of the device type associated with the interface template. Exactly one of `device_type_id` or `module_type_id` must be given.
+- `enabled` (Boolean) Whether the interface template is enabled.
+- `label` (String) The label of the interface template.
+- `mgmt_only` (Boolean) Whether mgmt only is enabled for the interface template.
+- `module_type_id` (Number) The ID of the module type associated with the interface template. Exactly one of `device_type_id` or `module_type_id` must be given.
 - `poe_mode` (String) One of [pd, pse].
 - `poe_type` (String) One of [type1-ieee802.3af, type2-ieee802.3at, type3-ieee802.3bt, type4-ieee802.3bt, passive-24v-2pair, passive-24v-4pair, passive-48v-2pair, passive-48v-4pair].
 - `rf_role` (String) One of [ap, station].
@@ -63,3 +63,14 @@ resource "netbox_interface_template" "test" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_interface_template.example 1
+```

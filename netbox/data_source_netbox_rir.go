@@ -15,26 +15,31 @@ func dataSourceNetboxRir() *schema.Resource {
 > Regional Internet registries are responsible for the allocation of globally-routable address space. The five RIRs are ARIN, RIPE, APNIC, LACNIC, and AFRINIC. However, some address space has been set aside for internal use, such as defined in RFCs 1918 and 6598. NetBox considers these RFCs as a sort of RIR as well; that is, an authority which "owns" certain address space.`,
 		Schema: map[string]*schema.Schema{
 			"id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The numeric ID of the rir.",
+				Computed:    true,
 			},
 			"name": {
 				Type:         schema.TypeString,
+				Description:  "The name of the rir.",
 				Optional:     true,
 				AtLeastOneOf: []string{"name", "slug"},
 			},
 			"slug": {
 				Type:         schema.TypeString,
+				Description:  "The URL-friendly slug of the rir.",
 				Optional:     true,
 				AtLeastOneOf: []string{"name", "slug"},
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "A description of the rir.",
+				Computed:    true,
 			},
 			"is_private": {
-				Type:     schema.TypeBool,
-				Computed: true,
+				Type:        schema.TypeBool,
+				Description: "Whether the rir is private.",
+				Computed:    true,
 			},
 		},
 	}

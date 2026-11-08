@@ -23,8 +23,9 @@ func resourceNetboxMACAddress() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"mac_address": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The MAC address of the mac address.",
+				Required:    true,
 				// Netbox converts MAC addresses always to uppercase
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					return strings.EqualFold(old, new)
@@ -32,6 +33,7 @@ func resourceNetboxMACAddress() *schema.Resource {
 			},
 			"interface_id": {
 				Type:         schema.TypeInt,
+				Description:  "The ID of the interface associated with the mac address.",
 				Optional:     true,
 				RequiredWith: []string{"object_type"},
 			},
@@ -44,25 +46,30 @@ func resourceNetboxMACAddress() *schema.Resource {
 			},
 			"virtual_machine_interface_id": {
 				Type:          schema.TypeInt,
+				Description:   "The ID of the virtual machine interface associated with the mac address.",
 				Optional:      true,
 				ConflictsWith: []string{"interface_id", "device_interface_id"},
 			},
 			"device_interface_id": {
 				Type:          schema.TypeInt,
+				Description:   "The ID of the device interface associated with the mac address.",
 				Optional:      true,
 				ConflictsWith: []string{"interface_id", "virtual_machine_interface_id"},
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the mac address.",
+				Optional:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the mac address.",
+				Optional:    true,
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the mac address.",
+				Optional:    true,
 			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,

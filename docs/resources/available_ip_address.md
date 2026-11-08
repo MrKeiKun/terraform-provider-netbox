@@ -76,26 +76,33 @@ resource "netbox_available_ip_address" "myvm-ip" {
 
 ### Optional
 
-- `custom_fields` (Map of String)
-- `description` (String)
-- `device_interface_id` (Number) Conflicts with `interface_id` and `virtual_machine_interface_id`.
-- `dns_name` (String)
-- `interface_id` (Number) Required when `object_type` is set.
-- `ip_range_id` (Number) Exactly one of `prefix_id` or `ip_range_id` must be given.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the available ip address.
+- `device_interface_id` (Number) The ID of the device interface associated with the available ip address. Conflicts with `interface_id` and `virtual_machine_interface_id`.
+- `dns_name` (String) The DNS name of the available ip address.
+- `interface_id` (Number) The ID of the interface associated with the available ip address. Required when `object_type` is set.
+- `ip_range_id` (Number) The ID of the ip range associated with the available ip address. Exactly one of `prefix_id` or `ip_range_id` must be given.
 - `nat_inside_address_id` (Number) The ID of the IP address this address is the NAT outside address of.
 - `object_type` (String) Valid values are `virtualization.vminterface`, `dcim.interface` and `ipam.fhrpgroup`. Required when `interface_id` is set.
-- `prefix_id` (Number) Exactly one of `prefix_id` or `ip_range_id` must be given.
+- `prefix_id` (Number) The ID of the prefix associated with the available ip address. Exactly one of `prefix_id` or `ip_range_id` must be given.
 - `role` (String) Valid values are `loopback`, `secondary`, `anycast`, `vip`, `vrrp`, `hsrp`, `glbp` and `carp`.
 - `status` (String) Valid values are `active`, `reserved`, `deprecated`, `dhcp` and `slaac`. Defaults to `active`.
-- `tags` (Set of String)
-- `tenant_id` (Number)
-- `virtual_machine_interface_id` (Number) Conflicts with `interface_id` and `device_interface_id`.
-- `vrf_id` (Number)
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the available ip address.
+- `virtual_machine_interface_id` (Number) The ID of the virtual machine interface associated with the available ip address. Conflicts with `interface_id` and `device_interface_id`.
+- `vrf_id` (Number) The ID of the vrf associated with the available ip address.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `ip_address` (String)
-- `tags_all` (Set of String)
+- `ip_address` (String) The IP address of the available ip address, in CIDR notation.
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_available_ip_address.example 1
+```

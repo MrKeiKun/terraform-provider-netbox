@@ -24,40 +24,47 @@ func resourceNetboxToken() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"user_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the user associated with the token.",
+				Required:    true,
 			},
 			"key": {
 				Type:         schema.TypeString,
+				Description:  "The key of the token.",
 				Sensitive:    true,
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.StringLenBetween(40, 256),
 			},
 			"allowed_ips": {
-				Type:     schema.TypeList,
-				Optional: true,
+				Type:        schema.TypeList,
+				Description: "The allowed ips of the token.",
+				Optional:    true,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
 					ValidateFunc: validation.IsCIDR,
 				},
 			},
 			"write_enabled": {
-				Type:     schema.TypeBool,
-				Optional: true,
+				Type:        schema.TypeBool,
+				Description: "Whether write enabled is enabled for the token.",
+				Optional:    true,
 			},
 			"last_used": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The last used of the token.",
+				Computed:    true,
 			},
 			"expires": {
 				Type:         schema.TypeString,
+				Description:  "The expires of the token.",
 				Optional:     true,
 				ValidateFunc: validation.IsRFC3339Time,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the token.",
+				Optional:    true,
 			},
 		},
 		Importer: &schema.ResourceImporter{

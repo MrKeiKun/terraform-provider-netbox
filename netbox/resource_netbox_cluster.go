@@ -17,52 +17,63 @@ func resourceNetboxCluster() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the cluster.",
+				Required:    true,
 			},
 			"cluster_type_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the cluster type associated with the cluster.",
+				Required:    true,
 			},
 			"cluster_group_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the cluster group associated with the cluster.",
+				Optional:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the cluster.",
+				Optional:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the cluster.",
+				Optional:    true,
 			},
 			"location_id": {
 				Type:          schema.TypeInt,
+				Description:   "The ID of the location associated with the cluster.",
 				Optional:      true,
 				ConflictsWith: []string{"site_id", "site_group_id", "region_id"},
 			},
 			"site_id": {
 				Type:          schema.TypeInt,
+				Description:   "The ID of the site associated with the cluster.",
 				Optional:      true,
 				ConflictsWith: []string{"location_id", "site_group_id", "region_id"},
 			},
 			"site_group_id": {
 				Type:          schema.TypeInt,
+				Description:   "The ID of the site group associated with the cluster.",
 				Optional:      true,
 				ConflictsWith: []string{"location_id", "site_id", "region_id"},
 			},
 			"region_id": {
 				Type:          schema.TypeInt,
+				Description:   "The ID of the region associated with the cluster.",
 				Optional:      true,
 				ConflictsWith: []string{"location_id", "site_id", "site_group_id"},
 			},
 			"tenant_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the tenant associated with the cluster.",
+				Optional:    true,
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the cluster.",
+				Optional:    true,
 			},
 			"status": {
 				Type:        schema.TypeString,

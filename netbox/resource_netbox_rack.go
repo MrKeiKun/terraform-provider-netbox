@@ -29,12 +29,14 @@ Each rack is assigned a name and (optionally) a separate facility ID. This is he
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the rack.",
+				Required:    true,
 			},
 			"site_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the site associated with the rack.",
+				Required:    true,
 			},
 			"status": {
 				Type:        schema.TypeString,
@@ -51,6 +53,7 @@ Each rack is assigned a name and (optionally) a separate facility ID. This is he
 			},
 			"u_height": {
 				Type:          schema.TypeInt,
+				Description:   "The height of the rack in rack units.",
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{"rack_type_id"},
@@ -63,12 +66,14 @@ Each rack is assigned a name and (optionally) a separate facility ID. This is he
 				Description:   "Reference to a `netbox_rack_type`. When set, the rack's physical dimensions (such as `width`, `u_height` and `form_factor`) are inherited from the rack type.",
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the rack.",
+				Optional:    true,
 			},
 			"group_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the group associated with the rack.",
+				Optional:    true,
 			},
 			"starting_unit": {
 				Type:         schema.TypeInt,
@@ -102,37 +107,45 @@ Each rack is assigned a name and (optionally) a separate facility ID. This is he
 			},
 			tagsKey: tagsSchema,
 			"tenant_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the tenant associated with the rack.",
+				Optional:    true,
 			},
 			"facility_id": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The ID of the facility associated with the rack.",
+				Optional:    true,
 			},
 			"location_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the location associated with the rack.",
+				Optional:    true,
 			},
 			"role_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the role associated with the rack.",
+				Optional:    true,
 			},
 			"serial": {
 				Type:         schema.TypeString,
+				Description:  "The serial number of the rack.",
 				Optional:     true,
 				ValidateFunc: validation.StringLenBetween(0, 50),
 			},
 			"asset_tag": {
 				Type:         schema.TypeString,
+				Description:  "The asset tag of the rack.",
 				Optional:     true,
 				ValidateFunc: validation.StringLenBetween(0, 50),
 			},
 			"weight": {
-				Type:     schema.TypeFloat,
-				Optional: true,
+				Type:        schema.TypeFloat,
+				Description: "The weight of the rack.",
+				Optional:    true,
 			},
 			"max_weight": {
 				Type:         schema.TypeInt,
+				Description:  "The max weight of the rack.",
 				Optional:     true,
 				ValidateFunc: validatePositiveInt32,
 			},
@@ -151,11 +164,13 @@ Each rack is assigned a name and (optionally) a separate facility ID. This is he
 			},
 			"outer_width": {
 				Type:         schema.TypeInt,
+				Description:  "The outer width of the rack.",
 				Optional:     true,
 				ValidateFunc: validatePositiveInt16,
 			},
 			"outer_depth": {
 				Type:         schema.TypeInt,
+				Description:  "The outer depth of the rack.",
 				Optional:     true,
 				ValidateFunc: validatePositiveInt16,
 			},
@@ -168,17 +183,20 @@ Each rack is assigned a name and (optionally) a separate facility ID. This is he
 			},
 			"mounting_depth": {
 				Type:         schema.TypeInt,
+				Description:  "The mounting depth of the rack.",
 				Optional:     true,
 				ValidateFunc: validatePositiveInt16,
 			},
 			"description": {
 				Type:         schema.TypeString,
+				Description:  "A description of the rack.",
 				Optional:     true,
 				ValidateFunc: validation.StringLenBetween(0, 200),
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the rack.",
+				Optional:    true,
 			},
 			customFieldsKey: customFieldsSchema,
 			"form_factor": {

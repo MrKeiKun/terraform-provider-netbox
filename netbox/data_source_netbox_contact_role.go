@@ -10,16 +10,18 @@ import (
 func dataSourceNetboxContactRole() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxContactRoleRead,
-		Description: `:meta:subcategory:Tenancy:`,
+		Description: `:meta:subcategory:Tenancy:Retrieves a single contact role from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
+				Description:  "The name of the contact role.",
 				Computed:     true,
 				Optional:     true,
 				AtLeastOneOf: []string{"name", "slug"},
 			},
 			"slug": {
 				Type:         schema.TypeString,
+				Description:  "The URL-friendly slug of the contact role.",
 				Optional:     true,
 				Computed:     true,
 				AtLeastOneOf: []string{"name", "slug"},

@@ -3,12 +3,12 @@
 page_title: "netbox_inventory_item_template Data Source - terraform-provider-netbox"
 subcategory: "Data Center Inventory Management (DCIM)"
 description: |-
-  
+  Retrieves a single inventory item template from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_inventory_item_template (Data Source)
 
-
+Retrieves a single inventory item template from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -23,17 +23,17 @@ data "netbox_inventory_item_template" "example" {
 
 ### Optional
 
-- `device_type_id` (Number)
-- `name` (String) At least one of `name` must be given.
+- `device_type_id` (Number) The ID of the device type associated with the inventory item template.
+- `name` (String) The name of the inventory item template. At least one of `name` must be given.
 
 ### Read-Only
 
-- `component_id` (Number)
-- `component_type` (String)
-- `description` (String)
+- `component_id` (Number) The ID of the component associated with the inventory item template.
+- `component_type` (String) The component type of the inventory item template.
+- `description` (String) A description of the inventory item template.
 - `id` (String) The ID of this resource.
-- `label` (String)
-- `manufacturer_id` (Number)
-- `parent_id` (Number)
-- `part_id` (String)
-- `role_id` (Number)
+- `label` (String) The label of the inventory item template.
+- `manufacturer_id` (Number) The ID of the manufacturer associated with the inventory item template.
+- `parent_id` (Number) The ID of the parent associated with the inventory item template.
+- `part_id` (String) The ID of the part associated with the inventory item template.
+- `role_id` (Number) The ID of the role associated with the inventory item template.

@@ -3,12 +3,12 @@
 page_title: "netbox_virtual_circuit_type Data Source - terraform-provider-netbox"
 subcategory: "Circuits"
 description: |-
-  
+  Retrieves a single virtual circuit type from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_virtual_circuit_type (Data Source)
 
-
+Retrieves a single virtual circuit type from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -23,14 +23,14 @@ data "netbox_virtual_circuit_type" "example" {
 
 ### Optional
 
-- `name` (String) At least one of `name` or `slug` must be given.
-- `slug` (String) At least one of `name` or `slug` must be given.
+- `name` (String) The name of the virtual circuit type. At least one of `name` or `slug` must be given.
+- `slug` (String) The URL-friendly slug of the virtual circuit type. At least one of `name` or `slug` must be given.
 
 ### Read-Only
 
-- `color_hex` (String)
-- `comments` (String)
-- `description` (String)
+- `color_hex` (String) The color hex of the virtual circuit type.
+- `comments` (String) Free-form comments about the virtual circuit type.
+- `description` (String) A description of the virtual circuit type.
 - `id` (String) The ID of this resource.
-- `owner_id` (Number)
-- `tags` (Set of String)
+- `owner_id` (Number) The ID of the owner associated with the virtual circuit type.
+- `tags` (Set of String) Tags assigned to the object, by name.

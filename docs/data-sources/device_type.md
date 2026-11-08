@@ -3,12 +3,12 @@
 page_title: "netbox_device_type Data Source - terraform-provider-netbox"
 subcategory: "Data Center Inventory Management (DCIM)"
 description: |-
-  
+  Retrieves a single device type from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_device_type (Data Source)
 
-
+Retrieves a single device type from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -35,15 +35,15 @@ data "netbox_device_type" "ex3" {
 
 ### Optional
 
-- `manufacturer` (String)
-- `model` (String)
-- `part_number` (String)
-- `slug` (String)
-- `subdevice_role` (String)
+- `manufacturer` (String) The manufacturer of the device type.
+- `model` (String) The model of the device type.
+- `part_number` (String) The part number of the device type.
+- `slug` (String) The URL-friendly slug of the device type.
+- `subdevice_role` (String) The subdevice role of the device type.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `is_full_depth` (Boolean)
-- `manufacturer_id` (Number)
-- `u_height` (Number)
+- `is_full_depth` (Boolean) Whether the device type is full depth.
+- `manufacturer_id` (Number) The ID of the manufacturer associated with the device type.
+- `u_height` (Number) The height of the device type in rack units.

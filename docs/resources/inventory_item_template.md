@@ -27,20 +27,31 @@ resource "netbox_inventory_item_template" "example" {
 
 ### Required
 
-- `device_type_id` (Number)
+- `device_type_id` (Number) The ID of the device type associated with the inventory item template.
 - `name` (String) {module} is accepted as a substitution for the module bay position when attached to a module type.
 
 ### Optional
 
-- `component_id` (Number)
-- `component_type` (String)
-- `description` (String)
+- `component_id` (Number) The ID of the component associated with the inventory item template.
+- `component_type` (String) The component type of the inventory item template.
+- `description` (String) A description of the inventory item template.
 - `label` (String) Physical label.
-- `manufacturer_id` (Number)
-- `parent_id` (Number)
+- `manufacturer_id` (Number) The ID of the manufacturer associated with the inventory item template.
+- `parent_id` (Number) The ID of the parent associated with the inventory item template.
 - `part_id` (String) Manufacturer-assigned part identifier.
-- `role_id` (Number)
+- `role_id` (Number) The ID of the role associated with the inventory item template.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_inventory_item_template.example 1
+```

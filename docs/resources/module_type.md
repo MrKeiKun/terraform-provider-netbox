@@ -31,26 +31,37 @@ resource "netbox_module_type" "test" {
 
 ### Required
 
-- `manufacturer_id` (Number)
-- `model` (String)
+- `manufacturer_id` (Number) The ID of the manufacturer associated with the module type.
+- `model` (String) The model of the module type.
 
 ### Optional
 
 - `airflow` (String) One of [front-to-rear, rear-to-front, left-to-right, right-to-left, side-to-rear, passive].
-- `comments` (String)
+- `comments` (String) Free-form comments about the module type.
 - `cooling_method` (String) One of [air, liquid, hybrid, immersion].
-- `custom_fields` (Map of String)
-- `description` (String)
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the module type.
 - `end_of_life` (String) The date after which this module type is no longer supported by the manufacturer.
-- `module_bay_type_ids` (Set of Number)
-- `owner_id` (Number)
-- `part_number` (String)
-- `profile_id` (Number)
-- `tags` (Set of String)
-- `weight` (Number)
+- `module_bay_type_ids` (Set of Number) The IDs of the module bay type associated with the module type.
+- `owner_id` (Number) The ID of the owner associated with the module type.
+- `part_number` (String) The part number of the module type.
+- `profile_id` (Number) The ID of the profile associated with the module type.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `weight` (Number) The weight of the module type.
 - `weight_unit` (String) One of [kg, g, lb, oz]. Required when `weight` is set.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_module_type.example 1
+```

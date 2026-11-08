@@ -23,12 +23,12 @@ data "netbox_cable_bundle" "example" {
 
 ### Optional
 
-- `name` (String) At least one of `name` must be given.
+- `name` (String) The name of the cable bundle. At least one of `name` must be given.
 
 ### Read-Only
 
-- `comments` (String)
-- `description` (String)
+- `comments` (String) Free-form comments about the cable bundle.
+- `description` (String) A description of the cable bundle.
 - `id` (String) The ID of this resource.
-- `owner_id` (Number)
-- `tags` (Set of String)
+- `owner_id` (Number) The ID of the owner associated with the cable bundle.
+- `tags` (Set of String) Tags assigned to the object, by name.

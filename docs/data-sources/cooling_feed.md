@@ -23,19 +23,19 @@ data "netbox_cooling_feed" "example" {
 
 ### Optional
 
-- `name` (String) At least one of `name` must be given.
+- `name` (String) The name of the cooling feed. At least one of `name` must be given.
 
 ### Read-Only
 
-- `comments` (String)
-- `cooling_capacity` (Number)
-- `cooling_source_id` (Number)
-- `description` (String)
+- `comments` (String) Free-form comments about the cooling feed.
+- `cooling_capacity` (Number) The cooling capacity of the cooling feed.
+- `cooling_source_id` (Number) The ID of the cooling source associated with the cooling feed.
+- `description` (String) A description of the cooling feed.
 - `id` (String) The ID of this resource.
-- `max_flow` (Number)
-- `max_flow_unit` (String)
-- `owner_id` (Number)
-- `rack_id` (Number)
-- `status` (String)
-- `tags` (Set of String)
-- `tenant_id` (Number)
+- `max_flow` (Number) The max flow of the cooling feed.
+- `max_flow_unit` (String) The max flow unit of the cooling feed.
+- `owner_id` (Number) The ID of the owner associated with the cooling feed.
+- `rack_id` (Number) The ID of the rack associated with the cooling feed.
+- `status` (String) The status of the cooling feed.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the cooling feed.

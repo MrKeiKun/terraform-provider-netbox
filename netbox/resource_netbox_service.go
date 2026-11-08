@@ -24,11 +24,13 @@ func resourceNetboxService() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
+				Description:  "The name of the service.",
 				Required:     true,
 				ValidateFunc: validation.StringLenBetween(1, 100),
 			},
 			"virtual_machine_id": {
 				Type:         schema.TypeInt,
+				Description:  "The ID of the virtual machine associated with the service.",
 				Optional:     true,
 				ExactlyOneOf: []string{"virtual_machine_id", "device_id"},
 			},
@@ -42,12 +44,14 @@ func resourceNetboxService() *schema.Resource {
 			},
 			"port": {
 				Type:         schema.TypeInt,
+				Description:  "The port of the service.",
 				Optional:     true,
 				ExactlyOneOf: []string{"port", "ports", "port_mappings"},
 				Deprecated:   "This field is deprecated. Please use the new \"ports\" attribute instead.",
 			},
 			"ports": {
 				Type:         schema.TypeSet,
+				Description:  "The ports of the service.",
 				Optional:     true,
 				ExactlyOneOf: []string{"port", "ports", "port_mappings"},
 				Elem: &schema.Schema{
@@ -64,28 +68,33 @@ func resourceNetboxService() *schema.Resource {
 				Description:   "The ports of the service as `protocol/port` strings, for example `tcp/80`. Use this for a service that spans more than one protocol. Needs NetBox 4.6 or newer.",
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the service.",
+				Optional:    true,
 			},
 			"tags": {
-				Type:     schema.TypeSet,
-				Optional: true,
+				Type:        schema.TypeSet,
+				Description: "Tags to assign to the service.",
+				Optional:    true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
 			},
 			"device_id": {
 				Type:         schema.TypeInt,
+				Description:  "The ID of the device associated with the service.",
 				Optional:     true,
 				ExactlyOneOf: []string{"virtual_machine_id", "device_id"},
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the service.",
+				Optional:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the service.",
+				Optional:    true,
 			},
 			customFieldsKey: customFieldsSchema,
 		},

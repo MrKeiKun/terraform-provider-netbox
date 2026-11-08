@@ -19,12 +19,14 @@ func resourceNetboxDeviceOobIP() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"device_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the device associated with the device oob ip.",
+				Required:    true,
 			},
 			"ip_address_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the ip address associated with the device oob ip.",
+				Required:    true,
 			},
 		},
 		Importer: &schema.ResourceImporter{

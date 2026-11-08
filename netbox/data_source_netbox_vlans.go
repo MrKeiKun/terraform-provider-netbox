@@ -12,78 +12,93 @@ func dataSourceNetboxVlans() *schema.Resource {
 	customFieldsFilterSchema := *customFieldsSchema
 	return &schema.Resource{
 		Read:        dataSourceNetboxVlansRead,
-		Description: `:meta:subcategory:IP Address Management (IPAM):`,
+		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves all vlans from NetBox. Narrow the result with filter blocks and cap it with limit.`,
 		Schema: map[string]*schema.Schema{
 			"filter": {
-				Type:     schema.TypeSet,
-				Optional: true,
+				Type:        schema.TypeSet,
+				Description: "Filters that select which items are returned. Each filter is a name/value pair.",
+				Optional:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Description: "The name of the field to filter by.",
+							Required:    true,
 						},
 						"value": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Description: "The value of the field to filter by.",
+							Required:    true,
 						},
 					},
 				},
 			},
 			"limit": {
 				Type:             schema.TypeInt,
+				Description:      "The maximum number of items to return. Defaults to 0, which returns all items.",
 				Optional:         true,
 				ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
 				Default:          0,
 			},
 			customFieldsKey: &customFieldsFilterSchema,
 			"vlans": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Description: "The vlans of the vlans.",
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The numeric ID of the vlans.",
+							Computed:    true,
 						},
 						"vid": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The VLAN ID (1-4094).",
+							Computed:    true,
 						},
 						"name": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "The name of the vlans.",
+							Computed:    true,
 						},
 						"description": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "A description of the vlans.",
+							Computed:    true,
 						},
 						"group_id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The ID of the group associated with the vlans.",
+							Computed:    true,
 						},
 						"role": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The role of the vlans.",
+							Computed:    true,
 						},
 						"site": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The site of the vlans.",
+							Computed:    true,
 						},
 						"status": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "The status of the vlans.",
+							Computed:    true,
 						},
 						"tag_ids": {
-							Type:     schema.TypeList,
-							Computed: true,
+							Type:        schema.TypeList,
+							Description: "The IDs of the tag associated with the vlans.",
+							Computed:    true,
 							Elem: &schema.Schema{
 								Type: schema.TypeInt,
 							},
 						},
 						"tenant": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Description: "The tenant of the vlans.",
+							Computed:    true,
 						},
 						customFieldsKey: {
 							Type:     schema.TypeMap,

@@ -28,18 +28,29 @@ resource "netbox_custom_link" "example" {
 
 - `link_text` (String) Jinja2 template code for link text.
 - `link_url` (String) Jinja2 template code for link URL.
-- `name` (String)
-- `object_types` (Set of String)
+- `name` (String) The name of the custom link.
+- `object_types` (Set of String) The object types the custom link applies to.
 
 ### Optional
 
 - `button_class` (String) One of [default, blue, indigo, purple, pink, red, orange, yellow, green, teal, cyan, gray, black, white, ghost-dark].
-- `enabled` (Boolean) Defaults to `false`.
+- `enabled` (Boolean) Whether the custom link is enabled. Defaults to `false`.
 - `group_name` (String) Links with the same group will appear as a dropdown menu.
 - `new_window` (Boolean) Force link to open in a new window. Defaults to `false`.
-- `owner_id` (Number)
-- `weight` (Number)
+- `owner_id` (Number) The ID of the owner associated with the custom link.
+- `weight` (Number) The weight of the custom link.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_custom_link.example 1
+```

@@ -3,12 +3,12 @@
 page_title: "netbox_circuit_group Data Source - terraform-provider-netbox"
 subcategory: "Circuits"
 description: |-
-  
+  Retrieves a single circuit group from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_circuit_group (Data Source)
 
-
+Retrieves a single circuit group from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -23,14 +23,14 @@ data "netbox_circuit_group" "example" {
 
 ### Optional
 
-- `name` (String) At least one of `name` or `slug` must be given.
-- `slug` (String) At least one of `name` or `slug` must be given.
+- `name` (String) The name of the circuit group. At least one of `name` or `slug` must be given.
+- `slug` (String) The URL-friendly slug of the circuit group. At least one of `name` or `slug` must be given.
 
 ### Read-Only
 
-- `comments` (String)
-- `description` (String)
+- `comments` (String) Free-form comments about the circuit group.
+- `description` (String) A description of the circuit group.
 - `id` (String) The ID of this resource.
-- `owner_id` (Number)
-- `tags` (Set of String)
-- `tenant_id` (Number)
+- `owner_id` (Number) The ID of the owner associated with the circuit group.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the circuit group.

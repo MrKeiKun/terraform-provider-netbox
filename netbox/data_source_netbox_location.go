@@ -11,43 +11,51 @@ import (
 func dataSourceNetboxLocation() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxLocationRead,
-		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):`,
+		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):Retrieves a single location from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The name of the location.",
+				Optional:    true,
 			},
 			"slug": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The URL-friendly slug of the location.",
+				Optional:    true,
 			},
 			"id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The numeric ID of the location.",
+				Optional:    true,
+				Computed:    true,
 			},
 
 			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "A description of the location.",
+				Computed:    true,
 			},
 			"tenant_id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the tenant associated with the location.",
+				Computed:    true,
 			},
 			"status": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "The status of the location.",
+				Computed:    true,
 			},
 			"site_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the site associated with the location.",
+				Optional:    true,
+				Computed:    true,
 			},
 			"parent_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the parent associated with the location.",
+				Optional:    true,
+				Computed:    true,
 			},
 		},
 	}

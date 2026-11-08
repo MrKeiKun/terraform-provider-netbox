@@ -23,18 +23,18 @@ data "netbox_cooling_source" "example" {
 
 ### Optional
 
-- `name` (String) At least one of `name` must be given.
+- `name` (String) The name of the cooling source. At least one of `name` must be given.
 
 ### Read-Only
 
-- `comments` (String)
-- `cooling_capacity` (Number)
-- `description` (String)
-- `fluid_type` (String)
+- `comments` (String) Free-form comments about the cooling source.
+- `cooling_capacity` (Number) The cooling capacity of the cooling source.
+- `description` (String) A description of the cooling source.
+- `fluid_type` (String) The fluid type of the cooling source.
 - `id` (String) The ID of this resource.
-- `location_id` (Number)
-- `owner_id` (Number)
-- `site_id` (Number)
-- `status` (String)
-- `tags` (Set of String)
-- `type` (String)
+- `location_id` (Number) The ID of the location associated with the cooling source.
+- `owner_id` (Number) The ID of the owner associated with the cooling source.
+- `site_id` (Number) The ID of the site associated with the cooling source.
+- `status` (String) The status of the cooling source.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `type` (String) The type of the cooling source.

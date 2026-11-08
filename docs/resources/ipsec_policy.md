@@ -26,19 +26,30 @@ resource "netbox_ipsec_policy" "example" {
 
 ### Required
 
-- `name` (String)
+- `name` (String) The name of the ipsec policy.
 
 ### Optional
 
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `owner_id` (Number)
+- `comments` (String) Free-form comments about the ipsec policy.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the ipsec policy.
+- `owner_id` (Number) The ID of the owner associated with the ipsec policy.
 - `pfs_group` (Number) One of [1, 2, 5, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34].
-- `proposal_ids` (Set of Number)
-- `tags` (Set of String)
+- `proposal_ids` (Set of Number) The IDs of the proposal associated with the ipsec policy.
+- `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_ipsec_policy.example 1
+```

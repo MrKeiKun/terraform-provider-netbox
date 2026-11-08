@@ -3,12 +3,12 @@
 page_title: "netbox_virtual_machines Data Source - terraform-provider-netbox"
 subcategory: "Virtualization"
 description: |-
-  
+  Retrieves all virtual machines from NetBox. Narrow the result with filter blocks and cap it with limit.
 ---
 
 # netbox_virtual_machines (Data Source)
 
-
+Retrieves all virtual machines from NetBox. Narrow the result with filter blocks and cap it with limit.
 
 ## Example Usage
 
@@ -32,22 +32,22 @@ data "netbox_virtual_machines" "base_vm" {
 
 ### Optional
 
-- `filter` (Block Set) (see [below for nested schema](#nestedblock--filter))
-- `limit` (Number) Defaults to `0`.
-- `name_regex` (String)
+- `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
+- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items. Defaults to `0`.
+- `name_regex` (String) The name regex of the virtual machines.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `vms` (List of Object) (see [below for nested schema](#nestedatt--vms))
+- `vms` (List of Object) The vms of the virtual machines. (see [below for nested schema](#nestedatt--vms))
 
 <a id="nestedblock--filter"></a>
 ### Nested Schema for `filter`
 
 Required:
 
-- `name` (String)
-- `value` (String)
+- `name` (String) The name of the field to filter by.
+- `value` (String) The value of the field to filter by.
 
 
 <a id="nestedatt--vms"></a>

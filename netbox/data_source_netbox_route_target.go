@@ -12,20 +12,23 @@ import (
 func dataSourceNetboxRouteTarget() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxRouteTargetRead,
-		Description: `:meta:subcategory:IP Address Management (IPAM):`,
+		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves a single route target from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:         schema.TypeString,
+				Description:  "The name of the route target.",
 				ValidateFunc: validation.StringLenBetween(1, 21),
 				Required:     true,
 			},
 			"tenant_id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the tenant associated with the route target.",
+				Computed:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "A description of the route target.",
+				Computed:    true,
 			},
 			tagsKey: tagsSchema,
 		},

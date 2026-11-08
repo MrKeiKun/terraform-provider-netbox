@@ -77,20 +77,31 @@ resource "netbox_device_bay" "example" {
 
 ### Required
 
-- `device_id` (Number)
-- `name` (String)
+- `device_id` (Number) The ID of the device associated with the device bay.
+- `name` (String) The name of the device bay.
 
 ### Optional
 
-- `custom_fields` (Map of String)
-- `description` (String)
-- `enabled` (Boolean)
-- `installed_device_id` (Number)
-- `label` (String)
-- `owner_id` (Number)
-- `tags` (Set of String)
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
+- `description` (String) A description of the device bay.
+- `enabled` (Boolean) Whether the device bay is enabled.
+- `installed_device_id` (Number) The ID of the installed device associated with the device bay.
+- `label` (String) The label of the device bay.
+- `owner_id` (Number) The ID of the owner associated with the device bay.
+- `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String)
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_device_bay.example 1
+```

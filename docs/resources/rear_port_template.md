@@ -41,17 +41,17 @@ resource "netbox_rear_port_template" "test" {
 
 ### Required
 
-- `name` (String)
+- `name` (String) The name of the rear port template.
 - `type` (String) One of [8p8c, 8p6c, 8p4c, 8p2c, 6p6c, 6p4c, 6p2c, 4p4c, 4p2c, gg45, tera-4p, tera-2p, tera-1p, 110-punch, bnc, f, n, mrj21, fc, lc, lc-pc, lc-upc, lc-apc, lsh, lsh-pc, lsh-upc, lsh-apc, mpo, mtrj, sc, sc-pc, sc-upc, sc-apc, st, cs, sn, sma-905, sma-906, urm-p2, urm-p4, urm-p8, splice, other].
 
 ### Optional
 
-- `color_hex` (String)
-- `description` (String)
-- `device_type_id` (Number) Exactly one of `device_type_id` or `module_type_id` must be given.
+- `color_hex` (String) The color hex of the rear port template.
+- `description` (String) A description of the rear port template.
+- `device_type_id` (Number) The ID of the device type associated with the rear port template. Exactly one of `device_type_id` or `module_type_id` must be given.
 - `front_ports` (Block List) The ports and positions this port is mapped to. Needs NetBox 4.5 or newer. (see [below for nested schema](#nestedblock--front_ports))
-- `label` (String)
-- `module_type_id` (Number) Exactly one of `device_type_id` or `module_type_id` must be given.
+- `label` (String) The label of the rear port template.
+- `module_type_id` (Number) The ID of the module type associated with the rear port template. Exactly one of `device_type_id` or `module_type_id` must be given.
 - `positions` (Number) Number of front ports which may be mapped to this rear port. Defaults to `1`.
 
 ### Read-Only
@@ -69,3 +69,14 @@ Required:
 Optional:
 
 - `front_port_position` (Number) Position on the other port. Defaults to `1`.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The ID is the numeric NetBox ID of the object
+terraform import netbox_rear_port_template.example 1
+```

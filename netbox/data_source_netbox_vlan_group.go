@@ -11,22 +11,25 @@ import (
 func dataSourceNetboxVlanGroup() *schema.Resource {
 	return &schema.Resource{
 		Read:        dataSourceNetboxVlanGroupRead,
-		Description: `:meta:subcategory:IP Address Management (IPAM):`,
+		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves a single vlan group from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:         schema.TypeString,
+				Description:  "The numeric ID of the vlan group.",
 				Computed:     true,
 				Optional:     true,
 				AtLeastOneOf: []string{"id", "name", "slug", "scope_type"},
 			},
 			"name": {
 				Type:         schema.TypeString,
+				Description:  "The name of the vlan group.",
 				Computed:     true,
 				Optional:     true,
 				AtLeastOneOf: []string{"id", "name", "slug", "scope_type"},
 			},
 			"slug": {
 				Type:         schema.TypeString,
+				Description:  "The URL-friendly slug of the vlan group.",
 				Optional:     true,
 				Computed:     true,
 				AtLeastOneOf: []string{"id", "name", "slug", "scope_type"},
@@ -40,16 +43,19 @@ func dataSourceNetboxVlanGroup() *schema.Resource {
 			},
 			"scope_id": {
 				Type:         schema.TypeString,
+				Description:  "The ID of the scope associated with the vlan group.",
 				Optional:     true,
 				RequiredWith: []string{"scope_type"},
 			},
 			"vlan_count": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Description: "The vlan count of the vlan group.",
+				Computed:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "A description of the vlan group.",
+				Computed:    true,
 			},
 		},
 	}

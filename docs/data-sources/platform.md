@@ -3,12 +3,12 @@
 page_title: "netbox_platform Data Source - terraform-provider-netbox"
 subcategory: "Data Center Inventory Management (DCIM)"
 description: |-
-  
+  Retrieves a single platform from NetBox. The lookup fails if no match or more than one match is found.
 ---
 
 # netbox_platform (Data Source)
 
-
+Retrieves a single platform from NetBox. The lookup fails if no match or more than one match is found.
 
 ## Example Usage
 
@@ -23,15 +23,15 @@ data "netbox_platform" "PANOS" {
 
 ### Required
 
-- `name` (String)
+- `name` (String) The name of the platform.
 
 ### Optional
 
-- `manufacturer_id` (Number)
+- `manufacturer_id` (Number) The ID of the manufacturer associated with the platform.
 
 ### Read-Only
 
-- `description` (String)
+- `description` (String) A description of the platform.
 - `id` (String) The ID of this resource.
-- `slug` (String)
-- `tags` (Set of String)
+- `slug` (String) The URL-friendly slug of the platform.
+- `tags` (Set of String) Tags assigned to the object, by name.

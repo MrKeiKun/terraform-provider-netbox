@@ -20,15 +20,18 @@ func resourceNetboxPrimaryIP() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"virtual_machine_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the virtual machine associated with the primary ip.",
+				Required:    true,
 			},
 			"ip_address_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the ip address associated with the primary ip.",
+				Required:    true,
 			},
 			"ip_address_version": {
 				Type:         schema.TypeInt,
+				Description:  "The ip address version of the primary ip.",
 				ValidateFunc: validation.IntInSlice([]int{4, 6}),
 				Optional:     true,
 				Default:      4,
@@ -63,6 +66,14 @@ func resourceNetboxPrimaryIPRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	IPAddressVersion := d.Get("ip_address_version")
+	// On import the version is unknown; infer it from whichever primary IP is set.
+	if IPAddressVersion == 0 {
+		if vm.PrimaryIp4 != nil {
+			IPAddressVersion = 4
+		} else if vm.PrimaryIp6 != nil {
+			IPAddressVersion = 6
+		}
+	}
 	d.Set("ip_address_version", IPAddressVersion)
 	if IPAddressVersion == 4 && vm.PrimaryIp4 != nil {
 		d.Set("ip_address_id", vm.PrimaryIp4.ID)

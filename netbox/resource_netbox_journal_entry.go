@@ -19,11 +19,13 @@ func resourceNetboxJournalEntry() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"assigned_object_type": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The assigned object type of the journal entry.",
+				Required:    true,
 			},
 			"assigned_object_id": {
 				Type:         schema.TypeInt,
+				Description:  "The ID of the assigned object associated with the journal entry.",
 				Required:     true,
 				ValidateFunc: validation.IntBetween(0, 9223372036854775807),
 			},
@@ -35,8 +37,9 @@ func resourceNetboxJournalEntry() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"info", "success", "warning", "danger"}, false),
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the journal entry.",
+				Required:    true,
 			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,

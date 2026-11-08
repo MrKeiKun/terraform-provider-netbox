@@ -19,12 +19,14 @@ func resourceNetboxIKEPolicy() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The name of the ike policy.",
+				Required:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "A description of the ike policy.",
+				Optional:    true,
 			},
 			"version": {
 				Type:         schema.TypeInt,
@@ -40,21 +42,25 @@ func resourceNetboxIKEPolicy() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"aggressive", "main"}, false),
 			},
 			"proposal_ids": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeInt},
+				Type:        schema.TypeSet,
+				Description: "The IDs of the proposal associated with the ike policy.",
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeInt},
 			},
 			"preshared_key": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The preshared key of the ike policy.",
+				Optional:    true,
 			},
 			"owner_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Description: "The ID of the owner associated with the ike policy.",
+				Optional:    true,
 			},
 			"comments": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Free-form comments about the ike policy.",
+				Optional:    true,
 			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,
