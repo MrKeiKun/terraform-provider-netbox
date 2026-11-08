@@ -64,10 +64,13 @@ resource "netbox_module" "test" {
 
 ### Optional
 
+- `adopt_components` (Boolean) Adopt already existing components.
 - `asset_tag` (String)
 - `comments` (String)
 - `custom_fields` (Map of String)
 - `description` (String)
+- `owner_id` (Number)
+- `replicate_components` (Boolean) Automatically populate components associated with this module type (default: true).
 - `serial` (String)
 - `tags` (Set of String)
 

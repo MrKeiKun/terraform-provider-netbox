@@ -60,13 +60,16 @@ resource "netbox_circuit_termination" "test" {
 - `custom_fields` (Map of String)
 - `description` (String)
 - `location_id` (Number) Exactly one of `site_id`, `site_group_id`, `region_id` or `provider_network_id` must be given.
+- `mark_connected` (Boolean) Treat as if a cable is connected.
 - `port_speed` (Number)
+- `pp_info` (String) Patch panel ID and port number(s).
 - `provider_network_id` (Number) Exactly one of `location_id`, `site_id`, `site_group_id` or `region_id` must be given.
 - `region_id` (Number) Exactly one of `location_id`, `site_id`, `site_group_id` or `provider_network_id` must be given.
 - `site_group_id` (Number) Exactly one of `location_id`, `site_id`, `region_id` or `provider_network_id` must be given.
 - `site_id` (Number) Exactly one of `location_id`, `site_group_id`, `region_id` or `provider_network_id` must be given.
 - `tags` (Set of String)
 - `upstream_speed` (Number)
+- `xconnect_id` (String) ID of the local cross-connect.
 
 ### Read-Only
 

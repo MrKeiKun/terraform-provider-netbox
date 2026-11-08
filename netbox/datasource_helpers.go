@@ -390,3 +390,41 @@ func jRanges(o map[string]interface{}, k string) []map[string]int64 {
 	}
 	return ranges
 }
+
+// jIDs returns the IDs of a list of nested objects.
+func jIDs(o map[string]interface{}, k string) []int64 {
+	ids := []int64{}
+	list, _ := o[k].([]interface{})
+	for _, item := range list {
+		if nested, ok := item.(map[string]interface{}); ok {
+			if f, ok := nested["id"].(float64); ok {
+				ids = append(ids, int64(f))
+			}
+		}
+	}
+	return ids
+}
+
+// jStrs returns the strings in a list field.
+func jStrs(o map[string]interface{}, k string) []string {
+	out := []string{}
+	list, _ := o[k].([]interface{})
+	for _, item := range list {
+		if s, ok := item.(string); ok {
+			out = append(out, s)
+		}
+	}
+	return out
+}
+
+// jInts returns the numbers in a list field.
+func jInts(o map[string]interface{}, k string) []int64 {
+	out := []int64{}
+	list, _ := o[k].([]interface{})
+	for _, item := range list {
+		if f, ok := item.(float64); ok {
+			out = append(out, int64(f))
+		}
+	}
+	return out
+}

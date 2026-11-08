@@ -52,6 +52,10 @@ func resourceNetboxDeviceConsoleServerPort() *schema.Resource {
 				Default:  false,
 				Optional: true,
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,
 		},
@@ -72,6 +76,7 @@ type deviceConsoleServerPortRequest struct {
 	Speed         *int64             `json:"speed"`
 	Description   string             `json:"description,omitempty"`
 	MarkConnected bool               `json:"mark_connected"`
+	Owner         *int64             `json:"owner"`
 	CustomFields  interface{}        `json:"custom_fields,omitempty"`
 	Tags          []netboxapi.TagRef `json:"tags"`
 }
@@ -85,6 +90,7 @@ type deviceConsoleServerPortResponse struct {
 	Speed         *netboxapi.IntChoice   `json:"speed"`
 	Description   string                 `json:"description"`
 	MarkConnected bool                   `json:"mark_connected"`
+	Owner         *netboxapi.Ref         `json:"owner"`
 	CustomFields  map[string]interface{} `json:"custom_fields"`
 	Tags          []netboxapi.TagRef     `json:"tags"`
 }
@@ -96,6 +102,7 @@ func deviceConsoleServerPortRequestFromResourceData(api *providerState, d *schem
 		return nil, err
 	}
 	data := &deviceConsoleServerPortRequest{
+		Owner:         getOptionalInt(d, "owner_id"),
 		Name:          name,
 		Device:        int64ToPtr(int64(d.Get("device_id").(int))),
 		Module:        getOptionalInt(d, "module_id"),
@@ -123,6 +130,7 @@ func resourceNetboxDeviceConsoleServerPortCreate(d *schema.ResourceData, m inter
 func resourceNetboxDeviceConsoleServerPortRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, deviceConsoleServerPortAPIPath, func(r *deviceConsoleServerPortResponse) {
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("name", r.Name)
 		d.Set("device_id", netboxapi.RefID(r.Device))
 		d.Set("module_id", netboxapi.RefID(r.Module))

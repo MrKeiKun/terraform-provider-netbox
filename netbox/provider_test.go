@@ -188,3 +188,12 @@ func TestAccNetboxProviderDefaultTags(t *testing.T) {
 		},
 	})
 }
+
+// testAccSkipBelowVersion skips the test when the NetBox under test is older
+// than the given version, for objects that NetBox added later.
+func testAccSkipBelowVersion(t *testing.T, version string) {
+	t.Helper()
+	if !testAccNetboxVersionAtLeast(version) {
+		t.Skipf("requires NetBox %s or newer", version)
+	}
+}

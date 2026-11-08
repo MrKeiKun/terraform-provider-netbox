@@ -50,8 +50,17 @@ resource "netbox_circuit" "test" {
 
 ### Optional
 
+- `comments` (String)
+- `commit_rate` (Number) Committed rate.
+- `custom_fields` (Map of String)
 - `description` (String)
+- `distance` (Number)
+- `distance_unit` (String) One of [km, m, mi, ft].
+- `install_date` (String)
+- `owner_id` (Number)
+- `provider_account_id` (Number)
 - `tenant_id` (Number)
+- `termination_date` (String)
 
 ### Read-Only
 

@@ -74,6 +74,18 @@ func resourceNetboxWirelessLAN() *schema.Resource {
 			},
 			customFieldsKey: customFieldsSchema,
 			tagsKey:         tagsSchema,
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"scope_type": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"scope_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -84,6 +96,9 @@ func resourceNetboxWirelessLAN() *schema.Resource {
 const wirelessLANAPIPath = "wireless/wireless-lans/"
 
 type wirelessLANResponse struct {
+	ScopeID      *int64                 `json:"scope_id"`
+	ScopeType    string                 `json:"scope_type"`
+	Owner        *netboxapi.Ref         `json:"owner"`
 	Ssid         string                 `json:"ssid"`
 	Description  string                 `json:"description"`
 	Comments     string                 `json:"comments"`
@@ -111,11 +126,14 @@ func wirelessLANBody(api *providerState, d *schema.ResourceData) (map[string]int
 		"status":      d.Get("status").(string),
 		"description": getOptionalStr(d, "description", true),
 		"comments":    getOptionalStr(d, "comments", true),
+		"owner":       getOptionalInt(d, "owner_id"),
 		"group":       nullableID(d.Get("group_id").(int)),
 		"tenant":      nullableID(d.Get("tenant_id").(int)),
 		"vlan":        nullableID(d.Get("vlan_id").(int)),
 		"tags":        tags,
 	}
+	setBodyStr(body, d, "scope_type", "scope_type")
+	body["scope_id"] = getOptionalInt(d, "scope_id")
 
 	if authType, ok := d.GetOk("auth_type"); ok {
 		body["auth_type"] = authType.(string)
@@ -150,6 +168,8 @@ func resourceNetboxWirelessLANCreate(d *schema.ResourceData, m interface{}) erro
 func resourceNetboxWirelessLANRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, wirelessLANAPIPath, func(wlan *wirelessLANResponse) {
+		d.Set("scope_id", wlan.ScopeID)
+		d.Set("scope_type", wlan.ScopeType)
 		d.Set("ssid", wlan.Ssid)
 		d.Set("description", wlan.Description)
 		d.Set("comments", wlan.Comments)
@@ -162,6 +182,7 @@ func resourceNetboxWirelessLANRead(d *schema.ResourceData, m interface{}) error 
 		d.Set("vlan_id", netboxapi.RefID(wlan.Vlan))
 		d.Set(customFieldsKey, getCustomFields(wlan.CustomFields))
 		api.readTagRefs(d, wlan.Tags)
+		d.Set("owner_id", netboxapi.RefID(wlan.Owner))
 	})
 }
 

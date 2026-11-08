@@ -49,6 +49,9 @@ resource "netbox_rack_reservation" "test" {
 ### Optional
 
 - `comments` (String)
+- `custom_fields` (Map of String)
+- `owner_id` (Number)
+- `status` (String) One of [pending, active, stale].
 - `tags` (Set of String)
 - `tenant_id` (Number)
 

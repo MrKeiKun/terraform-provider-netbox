@@ -50,3 +50,12 @@ type IntChoice struct {
 	Value int64  `json:"value"`
 	Label string `json:"label"`
 }
+
+// IntChoiceValue returns the value of a numeric choice field, or nil if it is
+// not set. It is meant for d.Set, where nil clears the attribute.
+func IntChoiceValue(c *IntChoice) any {
+	if c == nil {
+		return nil
+	}
+	return c.Value
+}

@@ -42,6 +42,7 @@ func resourceNetboxContactAssignment() *schema.Resource {
 				ValidateFunc: validation.StringInSlice(resourceNetboxContactAssignmentPriorityOptions, false),
 				Description:  buildValidValueDescription(resourceNetboxContactAssignmentPriorityOptions),
 			},
+			customFieldsKey: customFieldsSchema,
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -52,28 +53,31 @@ func resourceNetboxContactAssignment() *schema.Resource {
 const contactAssignmentAPIPath = "tenancy/contact-assignments/"
 
 type contactAssignmentRequest struct {
-	ObjectType string `json:"object_type,omitempty"`
-	ObjectId   *int64 `json:"object_id"`
-	Contact    *int64 `json:"contact"`
-	Role       *int64 `json:"role"`
-	Priority   string `json:"priority,omitempty"`
+	ObjectType   string      `json:"object_type,omitempty"`
+	ObjectId     *int64      `json:"object_id"`
+	Contact      *int64      `json:"contact"`
+	Role         *int64      `json:"role"`
+	Priority     string      `json:"priority,omitempty"`
+	CustomFields interface{} `json:"custom_fields,omitempty"`
 }
 
 type contactAssignmentResponse struct {
-	ObjectType string            `json:"object_type"`
-	ObjectId   *int64            `json:"object_id"`
-	Contact    *netboxapi.Ref    `json:"contact"`
-	Role       *netboxapi.Ref    `json:"role"`
-	Priority   *netboxapi.Choice `json:"priority"`
+	ObjectType   string                 `json:"object_type"`
+	ObjectId     *int64                 `json:"object_id"`
+	Contact      *netboxapi.Ref         `json:"contact"`
+	Role         *netboxapi.Ref         `json:"role"`
+	Priority     *netboxapi.Choice      `json:"priority"`
+	CustomFields map[string]interface{} `json:"custom_fields"`
 }
 
 func contactAssignmentRequestFromResourceData(d *schema.ResourceData) *contactAssignmentRequest {
 	data := &contactAssignmentRequest{
-		ObjectType: d.Get("content_type").(string),
-		ObjectId:   int64ToPtr(int64(d.Get("object_id").(int))),
-		Contact:    int64ToPtr(int64(d.Get("contact_id").(int))),
-		Role:       int64ToPtr(int64(d.Get("role_id").(int))),
-		Priority:   d.Get("priority").(string),
+		CustomFields: customFieldsRequest(d),
+		ObjectType:   d.Get("content_type").(string),
+		ObjectId:     int64ToPtr(int64(d.Get("object_id").(int))),
+		Contact:      int64ToPtr(int64(d.Get("contact_id").(int))),
+		Role:         int64ToPtr(int64(d.Get("role_id").(int))),
+		Priority:     d.Get("priority").(string),
 	}
 	return data
 }
@@ -84,6 +88,7 @@ func resourceNetboxContactAssignmentCreate(d *schema.ResourceData, m interface{}
 
 func resourceNetboxContactAssignmentRead(d *schema.ResourceData, m interface{}) error {
 	return readObject(d, m, contactAssignmentAPIPath, func(r *contactAssignmentResponse) {
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
 		d.Set("content_type", r.ObjectType)
 		d.Set("object_id", r.ObjectId)
 		if r.Contact != nil {

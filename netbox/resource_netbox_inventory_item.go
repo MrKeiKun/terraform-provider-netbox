@@ -81,6 +81,17 @@ func resourceNetboxInventoryItem() *schema.Resource {
 				Optional:     true,
 				RequiredWith: []string{"component_type"},
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"status": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				Description:  "One of [offline, active, planned, staged, failed, decommissioning]",
+				ValidateFunc: validation.StringInSlice([]string{"offline", "active", "planned", "staged", "failed", "decommissioning"}, false),
+			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,
 		},
@@ -106,6 +117,8 @@ type inventoryItemRequest struct {
 	Description   string             `json:"description,omitempty"`
 	ComponentType *string            `json:"component_type"`
 	ComponentID   *int64             `json:"component_id"`
+	Owner         *int64             `json:"owner"`
+	Status        string             `json:"status,omitempty"`
 	CustomFields  interface{}        `json:"custom_fields,omitempty"`
 	Tags          []netboxapi.TagRef `json:"tags"`
 }
@@ -124,6 +137,8 @@ type inventoryItemResponse struct {
 	Description   string                 `json:"description"`
 	ComponentType *string                `json:"component_type"`
 	ComponentID   *int64                 `json:"component_id"`
+	Owner         *netboxapi.Ref         `json:"owner"`
+	Status        *netboxapi.Choice      `json:"status"`
 	CustomFields  map[string]interface{} `json:"custom_fields"`
 	Tags          []netboxapi.TagRef     `json:"tags"`
 }
@@ -135,6 +150,8 @@ func inventoryItemRequestFromResourceData(api *providerState, d *schema.Resource
 		return nil, err
 	}
 	data := &inventoryItemRequest{
+		Status:       d.Get("status").(string),
+		Owner:        getOptionalInt(d, "owner_id"),
 		Name:         name,
 		Device:       int64ToPtr(int64(d.Get("device_id").(int))),
 		Parent:       getOptionalInt(d, "parent_id"),
@@ -171,6 +188,8 @@ func resourceNetboxInventoryItemCreate(d *schema.ResourceData, m interface{}) er
 func resourceNetboxInventoryItemRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, inventoryItemAPIPath, func(r *inventoryItemResponse) {
+		d.Set("status", netboxapi.ChoiceValue(r.Status))
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("name", r.Name)
 		d.Set("device_id", netboxapi.RefID(r.Device))
 		d.Set("parent_id", r.Parent)

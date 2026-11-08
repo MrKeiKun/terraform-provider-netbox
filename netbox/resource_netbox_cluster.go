@@ -3,6 +3,7 @@ package netbox
 import (
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func resourceNetboxCluster() *schema.Resource {
@@ -60,7 +61,19 @@ func resourceNetboxCluster() *schema.Resource {
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
-			tagsKey: tagsSchema,
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"status": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				Description:  "One of [planned, staging, active, decommissioning, offline]",
+				ValidateFunc: validation.StringInSlice([]string{"planned", "staging", "active", "decommissioning", "offline"}, false),
+			},
+			customFieldsKey: customFieldsSchema,
+			tagsKey:         tagsSchema,
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -71,27 +84,33 @@ func resourceNetboxCluster() *schema.Resource {
 const clusterAPIPath = "virtualization/clusters/"
 
 type clusterRequest struct {
-	Name        string             `json:"name"`
-	Type        *int64             `json:"type"`
-	Group       *int64             `json:"group,omitempty"`
-	Comments    string             `json:"comments,omitempty"`
-	Description string             `json:"description,omitempty"`
-	Tenant      *int64             `json:"tenant,omitempty"`
-	ScopeType   *string            `json:"scope_type"`
-	ScopeID     *int64             `json:"scope_id"`
-	Tags        []netboxapi.TagRef `json:"tags"`
+	Name         string             `json:"name"`
+	Type         *int64             `json:"type"`
+	Group        *int64             `json:"group,omitempty"`
+	Comments     string             `json:"comments,omitempty"`
+	Description  string             `json:"description,omitempty"`
+	Tenant       *int64             `json:"tenant,omitempty"`
+	ScopeType    *string            `json:"scope_type"`
+	ScopeID      *int64             `json:"scope_id"`
+	Owner        *int64             `json:"owner"`
+	Status       string             `json:"status,omitempty"`
+	CustomFields interface{}        `json:"custom_fields,omitempty"`
+	Tags         []netboxapi.TagRef `json:"tags"`
 }
 
 type clusterResponse struct {
-	Name        string             `json:"name"`
-	Type        *netboxapi.Ref     `json:"type"`
-	Group       *netboxapi.Ref     `json:"group"`
-	Comments    string             `json:"comments"`
-	Description string             `json:"description"`
-	Tenant      *netboxapi.Ref     `json:"tenant"`
-	ScopeType   *string            `json:"scope_type"`
-	ScopeID     *int64             `json:"scope_id"`
-	Tags        []netboxapi.TagRef `json:"tags"`
+	Name         string                 `json:"name"`
+	Type         *netboxapi.Ref         `json:"type"`
+	Group        *netboxapi.Ref         `json:"group"`
+	Comments     string                 `json:"comments"`
+	Description  string                 `json:"description"`
+	Tenant       *netboxapi.Ref         `json:"tenant"`
+	ScopeType    *string                `json:"scope_type"`
+	ScopeID      *int64                 `json:"scope_id"`
+	Owner        *netboxapi.Ref         `json:"owner"`
+	Status       *netboxapi.Choice      `json:"status"`
+	CustomFields map[string]interface{} `json:"custom_fields"`
+	Tags         []netboxapi.TagRef     `json:"tags"`
 }
 
 func clusterRequestFromResourceData(api *providerState, d *schema.ResourceData) (*clusterRequest, error) {
@@ -101,10 +120,13 @@ func clusterRequestFromResourceData(api *providerState, d *schema.ResourceData) 
 		return nil, err
 	}
 	data := &clusterRequest{
-		Name:        name,
-		Type:        int64ToPtr(int64(d.Get("cluster_type_id").(int))),
-		Comments:    getOptionalStr(d, "comments", true),
-		Description: getOptionalStr(d, "description", true),
+		CustomFields: customFieldsRequest(d),
+		Status:       d.Get("status").(string),
+		Owner:        getOptionalInt(d, "owner_id"),
+		Name:         name,
+		Type:         int64ToPtr(int64(d.Get("cluster_type_id").(int))),
+		Comments:     getOptionalStr(d, "comments", true),
+		Description:  getOptionalStr(d, "description", true),
 
 		Tags: tags,
 	}
@@ -151,6 +173,9 @@ func resourceNetboxClusterCreate(d *schema.ResourceData, m interface{}) error {
 func resourceNetboxClusterRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, clusterAPIPath, func(r *clusterResponse) {
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
+		d.Set("status", netboxapi.ChoiceValue(r.Status))
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("name", r.Name)
 		d.Set("cluster_type_id", netboxapi.RefID(r.Type))
 		d.Set("cluster_group_id", netboxapi.RefID(r.Group))

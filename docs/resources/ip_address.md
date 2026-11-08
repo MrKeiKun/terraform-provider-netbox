@@ -111,6 +111,7 @@ resource "netbox_ip_address" "this" {
 
 ### Optional
 
+- `comments` (String)
 - `custom_fields` (Map of String)
 - `description` (String)
 - `device_interface_id` (Number) Conflicts with `interface_id` and `virtual_machine_interface_id`.
@@ -118,6 +119,7 @@ resource "netbox_ip_address" "this" {
 - `interface_id` (Number) Required when `object_type` is set.
 - `nat_inside_address_id` (Number)
 - `object_type` (String) Valid values are `virtualization.vminterface`, `dcim.interface` and `ipam.fhrpgroup`. Required when `interface_id` is set.
+- `owner_id` (Number)
 - `role` (String) Valid values are `loopback`, `secondary`, `anycast`, `vip`, `vrrp`, `hsrp`, `glbp` and `carp`.
 - `tags` (Set of String)
 - `tenant_id` (Number)

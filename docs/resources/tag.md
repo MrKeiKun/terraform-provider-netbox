@@ -34,8 +34,10 @@ resource "netbox_tag" "dmz" {
 
 - `color_hex` (String) Defaults to `9e9e9e`.
 - `description` (String)
+- `object_types` (Set of String) Restricts the tag to these object types, for example `dcim.site`. The tag can be used on every object type when this is empty.
 - `slug` (String)
 - `tags` (Set of String)
+- `weight` (Number) Weight of the tag. Tags with a higher weight are shown after tags with a lower weight.
 
 ### Read-Only
 

@@ -67,10 +67,12 @@ resource "netbox_inventory_item" "test" {
 - `discovered` (Boolean) Defaults to `false`.
 - `label` (String)
 - `manufacturer_id` (Number)
+- `owner_id` (Number)
 - `parent_id` (Number)
 - `part_id` (String)
 - `role_id` (Number)
 - `serial` (String)
+- `status` (String) One of [offline, active, planned, staged, failed, decommissioning].
 - `tags` (Set of String)
 
 ### Read-Only

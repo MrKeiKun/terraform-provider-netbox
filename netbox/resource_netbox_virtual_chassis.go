@@ -35,6 +35,10 @@ func resourceNetboxVirtualChassis() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,
 		},
@@ -51,6 +55,7 @@ type virtualChassisRequest struct {
 	Domain       string             `json:"domain,omitempty"`
 	Description  string             `json:"description,omitempty"`
 	Comments     string             `json:"comments,omitempty"`
+	Owner        *int64             `json:"owner"`
 	CustomFields interface{}        `json:"custom_fields,omitempty"`
 	Tags         []netboxapi.TagRef `json:"tags"`
 }
@@ -60,6 +65,7 @@ type virtualChassisResponse struct {
 	Domain       string                 `json:"domain"`
 	Description  string                 `json:"description"`
 	Comments     string                 `json:"comments"`
+	Owner        *netboxapi.Ref         `json:"owner"`
 	CustomFields map[string]interface{} `json:"custom_fields"`
 	Tags         []netboxapi.TagRef     `json:"tags"`
 }
@@ -71,6 +77,7 @@ func virtualChassisRequestFromResourceData(api *providerState, d *schema.Resourc
 		return nil, err
 	}
 	data := &virtualChassisRequest{
+		Owner:       getOptionalInt(d, "owner_id"),
 		Name:        name,
 		Domain:      d.Get("domain").(string),
 		Description: getOptionalStr(d, "description", true),
@@ -94,6 +101,7 @@ func resourceNetboxVirtualChassisCreate(ctx context.Context, d *schema.ResourceD
 func resourceNetboxVirtualChassisRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*providerState)
 	return readObjectCtx(ctx, d, m, virtualChassisAPIPath, func(r *virtualChassisResponse) {
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("name", r.Name)
 		d.Set("domain", r.Domain)
 		d.Set("description", r.Description)

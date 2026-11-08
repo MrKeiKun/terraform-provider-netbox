@@ -42,6 +42,43 @@ func resourceNetboxConfigTemplate() *schema.Resource {
 				Default:      "{}",
 				ValidateFunc: validation.StringIsJSON,
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"mime_type": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Defaults to <code>text/plain; charset=utf-8</code>",
+			},
+			"file_name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Filename to give to the rendered export file",
+			},
+			"file_extension": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Extension to append to the rendered filename",
+			},
+			"as_attachment": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Download file as attachment",
+			},
+			"debug": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Enable verbose error output when rendering this template. Not recommended for production use.",
+			},
+			"auto_sync_enabled": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Enable automatic synchronization of data when the data file is updated",
+			},
 			tagsKey: tagsSchema,
 		},
 		Importer: &schema.ResourceImporter{
@@ -57,14 +94,28 @@ type configTemplateRequest struct {
 	Description       string             `json:"description,omitempty"`
 	TemplateCode      string             `json:"template_code"`
 	EnvironmentParams interface{}        `json:"environment_params,omitempty"`
+	Owner             *int64             `json:"owner"`
+	MimeType          string             `json:"mime_type,omitempty"`
+	FileName          string             `json:"file_name,omitempty"`
+	FileExtension     string             `json:"file_extension,omitempty"`
+	AsAttachment      *bool              `json:"as_attachment,omitempty"`
+	Debug             *bool              `json:"debug,omitempty"`
+	AutoSyncEnabled   *bool              `json:"auto_sync_enabled,omitempty"`
 	Tags              []netboxapi.TagRef `json:"tags"`
 }
 
 type configTemplateResponse struct {
-	Name              string      `json:"name"`
-	Description       string      `json:"description"`
-	TemplateCode      string      `json:"template_code"`
-	EnvironmentParams interface{} `json:"environment_params"`
+	Name              string         `json:"name"`
+	Description       string         `json:"description"`
+	TemplateCode      string         `json:"template_code"`
+	EnvironmentParams interface{}    `json:"environment_params"`
+	Owner             *netboxapi.Ref `json:"owner"`
+	MimeType          string         `json:"mime_type"`
+	FileName          string         `json:"file_name"`
+	FileExtension     string         `json:"file_extension"`
+	AsAttachment      bool           `json:"as_attachment"`
+	Debug             bool           `json:"debug"`
+	AutoSyncEnabled   bool           `json:"auto_sync_enabled"`
 }
 
 func configTemplateRequestFromResourceData(api *providerState, d *schema.ResourceData) (*configTemplateRequest, error) {
@@ -72,10 +123,17 @@ func configTemplateRequestFromResourceData(api *providerState, d *schema.Resourc
 	tags, _ := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
 
 	data := &configTemplateRequest{
-		Name:         d.Get("name").(string),
-		Description:  d.Get("description").(string),
-		TemplateCode: d.Get("template_code").(string),
-		Tags:         tags,
+		AutoSyncEnabled: getOptionalBool(d, "auto_sync_enabled"),
+		Debug:           getOptionalBool(d, "debug"),
+		AsAttachment:    getOptionalBool(d, "as_attachment"),
+		FileExtension:   getOptionalStr(d, "file_extension", true),
+		FileName:        getOptionalStr(d, "file_name", true),
+		MimeType:        getOptionalStr(d, "mime_type", true),
+		Owner:           getOptionalInt(d, "owner_id"),
+		Name:            d.Get("name").(string),
+		Description:     d.Get("description").(string),
+		TemplateCode:    d.Get("template_code").(string),
+		Tags:            tags,
 	}
 
 	// Unmarshal environment_params and add it to data if valid
@@ -100,6 +158,13 @@ func resourceNetboxConfigTemplateCreate(ctx context.Context, d *schema.ResourceD
 func resourceNetboxConfigTemplateRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var marshalErr error
 	diags := readObjectCtx(ctx, d, m, configTemplateAPIPath, func(tmpl *configTemplateResponse) {
+		d.Set("auto_sync_enabled", tmpl.AutoSyncEnabled)
+		d.Set("debug", tmpl.Debug)
+		d.Set("as_attachment", tmpl.AsAttachment)
+		d.Set("file_extension", tmpl.FileExtension)
+		d.Set("file_name", tmpl.FileName)
+		d.Set("mime_type", tmpl.MimeType)
+		d.Set("owner_id", netboxapi.RefID(tmpl.Owner))
 		d.Set("name", tmpl.Name)
 		d.Set("description", tmpl.Description)
 		d.Set("template_code", tmpl.TemplateCode)

@@ -45,6 +45,7 @@ resource "netbox_device_bay_template" "example" {
 ### Optional
 
 - `description` (String)
+- `enabled` (Boolean)
 - `label` (String)
 
 ### Read-Only

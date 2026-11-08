@@ -49,12 +49,26 @@ resource "netbox_device_rear_port" "test" {
 - `color_hex` (String)
 - `custom_fields` (Map of String)
 - `description` (String)
+- `front_ports` (Block List) The ports and positions this port is mapped to. Needs NetBox 4.5 or newer. (see [below for nested schema](#nestedblock--front_ports))
 - `label` (String)
 - `mark_connected` (Boolean) Defaults to `false`.
 - `module_id` (Number)
+- `owner_id` (Number)
 - `tags` (Set of String)
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
 - `tags_all` (Set of String)
+
+<a id="nestedblock--front_ports"></a>
+### Nested Schema for `front_ports`
+
+Required:
+
+- `front_port_id` (Number)
+- `position` (Number) Position on this port.
+
+Optional:
+
+- `front_port_position` (Number) Position on the other port. Defaults to `1`.

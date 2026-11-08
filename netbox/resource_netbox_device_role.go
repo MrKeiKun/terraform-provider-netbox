@@ -42,7 +42,20 @@ func resourceNetboxDeviceRole() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			tagsKey: tagsSchema,
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"comments": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"config_template_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			customFieldsKey: customFieldsSchema,
+			tagsKey:         tagsSchema,
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -53,21 +66,29 @@ func resourceNetboxDeviceRole() *schema.Resource {
 const deviceRoleAPIPath = "dcim/device-roles/"
 
 type deviceRoleRequest struct {
-	Name        string             `json:"name"`
-	Slug        string             `json:"slug"`
-	Color       string             `json:"color,omitempty"`
-	VmRole      bool               `json:"vm_role"`
-	Description string             `json:"description,omitempty"`
-	Tags        []netboxapi.TagRef `json:"tags"`
+	Name           string             `json:"name"`
+	Slug           string             `json:"slug"`
+	Color          string             `json:"color,omitempty"`
+	VmRole         bool               `json:"vm_role"`
+	Description    string             `json:"description,omitempty"`
+	Owner          *int64             `json:"owner"`
+	Comments       string             `json:"comments,omitempty"`
+	ConfigTemplate *int64             `json:"config_template"`
+	CustomFields   interface{}        `json:"custom_fields,omitempty"`
+	Tags           []netboxapi.TagRef `json:"tags"`
 }
 
 type deviceRoleResponse struct {
-	Name        string             `json:"name"`
-	Slug        string             `json:"slug"`
-	Color       string             `json:"color"`
-	VmRole      bool               `json:"vm_role"`
-	Description string             `json:"description"`
-	Tags        []netboxapi.TagRef `json:"tags"`
+	Name           string                 `json:"name"`
+	Slug           string                 `json:"slug"`
+	Color          string                 `json:"color"`
+	VmRole         bool                   `json:"vm_role"`
+	Description    string                 `json:"description"`
+	Owner          *netboxapi.Ref         `json:"owner"`
+	Comments       string                 `json:"comments"`
+	ConfigTemplate *netboxapi.Ref         `json:"config_template"`
+	CustomFields   map[string]interface{} `json:"custom_fields"`
+	Tags           []netboxapi.TagRef     `json:"tags"`
 }
 
 func deviceRoleRequestFromResourceData(api *providerState, d *schema.ResourceData) (*deviceRoleRequest, error) {
@@ -77,12 +98,16 @@ func deviceRoleRequestFromResourceData(api *providerState, d *schema.ResourceDat
 		return nil, err
 	}
 	data := &deviceRoleRequest{
-		Name:        name,
-		Slug:        slugFromResourceData(d, name),
-		Color:       d.Get("color_hex").(string),
-		VmRole:      d.Get("vm_role").(bool),
-		Description: d.Get("description").(string),
-		Tags:        tags,
+		CustomFields:   customFieldsRequest(d),
+		ConfigTemplate: getOptionalInt(d, "config_template_id"),
+		Comments:       getOptionalStr(d, "comments", true),
+		Owner:          getOptionalInt(d, "owner_id"),
+		Name:           name,
+		Slug:           slugFromResourceData(d, name),
+		Color:          d.Get("color_hex").(string),
+		VmRole:         d.Get("vm_role").(bool),
+		Description:    d.Get("description").(string),
+		Tags:           tags,
 	}
 	return data, nil
 }
@@ -98,6 +123,10 @@ func resourceNetboxDeviceRoleCreate(d *schema.ResourceData, m interface{}) error
 func resourceNetboxDeviceRoleRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, deviceRoleAPIPath, func(r *deviceRoleResponse) {
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
+		d.Set("config_template_id", netboxapi.RefID(r.ConfigTemplate))
+		d.Set("comments", r.Comments)
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("name", r.Name)
 		d.Set("slug", r.Slug)
 		d.Set("color_hex", r.Color)

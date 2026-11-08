@@ -31,8 +31,12 @@ resource "netbox_platform" "PANOS" {
 
 ### Optional
 
+- `comments` (String)
+- `config_template_id` (Number)
+- `custom_fields` (Map of String)
 - `description` (String)
 - `manufacturer_id` (Number)
+- `owner_id` (Number)
 - `slug` (String)
 - `tags` (Set of String)
 

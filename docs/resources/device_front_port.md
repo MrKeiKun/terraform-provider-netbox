@@ -49,7 +49,6 @@ resource "netbox_device_front_port" "test" {
 
 - `device_id` (Number)
 - `name` (String)
-- `rear_port_id` (Number)
 - `type` (String) One of [8p8c, 8p6c, 8p4c, 8p2c, 6p6c, 6p4c, 6p2c, 4p4c, 4p2c, gg45, tera-4p, tera-2p, tera-1p, 110-punch, bnc, f, n, mrj21, fc, lc, lc-pc, lc-upc, lc-apc, lsh, lsh-pc, lsh-upc, lsh-apc, mpo, mtrj, sc, sc-pc, sc-upc, sc-apc, st, cs, sn, sma-905, sma-906, urm-p2, urm-p4, urm-p8, splice, other].
 
 ### Optional
@@ -60,10 +59,26 @@ resource "netbox_device_front_port" "test" {
 - `label` (String)
 - `mark_connected` (Boolean) Defaults to `false`.
 - `module_id` (Number)
+- `owner_id` (Number)
+- `positions` (Number)
+- `rear_port_id` (Number) Conflicts with `rear_ports`.
 - `rear_port_position` (Number)
+- `rear_ports` (Block List) The ports and positions this port is mapped to. Needs NetBox 4.5 or newer. (see [below for nested schema](#nestedblock--rear_ports))
 - `tags` (Set of String)
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
 - `tags_all` (Set of String)
+
+<a id="nestedblock--rear_ports"></a>
+### Nested Schema for `rear_ports`
+
+Required:
+
+- `position` (Number) Position on this port.
+- `rear_port_id` (Number)
+
+Optional:
+
+- `rear_port_position` (Number) Position on the other port. Defaults to `1`.

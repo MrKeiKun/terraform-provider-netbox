@@ -36,7 +36,16 @@ func resourceNetboxRackRole() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			tagsKey: tagsSchema,
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"comments": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			customFieldsKey: customFieldsSchema,
+			tagsKey:         tagsSchema,
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -47,19 +56,25 @@ func resourceNetboxRackRole() *schema.Resource {
 const rackRoleAPIPath = "dcim/rack-roles/"
 
 type rackRoleRequest struct {
-	Name        string             `json:"name"`
-	Slug        string             `json:"slug"`
-	Color       string             `json:"color,omitempty"`
-	Description string             `json:"description,omitempty"`
-	Tags        []netboxapi.TagRef `json:"tags"`
+	Name         string             `json:"name"`
+	Slug         string             `json:"slug"`
+	Color        string             `json:"color,omitempty"`
+	Description  string             `json:"description,omitempty"`
+	Owner        *int64             `json:"owner"`
+	Comments     string             `json:"comments,omitempty"`
+	CustomFields interface{}        `json:"custom_fields,omitempty"`
+	Tags         []netboxapi.TagRef `json:"tags"`
 }
 
 type rackRoleResponse struct {
-	Name        string             `json:"name"`
-	Slug        string             `json:"slug"`
-	Color       string             `json:"color"`
-	Description string             `json:"description"`
-	Tags        []netboxapi.TagRef `json:"tags"`
+	Name         string                 `json:"name"`
+	Slug         string                 `json:"slug"`
+	Color        string                 `json:"color"`
+	Description  string                 `json:"description"`
+	Owner        *netboxapi.Ref         `json:"owner"`
+	Comments     string                 `json:"comments"`
+	CustomFields map[string]interface{} `json:"custom_fields"`
+	Tags         []netboxapi.TagRef     `json:"tags"`
 }
 
 func rackRoleRequestFromResourceData(api *providerState, d *schema.ResourceData) *rackRoleRequest {
@@ -67,11 +82,14 @@ func rackRoleRequestFromResourceData(api *providerState, d *schema.ResourceData)
 	// A failed tag lookup leaves the tags empty, same as before.
 	tags, _ := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
 	return &rackRoleRequest{
-		Name:        name,
-		Slug:        slugFromResourceData(d, name),
-		Color:       d.Get("color_hex").(string),
-		Description: getOptionalStr(d, "description", true),
-		Tags:        tags,
+		CustomFields: customFieldsRequest(d),
+		Comments:     getOptionalStr(d, "comments", true),
+		Owner:        getOptionalInt(d, "owner_id"),
+		Name:         name,
+		Slug:         slugFromResourceData(d, name),
+		Color:        d.Get("color_hex").(string),
+		Description:  getOptionalStr(d, "description", true),
+		Tags:         tags,
 	}
 }
 
@@ -82,6 +100,9 @@ func resourceNetboxRackRoleCreate(d *schema.ResourceData, m interface{}) error {
 func resourceNetboxRackRoleRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, rackRoleAPIPath, func(rackRole *rackRoleResponse) {
+		d.Set(customFieldsKey, getCustomFields(rackRole.CustomFields))
+		d.Set("comments", rackRole.Comments)
+		d.Set("owner_id", netboxapi.RefID(rackRole.Owner))
 		d.Set("name", rackRole.Name)
 		d.Set("slug", rackRole.Slug)
 		d.Set("description", rackRole.Description)

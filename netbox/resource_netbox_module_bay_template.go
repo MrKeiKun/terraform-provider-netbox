@@ -43,6 +43,20 @@ func resourceNetboxModuleBayTemplate() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
+			"module_type_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"enabled": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Computed: true,
+			},
+			"module_bay_type_ids": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeInt},
+			},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -53,29 +67,38 @@ func resourceNetboxModuleBayTemplate() *schema.Resource {
 const moduleBayTemplateAPIPath = "dcim/module-bay-templates/"
 
 type moduleBayTemplateRequest struct {
-	Name        string `json:"name"`
-	Description string `json:"description,omitempty"`
-	Label       string `json:"label,omitempty"`
-	Position    string `json:"position,omitempty"`
-	DeviceType  *int64 `json:"device_type"`
+	Name           string  `json:"name"`
+	Description    string  `json:"description,omitempty"`
+	Label          string  `json:"label,omitempty"`
+	Position       string  `json:"position,omitempty"`
+	DeviceType     *int64  `json:"device_type"`
+	ModuleType     *int64  `json:"module_type"`
+	Enabled        *bool   `json:"enabled,omitempty"`
+	ModuleBayTypes []int64 `json:"module_bay_types"`
 }
 
 type moduleBayTemplateResponse struct {
-	Name        string         `json:"name"`
-	Description string         `json:"description"`
-	Label       string         `json:"label"`
-	Position    string         `json:"position"`
-	DeviceType  *netboxapi.Ref `json:"device_type"`
+	Name           string          `json:"name"`
+	Description    string          `json:"description"`
+	Label          string          `json:"label"`
+	Position       string          `json:"position"`
+	DeviceType     *netboxapi.Ref  `json:"device_type"`
+	ModuleType     *netboxapi.Ref  `json:"module_type"`
+	Enabled        bool            `json:"enabled"`
+	ModuleBayTypes []netboxapi.Ref `json:"module_bay_types"`
 }
 
 func moduleBayTemplateRequestFromResourceData(d *schema.ResourceData) *moduleBayTemplateRequest {
 	name := d.Get("name").(string)
 	data := &moduleBayTemplateRequest{
-		Name:        name,
-		Description: d.Get("description").(string),
-		Label:       d.Get("label").(string),
-		Position:    d.Get("position").(string),
-		DeviceType:  int64ToPtr(int64(d.Get("device_type_id").(int))),
+		ModuleBayTypes: getIDSet(d, "module_bay_type_ids"),
+		Enabled:        getOptionalBool(d, "enabled"),
+		ModuleType:     getOptionalInt(d, "module_type_id"),
+		Name:           name,
+		Description:    d.Get("description").(string),
+		Label:          d.Get("label").(string),
+		Position:       d.Get("position").(string),
+		DeviceType:     int64ToPtr(int64(d.Get("device_type_id").(int))),
 	}
 	return data
 }
@@ -86,6 +109,9 @@ func resourceNetboxModuleBayTemplateCreate(ctx context.Context, d *schema.Resour
 
 func resourceNetboxModuleBayTemplateRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	return readObjectCtx(ctx, d, m, moduleBayTemplateAPIPath, func(r *moduleBayTemplateResponse) {
+		d.Set("module_bay_type_ids", netboxapi.IDs(r.ModuleBayTypes))
+		d.Set("enabled", r.Enabled)
+		d.Set("module_type_id", netboxapi.RefID(r.ModuleType))
 		d.Set("name", r.Name)
 		d.Set("description", r.Description)
 		d.Set("label", r.Label)

@@ -91,6 +91,14 @@ func resourceNetboxAvailablePrefix() *schema.Resource {
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"comments": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			customFieldsKey: customFieldsSchema,
 			tagsKey:         tagsSchema,
 		},

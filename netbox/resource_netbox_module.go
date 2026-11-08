@@ -54,6 +54,22 @@ Similar to devices, modules are instantiated from module types, and any componen
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"replicate_components": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Automatically populate components associated with this module type (default: true)",
+			},
+			"adopt_components": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Adopt already existing components",
+			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,
 		},
@@ -66,29 +82,35 @@ Similar to devices, modules are instantiated from module types, and any componen
 const moduleAPIPath = "dcim/modules/"
 
 type moduleRequest struct {
-	Device       *int64             `json:"device"`
-	ModuleBay    *int64             `json:"module_bay"`
-	ModuleType   *int64             `json:"module_type"`
-	Status       string             `json:"status,omitempty"`
-	Serial       string             `json:"serial,omitempty"`
-	AssetTag     *string            `json:"asset_tag"`
-	Description  string             `json:"description,omitempty"`
-	Comments     string             `json:"comments,omitempty"`
-	CustomFields interface{}        `json:"custom_fields,omitempty"`
-	Tags         []netboxapi.TagRef `json:"tags"`
+	Device              *int64             `json:"device"`
+	ModuleBay           *int64             `json:"module_bay"`
+	ModuleType          *int64             `json:"module_type"`
+	Status              string             `json:"status,omitempty"`
+	Serial              string             `json:"serial,omitempty"`
+	AssetTag            *string            `json:"asset_tag"`
+	Description         string             `json:"description,omitempty"`
+	Comments            string             `json:"comments,omitempty"`
+	Owner               *int64             `json:"owner"`
+	ReplicateComponents *bool              `json:"replicate_components,omitempty"`
+	AdoptComponents     *bool              `json:"adopt_components,omitempty"`
+	CustomFields        interface{}        `json:"custom_fields,omitempty"`
+	Tags                []netboxapi.TagRef `json:"tags"`
 }
 
 type moduleResponse struct {
-	Device       *netboxapi.Ref         `json:"device"`
-	ModuleBay    *netboxapi.Ref         `json:"module_bay"`
-	ModuleType   *netboxapi.Ref         `json:"module_type"`
-	Status       *netboxapi.Choice      `json:"status"`
-	Serial       string                 `json:"serial"`
-	AssetTag     *string                `json:"asset_tag"`
-	Description  string                 `json:"description"`
-	Comments     string                 `json:"comments"`
-	CustomFields map[string]interface{} `json:"custom_fields"`
-	Tags         []netboxapi.TagRef     `json:"tags"`
+	Device              *netboxapi.Ref         `json:"device"`
+	ModuleBay           *netboxapi.Ref         `json:"module_bay"`
+	ModuleType          *netboxapi.Ref         `json:"module_type"`
+	Status              *netboxapi.Choice      `json:"status"`
+	Serial              string                 `json:"serial"`
+	AssetTag            *string                `json:"asset_tag"`
+	Description         string                 `json:"description"`
+	Comments            string                 `json:"comments"`
+	Owner               *netboxapi.Ref         `json:"owner"`
+	ReplicateComponents bool                   `json:"replicate_components"`
+	AdoptComponents     bool                   `json:"adopt_components"`
+	CustomFields        map[string]interface{} `json:"custom_fields"`
+	Tags                []netboxapi.TagRef     `json:"tags"`
 }
 
 func moduleRequestFromResourceData(api *providerState, d *schema.ResourceData) (*moduleRequest, error) {
@@ -97,15 +119,18 @@ func moduleRequestFromResourceData(api *providerState, d *schema.ResourceData) (
 		return nil, err
 	}
 	data := &moduleRequest{
-		Device:      int64ToPtr(int64(d.Get("device_id").(int))),
-		ModuleBay:   int64ToPtr(int64(d.Get("module_bay_id").(int))),
-		ModuleType:  int64ToPtr(int64(d.Get("module_type_id").(int))),
-		Status:      d.Get("status").(string),
-		Serial:      getOptionalStr(d, "serial", true),
-		AssetTag:    nullableString(getOptionalStr(d, "asset_tag", false)),
-		Description: getOptionalStr(d, "description", true),
-		Comments:    getOptionalStr(d, "comments", true),
-		Tags:        tags,
+		AdoptComponents:     getOptionalBool(d, "adopt_components"),
+		ReplicateComponents: getOptionalBool(d, "replicate_components"),
+		Owner:               getOptionalInt(d, "owner_id"),
+		Device:              int64ToPtr(int64(d.Get("device_id").(int))),
+		ModuleBay:           int64ToPtr(int64(d.Get("module_bay_id").(int))),
+		ModuleType:          int64ToPtr(int64(d.Get("module_type_id").(int))),
+		Status:              d.Get("status").(string),
+		Serial:              getOptionalStr(d, "serial", true),
+		AssetTag:            nullableString(getOptionalStr(d, "asset_tag", false)),
+		Description:         getOptionalStr(d, "description", true),
+		Comments:            getOptionalStr(d, "comments", true),
+		Tags:                tags,
 	}
 	if ct, ok := managedCustomFields(d); ok {
 		data.CustomFields = ct
@@ -124,6 +149,9 @@ func resourceNetboxModuleCreate(d *schema.ResourceData, m interface{}) error {
 func resourceNetboxModuleRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, moduleAPIPath, func(r *moduleResponse) {
+		d.Set("adopt_components", r.AdoptComponents)
+		d.Set("replicate_components", r.ReplicateComponents)
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("device_id", netboxapi.RefID(r.Device))
 		d.Set("module_bay_id", netboxapi.RefID(r.ModuleBay))
 		d.Set("module_type_id", netboxapi.RefID(r.ModuleType))

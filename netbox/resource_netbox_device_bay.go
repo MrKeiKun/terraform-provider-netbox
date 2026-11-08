@@ -37,6 +37,15 @@ func resourceNetboxDeviceBay() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"enabled": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Computed: true,
+			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,
 		},
@@ -54,6 +63,8 @@ type deviceBayRequest struct {
 	Label           string             `json:"label,omitempty"`
 	InstalledDevice *int64             `json:"installed_device,omitempty"`
 	Description     string             `json:"description,omitempty"`
+	Owner           *int64             `json:"owner"`
+	Enabled         *bool              `json:"enabled,omitempty"`
 	CustomFields    interface{}        `json:"custom_fields,omitempty"`
 	Tags            []netboxapi.TagRef `json:"tags"`
 }
@@ -64,6 +75,8 @@ type deviceBayResponse struct {
 	Label           string                 `json:"label"`
 	InstalledDevice *netboxapi.Ref         `json:"installed_device"`
 	Description     string                 `json:"description"`
+	Owner           *netboxapi.Ref         `json:"owner"`
+	Enabled         bool                   `json:"enabled"`
 	CustomFields    map[string]interface{} `json:"custom_fields"`
 	Tags            []netboxapi.TagRef     `json:"tags"`
 }
@@ -75,6 +88,8 @@ func deviceBayRequestFromResourceData(api *providerState, d *schema.ResourceData
 		return nil, err
 	}
 	data := &deviceBayRequest{
+		Enabled:         getOptionalBool(d, "enabled"),
+		Owner:           getOptionalInt(d, "owner_id"),
 		Name:            name,
 		Device:          int64ToPtr(int64(d.Get("device_id").(int))),
 		Label:           getOptionalStr(d, "label", true),
@@ -99,6 +114,8 @@ func resourceNetboxDeviceBayCreate(d *schema.ResourceData, m interface{}) error 
 func resourceNetboxDeviceBayRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, deviceBayAPIPath, func(r *deviceBayResponse) {
+		d.Set("enabled", r.Enabled)
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("name", r.Name)
 		d.Set("device_id", netboxapi.RefID(r.Device))
 		d.Set("label", r.Label)

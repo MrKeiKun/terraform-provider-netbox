@@ -40,8 +40,12 @@ resource "netbox_asn" "test" {
 ### Optional
 
 - `comments` (String) Comments field for the AS Number record.
+- `custom_fields` (Map of String)
 - `description` (String) Description field for the AS Number record.
+- `owner_id` (Number)
+- `role_id` (Number)
 - `tags` (Set of String)
+- `tenant_id` (Number)
 
 ### Read-Only
 

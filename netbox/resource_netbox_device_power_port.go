@@ -55,6 +55,10 @@ func resourceNetboxDevicePowerPort() *schema.Resource {
 				Default:  false,
 				Optional: true,
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,
 		},
@@ -76,6 +80,7 @@ type devicePowerPortRequest struct {
 	AllocatedDraw *int64             `json:"allocated_draw"`
 	Description   string             `json:"description,omitempty"`
 	MarkConnected bool               `json:"mark_connected"`
+	Owner         *int64             `json:"owner"`
 	CustomFields  interface{}        `json:"custom_fields,omitempty"`
 	Tags          []netboxapi.TagRef `json:"tags"`
 }
@@ -90,6 +95,7 @@ type devicePowerPortResponse struct {
 	AllocatedDraw *int64                 `json:"allocated_draw"`
 	Description   string                 `json:"description"`
 	MarkConnected bool                   `json:"mark_connected"`
+	Owner         *netboxapi.Ref         `json:"owner"`
 	CustomFields  map[string]interface{} `json:"custom_fields"`
 	Tags          []netboxapi.TagRef     `json:"tags"`
 }
@@ -101,6 +107,7 @@ func devicePowerPortRequestFromResourceData(api *providerState, d *schema.Resour
 		return nil, err
 	}
 	data := &devicePowerPortRequest{
+		Owner:         getOptionalInt(d, "owner_id"),
 		Name:          name,
 		Device:        int64ToPtr(int64(d.Get("device_id").(int))),
 		Module:        getOptionalInt(d, "module_id"),
@@ -129,6 +136,7 @@ func resourceNetboxDevicePowerPortCreate(d *schema.ResourceData, m interface{}) 
 func resourceNetboxDevicePowerPortRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, devicePowerPortAPIPath, func(r *devicePowerPortResponse) {
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("name", r.Name)
 		d.Set("device_id", netboxapi.RefID(r.Device))
 		d.Set("module_id", netboxapi.RefID(r.Module))

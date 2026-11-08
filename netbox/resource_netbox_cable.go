@@ -76,6 +76,20 @@ func resourceNetboxCable() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"profile": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "One of [single-1c1p, single-1c2p, single-1c4p, single-1c6p, single-1c8p, single-1c12p, single-1c16p, trunk-2c1p, trunk-2c2p, trunk-2c4p, trunk-2c4p-shuffle, trunk-2c6p, trunk-2c8p, trunk-2c12p, trunk-4c1p, trunk-4c2p, trunk-4c4p, trunk-4c4p-shuffle, trunk-4c6p, trunk-4c8p, trunk-8c1p, trunk-8c4p, trunk-12c1p, trunk-24c1p, breakout-1c2p-2c1p, breakout-1c4p-4c1p, breakout-1c6p-6c1p, breakout-1c8p-8c1p, breakout-2c4p-8c1p-shuffle]",
+				ValidateFunc: validation.StringInSlice([]string{"single-1c1p", "single-1c2p", "single-1c4p", "single-1c6p", "single-1c8p", "single-1c12p", "single-1c16p", "trunk-2c1p", "trunk-2c2p", "trunk-2c4p", "trunk-2c4p-shuffle", "trunk-2c6p", "trunk-2c8p", "trunk-2c12p", "trunk-4c1p", "trunk-4c2p", "trunk-4c4p", "trunk-4c4p-shuffle", "trunk-4c6p", "trunk-4c8p", "trunk-8c1p", "trunk-8c4p", "trunk-12c1p", "trunk-24c1p", "breakout-1c2p-2c1p", "breakout-1c4p-4c1p", "breakout-1c6p-6c1p", "breakout-1c8p-8c1p", "breakout-2c4p-8c1p-shuffle"}, false),
+			},
+			"bundle_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,
 		},
@@ -99,6 +113,9 @@ type cableRequest struct {
 	Comments      string             `json:"comments,omitempty"`
 	ATerminations []genericObject    `json:"a_terminations"`
 	BTerminations []genericObject    `json:"b_terminations"`
+	Owner         *int64             `json:"owner"`
+	Profile       *string            `json:"profile,omitempty"`
+	Bundle        *int64             `json:"bundle"`
 	CustomFields  interface{}        `json:"custom_fields,omitempty"`
 	Tags          []netboxapi.TagRef `json:"tags"`
 }
@@ -115,6 +132,9 @@ type cableResponse struct {
 	Comments      string                 `json:"comments"`
 	ATerminations []genericObject        `json:"a_terminations"`
 	BTerminations []genericObject        `json:"b_terminations"`
+	Owner         *netboxapi.Ref         `json:"owner"`
+	Profile       *netboxapi.Choice      `json:"profile"`
+	Bundle        *netboxapi.Ref         `json:"bundle"`
 	CustomFields  map[string]interface{} `json:"custom_fields"`
 	Tags          []netboxapi.TagRef     `json:"tags"`
 }
@@ -125,6 +145,9 @@ func cableRequestFromResourceData(api *providerState, d *schema.ResourceData) (*
 		return nil, err
 	}
 	data := &cableRequest{
+		Bundle:      getOptionalInt(d, "bundle_id"),
+		Profile:     getOptionalStrClear(d, "profile"),
+		Owner:       getOptionalInt(d, "owner_id"),
 		Status:      d.Get("status").(string),
 		Type:        d.Get("type").(string),
 		Tenant:      getOptionalInt(d, "tenant_id"),
@@ -157,6 +180,9 @@ func resourceNetboxCableCreate(d *schema.ResourceData, m interface{}) error {
 func resourceNetboxCableRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, cableAPIPath, func(r *cableResponse) {
+		d.Set("bundle_id", netboxapi.RefID(r.Bundle))
+		d.Set("profile", netboxapi.ChoiceValue(r.Profile))
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("status", netboxapi.ChoiceValue(r.Status))
 		d.Set("type", r.Type)
 		d.Set("tenant_id", netboxapi.RefID(r.Tenant))

@@ -34,23 +34,34 @@ func resourceNetboxService() *schema.Resource {
 			},
 			"protocol": {
 				Type:             schema.TypeString,
-				Required:         true,
+				Optional:         true,
+				Computed:         true,
+				ConflictsWith:    []string{"port_mappings"},
 				ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice(resourceNetboxServiceProtocolOptions, false)),
 				Description:      buildValidValueDescription(resourceNetboxServiceProtocolOptions),
 			},
 			"port": {
 				Type:         schema.TypeInt,
 				Optional:     true,
-				ExactlyOneOf: []string{"port", "ports"},
+				ExactlyOneOf: []string{"port", "ports", "port_mappings"},
 				Deprecated:   "This field is deprecated. Please use the new \"ports\" attribute instead.",
 			},
 			"ports": {
 				Type:         schema.TypeSet,
 				Optional:     true,
-				ExactlyOneOf: []string{"port", "ports"},
+				ExactlyOneOf: []string{"port", "ports", "port_mappings"},
 				Elem: &schema.Schema{
 					Type: schema.TypeInt,
 				},
+			},
+			"port_mappings": {
+				Type:          schema.TypeSet,
+				Optional:      true,
+				Computed:      true,
+				ExactlyOneOf:  []string{"port", "ports", "port_mappings"},
+				ConflictsWith: []string{"protocol"},
+				Elem:          &schema.Schema{Type: schema.TypeString},
+				Description:   "The ports of the service as `protocol/port` strings, for example `tcp/80`. Use this for a service that spans more than one protocol. Needs NetBox 4.6 or newer.",
 			},
 			"description": {
 				Type:     schema.TypeString,
@@ -68,6 +79,14 @@ func resourceNetboxService() *schema.Resource {
 				Optional:     true,
 				ExactlyOneOf: []string{"virtual_machine_id", "device_id"},
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"comments": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			customFieldsKey: customFieldsSchema,
 		},
 		Importer: &schema.ResourceImporter{
@@ -80,12 +99,15 @@ const serviceAPIPath = "ipam/services/"
 
 type serviceRequest struct {
 	Name             string             `json:"name"`
-	Protocol         string             `json:"protocol"`
+	Protocol         string             `json:"protocol,omitempty"`
 	Description      string             `json:"description,omitempty"`
-	Ports            []int64            `json:"ports"`
+	Ports            []int64            `json:"ports,omitempty"`
+	PortMappings     []string           `json:"port_mappings,omitempty"`
 	Ipaddresses      []int64            `json:"ipaddresses"`
 	ParentObjectType *string            `json:"parent_object_type,omitempty"`
 	ParentObjectID   *int64             `json:"parent_object_id,omitempty"`
+	Owner            *int64             `json:"owner"`
+	Comments         string             `json:"comments,omitempty"`
 	CustomFields     interface{}        `json:"custom_fields,omitempty"`
 	Tags             []netboxapi.TagRef `json:"tags"`
 }
@@ -95,8 +117,11 @@ type serviceResponse struct {
 	Protocol         *netboxapi.Choice      `json:"protocol"`
 	Description      string                 `json:"description"`
 	Ports            []int64                `json:"ports"`
+	PortMappings     []string               `json:"port_mappings"`
 	ParentObjectType string                 `json:"parent_object_type"`
 	ParentObjectID   *int64                 `json:"parent_object_id"`
+	Owner            *netboxapi.Ref         `json:"owner"`
+	Comments         string                 `json:"comments"`
 	CustomFields     map[string]interface{} `json:"custom_fields"`
 	Tags             []netboxapi.TagRef     `json:"tags"`
 }
@@ -108,6 +133,8 @@ func serviceRequestFromResourceData(api *providerState, d *schema.ResourceData) 
 		return nil, err
 	}
 	data := &serviceRequest{
+		Comments:    getOptionalStr(d, "comments", true),
+		Owner:       getOptionalInt(d, "owner_id"),
 		Name:        name,
 		Protocol:    d.Get("protocol").(string),
 		Description: d.Get("description").(string),
@@ -119,7 +146,10 @@ func serviceRequestFromResourceData(api *providerState, d *schema.ResourceData) 
 
 	// for backwards compatibility, we allow either port or ports
 	// the API only supports ports. We give precedence to port, if it exists.
-	if dataPort, ok := d.GetOk("port"); ok {
+	if raw := d.GetRawConfig(); !raw.IsNull() && !raw.GetAttr("port_mappings").IsNull() {
+		data.PortMappings = getStringSet(d, "port_mappings")
+		data.Protocol = ""
+	} else if dataPort, ok := d.GetOk("port"); ok {
 		data.Ports = []int64{int64(dataPort.(int))}
 	} else if ports := d.Get("ports").(*schema.Set); ports.Len() > 0 {
 		// if port is not set, ports has to be set
@@ -155,11 +185,14 @@ func resourceNetboxServiceCreate(d *schema.ResourceData, m interface{}) error {
 func resourceNetboxServiceRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, serviceAPIPath, func(r *serviceResponse) {
+		d.Set("comments", r.Comments)
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("name", r.Name)
 		d.Set("protocol", netboxapi.ChoiceValue(r.Protocol))
 		d.Set("description", r.Description)
 
 		d.Set("ports", r.Ports)
+		d.Set("port_mappings", r.PortMappings)
 		switch r.ParentObjectType {
 		case "virtualization.virtualmachine":
 			d.Set("virtual_machine_id", r.ParentObjectID)

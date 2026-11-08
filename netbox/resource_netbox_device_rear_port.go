@@ -55,6 +55,11 @@ func resourceNetboxDeviceRearPort() *schema.Resource {
 				Default:  false,
 				Optional: true,
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"front_ports":   portMappingsSchema("front_port"),
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,
 		},
@@ -67,6 +72,7 @@ func resourceNetboxDeviceRearPort() *schema.Resource {
 const deviceRearPortAPIPath = "dcim/rear-ports/"
 
 type deviceRearPortRequest struct {
+	FrontPorts    []map[string]int64 `json:"front_ports,omitempty"`
 	Name          string             `json:"name"`
 	Device        *int64             `json:"device"`
 	Module        *int64             `json:"module"`
@@ -76,22 +82,25 @@ type deviceRearPortRequest struct {
 	Color         string             `json:"color"`
 	Description   string             `json:"description,omitempty"`
 	MarkConnected bool               `json:"mark_connected"`
+	Owner         *int64             `json:"owner"`
 	CustomFields  interface{}        `json:"custom_fields,omitempty"`
 	Tags          []netboxapi.TagRef `json:"tags"`
 }
 
 type deviceRearPortResponse struct {
-	Name          string                 `json:"name"`
-	Device        *netboxapi.Ref         `json:"device"`
-	Module        *netboxapi.Ref         `json:"module"`
-	Label         string                 `json:"label"`
-	Type          *netboxapi.Choice      `json:"type"`
-	Positions     int64                  `json:"positions"`
-	Color         string                 `json:"color"`
-	Description   string                 `json:"description"`
-	MarkConnected bool                   `json:"mark_connected"`
-	CustomFields  map[string]interface{} `json:"custom_fields"`
-	Tags          []netboxapi.TagRef     `json:"tags"`
+	FrontPorts    []map[string]interface{} `json:"front_ports"`
+	Name          string                   `json:"name"`
+	Device        *netboxapi.Ref           `json:"device"`
+	Module        *netboxapi.Ref           `json:"module"`
+	Label         string                   `json:"label"`
+	Type          *netboxapi.Choice        `json:"type"`
+	Positions     int64                    `json:"positions"`
+	Color         string                   `json:"color"`
+	Description   string                   `json:"description"`
+	MarkConnected bool                     `json:"mark_connected"`
+	Owner         *netboxapi.Ref           `json:"owner"`
+	CustomFields  map[string]interface{}   `json:"custom_fields"`
+	Tags          []netboxapi.TagRef       `json:"tags"`
 }
 
 func deviceRearPortRequestFromResourceData(api *providerState, d *schema.ResourceData) (*deviceRearPortRequest, error) {
@@ -101,6 +110,8 @@ func deviceRearPortRequestFromResourceData(api *providerState, d *schema.Resourc
 		return nil, err
 	}
 	data := &deviceRearPortRequest{
+		FrontPorts:    portMappingsRequest(d, "front_ports", "front_port"),
+		Owner:         getOptionalInt(d, "owner_id"),
 		Name:          name,
 		Device:        int64ToPtr(int64(d.Get("device_id").(int))),
 		Module:        getOptionalInt(d, "module_id"),
@@ -129,6 +140,8 @@ func resourceNetboxDeviceRearPortCreate(d *schema.ResourceData, m interface{}) e
 func resourceNetboxDeviceRearPortRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, deviceRearPortAPIPath, func(r *deviceRearPortResponse) {
+		d.Set("front_ports", portMappingsState(r.FrontPorts, "front_port"))
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("name", r.Name)
 		d.Set("device_id", netboxapi.RefID(r.Device))
 		d.Set("module_id", netboxapi.RefID(r.Module))

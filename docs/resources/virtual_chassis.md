@@ -36,6 +36,7 @@ resource "netbox_virtual_chassis" "example" {
 - `custom_fields` (Map of String)
 - `description` (String)
 - `domain` (String)
+- `owner_id` (Number)
 - `tags` (Set of String)
 
 ### Read-Only

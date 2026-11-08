@@ -53,6 +53,45 @@ func resourceNetboxInterfaceTemplate() *schema.Resource {
 				ExactlyOneOf: []string{"device_type_id", "module_type_id"},
 				ForceNew:     true,
 			},
+			"channels": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ValidateFunc: validation.IntBetween(1, 1024),
+				Description:  "The number of channels into which this interface is channelized",
+			},
+			"channel_id": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ValidateFunc: validation.IntBetween(1, 1024),
+				Description:  "The channel on the parent interface to which this subinterface is bound",
+			},
+			"enabled": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Computed: true,
+			},
+			"bridge": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"poe_mode": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "One of [pd, pse]",
+				ValidateFunc: validation.StringInSlice([]string{"pd", "pse"}, false),
+			},
+			"poe_type": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "One of [type1-ieee802.3af, type2-ieee802.3at, type3-ieee802.3bt, type4-ieee802.3bt, passive-24v-2pair, passive-24v-4pair, passive-48v-2pair, passive-48v-4pair]",
+				ValidateFunc: validation.StringInSlice([]string{"type1-ieee802.3af", "type2-ieee802.3at", "type3-ieee802.3bt", "type4-ieee802.3bt", "passive-24v-2pair", "passive-24v-4pair", "passive-48v-2pair", "passive-48v-4pair"}, false),
+			},
+			"rf_role": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "One of [ap, station]",
+				ValidateFunc: validation.StringInSlice([]string{"ap", "station"}, false),
+			},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -63,13 +102,20 @@ func resourceNetboxInterfaceTemplate() *schema.Resource {
 const interfaceTemplateAPIPath = "dcim/interface-templates/"
 
 type interfaceTemplateRequest struct {
-	Name        string `json:"name"`
-	Description string `json:"description,omitempty"`
-	Label       string `json:"label,omitempty"`
-	Type        string `json:"type"`
-	MgmtOnly    bool   `json:"mgmt_only"`
-	DeviceType  *int64 `json:"device_type"`
-	ModuleType  *int64 `json:"module_type"`
+	Name        string  `json:"name"`
+	Description string  `json:"description,omitempty"`
+	Label       string  `json:"label,omitempty"`
+	Type        string  `json:"type"`
+	MgmtOnly    bool    `json:"mgmt_only"`
+	DeviceType  *int64  `json:"device_type"`
+	ModuleType  *int64  `json:"module_type"`
+	Channels    *int64  `json:"channels"`
+	ChannelID   *int64  `json:"channel_id"`
+	Enabled     *bool   `json:"enabled,omitempty"`
+	Bridge      *int64  `json:"bridge"`
+	PoeMode     *string `json:"poe_mode,omitempty"`
+	PoeType     *string `json:"poe_type,omitempty"`
+	RfRole      *string `json:"rf_role,omitempty"`
 }
 
 type interfaceTemplateResponse struct {
@@ -80,11 +126,25 @@ type interfaceTemplateResponse struct {
 	MgmtOnly    bool              `json:"mgmt_only"`
 	DeviceType  *netboxapi.Ref    `json:"device_type"`
 	ModuleType  *netboxapi.Ref    `json:"module_type"`
+	Channels    *int64            `json:"channels"`
+	ChannelID   *int64            `json:"channel_id"`
+	Enabled     bool              `json:"enabled"`
+	Bridge      *int64            `json:"bridge"`
+	PoeMode     *netboxapi.Choice `json:"poe_mode"`
+	PoeType     *netboxapi.Choice `json:"poe_type"`
+	RfRole      *netboxapi.Choice `json:"rf_role"`
 }
 
 func interfaceTemplateRequestFromResourceData(d *schema.ResourceData) *interfaceTemplateRequest {
 	name := d.Get("name").(string)
 	data := &interfaceTemplateRequest{
+		RfRole:      getOptionalStrClear(d, "rf_role"),
+		PoeType:     getOptionalStrClear(d, "poe_type"),
+		PoeMode:     getOptionalStrClear(d, "poe_mode"),
+		Bridge:      getOptionalInt(d, "bridge"),
+		Enabled:     getOptionalBool(d, "enabled"),
+		ChannelID:   getOptionalInt(d, "channel_id"),
+		Channels:    getOptionalInt(d, "channels"),
 		Name:        name,
 		Description: d.Get("description").(string),
 		Label:       d.Get("label").(string),
@@ -106,6 +166,13 @@ func resourceNetboxInterfaceTemplateCreate(ctx context.Context, d *schema.Resour
 
 func resourceNetboxInterfaceTemplateRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	return readObjectCtx(ctx, d, m, interfaceTemplateAPIPath, func(r *interfaceTemplateResponse) {
+		d.Set("rf_role", netboxapi.ChoiceValue(r.RfRole))
+		d.Set("poe_type", netboxapi.ChoiceValue(r.PoeType))
+		d.Set("poe_mode", netboxapi.ChoiceValue(r.PoeMode))
+		d.Set("bridge", r.Bridge)
+		d.Set("enabled", r.Enabled)
+		d.Set("channel_id", r.ChannelID)
+		d.Set("channels", r.Channels)
 		d.Set("name", r.Name)
 		d.Set("description", r.Description)
 		d.Set("label", r.Label)

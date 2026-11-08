@@ -42,7 +42,8 @@ func resourceNetboxVpnTunnelTermination() *schema.Resource {
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
-			tagsKey: tagsSchema,
+			customFieldsKey: customFieldsSchema,
+			tagsKey:         tagsSchema,
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -58,15 +59,17 @@ type vpnTunnelTerminationRequest struct {
 	TerminationType *string            `json:"termination_type"`
 	TerminationID   int64              `json:"termination_id,omitempty"`
 	OutsideIP       *int64             `json:"outside_ip,omitempty"`
+	CustomFields    interface{}        `json:"custom_fields,omitempty"`
 	Tags            []netboxapi.TagRef `json:"tags"`
 }
 
 type vpnTunnelTerminationResponse struct {
-	Tunnel        *netboxapi.Ref     `json:"tunnel"`
-	Role          *netboxapi.Choice  `json:"role"`
-	TerminationID int64              `json:"termination_id"`
-	OutsideIP     *netboxapi.Ref     `json:"outside_ip"`
-	Tags          []netboxapi.TagRef `json:"tags"`
+	Tunnel        *netboxapi.Ref         `json:"tunnel"`
+	Role          *netboxapi.Choice      `json:"role"`
+	TerminationID int64                  `json:"termination_id"`
+	OutsideIP     *netboxapi.Ref         `json:"outside_ip"`
+	CustomFields  map[string]interface{} `json:"custom_fields"`
+	Tags          []netboxapi.TagRef     `json:"tags"`
 }
 
 func vpnTunnelTerminationRequestFromResourceData(api *providerState, d *schema.ResourceData) *vpnTunnelTerminationRequest {
@@ -74,10 +77,11 @@ func vpnTunnelTerminationRequestFromResourceData(api *providerState, d *schema.R
 	tags, _ := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
 
 	data := &vpnTunnelTerminationRequest{
-		Tunnel:    int64(d.Get("tunnel_id").(int)),
-		Role:      d.Get("role").(string),
-		OutsideIP: getOptionalInt(d, "outside_ip_address_id"),
-		Tags:      tags,
+		CustomFields: customFieldsRequest(d),
+		Tunnel:       int64(d.Get("tunnel_id").(int)),
+		Role:         d.Get("role").(string),
+		OutsideIP:    getOptionalInt(d, "outside_ip_address_id"),
+		Tags:         tags,
 	}
 
 	vmInterfaceID := getOptionalInt(d, "virtual_machine_interface_id")
@@ -100,6 +104,7 @@ func resourceNetboxVpnTunnelTerminationCreate(d *schema.ResourceData, m interfac
 func resourceNetboxVpnTunnelTerminationRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, vpnTunnelTerminationAPIPath, func(tunnelTermination *vpnTunnelTerminationResponse) {
+		d.Set(customFieldsKey, getCustomFields(tunnelTermination.CustomFields))
 		if tunnelTermination.Tunnel != nil {
 			d.Set("tunnel_id", tunnelTermination.Tunnel.ID)
 		}

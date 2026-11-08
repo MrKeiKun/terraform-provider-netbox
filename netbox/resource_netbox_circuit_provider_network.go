@@ -37,6 +37,10 @@ func resourceNetboxCircuitProviderNetwork() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,
 		},
@@ -54,6 +58,7 @@ type circuitProviderNetworkRequest struct {
 	Description  string             `json:"description,omitempty"`
 	Provider     *int64             `json:"provider"`
 	ServiceId    string             `json:"service_id,omitempty"`
+	Owner        *int64             `json:"owner"`
 	CustomFields interface{}        `json:"custom_fields,omitempty"`
 	Tags         []netboxapi.TagRef `json:"tags"`
 }
@@ -64,6 +69,7 @@ type circuitProviderNetworkResponse struct {
 	Description  string                 `json:"description"`
 	Provider     *netboxapi.Ref         `json:"provider"`
 	ServiceId    string                 `json:"service_id"`
+	Owner        *netboxapi.Ref         `json:"owner"`
 	CustomFields map[string]interface{} `json:"custom_fields"`
 	Tags         []netboxapi.TagRef     `json:"tags"`
 }
@@ -75,6 +81,7 @@ func circuitProviderNetworkRequestFromResourceData(api *providerState, d *schema
 		return nil, err
 	}
 	data := &circuitProviderNetworkRequest{
+		Owner:       getOptionalInt(d, "owner_id"),
 		Name:        name,
 		Comments:    d.Get("comments").(string),
 		Description: d.Get("description").(string),
@@ -99,6 +106,7 @@ func resourceNetboxCircuitProviderNetworkCreate(d *schema.ResourceData, m interf
 func resourceNetboxCircuitProviderNetworkRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, circuitProviderNetworkAPIPath, func(r *circuitProviderNetworkResponse) {
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("name", r.Name)
 		d.Set("comments", r.Comments)
 		d.Set("description", r.Description)

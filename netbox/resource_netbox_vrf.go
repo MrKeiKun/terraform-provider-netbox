@@ -41,7 +41,16 @@ func resourceNetboxVrf() *schema.Resource {
 				ValidateFunc: validation.StringLenBetween(1, 21),
 			},
 
-			tagsKey: tagsSchema,
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"comments": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			customFieldsKey: customFieldsSchema,
+			tagsKey:         tagsSchema,
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -59,16 +68,22 @@ type vrfRequest struct {
 	EnforceUnique bool               `json:"enforce_unique"`
 	ExportTargets []int64            `json:"export_targets"`
 	ImportTargets []int64            `json:"import_targets"`
+	Owner         *int64             `json:"owner"`
+	Comments      string             `json:"comments,omitempty"`
+	CustomFields  interface{}        `json:"custom_fields,omitempty"`
 	Tags          []netboxapi.TagRef `json:"tags"`
 }
 
 type vrfResponse struct {
-	Name          string             `json:"name"`
-	Rd            *string            `json:"rd"`
-	Tenant        *netboxapi.Ref     `json:"tenant"`
-	Description   string             `json:"description"`
-	EnforceUnique bool               `json:"enforce_unique"`
-	Tags          []netboxapi.TagRef `json:"tags"`
+	Name          string                 `json:"name"`
+	Rd            *string                `json:"rd"`
+	Tenant        *netboxapi.Ref         `json:"tenant"`
+	Description   string                 `json:"description"`
+	EnforceUnique bool                   `json:"enforce_unique"`
+	Owner         *netboxapi.Ref         `json:"owner"`
+	Comments      string                 `json:"comments"`
+	CustomFields  map[string]interface{} `json:"custom_fields"`
+	Tags          []netboxapi.TagRef     `json:"tags"`
 }
 
 func vrfRequestFromResourceData(api *providerState, d *schema.ResourceData) (*vrfRequest, error) {
@@ -78,6 +93,9 @@ func vrfRequestFromResourceData(api *providerState, d *schema.ResourceData) (*vr
 	}
 
 	data := &vrfRequest{
+		CustomFields:  customFieldsRequest(d),
+		Comments:      getOptionalStr(d, "comments", true),
+		Owner:         getOptionalInt(d, "owner_id"),
 		Name:          d.Get("name").(string),
 		Description:   getOptionalStr(d, "description", true),
 		EnforceUnique: d.Get("enforce_unique").(bool),
@@ -105,6 +123,9 @@ func resourceNetboxVrfCreate(d *schema.ResourceData, m interface{}) error {
 func resourceNetboxVrfRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, vrfAPIPath, func(vrf *vrfResponse) {
+		d.Set(customFieldsKey, getCustomFields(vrf.CustomFields))
+		d.Set("comments", vrf.Comments)
+		d.Set("owner_id", netboxapi.RefID(vrf.Owner))
 		d.Set("name", vrf.Name)
 		d.Set("description", vrf.Description)
 		d.Set("enforce_unique", vrf.EnforceUnique)

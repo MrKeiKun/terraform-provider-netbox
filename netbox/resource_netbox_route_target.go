@@ -32,7 +32,16 @@ func resourceNetboxRouteTarget() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validation.StringLenBetween(0, 200),
 			},
-			tagsKey: tagsSchema,
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"comments": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			customFieldsKey: customFieldsSchema,
+			tagsKey:         tagsSchema,
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -43,25 +52,34 @@ func resourceNetboxRouteTarget() *schema.Resource {
 const routeTargetAPIPath = "ipam/route-targets/"
 
 type routeTargetRequest struct {
-	Name        string             `json:"name"`
-	Description string             `json:"description,omitempty"`
-	Tenant      *int64             `json:"tenant,omitempty"`
-	Tags        []netboxapi.TagRef `json:"tags"`
+	Name         string             `json:"name"`
+	Description  string             `json:"description,omitempty"`
+	Tenant       *int64             `json:"tenant,omitempty"`
+	Owner        *int64             `json:"owner"`
+	Comments     string             `json:"comments,omitempty"`
+	CustomFields interface{}        `json:"custom_fields,omitempty"`
+	Tags         []netboxapi.TagRef `json:"tags"`
 }
 
 type routeTargetResponse struct {
-	Name        string             `json:"name"`
-	Description string             `json:"description"`
-	Tenant      *netboxapi.Ref     `json:"tenant"`
-	Tags        []netboxapi.TagRef `json:"tags"`
+	Name         string                 `json:"name"`
+	Description  string                 `json:"description"`
+	Tenant       *netboxapi.Ref         `json:"tenant"`
+	Owner        *netboxapi.Ref         `json:"owner"`
+	Comments     string                 `json:"comments"`
+	CustomFields map[string]interface{} `json:"custom_fields"`
+	Tags         []netboxapi.TagRef     `json:"tags"`
 }
 
 func routeTargetRequestFromResourceData(d *schema.ResourceData) *routeTargetRequest {
 	name := d.Get("name").(string)
 	data := &routeTargetRequest{
-		Name:        name,
-		Description: d.Get("description").(string),
-		Tags:        []netboxapi.TagRef{},
+		CustomFields: customFieldsRequest(d),
+		Comments:     getOptionalStr(d, "comments", true),
+		Owner:        getOptionalInt(d, "owner_id"),
+		Name:         name,
+		Description:  d.Get("description").(string),
+		Tags:         []netboxapi.TagRef{},
 	}
 	if v := int64(d.Get("tenant_id").(int)); v != 0 {
 		data.Tenant = &v
@@ -76,6 +94,9 @@ func resourceNetboxRouteTargetCreate(d *schema.ResourceData, m interface{}) erro
 func resourceNetboxRouteTargetRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, routeTargetAPIPath, func(r *routeTargetResponse) {
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
+		d.Set("comments", r.Comments)
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("name", r.Name)
 		if r.Description != "" {
 			d.Set("description", r.Description)

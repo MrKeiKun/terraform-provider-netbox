@@ -32,6 +32,15 @@ func resourceNetboxClusterGroup() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"comments": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			customFieldsKey: customFieldsSchema,
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -42,23 +51,32 @@ func resourceNetboxClusterGroup() *schema.Resource {
 const clusterGroupAPIPath = "virtualization/cluster-groups/"
 
 type clusterGroupRequest struct {
-	Name        string             `json:"name"`
-	Slug        string             `json:"slug"`
-	Description string             `json:"description,omitempty"`
-	Tags        []netboxapi.TagRef `json:"tags"`
+	Name         string             `json:"name"`
+	Slug         string             `json:"slug"`
+	Description  string             `json:"description,omitempty"`
+	Owner        *int64             `json:"owner"`
+	Comments     string             `json:"comments,omitempty"`
+	CustomFields interface{}        `json:"custom_fields,omitempty"`
+	Tags         []netboxapi.TagRef `json:"tags"`
 }
 
 type clusterGroupResponse struct {
-	Name        string `json:"name"`
-	Slug        string `json:"slug"`
-	Description string `json:"description"`
+	Name         string                 `json:"name"`
+	Slug         string                 `json:"slug"`
+	Description  string                 `json:"description"`
+	Owner        *netboxapi.Ref         `json:"owner"`
+	Comments     string                 `json:"comments"`
+	CustomFields map[string]interface{} `json:"custom_fields"`
 }
 
 func clusterGroupRequestFromResourceData(d *schema.ResourceData) *clusterGroupRequest {
 	name := d.Get("name").(string)
 	return &clusterGroupRequest{
-		Name: name,
-		Slug: slugFromResourceData(d, name),
+		CustomFields: customFieldsRequest(d),
+		Comments:     getOptionalStr(d, "comments", true),
+		Owner:        getOptionalInt(d, "owner_id"),
+		Name:         name,
+		Slug:         slugFromResourceData(d, name),
 		// description omits empty values, so a cleared one is sent as a single space
 		Description: getOptionalStr(d, "description", true),
 		Tags:        []netboxapi.TagRef{},
@@ -71,6 +89,9 @@ func resourceNetboxClusterGroupCreate(d *schema.ResourceData, m interface{}) err
 
 func resourceNetboxClusterGroupRead(d *schema.ResourceData, m interface{}) error {
 	return readObject(d, m, clusterGroupAPIPath, func(res *clusterGroupResponse) {
+		d.Set(customFieldsKey, getCustomFields(res.CustomFields))
+		d.Set("comments", res.Comments)
+		d.Set("owner_id", netboxapi.RefID(res.Owner))
 		d.Set("name", res.Name)
 		d.Set("slug", res.Slug)
 		d.Set("description", res.Description)

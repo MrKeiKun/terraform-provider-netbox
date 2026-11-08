@@ -46,7 +46,10 @@ resource "netbox_module_bay_template" "test" {
 ### Optional
 
 - `description` (String)
+- `enabled` (Boolean)
 - `label` (String)
+- `module_bay_type_ids` (Set of Number)
+- `module_type_id` (Number)
 - `position` (String) Identifier to reference when renaming installed components.
 
 ### Read-Only

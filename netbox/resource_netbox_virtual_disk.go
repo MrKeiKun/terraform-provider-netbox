@@ -35,6 +35,10 @@ func resourceNetboxVirtualDisks() *schema.Resource {
 				Type:     schema.TypeInt,
 				Required: true,
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,
 		},
@@ -59,6 +63,7 @@ type virtualDiskRequest struct {
 	Size           *int64             `json:"size"`
 	VirtualMachine *int64             `json:"virtual_machine"`
 	Description    string             `json:"description,omitempty"`
+	Owner          *int64             `json:"owner"`
 	CustomFields   interface{}        `json:"custom_fields,omitempty"`
 	Tags           []netboxapi.TagRef `json:"tags"`
 }
@@ -68,6 +73,7 @@ type virtualDiskResponse struct {
 	Size           *int64                 `json:"size"`
 	VirtualMachine *netboxapi.Ref         `json:"virtual_machine"`
 	Description    string                 `json:"description"`
+	Owner          *netboxapi.Ref         `json:"owner"`
 	CustomFields   map[string]interface{} `json:"custom_fields"`
 	Tags           []netboxapi.TagRef     `json:"tags"`
 }
@@ -79,6 +85,7 @@ func virtualDiskRequestFromResourceData(api *providerState, d *schema.ResourceDa
 		return nil, err
 	}
 	data := &virtualDiskRequest{
+		Owner:          getOptionalInt(d, "owner_id"),
 		Name:           name,
 		Size:           int64ToPtr(int64(d.Get("size_mb").(int))),
 		VirtualMachine: int64ToPtr(int64(d.Get("virtual_machine_id").(int))),
@@ -102,6 +109,7 @@ func resourceNetboxVirtualDisksCreate(ctx context.Context, d *schema.ResourceDat
 func resourceNetboxVirtualDisksRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*providerState)
 	return readObjectCtx(ctx, d, m, virtualDiskAPIPath, func(r *virtualDiskResponse) {
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("name", r.Name)
 		d.Set("size_mb", r.Size)
 		if r.VirtualMachine != nil {

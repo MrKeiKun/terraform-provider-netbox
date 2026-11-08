@@ -69,6 +69,22 @@ func resourceNetboxCircuitTermination() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"xconnect_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "ID of the local cross-connect",
+			},
+			"pp_info": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Patch panel ID and port number(s)",
+			},
+			"mark_connected": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Treat as if a cable is connected",
+			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,
 		},
@@ -88,6 +104,9 @@ type circuitTerminationRequest struct {
 	UpstreamSpeed   *int64             `json:"upstream_speed,omitempty"`
 	TerminationType *string            `json:"termination_type"`
 	TerminationID   *int64             `json:"termination_id"`
+	XconnectID      string             `json:"xconnect_id,omitempty"`
+	PpInfo          string             `json:"pp_info,omitempty"`
+	MarkConnected   *bool              `json:"mark_connected,omitempty"`
 	CustomFields    interface{}        `json:"custom_fields,omitempty"`
 	Tags            []netboxapi.TagRef `json:"tags"`
 }
@@ -100,6 +119,9 @@ type circuitTerminationResponse struct {
 	UpstreamSpeed   *int64                 `json:"upstream_speed"`
 	TerminationType *string                `json:"termination_type"`
 	TerminationID   *int64                 `json:"termination_id"`
+	XconnectID      string                 `json:"xconnect_id"`
+	PpInfo          string                 `json:"pp_info"`
+	MarkConnected   bool                   `json:"mark_connected"`
 	CustomFields    map[string]interface{} `json:"custom_fields"`
 	Tags            []netboxapi.TagRef     `json:"tags"`
 }
@@ -110,6 +132,9 @@ func circuitTerminationRequestFromResourceData(api *providerState, d *schema.Res
 		return nil, err
 	}
 	data := &circuitTerminationRequest{
+		MarkConnected: getOptionalBool(d, "mark_connected"),
+		PpInfo:        getOptionalStr(d, "pp_info", true),
+		XconnectID:    getOptionalStr(d, "xconnect_id", true),
 		TermSide:      d.Get("term_side").(string),
 		Description:   d.Get("description").(string),
 		PortSpeed:     getOptionalInt(d, "port_speed"),
@@ -164,6 +189,9 @@ func resourceNetboxCircuitTerminationCreate(d *schema.ResourceData, m interface{
 func resourceNetboxCircuitTerminationRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, circuitTerminationAPIPath, func(r *circuitTerminationResponse) {
+		d.Set("mark_connected", r.MarkConnected)
+		d.Set("pp_info", r.PpInfo)
+		d.Set("xconnect_id", r.XconnectID)
 		d.Set("term_side", r.TermSide)
 		d.Set("description", r.Description)
 		d.Set("circuit_id", netboxapi.RefID(r.Circuit))

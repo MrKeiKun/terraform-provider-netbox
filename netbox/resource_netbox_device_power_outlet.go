@@ -60,6 +60,21 @@ For example, imagine a PDU with one power port which draws from a three-phase fe
 				Default:  false,
 				Optional: true,
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"status": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				Description:  "One of [enabled, disabled, faulty]",
+				ValidateFunc: validation.StringInSlice([]string{"enabled", "disabled", "faulty"}, false),
+			},
+			"color_hex": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,
 		},
@@ -81,6 +96,9 @@ type devicePowerOutletRequest struct {
 	FeedLeg       string             `json:"feed_leg"`
 	Description   string             `json:"description,omitempty"`
 	MarkConnected bool               `json:"mark_connected"`
+	Owner         *int64             `json:"owner"`
+	Status        string             `json:"status,omitempty"`
+	Color         string             `json:"color,omitempty"`
 	CustomFields  interface{}        `json:"custom_fields,omitempty"`
 	Tags          []netboxapi.TagRef `json:"tags"`
 }
@@ -95,6 +113,9 @@ type devicePowerOutletResponse struct {
 	FeedLeg       *netboxapi.Choice      `json:"feed_leg"`
 	Description   string                 `json:"description"`
 	MarkConnected bool                   `json:"mark_connected"`
+	Owner         *netboxapi.Ref         `json:"owner"`
+	Status        *netboxapi.Choice      `json:"status"`
+	Color         string                 `json:"color"`
 	CustomFields  map[string]interface{} `json:"custom_fields"`
 	Tags          []netboxapi.TagRef     `json:"tags"`
 }
@@ -106,6 +127,9 @@ func devicePowerOutletRequestFromResourceData(api *providerState, d *schema.Reso
 		return nil, err
 	}
 	data := &devicePowerOutletRequest{
+		Color:         getOptionalStr(d, "color_hex", true),
+		Status:        d.Get("status").(string),
+		Owner:         getOptionalInt(d, "owner_id"),
 		Name:          name,
 		Device:        int64ToPtr(int64(d.Get("device_id").(int))),
 		Module:        getOptionalInt(d, "module_id"),
@@ -134,6 +158,9 @@ func resourceNetboxDevicePowerOutletCreate(d *schema.ResourceData, m interface{}
 func resourceNetboxDevicePowerOutletRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, devicePowerOutletAPIPath, func(r *devicePowerOutletResponse) {
+		d.Set("color_hex", r.Color)
+		d.Set("status", netboxapi.ChoiceValue(r.Status))
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("name", r.Name)
 		d.Set("device_id", netboxapi.RefID(r.Device))
 		d.Set("module_id", netboxapi.RefID(r.Module))

@@ -3,6 +3,7 @@ package netbox
 import (
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func resourceNetboxRackReservation() *schema.Resource {
@@ -45,7 +46,19 @@ func resourceNetboxRackReservation() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			tagsKey: tagsSchema,
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"status": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				Description:  "One of [pending, active, stale]",
+				ValidateFunc: validation.StringInSlice([]string{"pending", "active", "stale"}, false),
+			},
+			customFieldsKey: customFieldsSchema,
+			tagsKey:         tagsSchema,
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -56,36 +69,45 @@ func resourceNetboxRackReservation() *schema.Resource {
 const rackReservationAPIPath = "dcim/rack-reservations/"
 
 type rackReservationRequest struct {
-	Rack        *int64             `json:"rack"`
-	Units       []*int64           `json:"units"`
-	User        *int64             `json:"user"`
-	Description string             `json:"description"`
-	Tenant      *int64             `json:"tenant,omitempty"`
-	Comments    string             `json:"comments,omitempty"`
-	Tags        []netboxapi.TagRef `json:"tags"`
+	Rack         *int64             `json:"rack"`
+	Units        []*int64           `json:"units"`
+	User         *int64             `json:"user"`
+	Description  string             `json:"description"`
+	Tenant       *int64             `json:"tenant,omitempty"`
+	Comments     string             `json:"comments,omitempty"`
+	Owner        *int64             `json:"owner"`
+	Status       string             `json:"status,omitempty"`
+	CustomFields interface{}        `json:"custom_fields,omitempty"`
+	Tags         []netboxapi.TagRef `json:"tags"`
 }
 
 type rackReservationResponse struct {
-	Rack        *netboxapi.Ref     `json:"rack"`
-	Units       []int64            `json:"units"`
-	User        *netboxapi.Ref     `json:"user"`
-	Description string             `json:"description"`
-	Tenant      *netboxapi.Ref     `json:"tenant"`
-	Comments    string             `json:"comments"`
-	Tags        []netboxapi.TagRef `json:"tags"`
+	Rack         *netboxapi.Ref         `json:"rack"`
+	Units        []int64                `json:"units"`
+	User         *netboxapi.Ref         `json:"user"`
+	Description  string                 `json:"description"`
+	Tenant       *netboxapi.Ref         `json:"tenant"`
+	Comments     string                 `json:"comments"`
+	Owner        *netboxapi.Ref         `json:"owner"`
+	Status       *netboxapi.Choice      `json:"status"`
+	CustomFields map[string]interface{} `json:"custom_fields"`
+	Tags         []netboxapi.TagRef     `json:"tags"`
 }
 
 func rackReservationRequestFromResourceData(api *providerState, d *schema.ResourceData) *rackReservationRequest {
 	// A failed tag lookup leaves the tags empty, same as before.
 	tags, _ := getTagRefsFromResourceDataSet(api, d.Get(tagsAllKey))
 	return &rackReservationRequest{
-		Rack:        getOptionalInt(d, "rack_id"),
-		Units:       toInt64PtrList(d.Get("units")),
-		User:        getOptionalInt(d, "user_id"),
-		Description: getOptionalStr(d, "description", false),
-		Tenant:      getOptionalInt(d, "tenant_id"),
-		Comments:    getOptionalStr(d, "comments", false),
-		Tags:        tags,
+		CustomFields: customFieldsRequest(d),
+		Status:       d.Get("status").(string),
+		Owner:        getOptionalInt(d, "owner_id"),
+		Rack:         getOptionalInt(d, "rack_id"),
+		Units:        toInt64PtrList(d.Get("units")),
+		User:         getOptionalInt(d, "user_id"),
+		Description:  getOptionalStr(d, "description", false),
+		Tenant:       getOptionalInt(d, "tenant_id"),
+		Comments:     getOptionalStr(d, "comments", false),
+		Tags:         tags,
 	}
 }
 
@@ -96,6 +118,9 @@ func resourceNetboxRackReservationCreate(d *schema.ResourceData, m interface{}) 
 func resourceNetboxRackReservationRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, rackReservationAPIPath, func(rackRes *rackReservationResponse) {
+		d.Set(customFieldsKey, getCustomFields(rackRes.CustomFields))
+		d.Set("status", netboxapi.ChoiceValue(rackRes.Status))
+		d.Set("owner_id", netboxapi.RefID(rackRes.Owner))
 		if rackRes.Rack != nil {
 			d.Set("rack_id", rackRes.Rack.ID)
 		}

@@ -84,8 +84,10 @@ resource "netbox_device_bay" "example" {
 
 - `custom_fields` (Map of String)
 - `description` (String)
+- `enabled` (Boolean)
 - `installed_device_id` (Number)
 - `label` (String)
+- `owner_id` (Number)
 - `tags` (Set of String)
 
 ### Read-Only

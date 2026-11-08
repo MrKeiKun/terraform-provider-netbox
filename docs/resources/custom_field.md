@@ -39,12 +39,21 @@ resource "netbox_custom_field" "test" {
 ### Optional
 
 - `choice_set_id` (Number)
+- `comments` (String)
 - `default` (String)
 - `description` (String)
+- `filter_logic` (String) One of [disabled, loose, exact].
 - `group_name` (String)
+- `is_cloneable` (Boolean) Replicate this value when cloning objects.
 - `label` (String)
+- `nulls_first` (Boolean) Sort null values before non-null values when ordering by this field.
+- `owner_id` (Number)
 - `related_object_type` (String)
 - `required` (Boolean)
+- `search_weight` (Number) Weighting for search. Lower values are considered more important. Fields with a search weight of zero will be ignored.
+- `ui_editable` (String) One of [yes, no, hidden].
+- `ui_visible` (String) One of [always, if-set, hidden].
+- `unique` (Boolean) The value of this field must be unique for the assigned object.
 - `validation_maximum` (Number)
 - `validation_minimum` (Number)
 - `validation_regex` (String)

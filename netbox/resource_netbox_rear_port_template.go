@@ -63,6 +63,7 @@ func resourceNetboxRearPortTemplate() *schema.Resource {
 				ExactlyOneOf: []string{"device_type_id", "module_type_id"},
 				ForceNew:     true,
 			},
+			"front_ports": portMappingsSchema("front_port"),
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -73,30 +74,33 @@ func resourceNetboxRearPortTemplate() *schema.Resource {
 const rearPortTemplateAPIPath = "dcim/rear-port-templates/"
 
 type rearPortTemplateRequest struct {
-	Name        string `json:"name"`
-	Description string `json:"description,omitempty"`
-	Label       string `json:"label,omitempty"`
-	Type        string `json:"type"`
-	Positions   int64  `json:"positions,omitempty"`
-	Color       string `json:"color,omitempty"`
-	DeviceType  *int64 `json:"device_type"`
-	ModuleType  *int64 `json:"module_type"`
+	FrontPorts  []map[string]int64 `json:"front_ports,omitempty"`
+	Name        string             `json:"name"`
+	Description string             `json:"description,omitempty"`
+	Label       string             `json:"label,omitempty"`
+	Type        string             `json:"type"`
+	Positions   int64              `json:"positions,omitempty"`
+	Color       string             `json:"color,omitempty"`
+	DeviceType  *int64             `json:"device_type"`
+	ModuleType  *int64             `json:"module_type"`
 }
 
 type rearPortTemplateResponse struct {
-	Name        string            `json:"name"`
-	Description string            `json:"description"`
-	Label       string            `json:"label"`
-	Type        *netboxapi.Choice `json:"type"`
-	Positions   int64             `json:"positions"`
-	Color       string            `json:"color"`
-	DeviceType  *netboxapi.Ref    `json:"device_type"`
-	ModuleType  *netboxapi.Ref    `json:"module_type"`
+	FrontPorts  []map[string]interface{} `json:"front_ports"`
+	Name        string                   `json:"name"`
+	Description string                   `json:"description"`
+	Label       string                   `json:"label"`
+	Type        *netboxapi.Choice        `json:"type"`
+	Positions   int64                    `json:"positions"`
+	Color       string                   `json:"color"`
+	DeviceType  *netboxapi.Ref           `json:"device_type"`
+	ModuleType  *netboxapi.Ref           `json:"module_type"`
 }
 
 func rearPortTemplateRequestFromResourceData(d *schema.ResourceData) *rearPortTemplateRequest {
 	name := d.Get("name").(string)
 	data := &rearPortTemplateRequest{
+		FrontPorts:  portMappingsRequest(d, "front_ports", "front_port"),
 		Name:        name,
 		Description: d.Get("description").(string),
 		Label:       d.Get("label").(string),
@@ -119,6 +123,7 @@ func resourceNetboxRearPortTemplateCreate(ctx context.Context, d *schema.Resourc
 
 func resourceNetboxRearPortTemplateRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	return readObjectCtx(ctx, d, m, rearPortTemplateAPIPath, func(r *rearPortTemplateResponse) {
+		d.Set("front_ports", portMappingsState(r.FrontPorts, "front_port"))
 		d.Set("name", r.Name)
 		d.Set("description", r.Description)
 		d.Set("label", r.Label)

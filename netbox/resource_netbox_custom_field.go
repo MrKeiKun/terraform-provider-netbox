@@ -127,6 +127,60 @@ func resourceCustomField() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"comments": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"unique": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "The value of this field must be unique for the assigned object",
+			},
+			"search_weight": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.IntBetween(0, 32767),
+				Description:  "Weighting for search. Lower values are considered more important. Fields with a search weight of zero will be ignored.",
+			},
+			"filter_logic": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				Description:  "One of [disabled, loose, exact]",
+				ValidateFunc: validation.StringInSlice([]string{"disabled", "loose", "exact"}, false),
+			},
+			"ui_visible": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				Description:  "One of [always, if-set, hidden]",
+				ValidateFunc: validation.StringInSlice([]string{"always", "if-set", "hidden"}, false),
+			},
+			"ui_editable": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				Description:  "One of [yes, no, hidden]",
+				ValidateFunc: validation.StringInSlice([]string{"yes", "no", "hidden"}, false),
+			},
+			"is_cloneable": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Replicate this value when cloning objects",
+			},
+			"nulls_first": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Sort null values before non-null values when ordering by this field",
+			},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -151,6 +205,15 @@ type customFieldRequest struct {
 	ObjectTypes       []string    `json:"object_types,omitempty"`
 	ValidationMaximum *float64    `json:"validation_maximum,omitempty"`
 	ValidationMinimum *float64    `json:"validation_minimum,omitempty"`
+	Owner             *int64      `json:"owner"`
+	Comments          string      `json:"comments,omitempty"`
+	Unique            *bool       `json:"unique,omitempty"`
+	SearchWeight      int64       `json:"search_weight,omitempty"`
+	FilterLogic       string      `json:"filter_logic,omitempty"`
+	UiVisible         string      `json:"ui_visible,omitempty"`
+	UiEditable        string      `json:"ui_editable,omitempty"`
+	IsCloneable       *bool       `json:"is_cloneable,omitempty"`
+	NullsFirst        *bool       `json:"nulls_first,omitempty"`
 }
 
 type customFieldResponse struct {
@@ -167,10 +230,28 @@ type customFieldResponse struct {
 	ValidationMaximum *float64          `json:"validation_maximum"`
 	ValidationMinimum *float64          `json:"validation_minimum"`
 	ValidationRegex   string            `json:"validation_regex"`
+	Owner             *netboxapi.Ref    `json:"owner"`
+	Comments          string            `json:"comments"`
+	Unique            bool              `json:"unique"`
+	SearchWeight      *int64            `json:"search_weight"`
+	FilterLogic       *netboxapi.Choice `json:"filter_logic"`
+	UiVisible         *netboxapi.Choice `json:"ui_visible"`
+	UiEditable        *netboxapi.Choice `json:"ui_editable"`
+	IsCloneable       bool              `json:"is_cloneable"`
+	NullsFirst        bool              `json:"nulls_first"`
 }
 
 func customFieldRequestFromResourceData(d *schema.ResourceData) *customFieldRequest {
 	data := &customFieldRequest{
+		NullsFirst:        getOptionalBool(d, "nulls_first"),
+		IsCloneable:       getOptionalBool(d, "is_cloneable"),
+		UiEditable:        d.Get("ui_editable").(string),
+		UiVisible:         d.Get("ui_visible").(string),
+		FilterLogic:       d.Get("filter_logic").(string),
+		SearchWeight:      int64(d.Get("search_weight").(int)),
+		Unique:            getOptionalBool(d, "unique"),
+		Comments:          getOptionalStr(d, "comments", true),
+		Owner:             getOptionalInt(d, "owner_id"),
 		Name:              d.Get("name").(string),
 		Type:              d.Get("type").(string),
 		Default:           customFieldDefaultToAPI(d),
@@ -206,6 +287,15 @@ func resourceNetboxCustomFieldCreate(d *schema.ResourceData, m interface{}) erro
 
 func resourceNetboxCustomFieldRead(d *schema.ResourceData, m interface{}) error {
 	return readObject(d, m, customFieldAPIPath, func(customField *customFieldResponse) {
+		d.Set("nulls_first", customField.NullsFirst)
+		d.Set("is_cloneable", customField.IsCloneable)
+		d.Set("ui_editable", netboxapi.ChoiceValue(customField.UiEditable))
+		d.Set("ui_visible", netboxapi.ChoiceValue(customField.UiVisible))
+		d.Set("filter_logic", netboxapi.ChoiceValue(customField.FilterLogic))
+		d.Set("search_weight", customField.SearchWeight)
+		d.Set("unique", customField.Unique)
+		d.Set("comments", customField.Comments)
+		d.Set("owner_id", netboxapi.RefID(customField.Owner))
 		d.Set("name", customField.Name)
 		d.Set("type", netboxapi.ChoiceValue(customField.Type))
 		d.Set("content_types", customField.ObjectTypes)

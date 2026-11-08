@@ -47,11 +47,18 @@ resource "netbox_interface_template" "test" {
 
 ### Optional
 
+- `bridge` (Number)
+- `channel_id` (Number) The channel on the parent interface to which this subinterface is bound.
+- `channels` (Number) The number of channels into which this interface is channelized.
 - `description` (String)
 - `device_type_id` (Number) Exactly one of `device_type_id` or `module_type_id` must be given.
+- `enabled` (Boolean)
 - `label` (String)
 - `mgmt_only` (Boolean)
 - `module_type_id` (Number) Exactly one of `device_type_id` or `module_type_id` must be given.
+- `poe_mode` (String) One of [pd, pse].
+- `poe_type` (String) One of [type1-ieee802.3af, type2-ieee802.3at, type3-ieee802.3bt, type4-ieee802.3bt, passive-24v-2pair, passive-24v-4pair, passive-48v-2pair, passive-48v-4pair].
+- `rf_role` (String) One of [ap, station].
 
 ### Read-Only
 

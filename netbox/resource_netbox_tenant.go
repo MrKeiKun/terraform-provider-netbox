@@ -30,7 +30,16 @@ func resourceNetboxTenant() *schema.Resource {
 				Computed:     true,
 				ValidateFunc: validation.StringLenBetween(1, 100),
 			},
-			tagsKey: tagsSchema,
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"comments": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			customFieldsKey: customFieldsSchema,
+			tagsKey:         tagsSchema,
 			"group_id": {
 				Type:     schema.TypeInt,
 				Optional: true,
@@ -49,18 +58,24 @@ func resourceNetboxTenant() *schema.Resource {
 const tenantAPIPath = "tenancy/tenants/"
 
 type tenantRequest struct {
-	Name        string             `json:"name"`
-	Slug        string             `json:"slug"`
-	Description string             `json:"description,omitempty"`
-	Group       *int64             `json:"group,omitempty"`
-	Tags        []netboxapi.TagRef `json:"tags"`
+	Name         string             `json:"name"`
+	Slug         string             `json:"slug"`
+	Description  string             `json:"description,omitempty"`
+	Group        *int64             `json:"group,omitempty"`
+	Owner        *int64             `json:"owner"`
+	Comments     string             `json:"comments,omitempty"`
+	CustomFields interface{}        `json:"custom_fields,omitempty"`
+	Tags         []netboxapi.TagRef `json:"tags"`
 }
 
 type tenantResponse struct {
-	Name        string         `json:"name"`
-	Slug        string         `json:"slug"`
-	Description string         `json:"description"`
-	Group       *netboxapi.Ref `json:"group"`
+	Name         string                 `json:"name"`
+	Slug         string                 `json:"slug"`
+	Description  string                 `json:"description"`
+	Group        *netboxapi.Ref         `json:"group"`
+	Owner        *netboxapi.Ref         `json:"owner"`
+	Comments     string                 `json:"comments"`
+	CustomFields map[string]interface{} `json:"custom_fields"`
 }
 
 func tenantRequestFromResourceData(api *providerState, d *schema.ResourceData) (*tenantRequest, error) {
@@ -70,10 +85,13 @@ func tenantRequestFromResourceData(api *providerState, d *schema.ResourceData) (
 		return nil, err
 	}
 	data := &tenantRequest{
-		Name:        name,
-		Slug:        slugFromResourceData(d, name),
-		Description: d.Get("description").(string),
-		Tags:        tags,
+		CustomFields: customFieldsRequest(d),
+		Comments:     getOptionalStr(d, "comments", true),
+		Owner:        getOptionalInt(d, "owner_id"),
+		Name:         name,
+		Slug:         slugFromResourceData(d, name),
+		Description:  d.Get("description").(string),
+		Tags:         tags,
 	}
 	if v := int64(d.Get("group_id").(int)); v != 0 {
 		data.Group = &v
@@ -91,6 +109,9 @@ func resourceNetboxTenantCreate(d *schema.ResourceData, m interface{}) error {
 
 func resourceNetboxTenantRead(d *schema.ResourceData, m interface{}) error {
 	return readObject(d, m, tenantAPIPath, func(r *tenantResponse) {
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
+		d.Set("comments", r.Comments)
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("name", r.Name)
 		d.Set("slug", r.Slug)
 		d.Set("description", r.Description)

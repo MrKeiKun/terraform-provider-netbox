@@ -47,6 +47,7 @@ resource "netbox_power_panel" "test" {
 - `custom_fields` (Map of String)
 - `description` (String)
 - `location_id` (Number)
+- `owner_id` (Number)
 - `tags` (Set of String)
 
 ### Read-Only

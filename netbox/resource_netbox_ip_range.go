@@ -66,6 +66,14 @@ func resourceNetboxIPRange() *schema.Resource {
 				Computed:    true,
 				Description: "The total member count of the IP range",
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"comments": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,
 		},
@@ -87,6 +95,8 @@ type ipRangeRequest struct {
 	Vrf           *int64             `json:"vrf,omitempty"`
 	Tenant        *int64             `json:"tenant,omitempty"`
 	Role          *int64             `json:"role,omitempty"`
+	Owner         *int64             `json:"owner"`
+	Comments      string             `json:"comments,omitempty"`
 	CustomFields  interface{}        `json:"custom_fields,omitempty"`
 	Tags          []netboxapi.TagRef `json:"tags"`
 }
@@ -102,6 +112,8 @@ type ipRangeResponse struct {
 	Tenant        *netboxapi.Ref         `json:"tenant"`
 	Role          *netboxapi.Ref         `json:"role"`
 	Size          int64                  `json:"size"`
+	Owner         *netboxapi.Ref         `json:"owner"`
+	Comments      string                 `json:"comments"`
 	CustomFields  map[string]interface{} `json:"custom_fields"`
 	Tags          []netboxapi.TagRef     `json:"tags"`
 }
@@ -112,6 +124,8 @@ func ipRangeRequestFromResourceData(api *providerState, d *schema.ResourceData) 
 		return nil, err
 	}
 	data := &ipRangeRequest{
+		Comments:      getOptionalStr(d, "comments", true),
+		Owner:         getOptionalInt(d, "owner_id"),
 		StartAddress:  d.Get("start_address").(string),
 		EndAddress:    d.Get("end_address").(string),
 		Status:        d.Get("status").(string),
@@ -146,6 +160,8 @@ func resourceNetboxIPRangeCreate(d *schema.ResourceData, m interface{}) error {
 func resourceNetboxIPRangeRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, ipRangeAPIPath, func(r *ipRangeResponse) {
+		d.Set("comments", r.Comments)
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("start_address", r.StartAddress)
 		d.Set("end_address", r.EndAddress)
 		d.Set("status", netboxapi.ChoiceValue(r.Status))

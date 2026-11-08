@@ -62,8 +62,10 @@ resource "netbox_event_rule" "script" {
 ### Optional
 
 - `conditions` (String)
+- `custom_fields` (Map of String)
 - `description` (String)
 - `enabled` (Boolean) Defaults to `true`.
+- `owner_id` (Number)
 - `tags` (Set of String)
 
 ### Read-Only

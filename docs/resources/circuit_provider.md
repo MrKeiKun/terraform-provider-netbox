@@ -32,7 +32,10 @@ resource "netbox_circuit_provider" "test" {
 
 ### Optional
 
+- `comments` (String)
+- `custom_fields` (Map of String)
 - `description` (String)
+- `owner_id` (Number)
 - `slug` (String)
 
 ### Read-Only

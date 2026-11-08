@@ -103,6 +103,7 @@ resource "netbox_mac_address" "this" {
 - `device_interface_id` (Number) Conflicts with `interface_id` and `virtual_machine_interface_id`.
 - `interface_id` (Number) Required when `object_type` is set.
 - `object_type` (String) Valid values are `virtualization.vminterface` and `dcim.interface`. Required when `interface_id` is set.
+- `owner_id` (Number)
 - `tags` (Set of String)
 - `virtual_machine_interface_id` (Number) Conflicts with `interface_id` and `device_interface_id`.
 

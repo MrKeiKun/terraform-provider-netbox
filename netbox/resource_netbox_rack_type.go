@@ -58,7 +58,35 @@ func resourceNetboxRackType() *schema.Resource {
 				Type:     schema.TypeInt,
 				Required: true,
 			},
-			tagsKey: tagsSchema,
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"desc_units": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Units are numbered top-to-bottom",
+			},
+			"outer_height": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ValidateFunc: validation.IntBetween(0, 32767),
+				Description:  "Outer dimension of rack (height)",
+			},
+			"cooling_capability": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "One of [air-only, hybrid, liquid-only]",
+				ValidateFunc: validation.StringInSlice([]string{"air-only", "hybrid", "liquid-only"}, false),
+			},
+			"cooling_capacity": {
+				Type:        schema.TypeFloat,
+				Optional:    true,
+				Description: "Cooling capacity (kW)",
+			},
+			customFieldsKey: customFieldsSchema,
+			tagsKey:         tagsSchema,
 			"description": {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -186,42 +214,54 @@ func resourceNetboxRackType() *schema.Resource {
 const rackTypeAPIPath = "dcim/rack-types/"
 
 type rackTypeRequest struct {
-	Slug          string             `json:"slug"`
-	Model         string             `json:"model"`
-	FormFactor    string             `json:"form_factor"`
-	Manufacturer  *int64             `json:"manufacturer"`
-	Width         *int64             `json:"width,omitempty"`
-	UHeight       int64              `json:"u_height,omitempty"`
-	Description   string             `json:"description,omitempty"`
-	OuterWidth    *int64             `json:"outer_width,omitempty"`
-	OuterDepth    *int64             `json:"outer_depth,omitempty"`
-	OuterUnit     string             `json:"outer_unit,omitempty"`
-	Comments      string             `json:"comments,omitempty"`
-	Weight        *float64           `json:"weight,omitempty"`
-	MaxWeight     *int64             `json:"max_weight,omitempty"`
-	WeightUnit    string             `json:"weight_unit,omitempty"`
-	MountingDepth *int64             `json:"mounting_depth,omitempty"`
-	Tags          []netboxapi.TagRef `json:"tags"`
+	Slug              string             `json:"slug"`
+	Model             string             `json:"model"`
+	FormFactor        string             `json:"form_factor"`
+	Manufacturer      *int64             `json:"manufacturer"`
+	Width             *int64             `json:"width,omitempty"`
+	UHeight           int64              `json:"u_height,omitempty"`
+	Description       string             `json:"description,omitempty"`
+	OuterWidth        *int64             `json:"outer_width,omitempty"`
+	OuterDepth        *int64             `json:"outer_depth,omitempty"`
+	OuterUnit         string             `json:"outer_unit,omitempty"`
+	Comments          string             `json:"comments,omitempty"`
+	Weight            *float64           `json:"weight,omitempty"`
+	MaxWeight         *int64             `json:"max_weight,omitempty"`
+	WeightUnit        string             `json:"weight_unit,omitempty"`
+	MountingDepth     *int64             `json:"mounting_depth,omitempty"`
+	Owner             *int64             `json:"owner"`
+	DescUnits         *bool              `json:"desc_units,omitempty"`
+	OuterHeight       *int64             `json:"outer_height"`
+	CoolingCapability *string            `json:"cooling_capability,omitempty"`
+	CoolingCapacity   *float64           `json:"cooling_capacity"`
+	CustomFields      interface{}        `json:"custom_fields,omitempty"`
+	Tags              []netboxapi.TagRef `json:"tags"`
 }
 
 type rackTypeResponse struct {
-	Slug          string               `json:"slug"`
-	Model         string               `json:"model"`
-	FormFactor    *netboxapi.Choice    `json:"form_factor"`
-	Manufacturer  *netboxapi.Ref       `json:"manufacturer"`
-	Width         *netboxapi.IntChoice `json:"width"`
-	UHeight       int64                `json:"u_height"`
-	Description   string               `json:"description"`
-	OuterWidth    *int64               `json:"outer_width"`
-	OuterDepth    *int64               `json:"outer_depth"`
-	OuterUnit     *netboxapi.Choice    `json:"outer_unit"`
-	Comments      string               `json:"comments"`
-	Weight        *float64             `json:"weight"`
-	MaxWeight     *int64               `json:"max_weight"`
-	WeightUnit    *netboxapi.Choice    `json:"weight_unit"`
-	MountingDepth *int64               `json:"mounting_depth"`
-	StartingUnit  int64                `json:"starting_unit"`
-	Tags          []netboxapi.TagRef   `json:"tags"`
+	Slug              string                 `json:"slug"`
+	Model             string                 `json:"model"`
+	FormFactor        *netboxapi.Choice      `json:"form_factor"`
+	Manufacturer      *netboxapi.Ref         `json:"manufacturer"`
+	Width             *netboxapi.IntChoice   `json:"width"`
+	UHeight           int64                  `json:"u_height"`
+	Description       string                 `json:"description"`
+	OuterWidth        *int64                 `json:"outer_width"`
+	OuterDepth        *int64                 `json:"outer_depth"`
+	OuterUnit         *netboxapi.Choice      `json:"outer_unit"`
+	Comments          string                 `json:"comments"`
+	Weight            *float64               `json:"weight"`
+	MaxWeight         *int64                 `json:"max_weight"`
+	WeightUnit        *netboxapi.Choice      `json:"weight_unit"`
+	MountingDepth     *int64                 `json:"mounting_depth"`
+	StartingUnit      int64                  `json:"starting_unit"`
+	Owner             *netboxapi.Ref         `json:"owner"`
+	DescUnits         bool                   `json:"desc_units"`
+	OuterHeight       *int64                 `json:"outer_height"`
+	CoolingCapability *netboxapi.Choice      `json:"cooling_capability"`
+	CoolingCapacity   *float64               `json:"cooling_capacity"`
+	CustomFields      map[string]interface{} `json:"custom_fields"`
+	Tags              []netboxapi.TagRef     `json:"tags"`
 }
 
 func rackTypeRequestFromResourceData(api *providerState, d *schema.ResourceData) (*rackTypeRequest, error) {
@@ -231,22 +271,28 @@ func rackTypeRequestFromResourceData(api *providerState, d *schema.ResourceData)
 		return nil, err
 	}
 	data := &rackTypeRequest{
-		Slug:          slugFromResourceData(d, slugSource),
-		Model:         d.Get("model").(string),
-		FormFactor:    d.Get("form_factor").(string),
-		Manufacturer:  int64ToPtr(int64(d.Get("manufacturer_id").(int))),
-		Width:         getOptionalInt(d, "width"),
-		UHeight:       int64(d.Get("u_height").(int)),
-		Description:   getOptionalStr(d, "description", true),
-		OuterWidth:    getOptionalInt(d, "outer_width"),
-		OuterDepth:    getOptionalInt(d, "outer_depth"),
-		OuterUnit:     d.Get("outer_unit").(string),
-		Comments:      getOptionalStr(d, "comments", true),
-		Weight:        getOptionalFloat(d, "weight"),
-		MaxWeight:     getOptionalInt(d, "max_weight"),
-		WeightUnit:    d.Get("weight_unit").(string),
-		MountingDepth: getOptionalInt(d, "mounting_depth_mm"),
-		Tags:          tags,
+		CustomFields:      customFieldsRequest(d),
+		CoolingCapacity:   getOptionalFloat(d, "cooling_capacity"),
+		CoolingCapability: getOptionalStrClear(d, "cooling_capability"),
+		OuterHeight:       getOptionalInt(d, "outer_height"),
+		DescUnits:         getOptionalBool(d, "desc_units"),
+		Owner:             getOptionalInt(d, "owner_id"),
+		Slug:              slugFromResourceData(d, slugSource),
+		Model:             d.Get("model").(string),
+		FormFactor:        d.Get("form_factor").(string),
+		Manufacturer:      int64ToPtr(int64(d.Get("manufacturer_id").(int))),
+		Width:             getOptionalInt(d, "width"),
+		UHeight:           int64(d.Get("u_height").(int)),
+		Description:       getOptionalStr(d, "description", true),
+		OuterWidth:        getOptionalInt(d, "outer_width"),
+		OuterDepth:        getOptionalInt(d, "outer_depth"),
+		OuterUnit:         d.Get("outer_unit").(string),
+		Comments:          getOptionalStr(d, "comments", true),
+		Weight:            getOptionalFloat(d, "weight"),
+		MaxWeight:         getOptionalInt(d, "max_weight"),
+		WeightUnit:        d.Get("weight_unit").(string),
+		MountingDepth:     getOptionalInt(d, "mounting_depth_mm"),
+		Tags:              tags,
 	}
 	return data, nil
 }
@@ -262,6 +308,12 @@ func resourceNetboxRackTypeCreate(d *schema.ResourceData, m interface{}) error {
 func resourceNetboxRackTypeRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, rackTypeAPIPath, func(r *rackTypeResponse) {
+		d.Set(customFieldsKey, getCustomFields(r.CustomFields))
+		d.Set("cooling_capacity", r.CoolingCapacity)
+		d.Set("cooling_capability", netboxapi.ChoiceValue(r.CoolingCapability))
+		d.Set("outer_height", r.OuterHeight)
+		d.Set("desc_units", r.DescUnits)
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("slug", r.Slug)
 		d.Set("model", r.Model)
 		d.Set("form_factor", netboxapi.ChoiceValue(r.FormFactor))

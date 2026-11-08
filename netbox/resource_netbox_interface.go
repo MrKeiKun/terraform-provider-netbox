@@ -81,6 +81,26 @@ func resourceNetboxInterface() *schema.Resource {
 				Optional:    true,
 				Description: "ID of the bridge interface this interface belongs to",
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"parent": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"qinq_svlan_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"vlan_translation_policy_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"vrf_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -91,18 +111,23 @@ func resourceNetboxInterface() *schema.Resource {
 const vmInterfaceAPIPath = "virtualization/interfaces/"
 
 type vmInterfaceResponse struct {
-	Name              string             `json:"name"`
-	Description       string             `json:"description"`
-	Enabled           bool               `json:"enabled"`
-	MacAddress        *string            `json:"mac_address"`
-	Mtu               *int64             `json:"mtu"`
-	Tags              []netboxapi.TagRef `json:"tags"`
-	TaggedVlans       []netboxapi.Ref    `json:"tagged_vlans"`
-	VirtualMachine    *netboxapi.Ref     `json:"virtual_machine"`
-	Mode              *netboxapi.Choice  `json:"mode"`
-	UntaggedVlan      *netboxapi.Ref     `json:"untagged_vlan"`
-	Bridge            *netboxapi.Ref     `json:"bridge"`
-	PrimaryMacAddress *netboxapi.Ref     `json:"primary_mac_address"`
+	Vrf                   *netboxapi.Ref     `json:"vrf"`
+	VlanTranslationPolicy *netboxapi.Ref     `json:"vlan_translation_policy"`
+	QinqSvlan             *netboxapi.Ref     `json:"qinq_svlan"`
+	Parent                *int64             `json:"parent"`
+	Name                  string             `json:"name"`
+	Description           string             `json:"description"`
+	Enabled               bool               `json:"enabled"`
+	MacAddress            *string            `json:"mac_address"`
+	Mtu                   *int64             `json:"mtu"`
+	Tags                  []netboxapi.TagRef `json:"tags"`
+	TaggedVlans           []netboxapi.Ref    `json:"tagged_vlans"`
+	VirtualMachine        *netboxapi.Ref     `json:"virtual_machine"`
+	Mode                  *netboxapi.Choice  `json:"mode"`
+	UntaggedVlan          *netboxapi.Ref     `json:"untagged_vlan"`
+	Bridge                *netboxapi.Ref     `json:"bridge"`
+	PrimaryMacAddress     *netboxapi.Ref     `json:"primary_mac_address"`
+	Owner                 *netboxapi.Ref     `json:"owner"`
 }
 
 // vmInterfaceBody builds the fields that are sent on both create and update.
@@ -119,7 +144,12 @@ func vmInterfaceBody(api *providerState, d *schema.ResourceData) (map[string]int
 		"tags":            tags,
 		"tagged_vlans":    toInt64List(d.Get("tagged_vlans")),
 		"virtual_machine": int64(d.Get("virtual_machine_id").(int)),
+		"owner":           getOptionalInt(d, "owner_id"),
 	}
+	body["parent"] = getOptionalInt(d, "parent")
+	body["qinq_svlan"] = getOptionalInt(d, "qinq_svlan_id")
+	body["vlan_translation_policy"] = getOptionalInt(d, "vlan_translation_policy_id")
+	body["vrf"] = getOptionalInt(d, "vrf_id")
 	if mode := d.Get("mode").(string); mode != "" {
 		body["mode"] = mode
 	}
@@ -149,12 +179,17 @@ func resourceNetboxInterfaceCreate(ctx context.Context, d *schema.ResourceData, 
 func resourceNetboxInterfaceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*providerState)
 	return readObjectCtx(ctx, d, m, vmInterfaceAPIPath, func(iface *vmInterfaceResponse) {
+		d.Set("vrf_id", netboxapi.RefID(iface.Vrf))
+		d.Set("vlan_translation_policy_id", netboxapi.RefID(iface.VlanTranslationPolicy))
+		d.Set("qinq_svlan_id", netboxapi.RefID(iface.QinqSvlan))
+		d.Set("parent", iface.Parent)
 		d.Set("name", iface.Name)
 		d.Set("description", iface.Description)
 		d.Set("enabled", iface.Enabled)
 		d.Set("mac_address", iface.MacAddress)
 		d.Set("mtu", iface.Mtu)
 		api.readTagRefs(d, iface.Tags)
+		d.Set("owner_id", netboxapi.RefID(iface.Owner))
 		d.Set("tagged_vlans", netboxapi.IDs(iface.TaggedVlans))
 		if iface.VirtualMachine != nil {
 			d.Set("virtual_machine_id", iface.VirtualMachine.ID)

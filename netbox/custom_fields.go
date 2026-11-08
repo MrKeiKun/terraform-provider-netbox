@@ -268,3 +268,12 @@ func flattenCustomFields(cf interface{}) map[string]interface{} {
 
 	return result
 }
+
+// customFieldsRequest returns the custom fields for a request body, or nil when
+// none are set in the configuration, so that the field is left out.
+func customFieldsRequest(d *schema.ResourceData) interface{} {
+	if ct, ok := managedCustomFields(d); ok {
+		return ct
+	}
+	return nil
+}

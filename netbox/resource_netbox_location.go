@@ -47,6 +47,21 @@ Each location must have a name that is unique within its parent site and locatio
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"comments": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"status": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				Description:  "One of [planned, staging, active, decommissioning, retired]",
+				ValidateFunc: validation.StringInSlice([]string{"planned", "staging", "active", "decommissioning", "retired"}, false),
+			},
 			tagsKey: tagsSchema,
 			"tenant_id": {
 				Type:     schema.TypeInt,
@@ -70,6 +85,9 @@ type locationRequest struct {
 	Site         *int64             `json:"site"`
 	Parent       *int64             `json:"parent"`
 	Tenant       *int64             `json:"tenant,omitempty"`
+	Owner        *int64             `json:"owner"`
+	Comments     string             `json:"comments,omitempty"`
+	Status       string             `json:"status,omitempty"`
 	CustomFields interface{}        `json:"custom_fields,omitempty"`
 	Tags         []netboxapi.TagRef `json:"tags"`
 }
@@ -82,6 +100,9 @@ type locationResponse struct {
 	Site         *netboxapi.Ref         `json:"site"`
 	Parent       *netboxapi.Ref         `json:"parent"`
 	Tenant       *netboxapi.Ref         `json:"tenant"`
+	Owner        *netboxapi.Ref         `json:"owner"`
+	Comments     string                 `json:"comments"`
+	Status       *netboxapi.Choice      `json:"status"`
 	CustomFields map[string]interface{} `json:"custom_fields"`
 	Tags         []netboxapi.TagRef     `json:"tags"`
 }
@@ -93,6 +114,9 @@ func locationRequestFromResourceData(api *providerState, d *schema.ResourceData)
 		return nil, err
 	}
 	data := &locationRequest{
+		Status:      d.Get("status").(string),
+		Comments:    getOptionalStr(d, "comments", true),
+		Owner:       getOptionalInt(d, "owner_id"),
 		Name:        name,
 		Slug:        slugFromResourceData(d, name),
 		Description: getOptionalStr(d, "description", true),
@@ -125,6 +149,9 @@ func resourceNetboxLocationCreate(d *schema.ResourceData, m interface{}) error {
 func resourceNetboxLocationRead(d *schema.ResourceData, m interface{}) error {
 	api := m.(*providerState)
 	return readObject(d, m, locationAPIPath, func(r *locationResponse) {
+		d.Set("status", netboxapi.ChoiceValue(r.Status))
+		d.Set("comments", r.Comments)
+		d.Set("owner_id", netboxapi.RefID(r.Owner))
 		d.Set("name", r.Name)
 		d.Set("slug", r.Slug)
 		d.Set("description", r.Description)

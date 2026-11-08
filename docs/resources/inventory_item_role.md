@@ -50,8 +50,10 @@ resource "netbox_inventory_item" "parent" {
 
 ### Optional
 
+- `comments` (String)
 - `custom_fields` (Map of String)
 - `description` (String)
+- `owner_id` (Number)
 - `tags` (Set of String)
 
 ### Read-Only

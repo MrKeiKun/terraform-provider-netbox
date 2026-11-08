@@ -30,7 +30,10 @@ resource "netbox_ipam_role" "test_basic" {
 
 ### Optional
 
+- `comments` (String)
+- `custom_fields` (Map of String)
 - `description` (String)
+- `owner_id` (Number)
 - `slug` (String)
 - `weight` (Number)
 

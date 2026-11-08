@@ -37,6 +37,11 @@ func resourceNetboxDeviceBayTemplate() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"enabled": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Computed: true,
+			},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -51,6 +56,7 @@ type deviceBayTemplateRequest struct {
 	Description string `json:"description,omitempty"`
 	Label       string `json:"label,omitempty"`
 	DeviceType  *int64 `json:"device_type"`
+	Enabled     *bool  `json:"enabled,omitempty"`
 }
 
 type deviceBayTemplateResponse struct {
@@ -58,11 +64,13 @@ type deviceBayTemplateResponse struct {
 	Description string         `json:"description"`
 	Label       string         `json:"label"`
 	DeviceType  *netboxapi.Ref `json:"device_type"`
+	Enabled     bool           `json:"enabled"`
 }
 
 func deviceBayTemplateRequestFromResourceData(d *schema.ResourceData) *deviceBayTemplateRequest {
 	name := d.Get("name").(string)
 	data := &deviceBayTemplateRequest{
+		Enabled:     getOptionalBool(d, "enabled"),
 		Name:        name,
 		Description: d.Get("description").(string),
 		Label:       d.Get("label").(string),
@@ -79,6 +87,7 @@ func resourceNetboxDeviceBayTemplateCreate(ctx context.Context, d *schema.Resour
 
 func resourceNetboxDeviceBayTemplateRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	return readObjectCtx(ctx, d, m, deviceBayTemplateAPIPath, func(r *deviceBayTemplateResponse) {
+		d.Set("enabled", r.Enabled)
 		d.Set("name", r.Name)
 		d.Set("description", r.Description)
 		d.Set("label", r.Label)

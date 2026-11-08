@@ -28,6 +28,19 @@ func resourceNetboxClusterType() *schema.Resource {
 				Computed:     true,
 				ValidateFunc: validation.StringLenBetween(1, 100),
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"comments": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"description": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			customFieldsKey: customFieldsSchema,
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -38,22 +51,34 @@ func resourceNetboxClusterType() *schema.Resource {
 const clusterTypeAPIPath = "virtualization/cluster-types/"
 
 type clusterTypeRequest struct {
-	Name string             `json:"name"`
-	Slug string             `json:"slug"`
-	Tags []netboxapi.TagRef `json:"tags"`
+	Name         string             `json:"name"`
+	Slug         string             `json:"slug"`
+	Owner        *int64             `json:"owner"`
+	Comments     string             `json:"comments,omitempty"`
+	Description  string             `json:"description,omitempty"`
+	CustomFields interface{}        `json:"custom_fields,omitempty"`
+	Tags         []netboxapi.TagRef `json:"tags"`
 }
 
 type clusterTypeResponse struct {
-	Name string `json:"name"`
-	Slug string `json:"slug"`
+	Name         string                 `json:"name"`
+	Slug         string                 `json:"slug"`
+	Owner        *netboxapi.Ref         `json:"owner"`
+	Comments     string                 `json:"comments"`
+	Description  string                 `json:"description"`
+	CustomFields map[string]interface{} `json:"custom_fields"`
 }
 
 func clusterTypeRequestFromResourceData(d *schema.ResourceData) *clusterTypeRequest {
 	name := d.Get("name").(string)
 	return &clusterTypeRequest{
-		Name: name,
-		Slug: slugFromResourceData(d, name),
-		Tags: []netboxapi.TagRef{},
+		CustomFields: customFieldsRequest(d),
+		Description:  getOptionalStr(d, "description", true),
+		Comments:     getOptionalStr(d, "comments", true),
+		Owner:        getOptionalInt(d, "owner_id"),
+		Name:         name,
+		Slug:         slugFromResourceData(d, name),
+		Tags:         []netboxapi.TagRef{},
 	}
 }
 
@@ -63,6 +88,10 @@ func resourceNetboxClusterTypeCreate(d *schema.ResourceData, m interface{}) erro
 
 func resourceNetboxClusterTypeRead(d *schema.ResourceData, m interface{}) error {
 	return readObject(d, m, clusterTypeAPIPath, func(res *clusterTypeResponse) {
+		d.Set(customFieldsKey, getCustomFields(res.CustomFields))
+		d.Set("description", res.Description)
+		d.Set("comments", res.Comments)
+		d.Set("owner_id", netboxapi.RefID(res.Owner))
 		d.Set("name", res.Name)
 		d.Set("slug", res.Slug)
 	})

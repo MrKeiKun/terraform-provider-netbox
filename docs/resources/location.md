@@ -45,11 +45,14 @@ resource "netbox_location" "test" {
 
 ### Optional
 
+- `comments` (String)
 - `custom_fields` (Map of String)
 - `description` (String)
 - `facility` (String)
+- `owner_id` (Number)
 - `parent_id` (Number)
 - `slug` (String)
+- `status` (String) One of [planned, staging, active, decommissioning, retired].
 - `tags` (Set of String)
 - `tenant_id` (Number)
 

@@ -49,6 +49,7 @@ resource "netbox_rear_port_template" "test" {
 - `color_hex` (String)
 - `description` (String)
 - `device_type_id` (Number) Exactly one of `device_type_id` or `module_type_id` must be given.
+- `front_ports` (Block List) The ports and positions this port is mapped to. Needs NetBox 4.5 or newer. (see [below for nested schema](#nestedblock--front_ports))
 - `label` (String)
 - `module_type_id` (Number) Exactly one of `device_type_id` or `module_type_id` must be given.
 - `positions` (Number) Number of front ports which may be mapped to this rear port. Defaults to `1`.
@@ -56,3 +57,15 @@ resource "netbox_rear_port_template" "test" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+<a id="nestedblock--front_ports"></a>
+### Nested Schema for `front_ports`
+
+Required:
+
+- `front_port_id` (Number)
+- `position` (Number) Position on this port.
+
+Optional:
+
+- `front_port_position` (Number) Position on the other port. Defaults to `1`.

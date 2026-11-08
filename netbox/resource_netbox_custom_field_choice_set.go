@@ -73,6 +73,10 @@ A choice set must define a base choice set and/or a set of arbitrary extra choic
 				Description: "experimental",
 				Default:     false,
 			},
+			"owner_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
 			customFieldsKey: customFieldsSchema,
 		},
 		Importer: &schema.ResourceImporter{
@@ -88,6 +92,7 @@ type customFieldChoiceSetRequest struct {
 	Description         string     `json:"description,omitempty"`
 	OrderAlphabetically bool       `json:"order_alphabetically,omitempty"`
 	ExtraChoices        [][]string `json:"extra_choices"`
+	Owner               *int64     `json:"owner"`
 }
 
 type customFieldChoiceSetResponse struct {
@@ -96,10 +101,12 @@ type customFieldChoiceSetResponse struct {
 	ExtraChoices        [][]string        `json:"extra_choices"`
 	OrderAlphabetically bool              `json:"order_alphabetically"`
 	BaseChoices         *netboxapi.Choice `json:"base_choices"`
+	Owner               *netboxapi.Ref    `json:"owner"`
 }
 
 func customFieldChoiceSetRequestFromResourceData(d *schema.ResourceData) (*customFieldChoiceSetRequest, error) {
 	data := &customFieldChoiceSetRequest{
+		Owner:               getOptionalInt(d, "owner_id"),
 		Name:                d.Get("name").(string),
 		OrderAlphabetically: d.Get("order_alphabetically").(bool),
 		Description:         getOptionalStr(d, "description", true),
@@ -129,6 +136,7 @@ func resourceNetboxCustomFieldChoiceSetCreate(d *schema.ResourceData, m interfac
 
 func resourceNetboxCustomFieldChoiceSetRead(d *schema.ResourceData, m interface{}) error {
 	return readObject(d, m, customFieldChoiceSetAPIPath, func(choiceSet *customFieldChoiceSetResponse) {
+		d.Set("owner_id", netboxapi.RefID(choiceSet.Owner))
 		d.Set("name", choiceSet.Name)
 		if choiceSet.Description != "" {
 			d.Set("description", choiceSet.Description)
