@@ -129,13 +129,20 @@ func resourceNetboxTokenCreate(ctx context.Context, d *schema.ResourceData, m in
 		return diag.FromErr(err)
 	}
 
-	res, err := netboxapi.Create[netboxapi.Ref](ctx, api.rest, tokenAPIPath, data)
+	res, err := netboxapi.Create[struct {
+		ID  int64  `json:"id"`
+		Key string `json:"key"`
+	}](ctx, api.rest, tokenAPIPath, data)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	d.SetId(strconv.FormatInt(res.ID, 10))
+	// NetBox 4.5 and later only show the generated key in this response
+	if res.Key != "" {
+		d.Set("key", res.Key)
+	}
 
-	return resourceNetboxTokenUpdate(ctx, d, m)
+	return resourceNetboxTokenRead(ctx, d, m)
 }
 
 func resourceNetboxTokenRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -186,7 +193,7 @@ func resourceNetboxTokenUpdate(ctx context.Context, d *schema.ResourceData, m in
 	// NetBox 4.5 and later refuse a new plaintext key on an existing token.
 	data.Key = ""
 
-	if _, err := netboxapi.Update[netboxapi.Ref](ctx, api.rest, tokenAPIPath, id, data); err != nil {
+	if _, err := netboxapi.Patch[netboxapi.Ref](ctx, api.rest, tokenAPIPath, id, data); err != nil {
 		return diag.FromErr(err)
 	}
 	return resourceNetboxTokenRead(ctx, d, m)
