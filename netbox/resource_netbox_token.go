@@ -183,6 +183,9 @@ func resourceNetboxTokenUpdate(ctx context.Context, d *schema.ResourceData, m in
 		return diag.FromErr(err)
 	}
 
+	// NetBox 4.5 and later refuse a new plaintext key on an existing token.
+	data.Key = ""
+
 	if _, err := netboxapi.Update[netboxapi.Ref](ctx, api.rest, tokenAPIPath, id, data); err != nil {
 		return diag.FromErr(err)
 	}
