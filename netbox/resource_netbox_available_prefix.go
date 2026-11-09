@@ -2,6 +2,7 @@ package netbox
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -153,11 +154,6 @@ func resourceNetboxAvailablePrefixParseImport(importStr string) (int, string, in
 	return parentID, parts[1], prefixLength, nil
 }
 
-type availablePrefixCreateRequest struct {
-	PrefixLength int64       `json:"prefix_length"`
-	CustomFields interface{} `json:"custom_fields,omitempty"`
-}
-
 type availablePrefixCreateResponse struct {
 	ID     int64  `json:"id"`
 	Prefix string `json:"prefix"`
@@ -168,12 +164,23 @@ func resourceNetboxAvailablePrefixCreate(d *schema.ResourceData, m interface{}) 
 
 	parentPrefixID := int64(d.Get("parent_prefix_id").(int))
 
-	data := availablePrefixCreateRequest{
-		PrefixLength: int64(d.Get("prefix_length").(int)),
+	// Send every configured field with the allocation, so NetBox rules that need
+	// a tenant, role and so on on creation accept it. The prefix itself is chosen
+	// by NetBox. The update below then sets whatever NetBox did not take over.
+	req, err := prefixRequestFromResourceData(api, d)
+	if err != nil {
+		return err
 	}
-	if cf, ok := managedCustomFields(d); ok {
-		data.CustomFields = cf
+	raw, err := json.Marshal(req)
+	if err != nil {
+		return err
 	}
+	data := map[string]interface{}{}
+	if err := json.Unmarshal(raw, &data); err != nil {
+		return err
+	}
+	delete(data, "prefix")
+	data["prefix_length"] = int64(d.Get("prefix_length").(int))
 
 	// NetBox picks the next free prefix of the parent and returns it.
 	path := fmt.Sprintf("ipam/prefixes/%d/available-prefixes/", parentPrefixID)
