@@ -12,8 +12,10 @@ import (
 
 func dataSourceNetboxAvailablePrefix() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxAvailablePrefixRead,
-		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves a single available prefix from NetBox. The lookup fails if no match or more than one match is found.`,
+		Read: dataSourceNetboxAvailablePrefixRead,
+		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves a single available prefix from NetBox. The lookup fails if no match or more than one match is found.
+
+~> **Note:** Reading this does not reserve anything. The prefixes are read while the plan is built, so they can be taken by another apply, or by somebody working in the Netbox UI, before your configuration gets around to using them. Use the ` + "`netbox_available_prefix`" + ` resource instead when you want a prefix allocated and held.`,
 		Schema: map[string]*schema.Schema{
 			"prefix_id": {
 				Type:        schema.TypeInt,

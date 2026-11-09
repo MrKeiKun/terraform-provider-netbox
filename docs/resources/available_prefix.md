@@ -4,11 +4,14 @@ page_title: "netbox_available_prefix Resource - terraform-provider-netbox"
 subcategory: "IP Address Management (IPAM)"
 description: |-
   Allocates the next free prefix of the requested length from a parent prefix. Import with "<parent_prefix_id> <prefix_id> <prefix_length>".
+  Allocations from the same parent prefix are serialized inside the provider, so several of these resources can be created in the same apply without racing each other. Conflicts caused by anything outside the current provider process, such as a second terraform apply or somebody working in the Netbox UI, are retried for a short while but can still fail if contention keeps up.
 ---
 
 # netbox_available_prefix (Resource)
 
 Allocates the next free prefix of the requested length from a parent prefix. Import with "<parent_prefix_id> <prefix_id> <prefix_length>".
+
+Allocations from the same parent prefix are serialized inside the provider, so several of these resources can be created in the same apply without racing each other. Conflicts caused by anything outside the current provider process, such as a second `terraform apply` or somebody working in the Netbox UI, are retried for a short while but can still fail if contention keeps up.
 
 ## Example Usage
 

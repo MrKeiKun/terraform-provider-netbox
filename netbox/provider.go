@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
@@ -23,6 +24,11 @@ type providerState struct {
 
 	// concurrent access ok, only populated on provider start
 	tagCache map[string]netboxapi.TagRef
+
+	// One lock per parent pool, keyed by allocationLockKey* and holding a
+	// buffered channel used as a mutex. Unlike tagCache this is written to
+	// during apply, from multiple goroutines, so it needs a concurrent map.
+	allocationLocks sync.Map
 }
 
 // This makes the description contain the default value, particularly useful for the docs

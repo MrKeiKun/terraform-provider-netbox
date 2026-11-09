@@ -7,15 +7,16 @@ import (
 	"strconv"
 
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceNetboxAvailableVLAN() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxAvailableVLANCreate,
-		Read:   resourceNetboxAvailableVLANRead,
-		Update: resourceNetboxAvailableVLANUpdate,
-		Delete: resourceNetboxAvailableVLANDelete,
+		CreateContext: resourceNetboxAvailableVLANCreate,
+		Read:          resourceNetboxAvailableVLANRead,
+		Update:        resourceNetboxAvailableVLANUpdate,
+		Delete:        resourceNetboxAvailableVLANDelete,
 
 		Description: `:meta:subcategory:IP Address Management (IPAM):Per [the docs](https://netbox.readthedocs.io/en/stable/models/ipam/vlan/):
 
@@ -119,14 +120,14 @@ type availableVLANResponse struct {
 	Tags        []netboxapi.TagRef `json:"tags"`
 }
 
-func resourceNetboxAvailableVLANCreate(d *schema.ResourceData, m interface{}) error {
+func resourceNetboxAvailableVLANCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*providerState)
 
 	groupID := int64(d.Get("group_id").(int))
 
 	tags, err := getTagRefsFromResourceDataSet(api, d.Get(tagsKey))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	data := &availableVLANCreateRequest{
@@ -141,9 +142,23 @@ func resourceNetboxAvailableVLANCreate(d *schema.ResourceData, m interface{}) er
 
 	// NetBox picks the next free VLAN ID of the group and returns the new VLAN.
 	path := fmt.Sprintf("ipam/vlan-groups/%d/available-vlans/", groupID)
-	vlan, err := netboxapi.Request[availableVLANResponse](context.Background(), api.rest, http.MethodPost, path, nil, data)
+
+	// Only the allocation itself is serialized and retried. Everything after it
+	// operates on the VLAN we just got, which nothing else is competing for.
+	unlock, err := api.lockAllocation(ctx, allocationLockKeyVLANGroup(groupID))
 	if err != nil {
+		return diag.FromErr(err)
+	}
+	defer unlock()
+	var vlan *availableVLANResponse
+	err = retryAllocation(ctx, func() error {
+		var err error
+		vlan, err = netboxapi.Request[availableVLANResponse](ctx, api.rest, http.MethodPost, path, nil, data)
 		return err
+	})
+	unlock()
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId(strconv.FormatInt(vlan.ID, 10))
@@ -153,7 +168,7 @@ func resourceNetboxAvailableVLANCreate(d *schema.ResourceData, m interface{}) er
 		d.Set("group_id", vlan.Group.ID)
 	}
 
-	return resourceNetboxAvailableVLANRead(d, m)
+	return diag.FromErr(resourceNetboxAvailableVLANRead(d, m))
 }
 
 func resourceNetboxAvailableVLANRead(d *schema.ResourceData, m interface{}) error {

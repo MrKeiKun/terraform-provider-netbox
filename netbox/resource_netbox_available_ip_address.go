@@ -10,16 +10,17 @@ import (
 	"strings"
 
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func resourceNetboxAvailableIPAddress() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxAvailableIPAddressCreate,
-		Read:   resourceNetboxAvailableIPAddressRead,
-		Update: resourceNetboxAvailableIPAddressUpdate,
-		Delete: resourceNetboxAvailableIPAddressDelete,
+		CreateContext: resourceNetboxAvailableIPAddressCreate,
+		Read:          resourceNetboxAvailableIPAddressRead,
+		Update:        resourceNetboxAvailableIPAddressUpdate,
+		Delete:        resourceNetboxAvailableIPAddressDelete,
 
 		Description: `:meta:subcategory:IP Address Management (IPAM):Per [the docs](https://netbox.readthedocs.io/en/stable/models/ipam/ipaddress/):
 
@@ -169,7 +170,7 @@ type availableIP struct {
 
 // requestAvailableIP asks NetBox for the next free IP address below path and
 // returns the created address.
-func requestAvailableIP(api *providerState, d *schema.ResourceData, path string, vrfID int64, what string) (*availableIPAddressResponse, error) {
+func requestAvailableIP(ctx context.Context, api *providerState, d *schema.ResourceData, path string, vrfID int64, what string) (*availableIPAddressResponse, error) {
 	entry := availableIP{}
 	if vrfID != 0 {
 		entry.Vrf = &netboxapi.Ref{ID: vrfID}
@@ -183,7 +184,7 @@ func requestAvailableIP(api *providerState, d *schema.ResourceData, path string,
 		entry.CustomFields = cf
 	}
 
-	created, err := netboxapi.Request[[]availableIPAddressResponse](context.Background(), api.rest, http.MethodPost, path, nil, []availableIP{entry})
+	created, err := netboxapi.Request[[]availableIPAddressResponse](ctx, api.rest, http.MethodPost, path, nil, []availableIP{entry})
 	if err != nil {
 		return nil, err
 	}
@@ -193,7 +194,7 @@ func requestAvailableIP(api *providerState, d *schema.ResourceData, path string,
 	return &(*created)[0], nil
 }
 
-func resourceNetboxAvailableIPAddressCreate(d *schema.ResourceData, m interface{}) error {
+func resourceNetboxAvailableIPAddressCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*providerState)
 
 	prefixID := int64(d.Get("prefix_id").(int))
@@ -201,9 +202,22 @@ func resourceNetboxAvailableIPAddressCreate(d *schema.ResourceData, m interface{
 	rangeID := int64(d.Get("ip_range_id").(int))
 
 	if prefixID != 0 {
-		ip, err := requestAvailableIP(api, d, fmt.Sprintf("ipam/prefixes/%d/available-ips/", prefixID), vrfID, fmt.Sprintf("prefix %d", prefixID))
+		// Only the allocation itself is serialized and retried. Everything after it
+		// operates on the address we just got, which nothing else is competing for.
+		unlock, err := api.lockAllocation(ctx, allocationLockKeyPrefix(prefixID))
 		if err != nil {
+			return diag.FromErr(err)
+		}
+		defer unlock()
+		var ip *availableIPAddressResponse
+		err = retryAllocation(ctx, func() error {
+			var err error
+			ip, err = requestAvailableIP(ctx, api, d, fmt.Sprintf("ipam/prefixes/%d/available-ips/", prefixID), vrfID, fmt.Sprintf("prefix %d", prefixID))
 			return err
+		})
+		unlock()
+		if err != nil {
+			return diag.FromErr(err)
 		}
 		// Since we generated the ip_address, set that now
 		d.SetId(strconv.FormatInt(ip.ID, 10))
@@ -211,16 +225,29 @@ func resourceNetboxAvailableIPAddressCreate(d *schema.ResourceData, m interface{
 	}
 
 	if rangeID != 0 {
-		ip, err := requestAvailableIP(api, d, fmt.Sprintf("ipam/ip-ranges/%d/available-ips/", rangeID), vrfID, fmt.Sprintf("IP range %d", rangeID))
+		// Only the allocation itself is serialized and retried. Everything after it
+		// operates on the address we just got, which nothing else is competing for.
+		unlock, err := api.lockAllocation(ctx, allocationLockKeyIPRange(rangeID))
 		if err != nil {
+			return diag.FromErr(err)
+		}
+		defer unlock()
+		var ip *availableIPAddressResponse
+		err = retryAllocation(ctx, func() error {
+			var err error
+			ip, err = requestAvailableIP(ctx, api, d, fmt.Sprintf("ipam/ip-ranges/%d/available-ips/", rangeID), vrfID, fmt.Sprintf("IP range %d", rangeID))
 			return err
+		})
+		unlock()
+		if err != nil {
+			return diag.FromErr(err)
 		}
 		// Since we generated the ip_address, set that now
 		d.SetId(strconv.FormatInt(ip.ID, 10))
 		d.Set("ip_address", ip.Address)
 	}
 
-	return resourceNetboxAvailableIPAddressUpdate(d, m)
+	return diag.FromErr(resourceNetboxAvailableIPAddressUpdate(d, m))
 }
 
 func resourceNetboxAvailableIPAddressRead(d *schema.ResourceData, m interface{}) error {

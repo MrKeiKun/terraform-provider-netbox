@@ -9,18 +9,21 @@ import (
 	"strings"
 
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func resourceNetboxAvailablePrefix() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxAvailablePrefixCreate,
-		Read:   resourceNetboxPrefixRead,
-		Update: resourceNetboxPrefixUpdate,
-		Delete: resourceNetboxPrefixDelete,
+		CreateContext: resourceNetboxAvailablePrefixCreate,
+		Read:          resourceNetboxPrefixRead,
+		Update:        resourceNetboxPrefixUpdate,
+		Delete:        resourceNetboxPrefixDelete,
 
-		Description: `:meta:subcategory:IP Address Management (IPAM):Allocates the next free prefix of the requested length from a parent prefix. Import with "<parent_prefix_id> <prefix_id> <prefix_length>".`,
+		Description: `:meta:subcategory:IP Address Management (IPAM):Allocates the next free prefix of the requested length from a parent prefix. Import with "<parent_prefix_id> <prefix_id> <prefix_length>".
+
+Allocations from the same parent prefix are serialized inside the provider, so several of these resources can be created in the same apply without racing each other. Conflicts caused by anything outside the current provider process, such as a second ` + "`terraform apply`" + ` or somebody working in the Netbox UI, are retried for a short while but can still fail if contention keeps up.`,
 
 		Schema: map[string]*schema.Schema{
 			"parent_prefix_id": {
@@ -159,7 +162,7 @@ type availablePrefixCreateResponse struct {
 	Prefix string `json:"prefix"`
 }
 
-func resourceNetboxAvailablePrefixCreate(d *schema.ResourceData, m interface{}) error {
+func resourceNetboxAvailablePrefixCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := m.(*providerState)
 
 	parentPrefixID := int64(d.Get("parent_prefix_id").(int))
@@ -169,28 +172,42 @@ func resourceNetboxAvailablePrefixCreate(d *schema.ResourceData, m interface{}) 
 	// by NetBox. The update below then sets whatever NetBox did not take over.
 	req, err := prefixRequestFromResourceData(api, d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	raw, err := json.Marshal(req)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	data := map[string]interface{}{}
 	if err := json.Unmarshal(raw, &data); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	delete(data, "prefix")
 	data["prefix_length"] = int64(d.Get("prefix_length").(int))
 
 	// NetBox picks the next free prefix of the parent and returns it.
 	path := fmt.Sprintf("ipam/prefixes/%d/available-prefixes/", parentPrefixID)
-	payload, err := netboxapi.Request[availablePrefixCreateResponse](context.Background(), api.rest, http.MethodPost, path, nil, data)
+
+	// Only the allocation itself is serialized and retried. Everything after it
+	// operates on the prefix we just got, which nothing else is competing for.
+	unlock, err := api.lockAllocation(ctx, allocationLockKeyPrefix(parentPrefixID))
 	if err != nil {
+		return diag.FromErr(err)
+	}
+	defer unlock()
+	var payload *availablePrefixCreateResponse
+	err = retryAllocation(ctx, func() error {
+		var err error
+		payload, err = netboxapi.Request[availablePrefixCreateResponse](ctx, api.rest, http.MethodPost, path, nil, data)
 		return err
+	})
+	unlock()
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId(strconv.FormatInt(payload.ID, 10))
 	d.Set("prefix", payload.Prefix)
 
-	return resourceNetboxPrefixUpdate(d, m)
+	return diag.FromErr(resourceNetboxPrefixUpdate(d, m))
 }
