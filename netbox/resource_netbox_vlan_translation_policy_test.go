@@ -2,6 +2,7 @@ package netbox
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -34,6 +35,16 @@ resource "netbox_vlan_translation_policy" "test" {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("netbox_vlan_translation_policy.test", "name", testName),
 					resource.TestCheckResourceAttr("netbox_vlan_translation_policy.test", "description", "test"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_vlan_translation_policy" "test" {
+  name = "%[1]s"
+  description = "test-updated"
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("netbox_vlan_translation_policy.test", "description", regexp.MustCompile(`-updated$`)),
 				),
 			},
 			{

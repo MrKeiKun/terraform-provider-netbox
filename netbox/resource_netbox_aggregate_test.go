@@ -2,6 +2,7 @@ package netbox
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -31,6 +32,21 @@ resource "netbox_aggregate" "test" {
 					resource.TestCheckResourceAttr("netbox_aggregate.test", "prefix", testPrefix),
 					resource.TestCheckResourceAttr("netbox_aggregate.test", "description", testDesc),
 					resource.TestCheckResourceAttrPair("netbox_aggregate.test", "rir_id", "netbox_rir.test", "id"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+resource "netbox_rir" "test" {
+  name = "%s"
+  slug = "%s"
+}
+resource "netbox_aggregate" "test" {
+  prefix = "%s"
+  description = "%s-updated"
+  rir_id = netbox_rir.test.id
+}`, testName, randomSlug, testPrefix, testDesc),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("netbox_aggregate.test", "description", regexp.MustCompile(`-updated$`)),
 				),
 			},
 			{

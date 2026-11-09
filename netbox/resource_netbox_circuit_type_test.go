@@ -2,6 +2,7 @@ package netbox
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -26,6 +27,17 @@ resource "netbox_circuit_type" "test" {
 					resource.TestCheckResourceAttr("netbox_circuit_type.test", "name", testName),
 					resource.TestCheckResourceAttr("netbox_circuit_type.test", "slug", randomSlug),
 					resource.TestCheckResourceAttr("netbox_circuit_type.test", "description", "This is my circuit type!"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+resource "netbox_circuit_type" "test" {
+  name = "%[1]s"
+  slug = "%[2]s"
+  description = "This is my circuit type!-updated"
+}`, testName, randomSlug),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("netbox_circuit_type.test", "description", regexp.MustCompile(`-updated$`)),
 				),
 			},
 			{

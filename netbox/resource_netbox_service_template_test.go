@@ -39,6 +39,18 @@ resource "netbox_service_template" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_service_template" "test" {
+  description = "updated"
+  name = "%[1]s"
+  protocol = "tcp"
+  ports = [80, 443]
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_service_template.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_service_template.test",
 				ImportState:       true,
 				ImportStateVerify: true,

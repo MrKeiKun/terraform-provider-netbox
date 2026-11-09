@@ -60,6 +60,46 @@ resource "netbox_contact_assignment" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`
+resource "netbox_site" "test" {
+  name = "%[1]s"
+  slug = "%[2]s"
+}
+resource "netbox_device_role" "test" {
+  name = "%[1]s"
+  color_hex = "123456"
+}
+resource "netbox_device_type" "test" {
+  model = "%[1]s"
+  manufacturer_id = netbox_manufacturer.test.id
+}
+resource "netbox_device" "test" {
+  name = "%[1]s"
+  site_id = netbox_site.test.id
+  role_id = netbox_device_role.test.id
+  device_type_id = netbox_device_type.test.id
+}
+resource "netbox_contact" "test" {
+  name = "%[1]s"
+}
+resource "netbox_contact_role" "test" {
+  name = "%[1]s"
+}
+resource "netbox_manufacturer" "test" {
+  name = "%[1]s"
+}
+resource "netbox_contact_assignment" "test" {
+  content_type = "dcim.device"
+  object_id = netbox_device.test.id
+  contact_id = netbox_contact.test.id
+  role_id = netbox_contact_role.test.id
+  priority = "secondary"
+}`, testName, randomSlug),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_contact_assignment.test", "priority", "secondary"),
+				),
+			},
+			{
 				ResourceName:      "netbox_contact_assignment.test",
 				ImportState:       true,
 				ImportStateVerify: true,

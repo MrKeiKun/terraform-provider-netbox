@@ -40,6 +40,29 @@ resource "netbox_interface_template" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`
+resource "netbox_manufacturer" "test" {
+	name = "%[1]s"
+}
+
+resource "netbox_device_type" "test" {
+	model = "%[1]s"
+	slug = "%[2]s"
+	part_number = "%[2]s"
+	manufacturer_id = netbox_manufacturer.test.id
+}
+
+resource "netbox_interface_template" "test" {
+  description = "updated"
+	name = "%[1]s"
+	device_type_id = netbox_device_type.test.id
+	type = "100base-tx"
+}`, testName, randomSlug),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_interface_template.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_interface_template.test",
 				ImportState:       true,
 				ImportStateVerify: true,

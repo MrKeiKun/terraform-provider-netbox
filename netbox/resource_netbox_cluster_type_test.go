@@ -27,6 +27,17 @@ resource "netbox_cluster_type" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`
+resource "netbox_cluster_type" "test" {
+  description = "updated"
+  name = "%s"
+  slug = "%s"
+}`, testName, randomSlug),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_cluster_type.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_cluster_type.test",
 				ImportState:       true,
 				ImportStateVerify: true,

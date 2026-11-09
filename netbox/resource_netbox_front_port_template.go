@@ -129,6 +129,13 @@ func frontPortTemplateRequestFromResourceData(api *providerState, d *schema.Reso
 	if raw := d.GetRawConfig(); data.RearPorts == nil || (!raw.IsNull() && !raw.GetAttr("rear_port_id").IsNull()) {
 		data.RearPorts = legacyPortMapping(d, "rear_port")
 	}
+	// NetBox rejects an update that sends the mapping it already has, so the
+	// mapping is only sent when it changed.
+	if d.Id() != "" && !d.HasChanges("rear_ports", "rear_port_id", "rear_port_position") {
+		data.RearPorts = nil
+		data.RearPort = nil
+		data.RearPortPosition = 0
+	}
 	return data, nil
 }
 

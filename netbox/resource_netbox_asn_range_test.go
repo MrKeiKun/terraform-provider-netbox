@@ -44,6 +44,19 @@ resource "netbox_asn_range" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_asn_range" "test" {
+  description = "updated"
+  name = "%[1]s"
+  rir_id = netbox_rir.test.id
+  start = 65000
+  end = 65100
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_asn_range.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_asn_range.test",
 				ImportState:       true,
 				ImportStateVerify: true,

@@ -45,6 +45,18 @@ resource "netbox_ike_policy" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_ike_policy" "test" {
+  description = "updated"
+  name = "%[1]s"
+  version = 2
+  proposal_ids = [netbox_ike_proposal.test.id]
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_ike_policy.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_ike_policy.test",
 				ImportState:       true,
 				ImportStateVerify: true,

@@ -76,6 +76,19 @@ resource "netbox_wireless_link" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_wireless_link" "test" {
+  description = "updated"
+  interface_a_id = netbox_device_interface.a.id
+  interface_b_id = netbox_device_interface.b.id
+  ssid = "%[1]s"
+  status = "connected"
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_wireless_link.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_wireless_link.test",
 				ImportState:       true,
 				ImportStateVerify: true,

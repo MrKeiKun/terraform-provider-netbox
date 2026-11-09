@@ -40,6 +40,19 @@ resource "netbox_ipsec_proposal" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_ipsec_proposal" "test" {
+  description = "updated"
+  name = "%[1]s"
+  encryption_algorithm = "aes-128-cbc"
+  authentication_algorithm = "hmac-sha256"
+  sa_lifetime_seconds = 3600
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_ipsec_proposal.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_ipsec_proposal.test",
 				ImportState:       true,
 				ImportStateVerify: true,

@@ -40,6 +40,18 @@ resource "netbox_module_bay_type" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_module_bay_type" "test" {
+  description = "updated"
+  name = "%[1]s"
+  color_hex = "ff0000"
+
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_module_bay_type.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_module_bay_type.test",
 				ImportState:       true,
 				ImportStateVerify: true,

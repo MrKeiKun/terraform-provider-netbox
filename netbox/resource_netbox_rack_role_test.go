@@ -29,6 +29,18 @@ resource "netbox_rack_role" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`
+resource "netbox_rack_role" "test" {
+  description = "updated"
+  name = "%s"
+  slug = "%s"
+  color_hex = "111111"
+}`, testName, randomSlug),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_rack_role.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_rack_role.test",
 				ImportState:       true,
 				ImportStateVerify: true,

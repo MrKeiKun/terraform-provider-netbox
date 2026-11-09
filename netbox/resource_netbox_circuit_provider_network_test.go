@@ -2,6 +2,7 @@ package netbox
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -45,6 +46,20 @@ resource "netbox_circuit_provider_network" "test" {
 					resource.TestCheckResourceAttr("netbox_circuit_provider_network.test", "service_id", "This is my Service ID"),
 					resource.TestCheckResourceAttr("netbox_circuit_provider_network.test", "tags.#", "1"),
 					resource.TestCheckResourceAttr("netbox_circuit_provider_network.test", "tags.0", testName),
+				),
+			},
+			{
+				Config: testAccNetboxCircuitProviderNetworkDependencies(testName, testSlug) + fmt.Sprintf(`
+resource "netbox_circuit_provider_network" "test" {
+	comments 		= "Circuit Provider Comments"
+	description		= "This is my circuit provider-updated"
+	name 			= "%[1]s"
+	provider_id 	= netbox_circuit_provider.test.id
+	service_id 		= "This is my Service ID"
+	tags			= [netbox_tag.test.name]
+}`, testName, testSlug),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("netbox_circuit_provider_network.test", "description", regexp.MustCompile(`-updated$`)),
 				),
 			},
 			{

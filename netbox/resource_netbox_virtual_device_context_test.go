@@ -65,6 +65,19 @@ resource "netbox_virtual_device_context" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_virtual_device_context" "test" {
+  description = "updated"
+  name = "%[1]s"
+  device_id = netbox_device.test.id
+  status = "active"
+  identifier = 7
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_virtual_device_context.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_virtual_device_context.test",
 				ImportState:       true,
 				ImportStateVerify: true,

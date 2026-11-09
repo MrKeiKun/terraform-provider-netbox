@@ -54,6 +54,19 @@ resource "netbox_front_port_template" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_front_port_template" "test" {
+  description = "updated"
+  name = "%[1]s"
+  device_type_id = netbox_device_type.test.id
+  type = "8p8c"
+  rear_port_id = netbox_rear_port_template.test.id
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_front_port_template.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_front_port_template.test",
 				ImportState:       true,
 				ImportStateVerify: true,

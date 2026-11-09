@@ -41,6 +41,18 @@ resource "netbox_vlan_translation_rule" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_vlan_translation_rule" "test" {
+  description = "updated"
+  policy_id = netbox_vlan_translation_policy.test.id
+  local_vid = 100
+  remote_vid = 200
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_vlan_translation_rule.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_vlan_translation_rule.test",
 				ImportState:       true,
 				ImportStateVerify: true,

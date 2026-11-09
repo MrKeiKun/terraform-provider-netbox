@@ -40,6 +40,19 @@ resource "netbox_saved_filter" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_saved_filter" "test" {
+  description = "updated"
+  name = "%[1]s"
+  object_types = ["dcim.site"]
+  parameters = jsonencode({ status = ["active"] })
+  weight = 10
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_saved_filter.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_saved_filter.test",
 				ImportState:       true,
 				ImportStateVerify: true,

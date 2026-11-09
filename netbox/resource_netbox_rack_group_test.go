@@ -2,6 +2,7 @@ package netbox
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -37,6 +38,16 @@ resource "netbox_rack_group" "test" {
 					resource.TestCheckResourceAttr("netbox_rack_group.test", "name", testName),
 					resource.TestCheckResourceAttr("netbox_rack_group.test", "description", "test"),
 					resource.TestCheckResourceAttrSet("netbox_rack_group.test", "slug"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_rack_group" "test" {
+  name = "%[1]s"
+  description = "test-updated"
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("netbox_rack_group.test", "description", regexp.MustCompile(`-updated$`)),
 				),
 			},
 			{

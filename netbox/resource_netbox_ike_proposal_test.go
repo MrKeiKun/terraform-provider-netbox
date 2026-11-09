@@ -43,6 +43,21 @@ resource "netbox_ike_proposal" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_ike_proposal" "test" {
+  description = "updated"
+  name = "%[1]s"
+  authentication_method = "preshared-keys"
+  encryption_algorithm = "aes-128-cbc"
+  authentication_algorithm = "hmac-sha256"
+  group = 14
+  sa_lifetime = 3600
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_ike_proposal.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_ike_proposal.test",
 				ImportState:       true,
 				ImportStateVerify: true,

@@ -2,6 +2,7 @@ package netbox
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -39,6 +40,23 @@ resource "netbox_permission" "test_basic" {
 					resource.TestCheckResourceAttr("netbox_permission.test_basic", "users.#", "1"),
 					resource.TestCheckResourceAttr("netbox_permission.test_basic", "users.0", "1"),
 					resource.TestCheckResourceAttr("netbox_permission.test_basic", "constraints", "[{\"status\":\"active\"}]"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+resource "netbox_permission" "test_basic" {
+  name = "%s"
+  description = "This is a terraform test.-updated"
+  enabled = true
+  object_types = ["ipam.prefix"]
+  actions = ["add", "change"]
+  users = [1]
+  constraints = jsonencode([{
+    "status" = "active"
+  }])
+}`, testName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("netbox_permission.test_basic", "description", regexp.MustCompile(`-updated$`)),
 				),
 			},
 			{

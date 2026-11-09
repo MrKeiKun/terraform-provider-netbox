@@ -49,6 +49,34 @@ resource "netbox_available_vlan" "vlanTest" {
 					resource.TestCheckResourceAttrSet("netbox_available_vlan.vlanTest", "group_id"),
 				),
 			},
+			{
+				Config: `
+resource "netbox_site" "test_site" {
+  name = "testSite"
+  slug = "ts"
+}
+
+resource "netbox_vlan_group" "groupTest" {
+  name        = "Group Test"
+  slug        = "group-test"
+  scope_id    = netbox_site.test_site.id
+  scope_type  = "dcim.site"
+  description = "First VLAN group"
+  vid_ranges  = [[1,20]]
+}
+
+resource "netbox_available_vlan" "vlanTest" {
+  name        = "test-vlan"
+  status      = "active"
+  description = "Virtual network for testing purposes-updated"
+  group_id    = netbox_vlan_group.groupTest.id
+  site_id     = netbox_vlan_group.groupTest.scope_id
+}
+`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("netbox_available_vlan.vlanTest", "description", regexp.MustCompile(`-updated$`)),
+				),
+			},
 		},
 	})
 }
