@@ -24,6 +24,16 @@ resource "netbox_contact_group" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`
+resource "netbox_contact_group" "test" {
+  description = "updated"
+  name = "%s"
+}`, testName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_contact_group.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_contact_group.test",
 				ImportState:       true,
 				ImportStateVerify: true,

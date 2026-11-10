@@ -87,6 +87,18 @@ resource "netbox_virtual_circuit_termination" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_virtual_circuit_termination" "test" {
+  description = "updated"
+  virtual_circuit_id = netbox_virtual_circuit.test.id
+  interface_id = netbox_device_interface.test.id
+  role = "peer"
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_virtual_circuit_termination.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_virtual_circuit_termination.test",
 				ImportState:       true,
 				ImportStateVerify: true,

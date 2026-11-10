@@ -2,6 +2,7 @@ package netbox
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -36,6 +37,24 @@ resource "netbox_site_group" "child" {
 					resource.TestCheckResourceAttr("netbox_site_group.child", "name", fmt.Sprintf("%s-child", testName)),
 					resource.TestCheckResourceAttr("netbox_site_group.child", "slug", fmt.Sprintf("%s-c", randomSlug)),
 					resource.TestCheckResourceAttrPair("netbox_site_group.child", "parent_id", "netbox_site_group.parent", "id"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+resource "netbox_site_group" "parent" {
+  name = "%[1]s"
+  slug = "%[2]s"
+  description = "foo bar.-updated"
+}
+
+resource "netbox_site_group" "child" {
+  name = "%[1]s-child"
+  slug = "%[2]s-c"
+
+  parent_id = netbox_site_group.parent.id
+}`, testName, randomSlug),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("netbox_site_group.parent", "description", regexp.MustCompile(`-updated$`)),
 				),
 			},
 			{

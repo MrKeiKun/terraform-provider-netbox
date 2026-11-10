@@ -71,6 +71,59 @@ resource "netbox_fhrp_group_assignment" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`
+
+resource "netbox_fhrp_group" "test" {
+  protocol    = "other"
+  group_id    = 1234
+  auth_type   = "md5"
+  auth_key    = "test"
+  name        = "test"
+  description = "test"
+  comments    = "test"
+}
+resource "netbox_site" "test" {
+  name = "%[1]s"
+}
+
+resource "netbox_device_role" "test" {
+  name      = "%[1]s"
+  color_hex = "123456"
+}
+
+resource "netbox_manufacturer" "test" {
+  name = "test"
+}
+
+resource "netbox_device_type" "test" {
+  model           = "test"
+  manufacturer_id = netbox_manufacturer.test.id
+}
+
+resource "netbox_device" "test" {
+  name           = "%[1]s"
+  device_type_id = netbox_device_type.test.id
+  role_id        = netbox_device_role.test.id
+  site_id        = netbox_site.test.id
+}
+
+resource "netbox_device_interface" "test" {
+  name      = "testinterface"
+  device_id = netbox_device.test.id
+  type      = "1000base-t"
+}
+
+resource "netbox_fhrp_group_assignment" "test" {
+  group_id = netbox_fhrp_group.test.id
+  interface_id = netbox_device_interface.test.id
+  interface_type = "dcim.interface"
+  priority = 200
+}`, testName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_fhrp_group_assignment.test", "priority", "200"),
+				),
+			},
+			{
 				ResourceName:      "netbox_fhrp_group_assignment.test",
 				ImportState:       true,
 				ImportStateVerify: true,

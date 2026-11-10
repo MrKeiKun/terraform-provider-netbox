@@ -46,6 +46,19 @@ resource "netbox_vlan_group" "test_basic" {
 				),
 			},
 			{
+				Config: testAccNetboxVlanGroupFullDependencies(testName) + fmt.Sprintf(`
+resource "netbox_vlan_group" "test_basic" {
+  description = "updated"
+  name       = "%s"
+  slug       = "%s"
+  vid_ranges  = [[1, 2], [3, 4]]
+  tags       = []
+}`, testName, testSlug),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_vlan_group.test_basic", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_vlan_group.test_basic",
 				ImportState:       true,
 				ImportStateVerify: true,

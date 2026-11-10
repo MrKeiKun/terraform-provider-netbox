@@ -2,6 +2,7 @@ package netbox
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -45,6 +46,33 @@ resource "netbox_vpn_tunnel" "test" {
 					resource.TestCheckResourceAttrPair("netbox_vpn_tunnel.test", "tenant_id", "netbox_tenant.test", "id"),
 					resource.TestCheckResourceAttrPair("netbox_vpn_tunnel.test", "tunnel_group_id", "netbox_vpn_tunnel_group.test", "id"),
 					resource.TestCheckResourceAttr("netbox_vpn_tunnel.test", "tags.0", testName),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+resource "netbox_vpn_tunnel_group" "test" {
+  name = "%[1]s"
+  description = "%[1]s"
+}
+resource "netbox_tenant" "test" {
+  name = "%[1]s"
+}
+resource "netbox_tag" "test" {
+  name = "%[1]s"
+}
+resource "netbox_vpn_tunnel" "test" {
+  name = "%[1]s"
+  encapsulation = "ipsec-transport"
+  status = "active"
+  tunnel_group_id = netbox_vpn_tunnel_group.test.id
+
+  description = "%[1]s-updated"
+  tenant_id = netbox_tenant.test.id
+  tunnel_id = 123
+  tags = [netbox_tag.test.name]
+}`, testName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("netbox_vpn_tunnel.test", "description", regexp.MustCompile(`-updated$`)),
 				),
 			},
 			{

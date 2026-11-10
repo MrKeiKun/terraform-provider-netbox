@@ -2,6 +2,7 @@ package netbox
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -24,6 +25,17 @@ resource "netbox_config_context" "test" {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("netbox_config_context.test", "name", testName),
 					resource.TestCheckResourceAttr("netbox_config_context.test", "data", "{\"testkey\":\"testval\"}"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+resource "netbox_config_context" "test" {
+  name = "%s"
+  description = "test description-updated"
+  data = jsonencode({"testkey" = "testval"})
+}`, testName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("netbox_config_context.test", "description", regexp.MustCompile(`-updated$`)),
 				),
 			},
 			{

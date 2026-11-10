@@ -43,6 +43,18 @@ resource "netbox_ipsec_policy" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_ipsec_policy" "test" {
+  description = "updated"
+  name = "%[1]s"
+  pfs_group = 14
+  proposal_ids = [netbox_ipsec_proposal.test.id]
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_ipsec_policy.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_ipsec_policy.test",
 				ImportState:       true,
 				ImportStateVerify: true,

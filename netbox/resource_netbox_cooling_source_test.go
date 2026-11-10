@@ -48,6 +48,21 @@ resource "netbox_cooling_source" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_cooling_source" "test" {
+  description = "updated"
+  name = "%[1]s"
+  site_id = netbox_site.test.id
+  type = "chiller"
+  status = "active"
+  cooling_capacity = 100
+
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_cooling_source.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_cooling_source.test",
 				ImportState:       true,
 				ImportStateVerify: true,

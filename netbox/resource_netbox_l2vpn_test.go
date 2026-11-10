@@ -42,6 +42,19 @@ resource "netbox_l2vpn" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_l2vpn" "test" {
+  description = "updated"
+  name = "%[1]s"
+  type = "vxlan"
+  status = "active"
+  identifier = 4000
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_l2vpn.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_l2vpn.test",
 				ImportState:       true,
 				ImportStateVerify: true,

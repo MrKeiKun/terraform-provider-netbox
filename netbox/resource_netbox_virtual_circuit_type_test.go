@@ -38,6 +38,17 @@ resource "netbox_virtual_circuit_type" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_virtual_circuit_type" "test" {
+  description = "updated"
+  name = "%[1]s"
+  color_hex = "00ff00"
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_virtual_circuit_type.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_virtual_circuit_type.test",
 				ImportState:       true,
 				ImportStateVerify: true,

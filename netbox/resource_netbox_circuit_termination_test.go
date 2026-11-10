@@ -2,6 +2,7 @@ package netbox
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -50,6 +51,39 @@ resource "netbox_circuit_termination" "test" {
 					resource.TestCheckResourceAttr("netbox_circuit_termination.test", "port_speed", "100000"),
 					resource.TestCheckResourceAttr("netbox_circuit_termination.test", "upstream_speed", "50000"),
 					resource.TestCheckResourceAttr("netbox_circuit_termination.test", "description", "This is my circuit termination!"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+resource "netbox_site" "test" {
+  name = "%[1]s"
+  slug = "%[2]s"
+  status = "active"
+}
+resource "netbox_circuit_provider" "test" {
+  name = "%[1]s"
+  slug = "%[2]s"
+}
+resource "netbox_circuit_type" "test" {
+  name = "%[1]s"
+  slug = "%[2]s"
+}
+resource "netbox_circuit" "test" {
+  cid = "%[1]s"
+  status = "active"
+  provider_id = netbox_circuit_provider.test.id
+  type_id = netbox_circuit_type.test.id
+}
+resource "netbox_circuit_termination" "test" {
+  circuit_id = netbox_circuit.test.id
+  term_side = "A"
+  site_id = netbox_site.test.id
+  port_speed = 100000
+  upstream_speed = 50000
+  description = "This is my circuit termination!-updated"
+}`, testName, randomSlug),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("netbox_circuit_termination.test", "description", regexp.MustCompile(`-updated$`)),
 				),
 			},
 			{

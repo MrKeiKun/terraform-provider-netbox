@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -196,4 +197,13 @@ func testAccSkipBelowVersion(t *testing.T, version string) {
 	if !testAccNetboxVersionAtLeast(version) {
 		t.Skipf("requires NetBox %s or newer", version)
 	}
+}
+
+// testAccCheckIfNetboxAtLeast runs the check only when the NetBox under test is
+// at least the given version, for attributes that older versions do not have.
+func testAccCheckIfNetboxAtLeast(version string, check resource.TestCheckFunc) resource.TestCheckFunc {
+	if !testAccNetboxVersionAtLeast(version) {
+		return func(*terraform.State) error { return nil }
+	}
+	return check
 }

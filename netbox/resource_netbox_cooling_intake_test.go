@@ -73,6 +73,22 @@ resource "netbox_cooling_intake" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_cooling_intake" "test" {
+  description = "updated"
+  name = "%[1]s"
+  device_id = netbox_device.test.id
+  type = "qdc"
+  diameter = 10
+  diameter_unit = "mm"
+  max_flow = 5
+  max_flow_unit = "gpm"
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_cooling_intake.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_cooling_intake.test",
 				ImportState:       true,
 				ImportStateVerify: true,

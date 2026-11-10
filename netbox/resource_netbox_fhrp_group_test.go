@@ -2,6 +2,7 @@ package netbox
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -42,6 +43,28 @@ resource "netbox_fhrp_group" "test" {
 					resource.TestCheckResourceAttr("netbox_fhrp_group.test", "comments", "test"),
 					resource.TestCheckResourceAttr("netbox_fhrp_group.test", "tags.#", "1"),
 					resource.TestCheckResourceAttr("netbox_fhrp_group.test", "tags.0", testName+"a"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+
+resource "netbox_tag" "test" {
+  name = "%[1]sa"
+}
+
+resource "netbox_fhrp_group" "test" {
+  protocol    = "other"
+  group_id    = "1234"
+  auth_type   = "md5"
+  auth_key    = "test"
+  name        = "test"
+  description = "test-updated"
+  comments    = "test"
+
+  tags = [netbox_tag.test.name]
+}`, testName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("netbox_fhrp_group.test", "description", regexp.MustCompile(`-updated$`)),
 				),
 			},
 			{

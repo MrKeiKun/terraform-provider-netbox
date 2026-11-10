@@ -40,6 +40,29 @@ resource "netbox_power_outlet_template" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`
+resource "netbox_manufacturer" "test" {
+	name = "%[1]s"
+}
+
+resource "netbox_device_type" "test" {
+	model = "%[1]s"
+	slug = "%[2]s"
+	part_number = "%[2]s"
+	manufacturer_id = netbox_manufacturer.test.id
+}
+
+resource "netbox_power_outlet_template" "test" {
+  description = "updated"
+	name = "%[1]s"
+	device_type_id = netbox_device_type.test.id
+	type = "iec-60320-c13"
+}`, testName, randomSlug),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_power_outlet_template.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_power_outlet_template.test",
 				ImportState:       true,
 				ImportStateVerify: true,

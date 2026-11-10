@@ -43,6 +43,18 @@ resource "netbox_journal_entry" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_journal_entry" "test" {
+  assigned_object_type = "dcim.site"
+  assigned_object_id = netbox_site.test.id
+  kind = "info"
+  comments = "updated"
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_journal_entry.test", "comments", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_journal_entry.test",
 				ImportState:       true,
 				ImportStateVerify: true,

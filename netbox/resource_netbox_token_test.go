@@ -3,6 +3,7 @@ package netbox
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -42,6 +43,25 @@ resource "netbox_token" "test_basic" {
 					resource.TestCheckResourceAttr("netbox_token.test_basic", "write_enabled", "false"),
 					resource.TestCheckResourceAttr("netbox_token.test_basic", "description", "Netbox Test Basic Token"),
 					resource.TestCheckResourceAttr("netbox_token.test_basic", "expires", "2036-01-02T15:04:05.000Z"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+resource "netbox_user" "test" {
+  username = "%s"
+  password = "Abcdefghijkl1"
+}
+
+resource "netbox_token" "test_basic" {
+  user_id       = netbox_user.test.id
+  key           = "%s"
+  allowed_ips   = ["2.4.8.16/32"]
+  write_enabled = false
+  description   = "Netbox Test Basic Token-updated"
+  expires       = "2036-01-02T15:04:05.000Z"
+}`, testName, testToken),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("netbox_token.test_basic", "description", regexp.MustCompile(`-updated$`)),
 				),
 			},
 			{

@@ -2,6 +2,7 @@ package netbox
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -63,6 +64,30 @@ resource "netbox_rack_type" "test" {
 					resource.TestCheckResourceAttr("netbox_rack_type.test", "weight_unit", "kg"),
 					resource.TestCheckResourceAttr("netbox_rack_type.test", "comments", testName+"comments"),
 					resource.TestCheckResourceAttr("netbox_rack_type.test", "mounting_depth_mm", "21"),
+				),
+			},
+			{
+				Config: testAccNetboxRackTypeFullDependencies(testName) + fmt.Sprintf(`
+resource "netbox_rack_type" "test" {
+  model             = "%[1]s"
+  manufacturer_id   = netbox_manufacturer.test.id
+  width             = 19
+  u_height          = 48
+  starting_unit     = 1
+  form_factor       = "2-post-frame"
+  tags              = [netbox_tag.test_a.name]
+  description       = "%[1]s-updated"
+  outer_width       = 10
+  outer_depth       = 15
+  outer_unit        = "mm"
+  weight            = 15
+  max_weight        = 20
+  weight_unit       = "kg"
+  mounting_depth_mm = 21
+  comments          = "%[1]scomments"
+}`, testName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("netbox_rack_type.test", "description", regexp.MustCompile(`-updated$`)),
 				),
 			},
 			{

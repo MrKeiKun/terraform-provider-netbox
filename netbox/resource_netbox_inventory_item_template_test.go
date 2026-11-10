@@ -46,6 +46,18 @@ resource "netbox_inventory_item_template" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_inventory_item_template" "test" {
+  description = "updated"
+  name = "%[1]s"
+  device_type_id = netbox_device_type.test.id
+  part_id = "abc"
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_inventory_item_template.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_inventory_item_template.test",
 				ImportState:       true,
 				ImportStateVerify: true,

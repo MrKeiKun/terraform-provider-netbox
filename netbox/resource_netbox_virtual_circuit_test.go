@@ -51,6 +51,19 @@ resource "netbox_virtual_circuit" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_virtual_circuit" "test" {
+  description = "updated"
+  cid = "%[1]s"
+  provider_network_id = netbox_circuit_provider_network.test.id
+  type_id = netbox_virtual_circuit_type.test.id
+  status = "active"
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_virtual_circuit.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_virtual_circuit.test",
 				ImportState:       true,
 				ImportStateVerify: true,

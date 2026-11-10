@@ -38,6 +38,18 @@ resource "netbox_export_template" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_export_template" "test" {
+  description = "updated"
+  name = "%[1]s"
+  object_types = ["dcim.site"]
+  template_code = "{%% for s in queryset %%}{{ s.name }}\n{%% endfor %%}"
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_export_template.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_export_template.test",
 				ImportState:       true,
 				ImportStateVerify: true,

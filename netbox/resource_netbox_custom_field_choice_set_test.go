@@ -35,6 +35,20 @@ resource "netbox_custom_field_choice_set" "test" {
 					resource.TestCheckResourceAttr("netbox_custom_field_choice_set.test", "extra_choices.1.1", "choice2"),
 				),
 			},
+			{
+				Config: fmt.Sprintf(`
+resource "netbox_custom_field_choice_set" "test" {
+  name        = "%s"
+  description = "foo-updated"
+  extra_choices = [
+    ["choice1", "label1"], # label and choice are different
+    ["choice2", "choice2"]  # label and choice are the same
+  ]
+}`, testName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("netbox_custom_field_choice_set.test", "description", regexp.MustCompile(`-updated$`)),
+				),
+			},
 		},
 	})
 }

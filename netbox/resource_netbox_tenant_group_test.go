@@ -27,6 +27,17 @@ resource "netbox_tenant_group" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`
+resource "netbox_tenant_group" "test" {
+  description = "updated"
+  name = "%s"
+  slug = "%s"
+}`, testName, randomSlug),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_tenant_group.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_tenant_group.test",
 				ImportState:       true,
 				ImportStateVerify: true,

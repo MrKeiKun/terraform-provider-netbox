@@ -120,6 +120,11 @@ func rearPortTemplateRequestFromResourceData(d *schema.ResourceData) *rearPortTe
 	if v := int64(d.Get("module_type_id").(int)); v != 0 || d.HasChange("module_type_id") {
 		data.ModuleType = &v
 	}
+	// NetBox rejects an update that sends the mapping it already has, so the
+	// mapping is only sent when it changed.
+	if d.Id() != "" && !d.HasChange("front_ports") {
+		data.FrontPorts = nil
+	}
 	return data
 }
 

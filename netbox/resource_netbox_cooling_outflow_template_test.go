@@ -51,6 +51,20 @@ resource "netbox_cooling_outflow_template" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_cooling_outflow_template" "test" {
+  description = "updated"
+  name = "%[1]s"
+  device_type_id = netbox_device_type.test.id
+  type = "uqd"
+  diameter = 12.5
+  diameter_unit = "mm"
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_cooling_outflow_template.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_cooling_outflow_template.test",
 				ImportState:       true,
 				ImportStateVerify: true,

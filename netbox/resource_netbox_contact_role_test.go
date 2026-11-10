@@ -27,6 +27,17 @@ resource "netbox_contact_role" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`
+resource "netbox_contact_role" "test" {
+  description = "updated"
+  name = "%s"
+  slug = "%s"
+}`, testName, randomSlug),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_contact_role.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_contact_role.test",
 				ImportState:       true,
 				ImportStateVerify: true,

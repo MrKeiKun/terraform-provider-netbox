@@ -46,6 +46,21 @@ resource "netbox_l2vpn_termination" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_vlan" "test2" {
+  name = "%[1]s-2"
+  vid  = 3778
+}
+resource "netbox_l2vpn_termination" "test" {
+  l2vpn_id = netbox_l2vpn.test.id
+  assigned_object_type = "ipam.vlan"
+  assigned_object_id = netbox_vlan.test2.id
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair("netbox_l2vpn_termination.test", "assigned_object_id", "netbox_vlan.test2", "id"),
+				),
+			},
+			{
 				ResourceName:      "netbox_l2vpn_termination.test",
 				ImportState:       true,
 				ImportStateVerify: true,

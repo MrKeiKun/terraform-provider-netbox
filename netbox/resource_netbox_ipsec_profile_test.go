@@ -47,6 +47,19 @@ resource "netbox_ipsec_profile" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_ipsec_profile" "test" {
+  description = "updated"
+  name = "%[1]s"
+  mode = "esp"
+  ike_policy_id = netbox_ike_policy.test.id
+  ipsec_policy_id = netbox_ipsec_policy.test.id
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_ipsec_profile.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_ipsec_profile.test",
 				ImportState:       true,
 				ImportStateVerify: true,

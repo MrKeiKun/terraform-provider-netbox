@@ -58,6 +58,18 @@ resource "netbox_circuit_group_assignment" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_circuit_group_assignment" "test" {
+  group_id = netbox_circuit_group.test.id
+  member_type = "circuits.circuit"
+  member_id = netbox_circuit.test.id
+  priority = "secondary"
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_circuit_group_assignment.test", "priority", "secondary"),
+				),
+			},
+			{
 				ResourceName:      "netbox_circuit_group_assignment.test",
 				ImportState:       true,
 				ImportStateVerify: true,

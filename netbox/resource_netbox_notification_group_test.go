@@ -2,6 +2,7 @@ package netbox
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -40,6 +41,17 @@ resource "netbox_notification_group" "test" {
 					resource.TestCheckResourceAttr("netbox_notification_group.test", "name", testName),
 					resource.TestCheckResourceAttr("netbox_notification_group.test", "description", "test"),
 					resource.TestCheckResourceAttr("netbox_notification_group.test", "user_ids.#", "1"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_notification_group" "test" {
+  name = "%[1]s"
+  user_ids = [netbox_user.test.id]
+  description = "test-updated"
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr("netbox_notification_group.test", "description", regexp.MustCompile(`-updated$`)),
 				),
 			},
 			{

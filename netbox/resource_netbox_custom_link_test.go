@@ -44,6 +44,20 @@ resource "netbox_custom_link" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_custom_link" "test" {
+  name = "%[1]s"
+  object_types = ["dcim.site"]
+  link_text = "Open"
+  link_url = "https://example.com/{{ object.name }}"
+  weight = 60
+  new_window = true
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_custom_link.test", "weight", "60"),
+				),
+			},
+			{
 				ResourceName:      "netbox_custom_link.test",
 				ImportState:       true,
 				ImportStateVerify: true,

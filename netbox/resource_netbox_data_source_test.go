@@ -41,6 +41,20 @@ resource "netbox_data_source" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_data_source" "test" {
+  description = "updated"
+  name = "%[1]s"
+  type = "git"
+  source_url = "https://example.com/%[1]s.git"
+  enabled = false
+  sync_interval = 1440
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_data_source.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_data_source.test",
 				ImportState:       true,
 				ImportStateVerify: true,

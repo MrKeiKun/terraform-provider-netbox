@@ -41,6 +41,18 @@ resource "netbox_provider_account" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_provider_account" "test" {
+  description = "updated"
+  provider_id = netbox_circuit_provider.test.id
+  account = "%[1]s"
+  name = "%[1]s"
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_provider_account.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_provider_account.test",
 				ImportState:       true,
 				ImportStateVerify: true,

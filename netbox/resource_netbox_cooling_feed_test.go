@@ -54,6 +54,20 @@ resource "netbox_cooling_feed" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_cooling_feed" "test" {
+  description = "updated"
+  name = "%[1]s"
+  cooling_source_id = netbox_cooling_source.test.id
+  status = "active"
+  max_flow = 10.5
+  max_flow_unit = "lpm"
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_cooling_feed.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_cooling_feed.test",
 				ImportState:       true,
 				ImportStateVerify: true,

@@ -42,6 +42,19 @@ resource "netbox_virtual_machine_type" "test" {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`%[2]s
+resource "netbox_virtual_machine_type" "test" {
+  description = "updated"
+  name = "%[1]s"
+  default_vcpus = 2
+  default_memory = 2048
+
+}`, testName, deps),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_virtual_machine_type.test", "description", "updated"),
+				),
+			},
+			{
 				ResourceName:      "netbox_virtual_machine_type.test",
 				ImportState:       true,
 				ImportStateVerify: true,
