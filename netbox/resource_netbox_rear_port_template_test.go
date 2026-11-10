@@ -193,7 +193,7 @@ resource "netbox_front_port_template" "test" {
 				Config: config("after"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("netbox_rear_port_template.test", "description", "after"),
-					resource.TestCheckResourceAttr("netbox_rear_port_template.test", "front_ports.#", "1"),
+					testAccCheckIfNetboxAtLeast("4.5.0", resource.TestCheckResourceAttr("netbox_rear_port_template.test", "front_ports.#", "1")),
 				),
 			},
 		},
