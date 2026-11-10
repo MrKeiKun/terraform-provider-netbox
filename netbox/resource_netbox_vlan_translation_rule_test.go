@@ -20,7 +20,7 @@ func TestAccNetboxVlanTranslationRule_basic(t *testing.T) {
 	testName := testAccGetTestName("vlantranslatio")
 	deps := testAccNetboxVlanTranslationRuleDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxDevicePowerOutlet() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxDevicePowerOutletCreate,
-		Read:   resourceNetboxDevicePowerOutletRead,
-		Update: resourceNetboxDevicePowerOutletUpdate,
-		Delete: resourceNetboxDevicePowerOutletDelete,
+		CreateContext: withContext(resourceNetboxDevicePowerOutletCreate),
+		ReadContext:   withContext(resourceNetboxDevicePowerOutletRead),
+		UpdateContext: withContext(resourceNetboxDevicePowerOutletUpdate),
+		DeleteContext: withContext(resourceNetboxDevicePowerOutletDelete),
 
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://docs.netbox.dev/en/stable/models/dcim/poweroutlet/):
 

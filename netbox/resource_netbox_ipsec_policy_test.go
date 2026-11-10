@@ -21,7 +21,7 @@ func TestAccNetboxIPSecPolicy_basic(t *testing.T) {
 	testName := testAccGetTestName("ipsecpolicy")
 	deps := testAccNetboxIPSecPolicyDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -67,7 +67,7 @@ func TestAccNetboxIPSecPolicyDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("ipsecpolicy_ds")
 	deps := testAccNetboxIPSecPolicyDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

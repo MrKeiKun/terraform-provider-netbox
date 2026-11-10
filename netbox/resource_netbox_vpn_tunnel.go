@@ -10,10 +10,10 @@ var resourceNetboxVpnTunnelStatusOptions = []string{"planned", "active", "disabl
 
 func resourceNetboxVpnTunnel() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxVpnTunnelCreate,
-		Read:   resourceNetboxVpnTunnelRead,
-		Update: resourceNetboxVpnTunnelUpdate,
-		Delete: resourceNetboxVpnTunnelDelete,
+		CreateContext: withContext(resourceNetboxVpnTunnelCreate),
+		ReadContext:   withContext(resourceNetboxVpnTunnelRead),
+		UpdateContext: withContext(resourceNetboxVpnTunnelUpdate),
+		DeleteContext: withContext(resourceNetboxVpnTunnelDelete),
 
 		Description: `:meta:subcategory:VPN Tunnels:From the [official documentation](https://docs.netbox.dev/en/stable/features/vpn-tunnels/):
 

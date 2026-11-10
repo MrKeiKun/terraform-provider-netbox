@@ -10,10 +10,10 @@ var resourceNetboxVlanGroupScopeTypeOptions = []string{"dcim.location", "dcim.si
 
 func resourceNetboxVlanGroup() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxVlanGroupCreate,
-		Read:   resourceNetboxVlanGroupRead,
-		Update: resourceNetboxVlanGroupUpdate,
-		Delete: resourceNetboxVlanGroupDelete,
+		CreateContext: withContext(resourceNetboxVlanGroupCreate),
+		ReadContext:   withContext(resourceNetboxVlanGroupRead),
+		UpdateContext: withContext(resourceNetboxVlanGroupUpdate),
+		DeleteContext: withContext(resourceNetboxVlanGroupDelete),
 
 		Description: `:meta:subcategory:IP Address Management (IPAM):
 

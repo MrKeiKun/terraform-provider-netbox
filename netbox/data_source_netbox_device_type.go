@@ -10,7 +10,7 @@ import (
 
 func dataSourceNetboxDeviceType() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxDeviceTypeRead,
+		ReadContext: withContext(dataSourceNetboxDeviceTypeRead),
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):Retrieves a single device type from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"is_full_depth": {

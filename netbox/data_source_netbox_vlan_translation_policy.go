@@ -9,7 +9,7 @@ import (
 
 func dataSourceNetboxVlanTranslationPolicy() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxVlanTranslationPolicyRead,
+		ReadContext: withContext(dataSourceNetboxVlanTranslationPolicyRead),
 		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves a single vlan translation policy from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {

@@ -37,8 +37,8 @@ func TestAccNetboxVlan_basic(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	testVid := "777"
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxVlanFullDependencies(testName) + fmt.Sprintf(`
@@ -70,8 +70,8 @@ func TestAccNetboxVlan_with_dependencies(t *testing.T) {
 	testVid := "666"
 	testDescription := "Test Description"
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxVlanFullDependencies(testName) + fmt.Sprintf(`
@@ -112,8 +112,8 @@ func TestAccNetboxVlan_customFields(t *testing.T) {
 	testVid := acctest.RandIntRange(1000, 4000)
 
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxVlanWithCustomFields(testName, testField, testVid, "value1"),

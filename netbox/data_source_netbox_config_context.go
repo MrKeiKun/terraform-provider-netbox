@@ -11,7 +11,7 @@ import (
 
 func dataSourceNetboxConfigContext() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxConfigContextRead,
+		ReadContext: withContext(dataSourceNetboxConfigContextRead),
 		Description: `:meta:subcategory:Extras:Retrieves a single config context from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {

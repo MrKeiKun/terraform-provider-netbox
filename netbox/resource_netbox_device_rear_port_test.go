@@ -68,9 +68,9 @@ func TestAccNetboxDeviceRearPort_basic(t *testing.T) {
 	testSlug := "device_rear_port_basic"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers:    testAccProviders,
-		PreCheck:     func() { testAccPreCheck(t) },
-		CheckDestroy: testAccCheckDeviceRearPortDestroy,
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
+		CheckDestroy:      testAccCheckDeviceRearPortDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxDeviceRearPortFullDependencies(testName) + fmt.Sprintf(`
@@ -194,8 +194,8 @@ resource "netbox_device_front_port" "test" {
 }`, testName, description)
 	}
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: config("before"),

@@ -9,7 +9,7 @@ import (
 
 func dataSourceNetboxConfigContextProfile() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxConfigContextProfileRead,
+		ReadContext: withContext(dataSourceNetboxConfigContextProfileRead),
 		Description: `:meta:subcategory:Extras:Retrieves a single config context profile from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {

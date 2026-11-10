@@ -7,10 +7,10 @@ import (
 
 func resourceNetboxDevicePowerPort() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxDevicePowerPortCreate,
-		Read:   resourceNetboxDevicePowerPortRead,
-		Update: resourceNetboxDevicePowerPortUpdate,
-		Delete: resourceNetboxDevicePowerPortDelete,
+		CreateContext: withContext(resourceNetboxDevicePowerPortCreate),
+		ReadContext:   withContext(resourceNetboxDevicePowerPortRead),
+		UpdateContext: withContext(resourceNetboxDevicePowerPortUpdate),
+		DeleteContext: withContext(resourceNetboxDevicePowerPortDelete),
 
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://docs.netbox.dev/en/stable/models/dcim/powerport/):
 

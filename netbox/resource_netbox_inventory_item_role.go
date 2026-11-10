@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxInventoryItemRole() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxInventoryItemRoleCreate,
-		Read:   resourceNetboxInventoryItemRoleRead,
-		Update: resourceNetboxInventoryItemRoleUpdate,
-		Delete: resourceNetboxInventoryItemRoleDelete,
+		CreateContext: withContext(resourceNetboxInventoryItemRoleCreate),
+		ReadContext:   withContext(resourceNetboxInventoryItemRoleRead),
+		UpdateContext: withContext(resourceNetboxInventoryItemRoleUpdate),
+		DeleteContext: withContext(resourceNetboxInventoryItemRoleDelete),
 
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://docs.netbox.dev/en/stable/models/dcim/inventoryitemrole/):
 

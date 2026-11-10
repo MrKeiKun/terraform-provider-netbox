@@ -15,7 +15,7 @@ func TestAccNetboxIpRangeDataSource_basic(t *testing.T) {
 	testSlug := "ip_range_ds_basic"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

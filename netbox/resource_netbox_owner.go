@@ -7,10 +7,10 @@ import (
 
 func resourceNetboxOwner() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxOwnerCreate,
-		Read:   resourceNetboxOwnerRead,
-		Update: resourceNetboxOwnerUpdate,
-		Delete: resourceNetboxOwnerDelete,
+		CreateContext: withContext(resourceNetboxOwnerCreate),
+		ReadContext:   withContext(resourceNetboxOwnerRead),
+		UpdateContext: withContext(resourceNetboxOwnerUpdate),
+		DeleteContext: withContext(resourceNetboxOwnerDelete),
 
 		Description: `:meta:subcategory:Authentication:From the [official documentation](https://docs.netbox.dev/en/stable/models/users/owner/):
 

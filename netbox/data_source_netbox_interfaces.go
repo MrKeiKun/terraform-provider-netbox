@@ -10,7 +10,7 @@ import (
 
 func dataSourceNetboxInterfaces() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxInterfaceRead,
+		ReadContext: withContext(dataSourceNetboxInterfaceRead),
 		Description: `:meta:subcategory:Virtualization:Retrieves all interfaces from NetBox. Narrow the result with filter blocks and cap it with limit.`,
 		Schema: map[string]*schema.Schema{
 			"filter": {

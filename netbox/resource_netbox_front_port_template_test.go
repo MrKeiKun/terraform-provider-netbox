@@ -32,7 +32,7 @@ func TestAccNetboxFrontPortTemplate_basic(t *testing.T) {
 	testName := testAccGetTestName("frontporttempl")
 	deps := testAccNetboxFrontPortTemplateDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxDeviceFrontPort() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxDeviceFrontPortCreate,
-		Read:   resourceNetboxDeviceFrontPortRead,
-		Update: resourceNetboxDeviceFrontPortUpdate,
-		Delete: resourceNetboxDeviceFrontPortDelete,
+		CreateContext: withContext(resourceNetboxDeviceFrontPortCreate),
+		ReadContext:   withContext(resourceNetboxDeviceFrontPortRead),
+		UpdateContext: withContext(resourceNetboxDeviceFrontPortUpdate),
+		DeleteContext: withContext(resourceNetboxDeviceFrontPortDelete),
 
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://docs.netbox.dev/en/stable/models/dcim/frontport/):
 

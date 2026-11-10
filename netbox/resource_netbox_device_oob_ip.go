@@ -10,10 +10,10 @@ import (
 
 func resourceNetboxDeviceOobIP() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxDeviceOobIPCreate,
-		Read:   resourceNetboxDeviceOobIPRead,
-		Update: resourceNetboxDeviceOobIPUpdate,
-		Delete: resourceNetboxDeviceOobIPDelete,
+		CreateContext: withContext(resourceNetboxDeviceOobIPCreate),
+		ReadContext:   withContext(resourceNetboxDeviceOobIPRead),
+		UpdateContext: withContext(resourceNetboxDeviceOobIPUpdate),
+		DeleteContext: withContext(resourceNetboxDeviceOobIPDelete),
 
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):This resource is used to define the out-of-band (OOB) IP for a given device. Modelled as a separate resource (like ` + "`netbox_device_primary_ip`" + `) to avoid a dependency cycle between the device and an IP address assigned to one of its own interfaces.`,
 

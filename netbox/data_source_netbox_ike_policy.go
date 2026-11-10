@@ -9,7 +9,7 @@ import (
 
 func dataSourceNetboxIKEPolicy() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxIKEPolicyRead,
+		ReadContext: withContext(dataSourceNetboxIKEPolicyRead),
 		Description: `:meta:subcategory:VPN Tunnels:Retrieves a single ike policy from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {

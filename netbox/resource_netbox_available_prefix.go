@@ -15,10 +15,10 @@ import (
 
 func resourceNetboxAvailablePrefix() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxAvailablePrefixCreate,
-		Read:   resourceNetboxPrefixRead,
-		Update: resourceNetboxPrefixUpdate,
-		Delete: resourceNetboxPrefixDelete,
+		CreateContext: withContext(resourceNetboxAvailablePrefixCreate),
+		ReadContext:   withContext(resourceNetboxPrefixRead),
+		UpdateContext: withContext(resourceNetboxPrefixUpdate),
+		DeleteContext: withContext(resourceNetboxPrefixDelete),
 
 		Description: `:meta:subcategory:IP Address Management (IPAM):Allocates the next free prefix of the requested length from a parent prefix. Import with "<parent_prefix_id> <prefix_id> <prefix_length>".`,
 

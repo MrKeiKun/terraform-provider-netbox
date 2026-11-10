@@ -10,10 +10,10 @@ import (
 
 func resourceNetboxDataSource() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxDataSourceCreate,
-		Read:   resourceNetboxDataSourceRead,
-		Update: resourceNetboxDataSourceUpdate,
-		Delete: resourceNetboxDataSourceDelete,
+		CreateContext: withContext(resourceNetboxDataSourceCreate),
+		ReadContext:   withContext(resourceNetboxDataSourceRead),
+		UpdateContext: withContext(resourceNetboxDataSourceUpdate),
+		DeleteContext: withContext(resourceNetboxDataSourceDelete),
 
 		Description: `:meta:subcategory:Extras:From the [official documentation](https://docs.netbox.dev/en/stable/models/core/datasource/):
 

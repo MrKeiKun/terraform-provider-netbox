@@ -10,7 +10,7 @@ import (
 
 func dataSourceNetboxVrf() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxVrfRead,
+		ReadContext: withContext(dataSourceNetboxVrfRead),
 		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves a single vrf from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {

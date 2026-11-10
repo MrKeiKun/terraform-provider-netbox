@@ -12,8 +12,8 @@ func TestAccNetboxWirelessLANGroup_basic(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	randomSlug := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -57,8 +57,8 @@ func TestAccNetboxWirelessLANGroup_defaultSlug(t *testing.T) {
 	testSlug := "wlangrp_defslug"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -79,8 +79,8 @@ func TestAccNetboxWirelessLANGroup_updateParentAndDescription(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	parentName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

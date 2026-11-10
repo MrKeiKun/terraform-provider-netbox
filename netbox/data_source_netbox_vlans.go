@@ -11,7 +11,7 @@ import (
 func dataSourceNetboxVlans() *schema.Resource {
 	customFieldsFilterSchema := *customFieldsSchema
 	return &schema.Resource{
-		Read:        dataSourceNetboxVlansRead,
+		ReadContext: withContext(dataSourceNetboxVlansRead),
 		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves all vlans from NetBox. Narrow the result with filter blocks and cap it with limit.`,
 		Schema: map[string]*schema.Schema{
 			"filter": {

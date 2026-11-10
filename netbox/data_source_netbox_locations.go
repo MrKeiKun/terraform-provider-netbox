@@ -11,7 +11,7 @@ import (
 
 func dataSourceNetboxLocations() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxLocationsRead,
+		ReadContext: withContext(dataSourceNetboxLocationsRead),
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):Retrieves all locations from NetBox. Narrow the result with filter blocks and cap it with limit.`,
 		Schema: map[string]*schema.Schema{
 			"filter": {

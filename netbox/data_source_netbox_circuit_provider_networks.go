@@ -10,7 +10,7 @@ import (
 
 func dataSourceNetboxCircuitProviderNetworks() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxCircuitProviderNetworksRead,
+		ReadContext: withContext(dataSourceNetboxCircuitProviderNetworksRead),
 		Description: `:meta:subcategory:Circuits:Retrieves all circuit provider networks from NetBox. Narrow the result with filter blocks and cap it with limit.`,
 		Schema: map[string]*schema.Schema{
 			"filter": {

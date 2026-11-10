@@ -25,8 +25,8 @@ func TestAccNetboxCircuitProviderNetwork_basic(t *testing.T) {
 	testSlug := "circuit_prov_network"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxCircuitProviderNetworkDependencies(testName, testSlug) + fmt.Sprintf(`

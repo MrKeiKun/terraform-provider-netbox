@@ -7,10 +7,10 @@ import (
 
 func resourceNetboxDeviceRearPort() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxDeviceRearPortCreate,
-		Read:   resourceNetboxDeviceRearPortRead,
-		Update: resourceNetboxDeviceRearPortUpdate,
-		Delete: resourceNetboxDeviceRearPortDelete,
+		CreateContext: withContext(resourceNetboxDeviceRearPortCreate),
+		ReadContext:   withContext(resourceNetboxDeviceRearPortRead),
+		UpdateContext: withContext(resourceNetboxDeviceRearPortUpdate),
+		DeleteContext: withContext(resourceNetboxDeviceRearPortDelete),
 
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://docs.netbox.dev/en/stable/models/dcim/rearport/):
 

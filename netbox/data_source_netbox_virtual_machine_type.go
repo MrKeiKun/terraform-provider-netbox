@@ -9,7 +9,7 @@ import (
 
 func dataSourceNetboxVirtualMachineType() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxVirtualMachineTypeRead,
+		ReadContext: withContext(dataSourceNetboxVirtualMachineTypeRead),
 		Description: `:meta:subcategory:Virtualization:Requires NetBox v4.6.0 or newer.`,
 		Schema: map[string]*schema.Schema{
 			"name": {

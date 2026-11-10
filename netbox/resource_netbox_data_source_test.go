@@ -17,7 +17,7 @@ func TestAccNetboxDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("datasource")
 	deps := testAccNetboxDataSourceDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -67,7 +67,7 @@ func TestAccNetboxDataSourceDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("datasource_ds")
 	deps := testAccNetboxDataSourceDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

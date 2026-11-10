@@ -17,7 +17,7 @@ func TestAccNetboxCustomLink_basic(t *testing.T) {
 	testName := testAccGetTestName("customlink")
 	deps := testAccNetboxCustomLinkDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -70,7 +70,7 @@ func TestAccNetboxCustomLinkDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("customlink_ds")
 	deps := testAccNetboxCustomLinkDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

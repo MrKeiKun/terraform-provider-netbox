@@ -12,7 +12,7 @@ func TestAccNetboxDeviceInterfacesDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	dependencies := testAccNetboxDeviceInterfacesDataSourceDependencies(testName)
 	resource.Test(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: dependencies,
@@ -82,7 +82,7 @@ func TestAccNetboxDeviceInterfacesDataSource_lag(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	dependencies := testAccNetboxDeviceInterfacesDataSourceLAGDependencies(testName)
 	resource.Test(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: dependencies,

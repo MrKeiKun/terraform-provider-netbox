@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxL2VPNTermination() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxL2VPNTerminationCreate,
-		Read:   resourceNetboxL2VPNTerminationRead,
-		Update: resourceNetboxL2VPNTerminationUpdate,
-		Delete: resourceNetboxL2VPNTerminationDelete,
+		CreateContext: withContext(resourceNetboxL2VPNTerminationCreate),
+		ReadContext:   withContext(resourceNetboxL2VPNTerminationRead),
+		UpdateContext: withContext(resourceNetboxL2VPNTerminationUpdate),
+		DeleteContext: withContext(resourceNetboxL2VPNTerminationDelete),
 
 		Description: `:meta:subcategory:VPN Tunnels:From the [official documentation](https://docs.netbox.dev/en/stable/models/vpn/l2vpntermination/):
 

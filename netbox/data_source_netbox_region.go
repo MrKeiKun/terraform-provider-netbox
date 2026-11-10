@@ -10,7 +10,7 @@ import (
 
 func dataSourceNetboxRegion() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxRegionRead,
+		ReadContext: withContext(dataSourceNetboxRegionRead),
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):Retrieves all region from NetBox. Narrow the result with filter blocks and cap it with limit.`,
 		Schema: map[string]*schema.Schema{
 			"filter": {

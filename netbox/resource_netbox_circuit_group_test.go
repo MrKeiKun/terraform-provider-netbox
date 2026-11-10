@@ -18,7 +18,7 @@ func TestAccNetboxCircuitGroup_basic(t *testing.T) {
 	testName := testAccGetTestName("circuitgroup")
 	deps := testAccNetboxCircuitGroupDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -61,7 +61,7 @@ func TestAccNetboxCircuitGroupDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("circuitgroup_ds")
 	deps := testAccNetboxCircuitGroupDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

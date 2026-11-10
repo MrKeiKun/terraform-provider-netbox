@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxWirelessLink() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxWirelessLinkCreate,
-		Read:   resourceNetboxWirelessLinkRead,
-		Update: resourceNetboxWirelessLinkUpdate,
-		Delete: resourceNetboxWirelessLinkDelete,
+		CreateContext: withContext(resourceNetboxWirelessLinkCreate),
+		ReadContext:   withContext(resourceNetboxWirelessLinkRead),
+		UpdateContext: withContext(resourceNetboxWirelessLinkUpdate),
+		DeleteContext: withContext(resourceNetboxWirelessLinkDelete),
 
 		Description: `:meta:subcategory:Wireless:From the [official documentation](https://docs.netbox.dev/en/stable/models/wireless/wirelesslink/):
 

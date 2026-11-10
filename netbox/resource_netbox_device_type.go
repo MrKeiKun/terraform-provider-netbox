@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxDeviceType() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxDeviceTypeCreate,
-		Read:   resourceNetboxDeviceTypeRead,
-		Update: resourceNetboxDeviceTypeUpdate,
-		Delete: resourceNetboxDeviceTypeDelete,
+		CreateContext: withContext(resourceNetboxDeviceTypeCreate),
+		ReadContext:   withContext(resourceNetboxDeviceTypeRead),
+		UpdateContext: withContext(resourceNetboxDeviceTypeUpdate),
+		DeleteContext: withContext(resourceNetboxDeviceTypeDelete),
 
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://docs.netbox.dev/en/stable/features/device-types/#device-types_1):
 

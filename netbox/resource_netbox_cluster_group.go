@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxClusterGroup() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxClusterGroupCreate,
-		Read:   resourceNetboxClusterGroupRead,
-		Update: resourceNetboxClusterGroupUpdate,
-		Delete: resourceNetboxClusterGroupDelete,
+		CreateContext: withContext(resourceNetboxClusterGroupCreate),
+		ReadContext:   withContext(resourceNetboxClusterGroupRead),
+		UpdateContext: withContext(resourceNetboxClusterGroupUpdate),
+		DeleteContext: withContext(resourceNetboxClusterGroupDelete),
 
 		Description: `:meta:subcategory:Virtualization:From the [official documentation](https://docs.netbox.dev/en/stable/features/virtualization/#cluster-groups):
 

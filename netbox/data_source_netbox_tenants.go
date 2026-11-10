@@ -8,7 +8,7 @@ import (
 
 func dataSourceNetboxTenants() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxTenantsRead,
+		ReadContext: withContext(dataSourceNetboxTenantsRead),
 		Description: `:meta:subcategory:Tenancy:Retrieves all tenants from NetBox. Narrow the result with filter blocks and cap it with limit.`,
 		Schema: map[string]*schema.Schema{
 			"filter": {

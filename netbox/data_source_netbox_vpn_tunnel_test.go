@@ -50,8 +50,8 @@ func TestAccNetboxVpnTunnelDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	setUp := testAccNetboxVpnTunnelSetUp(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: setUp,

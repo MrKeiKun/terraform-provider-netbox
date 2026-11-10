@@ -6,10 +6,10 @@ import (
 
 func resourceNetboxGroup() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxGroupCreate,
-		Read:   resourceNetboxGroupRead,
-		Update: resourceNetboxGroupUpdate,
-		Delete: resourceNetboxGroupDelete,
+		CreateContext: withContext(resourceNetboxGroupCreate),
+		ReadContext:   withContext(resourceNetboxGroupRead),
+		UpdateContext: withContext(resourceNetboxGroupUpdate),
+		DeleteContext: withContext(resourceNetboxGroupDelete),
 
 		Description: `:meta:subcategory:Authentication:This resource is used to manage groups.`,
 

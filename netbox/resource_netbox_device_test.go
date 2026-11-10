@@ -89,9 +89,9 @@ func TestAccNetboxDevice_basic(t *testing.T) {
 	testSlug := "device_basic"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckDeviceDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckDeviceDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxDeviceFullDependencies(testName) + fmt.Sprintf(`
@@ -256,9 +256,9 @@ func TestAccNetboxDevice_virtual_chassis(t *testing.T) {
 	testSlug := "device_virtual_chassis"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckDeviceDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckDeviceDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxDeviceFullDependencies(testName) + fmt.Sprintf(`

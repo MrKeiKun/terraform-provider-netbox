@@ -9,7 +9,7 @@ import (
 
 func dataSourceNetboxVirtualCircuitType() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxVirtualCircuitTypeRead,
+		ReadContext: withContext(dataSourceNetboxVirtualCircuitTypeRead),
 		Description: `:meta:subcategory:Circuits:Retrieves a single virtual circuit type from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {

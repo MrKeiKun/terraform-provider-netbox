@@ -10,10 +10,10 @@ var resourceNetboxCircuitStatusOptions = []string{"planned", "provisioning", "ac
 
 func resourceNetboxCircuit() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxCircuitCreate,
-		Read:   resourceNetboxCircuitRead,
-		Update: resourceNetboxCircuitUpdate,
-		Delete: resourceNetboxCircuitDelete,
+		CreateContext: withContext(resourceNetboxCircuitCreate),
+		ReadContext:   withContext(resourceNetboxCircuitRead),
+		UpdateContext: withContext(resourceNetboxCircuitUpdate),
+		DeleteContext: withContext(resourceNetboxCircuitDelete),
 
 		Description: `:meta:subcategory:Circuits:From the [official documentation](https://docs.netbox.dev/en/stable/features/circuits/#circuits_1):
 

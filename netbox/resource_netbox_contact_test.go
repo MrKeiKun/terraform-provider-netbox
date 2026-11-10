@@ -23,8 +23,8 @@ func TestAccNetboxContact_basic(t *testing.T) {
 	testSlug := "contact_basic"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -66,8 +66,8 @@ func TestAccNetboxContact_tags(t *testing.T) {
 	testSlug := "contact_tags"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxContactTagDependencies(testName) + fmt.Sprintf(`
@@ -110,8 +110,8 @@ func TestAccNetboxContact_groupsAssignment(t *testing.T) {
 	testSlug := "contact_groupAssingment"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

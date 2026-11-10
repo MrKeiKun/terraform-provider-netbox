@@ -17,7 +17,7 @@ func TestAccNetboxVirtualCircuitType_basic(t *testing.T) {
 	testName := testAccGetTestName("virtualcircuit")
 	deps := testAccNetboxVirtualCircuitTypeDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -61,7 +61,7 @@ func TestAccNetboxVirtualCircuitTypeDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("virtualcircuit_ds")
 	deps := testAccNetboxVirtualCircuitTypeDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

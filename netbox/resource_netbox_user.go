@@ -7,10 +7,10 @@ import (
 
 func resourceNetboxUser() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxUserCreate,
-		Read:   resourceNetboxUserRead,
-		Update: resourceNetboxUserUpdate,
-		Delete: resourceNetboxUserDelete,
+		CreateContext: withContext(resourceNetboxUserCreate),
+		ReadContext:   withContext(resourceNetboxUserRead),
+		UpdateContext: withContext(resourceNetboxUserUpdate),
+		DeleteContext: withContext(resourceNetboxUserDelete),
 
 		Description: `:meta:subcategory:Authentication:This resource is used to manage users.`,
 

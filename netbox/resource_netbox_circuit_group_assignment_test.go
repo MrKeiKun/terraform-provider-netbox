@@ -35,7 +35,7 @@ func TestAccNetboxCircuitGroupAssignment_basic(t *testing.T) {
 	testName := testAccGetTestName("circuitgroupas")
 	deps := testAccNetboxCircuitGroupAssignmentDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

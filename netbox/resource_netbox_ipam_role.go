@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxIpamRole() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxIpamRoleCreate,
-		Read:   resourceNetboxIpamRoleRead,
-		Update: resourceNetboxIpamRoleUpdate,
-		Delete: resourceNetboxIpamRoleDelete,
+		CreateContext: withContext(resourceNetboxIpamRoleCreate),
+		ReadContext:   withContext(resourceNetboxIpamRoleRead),
+		UpdateContext: withContext(resourceNetboxIpamRoleUpdate),
+		DeleteContext: withContext(resourceNetboxIpamRoleDelete),
 
 		Description: `:meta:subcategory:IP Address Management (IPAM):From the [official documentation](https://docs.netbox.dev/en/stable/features/ipam/#prefixvlan-roles):
 

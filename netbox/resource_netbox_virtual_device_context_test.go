@@ -42,7 +42,7 @@ func TestAccNetboxVirtualDeviceContext_basic(t *testing.T) {
 	testName := testAccGetTestName("virtualdevicec")
 	deps := testAccNetboxVirtualDeviceContextDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -90,7 +90,7 @@ func TestAccNetboxVirtualDeviceContextDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("virtualdevicec_ds")
 	deps := testAccNetboxVirtualDeviceContextDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

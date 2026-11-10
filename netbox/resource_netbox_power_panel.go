@@ -7,10 +7,10 @@ import (
 
 func resourceNetboxPowerPanel() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxPowerPanelCreate,
-		Read:   resourceNetboxPowerPanelRead,
-		Update: resourceNetboxPowerPanelUpdate,
-		Delete: resourceNetboxPowerPanelDelete,
+		CreateContext: withContext(resourceNetboxPowerPanelCreate),
+		ReadContext:   withContext(resourceNetboxPowerPanelRead),
+		UpdateContext: withContext(resourceNetboxPowerPanelUpdate),
+		DeleteContext: withContext(resourceNetboxPowerPanelDelete),
 
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://docs.netbox.dev/en/stable/models/dcim/powerpanel/):
 

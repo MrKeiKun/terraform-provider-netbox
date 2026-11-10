@@ -20,7 +20,7 @@ func TestAccNetboxASNRange_basic(t *testing.T) {
 	testName := testAccGetTestName("asnrange")
 	deps := testAccNetboxASNRangeDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -69,7 +69,7 @@ func TestAccNetboxASNRangeDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("asnrange_ds")
 	deps := testAccNetboxASNRangeDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

@@ -12,10 +12,10 @@ var resourceNetboxCustomFieldChoiceSetBaseChoicesOptions = []string{"IATA", "ISO
 
 func resourceNetboxCustomFieldChoiceSet() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxCustomFieldChoiceSetCreate,
-		Read:   resourceNetboxCustomFieldChoiceSetRead,
-		Update: resourceNetboxCustomFieldChoiceSetUpdate,
-		Delete: resourceNetboxCustomFieldChoiceSetDelete,
+		CreateContext: withContext(resourceNetboxCustomFieldChoiceSetCreate),
+		ReadContext:   withContext(resourceNetboxCustomFieldChoiceSetRead),
+		UpdateContext: withContext(resourceNetboxCustomFieldChoiceSetUpdate),
+		DeleteContext: withContext(resourceNetboxCustomFieldChoiceSetDelete),
 
 		Description: `:meta:subcategory:Extras:From the [official documentation](https://docs.netbox.dev/en/stable/models/extras/customfieldchoiceset/):
 

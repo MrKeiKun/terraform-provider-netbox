@@ -20,7 +20,7 @@ func TestAccNetboxProviderAccount_basic(t *testing.T) {
 	testName := testAccGetTestName("provideraccoun")
 	deps := testAccNetboxProviderAccountDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -65,7 +65,7 @@ func TestAccNetboxProviderAccountDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("provideraccoun_ds")
 	deps := testAccNetboxProviderAccountDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

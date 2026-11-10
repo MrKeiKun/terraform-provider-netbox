@@ -17,7 +17,7 @@ func TestAccNetboxSavedFilter_basic(t *testing.T) {
 	testName := testAccGetTestName("savedfilter")
 	deps := testAccNetboxSavedFilterDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -65,7 +65,7 @@ func TestAccNetboxSavedFilterDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("savedfilter_ds")
 	deps := testAccNetboxSavedFilterDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

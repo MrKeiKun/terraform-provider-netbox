@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxCoolingOutflowTemplate() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxCoolingOutflowTemplateCreate,
-		Read:   resourceNetboxCoolingOutflowTemplateRead,
-		Update: resourceNetboxCoolingOutflowTemplateUpdate,
-		Delete: resourceNetboxCoolingOutflowTemplateDelete,
+		CreateContext: withContext(resourceNetboxCoolingOutflowTemplateCreate),
+		ReadContext:   withContext(resourceNetboxCoolingOutflowTemplateRead),
+		UpdateContext: withContext(resourceNetboxCoolingOutflowTemplateUpdate),
+		DeleteContext: withContext(resourceNetboxCoolingOutflowTemplateDelete),
 
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://docs.netbox.dev/en/stable/models/dcim/coolingoutflowtemplate/):
 

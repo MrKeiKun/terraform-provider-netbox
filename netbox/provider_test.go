@@ -20,6 +20,7 @@ import (
 )
 
 var testAccProviders map[string]*schema.Provider
+var testAccProviderFactories map[string]func() (*schema.Provider, error)
 var testAccProvider *schema.Provider
 var testPrefix = "test"
 
@@ -27,6 +28,15 @@ func init() {
 	testAccProvider = Provider()
 	testAccProviders = map[string]*schema.Provider{
 		"netbox": testAccProvider,
+	}
+	testAccProviderFactories = map[string]func() (*schema.Provider, error){
+		"netbox": func() (*schema.Provider, error) { return testAccProvider, nil },
+	}
+}
+
+func TestProvider(t *testing.T) {
+	if err := Provider().InternalValidate(); err != nil {
+		t.Fatalf("provider failed internal validation: %s", err)
 	}
 }
 
@@ -92,16 +102,14 @@ func providerInvalidConfigure() schema.ConfigureContextFunc {
 }
 
 func TestAccNetboxProviderConfigure_failure(t *testing.T) {
-	var testAccInvalidProviders map[string]*schema.Provider
-
 	testAccInvalidProvider := Provider()
 	testAccInvalidProvider.ConfigureContextFunc = providerInvalidConfigure()
-	testAccInvalidProviders = map[string]*schema.Provider{
-		"netbox": testAccInvalidProvider,
+	testAccInvalidProviderFactories := map[string]func() (*schema.Provider, error){
+		"netbox": func() (*schema.Provider, error) { return testAccInvalidProvider, nil },
 	}
 
 	resource.Test(t, resource.TestCase{
-		Providers: testAccInvalidProviders,
+		ProviderFactories: testAccInvalidProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config:      testProviderConfig(acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)),

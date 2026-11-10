@@ -10,7 +10,7 @@ import (
 
 func dataSourceNetboxTenant() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxTenantRead,
+		ReadContext: withContext(dataSourceNetboxTenantRead),
 		Description: `:meta:subcategory:Tenancy:Retrieves a single tenant from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {

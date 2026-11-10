@@ -10,10 +10,10 @@ var resourceNetboxContactAssignmentPriorityOptions = []string{"primary", "second
 
 func resourceNetboxContactAssignment() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxContactAssignmentCreate,
-		Read:   resourceNetboxContactAssignmentRead,
-		Update: resourceNetboxContactAssignmentUpdate,
-		Delete: resourceNetboxContactAssignmentDelete,
+		CreateContext: withContext(resourceNetboxContactAssignmentCreate),
+		ReadContext:   withContext(resourceNetboxContactAssignmentRead),
+		UpdateContext: withContext(resourceNetboxContactAssignmentUpdate),
+		DeleteContext: withContext(resourceNetboxContactAssignmentDelete),
 
 		Description: `:meta:subcategory:Tenancy:From the [official documentation](https://docs.netbox.dev/en/stable/features/contacts#contactassignments_1):
 

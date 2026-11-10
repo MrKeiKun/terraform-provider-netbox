@@ -18,7 +18,7 @@ func TestAccNetboxCableBundle_basic(t *testing.T) {
 	testName := testAccGetTestName("cablebundle")
 	deps := testAccNetboxCableBundleDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 			testAccSkipBelowVersion(t, "4.6.0")
@@ -62,7 +62,7 @@ func TestAccNetboxCableBundleDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("cablebundle_ds")
 	deps := testAccNetboxCableBundleDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 			testAccSkipBelowVersion(t, "4.6.0")

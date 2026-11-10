@@ -18,7 +18,7 @@ func TestAccNetboxVlanTranslationPolicy_basic(t *testing.T) {
 	testName := testAccGetTestName("vlantranslatio")
 	deps := testAccNetboxVlanTranslationPolicyDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -60,7 +60,7 @@ func TestAccNetboxVlanTranslationPolicyDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("vlantranslatio_ds")
 	deps := testAccNetboxVlanTranslationPolicyDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

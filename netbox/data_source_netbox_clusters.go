@@ -10,7 +10,7 @@ import (
 
 func dataSourceNetboxClusters() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxClustersRead,
+		ReadContext: withContext(dataSourceNetboxClustersRead),
 		Description: `:meta:subcategory:Virtualization:Retrieves all clusters from NetBox. Narrow the result with filter blocks and cap it with limit.`,
 		Schema: map[string]*schema.Schema{
 			"filter": {

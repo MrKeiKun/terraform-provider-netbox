@@ -11,7 +11,7 @@ import (
 
 func dataSourceNetboxRackType() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxRackTypeRead,
+		ReadContext: withContext(dataSourceNetboxRackTypeRead),
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):Look up a rack type by ` + "`model`" + ` or ` + "`slug`" + `.`,
 		Schema: map[string]*schema.Schema{
 			"model": {

@@ -8,7 +8,7 @@ import (
 
 func dataSourceNetboxTunnels() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxTunnelsRead,
+		ReadContext: withContext(dataSourceNetboxTunnelsRead),
 		Description: `:meta:subcategory:VPN Tunnels:Retrieves all tunnels from NetBox. Narrow the result with filter blocks and cap it with limit.`,
 		Schema: map[string]*schema.Schema{
 			"filter": {

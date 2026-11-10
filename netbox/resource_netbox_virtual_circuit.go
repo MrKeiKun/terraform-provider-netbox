@@ -7,10 +7,10 @@ import (
 
 func resourceNetboxVirtualCircuit() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxVirtualCircuitCreate,
-		Read:   resourceNetboxVirtualCircuitRead,
-		Update: resourceNetboxVirtualCircuitUpdate,
-		Delete: resourceNetboxVirtualCircuitDelete,
+		CreateContext: withContext(resourceNetboxVirtualCircuitCreate),
+		ReadContext:   withContext(resourceNetboxVirtualCircuitRead),
+		UpdateContext: withContext(resourceNetboxVirtualCircuitUpdate),
+		DeleteContext: withContext(resourceNetboxVirtualCircuitDelete),
 
 		Description: `:meta:subcategory:Circuits:From the [official documentation](https://docs.netbox.dev/en/stable/models/circuits/virtualcircuit/):
 

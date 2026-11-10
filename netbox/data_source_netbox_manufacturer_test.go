@@ -13,7 +13,7 @@ func TestAccNetboxManufacturerDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	dependencies := testAccNetboxManufacturerDataSourceDependencies(testName)
 	resource.Test(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: dependencies,

@@ -9,7 +9,7 @@ import (
 
 func dataSourceNetboxModuleBayType() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxModuleBayTypeRead,
+		ReadContext: withContext(dataSourceNetboxModuleBayTypeRead),
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):Requires NetBox v4.7.0 or newer.`,
 		Schema: map[string]*schema.Schema{
 			"name": {

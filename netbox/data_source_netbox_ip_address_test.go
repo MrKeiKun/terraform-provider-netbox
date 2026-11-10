@@ -11,7 +11,7 @@ func TestAccNetboxIpAddressDataSource_basic(t *testing.T) {
 	ipAddress := "10.0.0.107/24"
 	status := "active"
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

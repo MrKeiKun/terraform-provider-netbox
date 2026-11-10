@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxIPSecPolicy() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxIPSecPolicyCreate,
-		Read:   resourceNetboxIPSecPolicyRead,
-		Update: resourceNetboxIPSecPolicyUpdate,
-		Delete: resourceNetboxIPSecPolicyDelete,
+		CreateContext: withContext(resourceNetboxIPSecPolicyCreate),
+		ReadContext:   withContext(resourceNetboxIPSecPolicyRead),
+		UpdateContext: withContext(resourceNetboxIPSecPolicyUpdate),
+		DeleteContext: withContext(resourceNetboxIPSecPolicyDelete),
 
 		Description: `:meta:subcategory:VPN Tunnels:From the [official documentation](https://docs.netbox.dev/en/stable/models/vpn/ipsecpolicy/):
 

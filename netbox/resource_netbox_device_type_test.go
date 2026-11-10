@@ -13,8 +13,8 @@ func TestAccNetboxDeviceType_basic(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	randomSlug := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -88,8 +88,8 @@ func TestAccNetboxDeviceType_customFields(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	testField := strings.ReplaceAll(testAccGetTestName(testSlug), "-", "_")
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

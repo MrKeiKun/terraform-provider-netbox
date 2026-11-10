@@ -12,10 +12,10 @@ import (
 
 func resourceNetboxTag() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxTagCreate,
-		Read:   resourceNetboxTagRead,
-		Update: resourceNetboxTagUpdate,
-		Delete: resourceNetboxTagDelete,
+		CreateContext: withContext(resourceNetboxTagCreate),
+		ReadContext:   withContext(resourceNetboxTagRead),
+		UpdateContext: withContext(resourceNetboxTagUpdate),
+		DeleteContext: withContext(resourceNetboxTagDelete),
 
 		Description: `:meta:subcategory:Extras:From the [official documentation](https://docs.netbox.dev/en/stable/models/extras/tag/):
 > Tags are user-defined labels which can be applied to a variety of objects within NetBox. They can be used to establish dimensions of organization beyond the relationships built into NetBox. For example, you might create a tag to identify a particular ownership or condition across several types of objects.

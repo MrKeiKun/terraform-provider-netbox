@@ -10,10 +10,10 @@ var resourceNetboxVlanStatusOptions = []string{"active", "reserved", "deprecated
 
 func resourceNetboxVlan() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxVlanCreate,
-		Read:   resourceNetboxVlanRead,
-		Update: resourceNetboxVlanUpdate,
-		Delete: resourceNetboxVlanDelete,
+		CreateContext: withContext(resourceNetboxVlanCreate),
+		ReadContext:   withContext(resourceNetboxVlanRead),
+		UpdateContext: withContext(resourceNetboxVlanUpdate),
+		DeleteContext: withContext(resourceNetboxVlanDelete),
 
 		Description: `:meta:subcategory:IP Address Management (IPAM):From the [official documentation](https://docs.netbox.dev/en/stable/features/vlans/#vlans):
 

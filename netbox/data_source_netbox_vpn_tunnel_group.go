@@ -11,7 +11,7 @@ import (
 
 func dataSourceNetboxVpnTunnelGroup() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxVpnTunnelGroupRead,
+		ReadContext: withContext(dataSourceNetboxVpnTunnelGroupRead),
 		Description: `:meta:subcategory:VPN Tunnels:Retrieves a single vpn tunnel group from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"id": {

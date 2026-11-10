@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxVirtualMachineType() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxVirtualMachineTypeCreate,
-		Read:   resourceNetboxVirtualMachineTypeRead,
-		Update: resourceNetboxVirtualMachineTypeUpdate,
-		Delete: resourceNetboxVirtualMachineTypeDelete,
+		CreateContext: withContext(resourceNetboxVirtualMachineTypeCreate),
+		ReadContext:   withContext(resourceNetboxVirtualMachineTypeRead),
+		UpdateContext: withContext(resourceNetboxVirtualMachineTypeUpdate),
+		DeleteContext: withContext(resourceNetboxVirtualMachineTypeDelete),
 
 		Description: `:meta:subcategory:Virtualization:From the [official documentation](https://docs.netbox.dev/en/stable/models/virtualization/virtualmachinetype/):
 

@@ -28,7 +28,7 @@ func dataSourceNetboxPrefix() *schema.Resource {
 	customFieldsFilterSchema := *customFieldsSchema
 	customFieldsFilterSchema.AtLeastOneOf = filterAtLeastOneOf
 	return &schema.Resource{
-		Read:        dataSourceNetboxPrefixRead,
+		ReadContext: withContext(dataSourceNetboxPrefixRead),
 		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves a single prefix from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"id": {

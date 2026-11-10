@@ -11,7 +11,7 @@ func TestAccNetboxTenantDataGroupSource_basic(t *testing.T) {
 	testSlug := "tntgrp_ds_basic"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

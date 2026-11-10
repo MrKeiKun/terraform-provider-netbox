@@ -9,7 +9,7 @@ import (
 
 func dataSourceNetboxCustomLink() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxCustomLinkRead,
+		ReadContext: withContext(dataSourceNetboxCustomLinkRead),
 		Description: `:meta:subcategory:Extras:Retrieves a single custom link from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"object_types": {

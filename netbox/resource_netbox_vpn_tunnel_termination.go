@@ -9,10 +9,10 @@ var resourceNetboxVpnTunnelTerminationRoleOptions = []string{"peer", "hub", "spo
 
 func resourceNetboxVpnTunnelTermination() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxVpnTunnelTerminationCreate,
-		Read:   resourceNetboxVpnTunnelTerminationRead,
-		Update: resourceNetboxVpnTunnelTerminationUpdate,
-		Delete: resourceNetboxVpnTunnelTerminationDelete,
+		CreateContext: withContext(resourceNetboxVpnTunnelTerminationCreate),
+		ReadContext:   withContext(resourceNetboxVpnTunnelTerminationRead),
+		UpdateContext: withContext(resourceNetboxVpnTunnelTerminationUpdate),
+		DeleteContext: withContext(resourceNetboxVpnTunnelTerminationDelete),
 
 		Description: `:meta:subcategory:VPN Tunnels:From the [official documentation](https://docs.netbox.dev/en/stable/features/vpn-tunnels/):
 

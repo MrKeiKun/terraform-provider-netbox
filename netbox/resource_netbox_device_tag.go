@@ -12,9 +12,9 @@ import (
 
 func resourceNetboxDeviceTag() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxDeviceTagCreate,
-		Read:   resourceNetboxDeviceTagRead,
-		Delete: resourceNetboxDeviceTagDelete,
+		CreateContext: withContext(resourceNetboxDeviceTagCreate),
+		ReadContext:   withContext(resourceNetboxDeviceTagRead),
+		DeleteContext: withContext(resourceNetboxDeviceTagDelete),
 
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):This resource attaches a single tag to a device, similar in purpose to the ` + "`aws_ec2_tag`" + ` resource in the AWS provider.
 

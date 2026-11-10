@@ -9,7 +9,7 @@ import (
 
 func dataSourceNetboxContactRole() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxContactRoleRead,
+		ReadContext: withContext(dataSourceNetboxContactRoleRead),
 		Description: `:meta:subcategory:Tenancy:Retrieves a single contact role from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {

@@ -13,7 +13,7 @@ func TestAccNetboxPrefixesDataSource_basic(t *testing.T) {
 	testVlanVids := []int{4093, 4094}
 	testName := testAccGetTestName(testSlug)
 	resource.Test(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -251,7 +251,7 @@ func TestAccNetboxPrefixesDataSource_customFields(t *testing.T) {
 	testPrefix := "10.100.0.0/24"
 	testGatewayIP := "10.100.0.1/24"
 	resource.Test(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

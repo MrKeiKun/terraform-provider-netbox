@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxCircuitProvider() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxCircuitProviderCreate,
-		Read:   resourceNetboxCircuitProviderRead,
-		Update: resourceNetboxCircuitProviderUpdate,
-		Delete: resourceNetboxCircuitProviderDelete,
+		CreateContext: withContext(resourceNetboxCircuitProviderCreate),
+		ReadContext:   withContext(resourceNetboxCircuitProviderRead),
+		UpdateContext: withContext(resourceNetboxCircuitProviderUpdate),
+		DeleteContext: withContext(resourceNetboxCircuitProviderDelete),
 
 		Description: `:meta:subcategory:Circuits:From the [official documentation](https://docs.netbox.dev/en/stable/features/circuits/#providers):
 

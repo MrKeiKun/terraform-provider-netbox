@@ -12,7 +12,7 @@ func TestAccNetboxCircuitProviderNetworkDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	dependencies := testAccNetboxCircuitProviderNetworkDataSourceDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: dependencies,

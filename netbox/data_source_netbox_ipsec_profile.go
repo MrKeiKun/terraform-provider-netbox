@@ -9,7 +9,7 @@ import (
 
 func dataSourceNetboxIPSecProfile() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxIPSecProfileRead,
+		ReadContext: withContext(dataSourceNetboxIPSecProfileRead),
 		Description: `:meta:subcategory:VPN Tunnels:Retrieves a single ipsec profile from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {

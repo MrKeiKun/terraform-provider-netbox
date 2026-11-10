@@ -13,10 +13,10 @@ var resourceNetboxSiteStatusOptions = []string{"planned", "staging", "active", "
 
 func resourceNetboxSite() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxSiteCreate,
-		Read:   resourceNetboxSiteRead,
-		Update: resourceNetboxSiteUpdate,
-		Delete: resourceNetboxSiteDelete,
+		CreateContext: withContext(resourceNetboxSiteCreate),
+		ReadContext:   withContext(resourceNetboxSiteRead),
+		UpdateContext: withContext(resourceNetboxSiteUpdate),
+		DeleteContext: withContext(resourceNetboxSiteDelete),
 
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://docs.netbox.dev/en/stable/features/sites-and-racks/#sites):
 

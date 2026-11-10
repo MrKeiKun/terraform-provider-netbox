@@ -38,9 +38,9 @@ func TestAccNetboxRack_basic(t *testing.T) {
 	testSlug := "rack_basic"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckRackDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckRackDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxRackFullDependencies(testName) + fmt.Sprintf(`
@@ -158,9 +158,9 @@ func TestAccNetboxRack_rackType(t *testing.T) {
 	testSlug := "rack_rack_type"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckRackDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckRackDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -212,7 +212,7 @@ func TestAccNetboxRack_fromRackType(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
+		ProviderFactories:    testAccProviderFactories,
 		CheckDestroy: testAccCheckRackDestroy,
 		Steps: []resource.TestStep{
 			{

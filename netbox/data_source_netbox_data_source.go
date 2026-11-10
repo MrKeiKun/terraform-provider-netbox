@@ -9,7 +9,7 @@ import (
 
 func dataSourceNetboxDataSource() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxDataSourceRead,
+		ReadContext: withContext(dataSourceNetboxDataSourceRead),
 		Description: `:meta:subcategory:Extras:Retrieves a single data source from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {

@@ -23,8 +23,8 @@ func TestAccNetboxVlanGroup_basic(t *testing.T) {
 	testSlug := "vlan_group_basic"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxVlanGroupFullDependencies(testName) + fmt.Sprintf(`
@@ -72,8 +72,8 @@ func TestAccNetboxVlanGroup_with_dependencies(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	testDescription := "Test Description"
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxVlanGroupFullDependencies(testName) + fmt.Sprintf(`

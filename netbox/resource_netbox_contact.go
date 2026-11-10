@@ -7,10 +7,10 @@ import (
 
 func resourceNetboxContact() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxContactCreate,
-		Read:   resourceNetboxContactRead,
-		Update: resourceNetboxContactUpdate,
-		Delete: resourceNetboxContactDelete,
+		CreateContext: withContext(resourceNetboxContactCreate),
+		ReadContext:   withContext(resourceNetboxContactRead),
+		UpdateContext: withContext(resourceNetboxContactUpdate),
+		DeleteContext: withContext(resourceNetboxContactDelete),
 
 		Description: `:meta:subcategory:Tenancy:From the [official documentation](https://docs.netbox.dev/en/stable/features/contacts/#contacts_1):
 

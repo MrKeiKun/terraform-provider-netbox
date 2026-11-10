@@ -24,9 +24,9 @@ resource "netbox_device" "test" {
 }`, testName, extra)
 	}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckDeviceDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckDeviceDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: config("front-to-rear"),

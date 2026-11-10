@@ -10,7 +10,7 @@ import (
 
 func dataSourceNetboxDeviceRole() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxDeviceRoleRead,
+		ReadContext: withContext(dataSourceNetboxDeviceRoleRead),
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):Retrieves a single device role from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {

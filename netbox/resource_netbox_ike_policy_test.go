@@ -23,7 +23,7 @@ func TestAccNetboxIKEPolicy_basic(t *testing.T) {
 	testName := testAccGetTestName("ikepolicy")
 	deps := testAccNetboxIKEPolicyDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -69,7 +69,7 @@ func TestAccNetboxIKEPolicyDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("ikepolicy_ds")
 	deps := testAccNetboxIKEPolicyDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

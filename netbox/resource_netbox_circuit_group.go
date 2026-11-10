@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxCircuitGroup() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxCircuitGroupCreate,
-		Read:   resourceNetboxCircuitGroupRead,
-		Update: resourceNetboxCircuitGroupUpdate,
-		Delete: resourceNetboxCircuitGroupDelete,
+		CreateContext: withContext(resourceNetboxCircuitGroupCreate),
+		ReadContext:   withContext(resourceNetboxCircuitGroupRead),
+		UpdateContext: withContext(resourceNetboxCircuitGroupUpdate),
+		DeleteContext: withContext(resourceNetboxCircuitGroupDelete),
 
 		Description: `:meta:subcategory:Circuits:From the [official documentation](https://docs.netbox.dev/en/stable/models/circuits/circuitgroup/):
 

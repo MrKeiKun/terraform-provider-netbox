@@ -8,7 +8,7 @@ import (
 
 func dataSourceNetboxPrefixes() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxPrefixesRead,
+		ReadContext: withContext(dataSourceNetboxPrefixesRead),
 		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves all prefixes from NetBox. Narrow the result with filter blocks and cap it with limit.`,
 		Schema: map[string]*schema.Schema{
 			"filter": {

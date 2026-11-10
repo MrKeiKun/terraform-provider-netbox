@@ -14,7 +14,7 @@ func TestAccNetboxVrfDataSource_basic(t *testing.T) {
 	simpleSetup := testAccNetboxVrfSetUp(testName)
 	advancedSetup := testAccNetboxVrfAdvancedSetUp(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: simpleSetup + testAccNetboxVrfData(testName),

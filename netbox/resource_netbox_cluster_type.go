@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxClusterType() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxClusterTypeCreate,
-		Read:   resourceNetboxClusterTypeRead,
-		Update: resourceNetboxClusterTypeUpdate,
-		Delete: resourceNetboxClusterTypeDelete,
+		CreateContext: withContext(resourceNetboxClusterTypeCreate),
+		ReadContext:   withContext(resourceNetboxClusterTypeRead),
+		UpdateContext: withContext(resourceNetboxClusterTypeUpdate),
+		DeleteContext: withContext(resourceNetboxClusterTypeDelete),
 
 		Description: `:meta:subcategory:Virtualization:From the [official documentation](https://docs.netbox.dev/en/stable/features/virtualization/#cluster-types):
 

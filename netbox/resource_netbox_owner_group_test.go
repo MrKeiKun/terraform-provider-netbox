@@ -18,7 +18,7 @@ func TestAccNetboxOwnerGroup_basic(t *testing.T) {
 	testName := testAccGetTestName("ownergroup")
 	deps := testAccNetboxOwnerGroupDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 			testAccSkipBelowVersion(t, "4.5.0")
@@ -62,7 +62,7 @@ func TestAccNetboxOwnerGroupDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("ownergroup_ds")
 	deps := testAccNetboxOwnerGroupDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 			testAccSkipBelowVersion(t, "4.5.0")

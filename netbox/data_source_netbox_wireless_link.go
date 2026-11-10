@@ -9,7 +9,7 @@ import (
 
 func dataSourceNetboxWirelessLink() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxWirelessLinkRead,
+		ReadContext: withContext(dataSourceNetboxWirelessLinkRead),
 		Description: `:meta:subcategory:Wireless:Retrieves a single wireless link from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"interface_a_id": {

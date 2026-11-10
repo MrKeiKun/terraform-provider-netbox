@@ -15,7 +15,7 @@ import (
 
 func dataSourceNetboxVirtualDisk() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxVirtualDiskRead,
+		ReadContext: withContext(dataSourceNetboxVirtualDiskRead),
 		Description: `:meta:subcategory:Virtualization:Retrieves all virtual disk from NetBox. Narrow the result with filter blocks and cap it with limit.`,
 		Schema: map[string]*schema.Schema{
 			"filter": {

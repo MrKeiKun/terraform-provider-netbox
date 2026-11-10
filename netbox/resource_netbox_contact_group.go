@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxContactGroup() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxContactGroupCreate,
-		Read:   resourceNetboxContactGroupRead,
-		Update: resourceNetboxContactGroupUpdate,
-		Delete: resourceNetboxContactGroupDelete,
+		CreateContext: withContext(resourceNetboxContactGroupCreate),
+		ReadContext:   withContext(resourceNetboxContactGroupRead),
+		UpdateContext: withContext(resourceNetboxContactGroupUpdate),
+		DeleteContext: withContext(resourceNetboxContactGroupDelete),
 
 		Description: `:meta:subcategory:Tenancy:From the [official documentation](https://docs.netbox.dev/en/stable/features/contacts/#contact-groups):
 

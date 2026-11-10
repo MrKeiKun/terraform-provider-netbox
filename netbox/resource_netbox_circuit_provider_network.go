@@ -7,10 +7,10 @@ import (
 
 func resourceNetboxCircuitProviderNetwork() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxCircuitProviderNetworkCreate,
-		Read:   resourceNetboxCircuitProviderNetworkRead,
-		Update: resourceNetboxCircuitProviderNetworkUpdate,
-		Delete: resourceNetboxCircuitProviderNetworkDelete,
+		CreateContext: withContext(resourceNetboxCircuitProviderNetworkCreate),
+		ReadContext:   withContext(resourceNetboxCircuitProviderNetworkRead),
+		UpdateContext: withContext(resourceNetboxCircuitProviderNetworkUpdate),
+		DeleteContext: withContext(resourceNetboxCircuitProviderNetworkDelete),
 
 		Description: `:meta:subcategory:Circuits:From the [offical documentation](https://netboxlabs.com/docs/netbox/models/circuits/providernetwork/):
 

@@ -11,7 +11,7 @@ func TestAccNetboxDeviceRenderConfigDataSource_basic(t *testing.T) {
 	testSlug := "device_render_cfg"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

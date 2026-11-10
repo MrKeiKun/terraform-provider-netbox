@@ -10,8 +10,8 @@ import (
 func TestAccNetboxAvailableIPAddress_natInside(t *testing.T) {
 	testName := testAccGetTestName("avail_ip_nat")
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

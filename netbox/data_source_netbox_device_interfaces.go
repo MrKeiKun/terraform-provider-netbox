@@ -10,7 +10,7 @@ import (
 
 func dataSourceNetboxDeviceInterfaces() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxDeviceInterfaceRead,
+		ReadContext: withContext(dataSourceNetboxDeviceInterfaceRead),
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):Retrieves all device interfaces from NetBox. Narrow the result with filter blocks and cap it with limit.`,
 		Schema: map[string]*schema.Schema{
 			"filter": {

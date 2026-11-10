@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxVpnTunnelGroup() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxVpnTunnelGroupCreate,
-		Read:   resourceNetboxVpnTunnelGroupRead,
-		Update: resourceNetboxVpnTunnelGroupUpdate,
-		Delete: resourceNetboxVpnTunnelGroupDelete,
+		CreateContext: withContext(resourceNetboxVpnTunnelGroupCreate),
+		ReadContext:   withContext(resourceNetboxVpnTunnelGroupRead),
+		UpdateContext: withContext(resourceNetboxVpnTunnelGroupUpdate),
+		DeleteContext: withContext(resourceNetboxVpnTunnelGroupDelete),
 
 		Description: `:meta:subcategory:VPN Tunnels:From the [official documentation](https://docs.netbox.dev/en/stable/features/vpn-tunnels/):
 

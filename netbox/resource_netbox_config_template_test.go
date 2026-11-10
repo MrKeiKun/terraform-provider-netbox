@@ -10,8 +10,8 @@ import (
 func TestAccNetboxConfigTemplate_basic(t *testing.T) {
 	testName := testAccGetTestName("config_template")
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -55,8 +55,8 @@ resource "netbox_config_template" "test" {
 func TestAccNetboxConfigTemplate_tags(t *testing.T) {
 	testName := testAccGetTestName("config_template_tags")
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxVrfTagDependencies(testName) + fmt.Sprintf(`

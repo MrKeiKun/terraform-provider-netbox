@@ -87,7 +87,7 @@ func TestAccNetboxTunnelTerminationsDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("vpntun_terminations_ds_basic")
 	setUp := testAccNetboxTunnelTerminationsSetUp(testName)
 	resource.Test(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: setUp,

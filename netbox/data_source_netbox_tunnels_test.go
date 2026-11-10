@@ -10,8 +10,8 @@ import (
 func TestAccNetboxTunnelsDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("tunnels_ds")
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -75,8 +75,8 @@ data "netbox_tunnels" "limited" {
 func TestAccNetboxTunnelsDataSource_empty(t *testing.T) {
 	testName := testAccGetTestName("tunnels_ds_empty")
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

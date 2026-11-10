@@ -54,7 +54,7 @@ func TestAccNetboxWirelessLink_basic(t *testing.T) {
 	testName := testAccGetTestName("wirelesslink")
 	deps := testAccNetboxWirelessLinkDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -101,7 +101,7 @@ func TestAccNetboxWirelessLinkDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("wirelesslink_ds")
 	deps := testAccNetboxWirelessLinkDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxRir() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxRirCreate,
-		Read:   resourceNetboxRirRead,
-		Update: resourceNetboxRirUpdate,
-		Delete: resourceNetboxRirDelete,
+		CreateContext: withContext(resourceNetboxRirCreate),
+		ReadContext:   withContext(resourceNetboxRirRead),
+		UpdateContext: withContext(resourceNetboxRirUpdate),
+		DeleteContext: withContext(resourceNetboxRirDelete),
 
 		Description: `:meta:subcategory:IP Address Management (IPAM):From the [official documentation](https://docs.netbox.dev/en/stable/features/ipam/#regional-internet-registries-rirs):
 

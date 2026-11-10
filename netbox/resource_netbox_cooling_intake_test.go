@@ -42,7 +42,7 @@ func TestAccNetboxCoolingIntake_basic(t *testing.T) {
 	testName := testAccGetTestName("coolingintake")
 	deps := testAccNetboxCoolingIntakeDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 			testAccSkipBelowVersion(t, "4.7.0")
@@ -101,7 +101,7 @@ func TestAccNetboxCoolingIntakeDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("coolingintake_ds")
 	deps := testAccNetboxCoolingIntakeDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 			testAccSkipBelowVersion(t, "4.7.0")

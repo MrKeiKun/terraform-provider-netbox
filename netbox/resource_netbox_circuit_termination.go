@@ -10,10 +10,10 @@ var resourceNetboxCircuitTerminationTermSideOptions = []string{"A", "Z"}
 
 func resourceNetboxCircuitTermination() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxCircuitTerminationCreate,
-		Read:   resourceNetboxCircuitTerminationRead,
-		Update: resourceNetboxCircuitTerminationUpdate,
-		Delete: resourceNetboxCircuitTerminationDelete,
+		CreateContext: withContext(resourceNetboxCircuitTerminationCreate),
+		ReadContext:   withContext(resourceNetboxCircuitTerminationRead),
+		UpdateContext: withContext(resourceNetboxCircuitTerminationUpdate),
+		DeleteContext: withContext(resourceNetboxCircuitTerminationDelete),
 
 		Description: `:meta:subcategory:Circuits:From the [official documentation](https://docs.netbox.dev/en/stable/features/circuits/#circuit-terminations):
 

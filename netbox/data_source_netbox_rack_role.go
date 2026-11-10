@@ -10,7 +10,7 @@ import (
 
 func dataSourceNetboxRackRole() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxRackRoleRead,
+		ReadContext: withContext(dataSourceNetboxRackRoleRead),
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):Retrieves a single rack role from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {

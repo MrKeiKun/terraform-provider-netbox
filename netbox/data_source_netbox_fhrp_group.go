@@ -10,7 +10,7 @@ import (
 
 func dataSourceNetboxFhrpGroup() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxFhrpGroupRead,
+		ReadContext: withContext(dataSourceNetboxFhrpGroupRead),
 		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves a single fhrp group from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"id": {

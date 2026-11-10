@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxLocation() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxLocationCreate,
-		Read:   resourceNetboxLocationRead,
-		Update: resourceNetboxLocationUpdate,
-		Delete: resourceNetboxLocationDelete,
+		CreateContext: withContext(resourceNetboxLocationCreate),
+		ReadContext:   withContext(resourceNetboxLocationRead),
+		UpdateContext: withContext(resourceNetboxLocationUpdate),
+		DeleteContext: withContext(resourceNetboxLocationDelete),
 
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://docs.netbox.dev/en/stable/features/sites-and-racks/#locations):
 

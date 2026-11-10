@@ -8,7 +8,7 @@ import (
 
 func dataSourceNetboxAggregates() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxAggregatesRead,
+		ReadContext: withContext(dataSourceNetboxAggregatesRead),
 		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves all aggregates from NetBox. Narrow the result with filter blocks and cap it with limit.`,
 		Schema: map[string]*schema.Schema{
 			"filter": {

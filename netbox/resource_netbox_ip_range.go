@@ -9,10 +9,10 @@ var resourceNetboxIPRangeStatusOptions = []string{"active", "reserved", "depreca
 
 func resourceNetboxIPRange() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxIPRangeCreate,
-		Read:   resourceNetboxIPRangeRead,
-		Update: resourceNetboxIPRangeUpdate,
-		Delete: resourceNetboxIPRangeDelete,
+		CreateContext: withContext(resourceNetboxIPRangeCreate),
+		ReadContext:   withContext(resourceNetboxIPRangeRead),
+		UpdateContext: withContext(resourceNetboxIPRangeUpdate),
+		DeleteContext: withContext(resourceNetboxIPRangeDelete),
 
 		Description: `:meta:subcategory:IP Address Management (IPAM):From the [official documentation](https://docs.netbox.dev/en/stable/features/ipam/#ip-ranges):
 

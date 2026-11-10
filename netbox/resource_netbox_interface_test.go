@@ -107,9 +107,9 @@ func TestAccNetboxInterface_basic(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	setUp := testAccNetboxInterfaceFullDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckInterfaceDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckInterfaceDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: setUp + testAccNetboxInterfaceBasic(testName),
@@ -134,9 +134,9 @@ func TestAccNetboxInterface_opts(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	setUp := testAccNetboxInterfaceFullDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckInterfaceDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckInterfaceDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: setUp + testAccNetboxInterfaceOpts(testName, "true"),
@@ -172,9 +172,9 @@ func TestAccNetboxInterface_vlans(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	setUp := testAccNetboxInterfaceFullDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckInterfaceDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckInterfaceDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: setUp + testAccNetboxInterfaceVlans(testName),
@@ -212,9 +212,9 @@ func TestAccNetboxInterface_bridge(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	setUp := testAccNetboxInterfaceFullDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckInterfaceDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckInterfaceDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: setUp + testAccNetboxInterfaceBridge(testName),
@@ -255,9 +255,9 @@ func TestAccNetboxInterface_clearDescription(t *testing.T) {
 	testName := testAccGetTestName("iface_cleardesc")
 	setUp := testAccNetboxInterfaceFullDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckInterfaceDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckInterfaceDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: setUp + testAccNetboxInterfaceOpts(testName, "true"),

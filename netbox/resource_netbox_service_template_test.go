@@ -17,7 +17,7 @@ func TestAccNetboxServiceTemplate_basic(t *testing.T) {
 	testName := testAccGetTestName("servicetemplat")
 	deps := testAccNetboxServiceTemplateDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -63,7 +63,7 @@ func TestAccNetboxServiceTemplateDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("servicetemplat_ds")
 	deps := testAccNetboxServiceTemplateDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
