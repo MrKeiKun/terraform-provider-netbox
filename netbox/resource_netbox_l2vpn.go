@@ -19,10 +19,9 @@ func resourceNetboxL2VPN() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"identifier": {
-				Type:         schema.TypeInt,
-				Description:  "The identifier of the l2vpn.",
-				Optional:     true,
-				ValidateFunc: validation.IntBetween(-9223372036854775808, 9223372036854775807),
+				Type:        schema.TypeInt,
+				Description: "The identifier of the l2vpn.",
+				Optional:    true,
 			},
 			"name": {
 				Type:        schema.TypeString,

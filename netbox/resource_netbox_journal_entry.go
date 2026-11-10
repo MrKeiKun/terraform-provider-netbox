@@ -27,7 +27,7 @@ func resourceNetboxJournalEntry() *schema.Resource {
 				Type:         schema.TypeInt,
 				Description:  "The ID of the assigned object associated with the journal entry.",
 				Required:     true,
-				ValidateFunc: validation.IntBetween(0, 9223372036854775807),
+				ValidateFunc: validation.IntAtLeast(0),
 			},
 			"kind": {
 				Type:         schema.TypeString,

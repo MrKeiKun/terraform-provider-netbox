@@ -67,7 +67,7 @@ func resourceNetboxInventoryItemTemplate() *schema.Resource {
 				Type:         schema.TypeInt,
 				Description:  "The ID of the component associated with the inventory item template.",
 				Optional:     true,
-				ValidateFunc: validation.IntBetween(0, 9223372036854775807),
+				ValidateFunc: validation.IntAtLeast(0),
 			},
 		},
 		Importer: &schema.ResourceImporter{
