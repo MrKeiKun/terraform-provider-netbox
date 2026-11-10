@@ -7,10 +7,10 @@ import (
 
 func resourceNetboxNotificationGroup() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxNotificationGroupCreate,
-		Read:   resourceNetboxNotificationGroupRead,
-		Update: resourceNetboxNotificationGroupUpdate,
-		Delete: resourceNetboxNotificationGroupDelete,
+		CreateContext: withContext(resourceNetboxNotificationGroupCreate),
+		ReadContext:   withContext(resourceNetboxNotificationGroupRead),
+		UpdateContext: withContext(resourceNetboxNotificationGroupUpdate),
+		DeleteContext: withContext(resourceNetboxNotificationGroupDelete),
 
 		Description: `:meta:subcategory:Extras:From the [official documentation](https://docs.netbox.dev/en/stable/models/features/notifications/):
 

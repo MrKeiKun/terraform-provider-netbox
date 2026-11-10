@@ -11,10 +11,10 @@ import (
 
 func resourceNetboxPrimaryIP() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxPrimaryIPCreate,
-		Read:   resourceNetboxPrimaryIPRead,
-		Update: resourceNetboxPrimaryIPUpdate,
-		Delete: resourceNetboxPrimaryIPDelete,
+		CreateContext: withContext(resourceNetboxPrimaryIPCreate),
+		ReadContext:   withContext(resourceNetboxPrimaryIPRead),
+		UpdateContext: withContext(resourceNetboxPrimaryIPUpdate),
+		DeleteContext: withContext(resourceNetboxPrimaryIPDelete),
 
 		Description: `:meta:subcategory:Virtualization:This resource is used to define the primary IP for a given virtual machine. The primary IP is reflected in the Virtual machine Netbox UI, which identifies the Primary IPv4 and IPv6 addresses.`,
 

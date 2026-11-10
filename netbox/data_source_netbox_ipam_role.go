@@ -9,7 +9,7 @@ import (
 
 func dataSourceNetboxIPAMRole() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxIPAMRoleRead,
+		ReadContext: withContext(dataSourceNetboxIPAMRoleRead),
 		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves a single ipam role from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {

@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxModuleType() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxModuleTypeCreate,
-		Read:   resourceNetboxModuleTypeRead,
-		Update: resourceNetboxModuleTypeUpdate,
-		Delete: resourceNetboxModuleTypeDelete,
+		CreateContext: withContext(resourceNetboxModuleTypeCreate),
+		ReadContext:   withContext(resourceNetboxModuleTypeRead),
+		UpdateContext: withContext(resourceNetboxModuleTypeUpdate),
+		DeleteContext: withContext(resourceNetboxModuleTypeDelete),
 
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://docs.netbox.dev/en/stable/models/dcim/moduletype/):
 

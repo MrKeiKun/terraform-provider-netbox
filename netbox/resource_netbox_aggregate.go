@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxAggregate() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxAggregateCreate,
-		Read:   resourceNetboxAggregateRead,
-		Update: resourceNetboxAggregateUpdate,
-		Delete: resourceNetboxAggregateDelete,
+		CreateContext: withContext(resourceNetboxAggregateCreate),
+		ReadContext:   withContext(resourceNetboxAggregateRead),
+		UpdateContext: withContext(resourceNetboxAggregateUpdate),
+		DeleteContext: withContext(resourceNetboxAggregateDelete),
 
 		Description: `:meta:subcategory:IP Address Management (IPAM):From the [official documentation](https://docs.netbox.dev/en/stable/features/ipam/#aggregates):
 

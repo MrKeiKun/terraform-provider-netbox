@@ -12,7 +12,7 @@ func TestAccNetboxRackTypeDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("ds_rk_tp")
 	setUp := testAccNetboxRackTypeDataSourceSetUp(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: setUp,

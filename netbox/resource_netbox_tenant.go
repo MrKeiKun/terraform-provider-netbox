@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxTenant() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxTenantCreate,
-		Read:   resourceNetboxTenantRead,
-		Update: resourceNetboxTenantUpdate,
-		Delete: resourceNetboxTenantDelete,
+		CreateContext: withContext(resourceNetboxTenantCreate),
+		ReadContext:   withContext(resourceNetboxTenantRead),
+		UpdateContext: withContext(resourceNetboxTenantUpdate),
+		DeleteContext: withContext(resourceNetboxTenantDelete),
 
 		Description: `:meta:subcategory:Tenancy:From the [official documentation](https://docs.netbox.dev/en/stable/features/tenancy/#tenants):
 

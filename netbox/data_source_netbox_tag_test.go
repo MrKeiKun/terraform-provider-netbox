@@ -12,7 +12,7 @@ func TestAccNetboxTagDataSource_basic(t *testing.T) {
 	testSlug := "tag_ds_basic"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -38,7 +38,7 @@ data "netbox_tag" "test" {
 func TestAccNetboxTagDataSource_notFound(t *testing.T) {
 	testName := testAccGetTestName("tag_ds_missing")
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

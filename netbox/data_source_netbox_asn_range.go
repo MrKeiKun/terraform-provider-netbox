@@ -9,7 +9,7 @@ import (
 
 func dataSourceNetboxASNRange() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxASNRangeRead,
+		ReadContext: withContext(dataSourceNetboxASNRangeRead),
 		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves a single asn range from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {

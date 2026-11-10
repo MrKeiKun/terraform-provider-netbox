@@ -39,7 +39,7 @@ func TestAccNetboxAvailablePrefix_basic(t *testing.T) {
 	resourceName := "netbox_available_prefix.test"
 
 	resource.Test(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxAvailablePrefixFullDependencies(testName, testParentPrefix) + fmt.Sprintf(`
@@ -110,7 +110,7 @@ func TestAccNetboxAvailablePrefix_cf(t *testing.T) {
 	resourceName := "netbox_available_prefix.test"
 
 	resource.Test(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxAvailablePrefixFullDependencies(testName, testParentPrefix) + fmt.Sprintf(`
@@ -167,7 +167,7 @@ func TestAccNetboxAvailablePrefix_multiplePrefixesSerial(t *testing.T) {
 	testSlug := "prefix"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxAvailablePrefixFullDependencies(testName, testParentPrefix) + fmt.Sprintf(`
@@ -251,7 +251,7 @@ func TestAccNetboxAvailablePrefix_scopes(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 
 	resource.Test(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxAvailablePrefixFullDependencies(testName, testParentPrefix) + testAccNetboxAvailablePrefixScopeDependencies(testName) + fmt.Sprintf(`

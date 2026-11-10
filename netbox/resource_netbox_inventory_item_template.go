@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxInventoryItemTemplate() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxInventoryItemTemplateCreate,
-		Read:   resourceNetboxInventoryItemTemplateRead,
-		Update: resourceNetboxInventoryItemTemplateUpdate,
-		Delete: resourceNetboxInventoryItemTemplateDelete,
+		CreateContext: withContext(resourceNetboxInventoryItemTemplateCreate),
+		ReadContext:   withContext(resourceNetboxInventoryItemTemplateRead),
+		UpdateContext: withContext(resourceNetboxInventoryItemTemplateUpdate),
+		DeleteContext: withContext(resourceNetboxInventoryItemTemplateDelete),
 
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://docs.netbox.dev/en/stable/models/dcim/inventoryitemtemplate/):
 

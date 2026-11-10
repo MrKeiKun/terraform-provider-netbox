@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxJournalEntry() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxJournalEntryCreate,
-		Read:   resourceNetboxJournalEntryRead,
-		Update: resourceNetboxJournalEntryUpdate,
-		Delete: resourceNetboxJournalEntryDelete,
+		CreateContext: withContext(resourceNetboxJournalEntryCreate),
+		ReadContext:   withContext(resourceNetboxJournalEntryRead),
+		UpdateContext: withContext(resourceNetboxJournalEntryUpdate),
+		DeleteContext: withContext(resourceNetboxJournalEntryDelete),
 
 		Description: `:meta:subcategory:Extras:From the [official documentation](https://docs.netbox.dev/en/stable/models/features/journaling/):
 

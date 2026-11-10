@@ -9,7 +9,7 @@ import (
 
 func dataSourceNetboxExportTemplate() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxExportTemplateRead,
+		ReadContext: withContext(dataSourceNetboxExportTemplateRead),
 		Description: `:meta:subcategory:Extras:Retrieves a single export template from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"object_types": {

@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxCircuitGroupAssignment() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxCircuitGroupAssignmentCreate,
-		Read:   resourceNetboxCircuitGroupAssignmentRead,
-		Update: resourceNetboxCircuitGroupAssignmentUpdate,
-		Delete: resourceNetboxCircuitGroupAssignmentDelete,
+		CreateContext: withContext(resourceNetboxCircuitGroupAssignmentCreate),
+		ReadContext:   withContext(resourceNetboxCircuitGroupAssignmentRead),
+		UpdateContext: withContext(resourceNetboxCircuitGroupAssignmentUpdate),
+		DeleteContext: withContext(resourceNetboxCircuitGroupAssignmentDelete),
 
 		Description: `:meta:subcategory:Circuits:From the [official documentation](https://docs.netbox.dev/en/stable/models/circuits/circuitgroupassignment/):
 

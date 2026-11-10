@@ -22,7 +22,7 @@ func TestAccNetboxNotificationGroup_basic(t *testing.T) {
 	testName := testAccGetTestName("notificationgr")
 	deps := testAccNetboxNotificationGroupDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -67,7 +67,7 @@ func TestAccNetboxNotificationGroupDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("notificationgr_ds")
 	deps := testAccNetboxNotificationGroupDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

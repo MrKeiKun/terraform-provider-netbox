@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxIPSecProposal() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxIPSecProposalCreate,
-		Read:   resourceNetboxIPSecProposalRead,
-		Update: resourceNetboxIPSecProposalUpdate,
-		Delete: resourceNetboxIPSecProposalDelete,
+		CreateContext: withContext(resourceNetboxIPSecProposalCreate),
+		ReadContext:   withContext(resourceNetboxIPSecProposalRead),
+		UpdateContext: withContext(resourceNetboxIPSecProposalUpdate),
+		DeleteContext: withContext(resourceNetboxIPSecProposalDelete),
 
 		Description: `:meta:subcategory:VPN Tunnels:From the [official documentation](https://docs.netbox.dev/en/stable/models/vpn/ipsecproposal/):
 

@@ -148,8 +148,8 @@ resource "netbox_site" "test" {
 `, n))
 
 	resource.Test(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: step1,
@@ -198,8 +198,8 @@ resource "netbox_site" "test" {
   depends_on = [netbox_custom_field.with_default, netbox_custom_field.unused]
 }`, n)
 	resource.Test(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{Config: cfg},
 			{Config: cfg, PlanOnly: true},

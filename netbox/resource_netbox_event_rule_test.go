@@ -11,8 +11,8 @@ import (
 func TestAccNetboxEventRule_basic(t *testing.T) {
 	testName := testAccGetTestName("evt_rule_basic")
 	resource.ParallelTest(t, resource.TestCase{
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNetBoxEventRuleDestroy,
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckNetBoxEventRuleDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

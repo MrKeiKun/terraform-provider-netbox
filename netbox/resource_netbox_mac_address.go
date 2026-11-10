@@ -12,10 +12,10 @@ var resourceNetboxMACAddressObjectTypeOptions = []string{"virtualization.vminter
 
 func resourceNetboxMACAddress() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxMACAddressCreate,
-		Read:   resourceNetboxMACAddressRead,
-		Update: resourceNetboxMACAddressUpdate,
-		Delete: resourceNetboxMACAddressDelete,
+		CreateContext: withContext(resourceNetboxMACAddressCreate),
+		ReadContext:   withContext(resourceNetboxMACAddressRead),
+		UpdateContext: withContext(resourceNetboxMACAddressUpdate),
+		DeleteContext: withContext(resourceNetboxMACAddressDelete),
 
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://netboxlabs.com/docs/netbox/models/dcim/macaddress/):
 

@@ -67,7 +67,7 @@ func TestAccNetboxVirtualCircuitTermination_basic(t *testing.T) {
 	testName := testAccGetTestName("virtualcircuit")
 	deps := testAccNetboxVirtualCircuitTerminationDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

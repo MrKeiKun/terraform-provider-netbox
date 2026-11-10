@@ -50,8 +50,8 @@ func TestAccNetboxDeviceTag_basic(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	dependencies := testAccNetboxDeviceTagDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: dependencies + `
@@ -145,8 +145,8 @@ func TestAccNetboxDeviceTag_preservesPrimaryIP(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	dependencies := testAccNetboxDeviceTagPrimaryIPDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				// baseline: primary IP set, no netbox_device_tag involved yet

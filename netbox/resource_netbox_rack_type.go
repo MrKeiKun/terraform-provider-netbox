@@ -13,10 +13,10 @@ var resourceNetboxRackTypeWidthOptions = []int{10, 19, 21, 23}
 
 func resourceNetboxRackType() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxRackTypeCreate,
-		Read:   resourceNetboxRackTypeRead,
-		Update: resourceNetboxRackTypeUpdate,
-		Delete: resourceNetboxRackTypeDelete,
+		CreateContext: withContext(resourceNetboxRackTypeCreate),
+		ReadContext:   withContext(resourceNetboxRackTypeRead),
+		UpdateContext: withContext(resourceNetboxRackTypeUpdate),
+		DeleteContext: withContext(resourceNetboxRackTypeDelete),
 
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://netboxlabs.com/docs/netbox/en/stable/models/dcim/racktype/):
 

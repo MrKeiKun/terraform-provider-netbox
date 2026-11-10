@@ -10,10 +10,10 @@ var resourceNetboxServiceProtocolOptions = []string{"tcp", "udp", "sctp"}
 
 func resourceNetboxService() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxServiceCreate,
-		Read:   resourceNetboxServiceRead,
-		Update: resourceNetboxServiceUpdate,
-		Delete: resourceNetboxServiceDelete,
+		CreateContext: withContext(resourceNetboxServiceCreate),
+		ReadContext:   withContext(resourceNetboxServiceRead),
+		UpdateContext: withContext(resourceNetboxServiceUpdate),
+		DeleteContext: withContext(resourceNetboxServiceDelete),
 
 		Description: `:meta:subcategory:IP Address Management (IPAM):From the [official documentation](https://docs.netbox.dev/en/stable/features/services/#services):
 

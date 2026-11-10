@@ -10,8 +10,8 @@ import (
 func TestAccNetboxDeviceModuleBaysDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("module_bays_ds")
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxDeviceModuleBayFullDependencies(testName) + fmt.Sprintf(`
@@ -59,8 +59,8 @@ data "netbox_device_module_bays" "limited" {
 func TestAccNetboxDeviceModuleBaysDataSource_empty(t *testing.T) {
 	testName := testAccGetTestName("module_bays_ds_empty")
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

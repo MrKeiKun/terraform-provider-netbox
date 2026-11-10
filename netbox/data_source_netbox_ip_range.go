@@ -21,7 +21,7 @@ func dataSourceNetboxIPRange() *schema.Resource {
 		"tag",
 	}
 	return &schema.Resource{
-		Read:        dataSourceNetboxIPRangeRead,
+		ReadContext: withContext(dataSourceNetboxIPRangeRead),
 		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves a single ip range from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"id": {

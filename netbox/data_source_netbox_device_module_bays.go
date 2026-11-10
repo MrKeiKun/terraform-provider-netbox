@@ -8,7 +8,7 @@ import (
 
 func dataSourceNetboxDeviceModuleBays() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxDeviceModuleBaysRead,
+		ReadContext: withContext(dataSourceNetboxDeviceModuleBaysRead),
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):Retrieves all device module bays from NetBox. Narrow the result with filter blocks and cap it with limit.`,
 		Schema: map[string]*schema.Schema{
 			"filter": {

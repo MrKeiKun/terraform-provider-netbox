@@ -10,10 +10,10 @@ var resourceNetboxPrefixStatusOptions = []string{"active", "container", "reserve
 
 func resourceNetboxPrefix() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxPrefixCreate,
-		Read:   resourceNetboxPrefixRead,
-		Update: resourceNetboxPrefixUpdate,
-		Delete: resourceNetboxPrefixDelete,
+		CreateContext: withContext(resourceNetboxPrefixCreate),
+		ReadContext:   withContext(resourceNetboxPrefixRead),
+		UpdateContext: withContext(resourceNetboxPrefixUpdate),
+		DeleteContext: withContext(resourceNetboxPrefixDelete),
 
 		Description: `:meta:subcategory:IP Address Management (IPAM):From the [official documentation](https://docs.netbox.dev/en/stable/features/ipam/#prefixes):
 

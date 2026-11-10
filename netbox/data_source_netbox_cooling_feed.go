@@ -9,7 +9,7 @@ import (
 
 func dataSourceNetboxCoolingFeed() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxCoolingFeedRead,
+		ReadContext: withContext(dataSourceNetboxCoolingFeedRead),
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):Requires NetBox v4.7.0 or newer.`,
 		Schema: map[string]*schema.Schema{
 			"cooling_source_id": {

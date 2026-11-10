@@ -7,10 +7,10 @@ import (
 
 func resourceNetboxRackReservation() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxRackReservationCreate,
-		Read:   resourceNetboxRackReservationRead,
-		Update: resourceNetboxRackReservationUpdate,
-		Delete: resourceNetboxRackReservationDelete,
+		CreateContext: withContext(resourceNetboxRackReservationCreate),
+		ReadContext:   withContext(resourceNetboxRackReservationRead),
+		UpdateContext: withContext(resourceNetboxRackReservationUpdate),
+		DeleteContext: withContext(resourceNetboxRackReservationDelete),
 
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://docs.netbox.dev/en/stable/models/dcim/rackreservation/):
 

@@ -8,7 +8,7 @@ import (
 
 func dataSourceNetboxAsns() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxAsnsRead,
+		ReadContext: withContext(dataSourceNetboxAsnsRead),
 		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves all asns from NetBox. Narrow the result with filter blocks and cap it with limit.`,
 		Schema: map[string]*schema.Schema{
 			"filter": {

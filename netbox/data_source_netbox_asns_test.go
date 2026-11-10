@@ -86,7 +86,7 @@ func TestAccNetboxAsnsDataSource_basic(t *testing.T) {
 	// This test cannot be run in parallel with other tests, because other tests create also ASNs
 	// These ASNs then interfere with the __n filter test
 	resource.Test(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: setUp,

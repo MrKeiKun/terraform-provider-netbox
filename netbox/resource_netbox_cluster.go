@@ -7,10 +7,10 @@ import (
 
 func resourceNetboxCluster() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxClusterCreate,
-		Read:   resourceNetboxClusterRead,
-		Update: resourceNetboxClusterUpdate,
-		Delete: resourceNetboxClusterDelete,
+		CreateContext: withContext(resourceNetboxClusterCreate),
+		ReadContext:   withContext(resourceNetboxClusterRead),
+		UpdateContext: withContext(resourceNetboxClusterUpdate),
+		DeleteContext: withContext(resourceNetboxClusterDelete),
 
 		Description: `:meta:subcategory:Virtualization:From the [official documentation](https://netboxlabs.com/docs/netbox/models/virtualization/cluster/):
 > A cluster is a logical grouping of physical resources within which virtual machines run. Physical devices may be associated with clusters as hosts. This allows users to track on which host(s) a particular virtual machine may reside.`,

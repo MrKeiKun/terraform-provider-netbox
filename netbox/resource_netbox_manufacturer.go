@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxManufacturer() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxManufacturerCreate,
-		Read:   resourceNetboxManufacturerRead,
-		Update: resourceNetboxManufacturerUpdate,
-		Delete: resourceNetboxManufacturerDelete,
+		CreateContext: withContext(resourceNetboxManufacturerCreate),
+		ReadContext:   withContext(resourceNetboxManufacturerRead),
+		UpdateContext: withContext(resourceNetboxManufacturerUpdate),
+		DeleteContext: withContext(resourceNetboxManufacturerDelete),
 
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://docs.netbox.dev/en/stable/features/device-types/#manufacturers):
 

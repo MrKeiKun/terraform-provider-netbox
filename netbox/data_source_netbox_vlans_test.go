@@ -81,7 +81,7 @@ func TestAccNetboxVlansDataSource_basic(t *testing.T) {
 	// This test cannot be run in parallel with other tests, because other tests create also Vlans
 	// These Vlans then interfere with the __n filter test
 	resource.Test(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: setUp,
@@ -135,8 +135,8 @@ func TestAccNetboxVlansDataSource_customFields(t *testing.T) {
 	testVidSkip := acctest.RandIntRange(2001, 4000)
 
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxVlansWithCustomFields(testName, testField, testVidMatch, testVidSkip),

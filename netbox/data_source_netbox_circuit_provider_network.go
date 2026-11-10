@@ -10,7 +10,7 @@ import (
 
 func dataSourceNetboxCircuitProviderNetwork() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxCircuitProviderNetworkRead,
+		ReadContext: withContext(dataSourceNetboxCircuitProviderNetworkRead),
 		Description: `:meta:subcategory:Circuits:Retrieves a single circuit provider network from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"comments": {

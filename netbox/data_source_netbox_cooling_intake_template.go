@@ -9,7 +9,7 @@ import (
 
 func dataSourceNetboxCoolingIntakeTemplate() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxCoolingIntakeTemplateRead,
+		ReadContext: withContext(dataSourceNetboxCoolingIntakeTemplateRead),
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):Requires NetBox v4.7.0 or newer.`,
 		Schema: map[string]*schema.Schema{
 			"device_type_id": {

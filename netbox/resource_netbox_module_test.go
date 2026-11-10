@@ -60,9 +60,9 @@ func TestAccNetboxModule_basic(t *testing.T) {
 	testSlug := "module_basic"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers:    testAccProviders,
-		PreCheck:     func() { testAccPreCheck(t) },
-		CheckDestroy: testAccCheckModuleDestroy,
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
+		CheckDestroy:      testAccCheckModuleDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxModuleFullDependencies(testName) + fmt.Sprintf(`

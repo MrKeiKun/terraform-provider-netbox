@@ -7,10 +7,10 @@ import (
 
 func resourceNetboxDeviceConsoleServerPort() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxDeviceConsoleServerPortCreate,
-		Read:   resourceNetboxDeviceConsoleServerPortRead,
-		Update: resourceNetboxDeviceConsoleServerPortUpdate,
-		Delete: resourceNetboxDeviceConsoleServerPortDelete,
+		CreateContext: withContext(resourceNetboxDeviceConsoleServerPortCreate),
+		ReadContext:   withContext(resourceNetboxDeviceConsoleServerPortRead),
+		UpdateContext: withContext(resourceNetboxDeviceConsoleServerPortUpdate),
+		DeleteContext: withContext(resourceNetboxDeviceConsoleServerPortDelete),
 
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://docs.netbox.dev/en/stable/models/dcim/consoleserverport/):
 

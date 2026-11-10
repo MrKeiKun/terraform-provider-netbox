@@ -13,9 +13,9 @@ func TestAccNetboxVirtualDisk_basic(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckVirtualDiskDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckVirtualDiskDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

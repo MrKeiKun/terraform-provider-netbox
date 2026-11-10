@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxIKEPolicy() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxIKEPolicyCreate,
-		Read:   resourceNetboxIKEPolicyRead,
-		Update: resourceNetboxIKEPolicyUpdate,
-		Delete: resourceNetboxIKEPolicyDelete,
+		CreateContext: withContext(resourceNetboxIKEPolicyCreate),
+		ReadContext:   withContext(resourceNetboxIKEPolicyRead),
+		UpdateContext: withContext(resourceNetboxIKEPolicyUpdate),
+		DeleteContext: withContext(resourceNetboxIKEPolicyDelete),
 
 		Description: `:meta:subcategory:VPN Tunnels:From the [official documentation](https://docs.netbox.dev/en/stable/models/vpn/ikepolicy/):
 

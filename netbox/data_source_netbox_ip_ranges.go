@@ -8,7 +8,7 @@ import (
 
 func dataSourceNetboxIPRanges() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxIPRangesRead,
+		ReadContext: withContext(dataSourceNetboxIPRangesRead),
 		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves all ip ranges from NetBox. Narrow the result with filter blocks and cap it with limit.`,
 		Schema: map[string]*schema.Schema{
 			"filter": {

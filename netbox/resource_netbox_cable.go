@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxCable() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxCableCreate,
-		Read:   resourceNetboxCableRead,
-		Update: resourceNetboxCableUpdate,
-		Delete: resourceNetboxCableDelete,
+		CreateContext: withContext(resourceNetboxCableCreate),
+		ReadContext:   withContext(resourceNetboxCableRead),
+		UpdateContext: withContext(resourceNetboxCableUpdate),
+		DeleteContext: withContext(resourceNetboxCableDelete),
 
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://docs.netbox.dev/en/stable/models/dcim/cable/):
 

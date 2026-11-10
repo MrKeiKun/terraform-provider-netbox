@@ -25,7 +25,7 @@ func TestAccNetboxInventoryItemTemplate_basic(t *testing.T) {
 	testName := testAccGetTestName("inventoryitemt")
 	deps := testAccNetboxInventoryItemTemplateDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -70,7 +70,7 @@ func TestAccNetboxInventoryItemTemplateDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("inventoryitemt_ds")
 	deps := testAccNetboxInventoryItemTemplateDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

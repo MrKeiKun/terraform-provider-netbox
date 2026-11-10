@@ -10,10 +10,10 @@ import (
 
 func resourceNetboxPermission() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxPermissionCreate,
-		Read:   resourceNetboxPermissionRead,
-		Update: resourceNetboxPermissionUpdate,
-		Delete: resourceNetboxPermissionDelete,
+		CreateContext: withContext(resourceNetboxPermissionCreate),
+		ReadContext:   withContext(resourceNetboxPermissionRead),
+		UpdateContext: withContext(resourceNetboxPermissionUpdate),
+		DeleteContext: withContext(resourceNetboxPermissionDelete),
 		Description: `:meta:subcategory:Authentication:This resource manages the object-based permissions for Netbox users, built into the application.
 
 > Object-based permissions enable an administrator to grant users or groups the ability to perform an action on arbitrary subsets of objects in NetBox, rather than all objects of a certain type.

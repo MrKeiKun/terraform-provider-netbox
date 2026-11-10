@@ -7,10 +7,10 @@ import (
 
 func resourceNetboxVlanTranslationPolicy() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxVlanTranslationPolicyCreate,
-		Read:   resourceNetboxVlanTranslationPolicyRead,
-		Update: resourceNetboxVlanTranslationPolicyUpdate,
-		Delete: resourceNetboxVlanTranslationPolicyDelete,
+		CreateContext: withContext(resourceNetboxVlanTranslationPolicyCreate),
+		ReadContext:   withContext(resourceNetboxVlanTranslationPolicyRead),
+		UpdateContext: withContext(resourceNetboxVlanTranslationPolicyUpdate),
+		DeleteContext: withContext(resourceNetboxVlanTranslationPolicyDelete),
 
 		Description: `:meta:subcategory:IP Address Management (IPAM):From the [official documentation](https://docs.netbox.dev/en/stable/models/ipam/vlantranslationpolicy/):
 

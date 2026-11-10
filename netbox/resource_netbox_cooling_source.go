@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxCoolingSource() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxCoolingSourceCreate,
-		Read:   resourceNetboxCoolingSourceRead,
-		Update: resourceNetboxCoolingSourceUpdate,
-		Delete: resourceNetboxCoolingSourceDelete,
+		CreateContext: withContext(resourceNetboxCoolingSourceCreate),
+		ReadContext:   withContext(resourceNetboxCoolingSourceRead),
+		UpdateContext: withContext(resourceNetboxCoolingSourceUpdate),
+		DeleteContext: withContext(resourceNetboxCoolingSourceDelete),
 
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://docs.netbox.dev/en/stable/models/dcim/coolingsource/):
 

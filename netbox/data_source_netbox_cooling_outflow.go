@@ -9,7 +9,7 @@ import (
 
 func dataSourceNetboxCoolingOutflow() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxCoolingOutflowRead,
+		ReadContext: withContext(dataSourceNetboxCoolingOutflowRead),
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):Requires NetBox v4.7.0 or newer.`,
 		Schema: map[string]*schema.Schema{
 			"device_id": {

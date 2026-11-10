@@ -10,10 +10,10 @@ var resourceNetboxWebhookHTTPMethodOptions = []string{"GET", "POST", "PUT", "PAT
 
 func resourceNetboxWebhook() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxWebhookCreate,
-		Read:   resourceNetboxWebhookRead,
-		Update: resourceNetboxWebhookUpdate,
-		Delete: resourceNetboxWebhookDelete,
+		CreateContext: withContext(resourceNetboxWebhookCreate),
+		ReadContext:   withContext(resourceNetboxWebhookRead),
+		UpdateContext: withContext(resourceNetboxWebhookUpdate),
+		DeleteContext: withContext(resourceNetboxWebhookDelete),
 
 		Description: `:meta:subcategory:Extras:From the [official documentation](https://docs.netbox.dev/en/stable/integrations/webhooks/):
 

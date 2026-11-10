@@ -15,8 +15,8 @@ func TestAccNetboxWebhook_basic(t *testing.T) {
 	testAdditionalHeaders := "Authentication: Bearer abcdef123456"
 	testCaFilePath := "/etc/ssl/certs"
 	resource.ParallelTest(t, resource.TestCase{
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckNetBoxWebhookDestroy,
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckNetBoxWebhookDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -52,8 +52,8 @@ func TestAccNetboxWebhook_update(t *testing.T) {
 	testHTTPContentType := "application/xml"
 
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -98,8 +98,8 @@ func TestAccNetboxWebhook_import(t *testing.T) {
 	testPayloadURL := "https://test2.com/webhook"
 
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

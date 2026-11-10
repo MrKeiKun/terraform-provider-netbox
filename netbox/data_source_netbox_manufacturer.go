@@ -8,7 +8,7 @@ import (
 
 func dataSourceNetboxManufacturer() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceNetboxManufacturerRead,
+		ReadContext: withContext(dataSourceNetboxManufacturerRead),
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):Fetches the list of manufacturers from netbox. Can optionally be filtered by name, slug or tag.
 
 From the [official documentation](https://netboxlabs.com/docs/netbox/models/dcim/manufacturer/):

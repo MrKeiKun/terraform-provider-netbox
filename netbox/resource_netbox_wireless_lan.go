@@ -12,10 +12,10 @@ var resourceNetboxWirelessLANAuthCipherOptions = []string{"auto", "tkip", "aes"}
 
 func resourceNetboxWirelessLAN() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxWirelessLANCreate,
-		Read:   resourceNetboxWirelessLANRead,
-		Update: resourceNetboxWirelessLANUpdate,
-		Delete: resourceNetboxWirelessLANDelete,
+		CreateContext: withContext(resourceNetboxWirelessLANCreate),
+		ReadContext:   withContext(resourceNetboxWirelessLANRead),
+		UpdateContext: withContext(resourceNetboxWirelessLANUpdate),
+		DeleteContext: withContext(resourceNetboxWirelessLANDelete),
 
 		Description: `:meta:subcategory:Wireless:
 

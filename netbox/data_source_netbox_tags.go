@@ -8,7 +8,7 @@ import (
 
 func dataSourceNetboxTags() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxTagsRead,
+		ReadContext: withContext(dataSourceNetboxTagsRead),
 		Description: `:meta:subcategory:Extras:Retrieves all tags from NetBox. Narrow the result with filter blocks and cap it with limit.`,
 		Schema: map[string]*schema.Schema{
 			"filter": {

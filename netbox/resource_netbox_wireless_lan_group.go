@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxWirelessLANGroup() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxWirelessLANGroupCreate,
-		Read:   resourceNetboxWirelessLANGroupRead,
-		Update: resourceNetboxWirelessLANGroupUpdate,
-		Delete: resourceNetboxWirelessLANGroupDelete,
+		CreateContext: withContext(resourceNetboxWirelessLANGroupCreate),
+		ReadContext:   withContext(resourceNetboxWirelessLANGroupRead),
+		UpdateContext: withContext(resourceNetboxWirelessLANGroupUpdate),
+		DeleteContext: withContext(resourceNetboxWirelessLANGroupDelete),
 
 		Description: `:meta:subcategory:Wireless:
 

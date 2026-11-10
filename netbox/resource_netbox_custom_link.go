@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxCustomLink() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxCustomLinkCreate,
-		Read:   resourceNetboxCustomLinkRead,
-		Update: resourceNetboxCustomLinkUpdate,
-		Delete: resourceNetboxCustomLinkDelete,
+		CreateContext: withContext(resourceNetboxCustomLinkCreate),
+		ReadContext:   withContext(resourceNetboxCustomLinkRead),
+		UpdateContext: withContext(resourceNetboxCustomLinkUpdate),
+		DeleteContext: withContext(resourceNetboxCustomLinkDelete),
 
 		Description: `:meta:subcategory:Extras:From the [official documentation](https://docs.netbox.dev/en/stable/models/customization/customlink/):
 

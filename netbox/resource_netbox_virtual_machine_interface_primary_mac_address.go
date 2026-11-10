@@ -10,10 +10,10 @@ import (
 
 func resourceNetboxVirtualMachineInterfacePrimaryMACAddress() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxVirtualMachineInterfacePrimaryMACAddressCreate,
-		Read:   resourceNetboxVirtualMachineInterfacePrimaryMACAddressRead,
-		Update: resourceNetboxVirtualMachineInterfacePrimaryMACAddressUpdate,
-		Delete: resourceNetboxVirtualMachineInterfacePrimaryMACAddressDelete,
+		CreateContext: withContext(resourceNetboxVirtualMachineInterfacePrimaryMACAddressCreate),
+		ReadContext:   withContext(resourceNetboxVirtualMachineInterfacePrimaryMACAddressRead),
+		UpdateContext: withContext(resourceNetboxVirtualMachineInterfacePrimaryMACAddressUpdate),
+		DeleteContext: withContext(resourceNetboxVirtualMachineInterfacePrimaryMACAddressDelete),
 
 		Description: `:meta:subcategory:Virtualization:This resource is used to define the primary MAC for a given virtual machine interface. The primary MAC is reflected in the Interface Netbox UI.`,
 

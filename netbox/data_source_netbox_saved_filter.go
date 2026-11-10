@@ -9,7 +9,7 @@ import (
 
 func dataSourceNetboxSavedFilter() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxSavedFilterRead,
+		ReadContext: withContext(dataSourceNetboxSavedFilterRead),
 		Description: `:meta:subcategory:Extras:Retrieves a single saved filter from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"object_types": {

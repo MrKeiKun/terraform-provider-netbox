@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxCircuitType() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxCircuitTypeCreate,
-		Read:   resourceNetboxCircuitTypeRead,
-		Update: resourceNetboxCircuitTypeUpdate,
-		Delete: resourceNetboxCircuitTypeDelete,
+		CreateContext: withContext(resourceNetboxCircuitTypeCreate),
+		ReadContext:   withContext(resourceNetboxCircuitTypeRead),
+		UpdateContext: withContext(resourceNetboxCircuitTypeUpdate),
+		DeleteContext: withContext(resourceNetboxCircuitTypeDelete),
 
 		Description: `:meta:subcategory:Circuits:From the [official documentation](https://docs.netbox.dev/en/stable/features/circuits/#circuit-types):
 

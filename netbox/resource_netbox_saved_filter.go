@@ -10,10 +10,10 @@ import (
 
 func resourceNetboxSavedFilter() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxSavedFilterCreate,
-		Read:   resourceNetboxSavedFilterRead,
-		Update: resourceNetboxSavedFilterUpdate,
-		Delete: resourceNetboxSavedFilterDelete,
+		CreateContext: withContext(resourceNetboxSavedFilterCreate),
+		ReadContext:   withContext(resourceNetboxSavedFilterRead),
+		UpdateContext: withContext(resourceNetboxSavedFilterUpdate),
+		DeleteContext: withContext(resourceNetboxSavedFilterDelete),
 
 		Description: `:meta:subcategory:Extras:From the [official documentation](https://docs.netbox.dev/en/stable/models/customization/savedfilter/):
 

@@ -10,7 +10,7 @@ import (
 
 func dataSourceNetboxSite() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxSiteRead,
+		ReadContext: withContext(dataSourceNetboxSiteRead),
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):Retrieves a single site from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {

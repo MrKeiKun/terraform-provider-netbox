@@ -12,7 +12,7 @@ import (
 func dataSourceNetboxVlan() *schema.Resource {
 	customFieldsFilterSchema := *customFieldsSchema
 	return &schema.Resource{
-		Read:        dataSourceNetboxVlanRead,
+		ReadContext: withContext(dataSourceNetboxVlanRead),
 		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves a single vlan from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"vid": {

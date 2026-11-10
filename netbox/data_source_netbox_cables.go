@@ -8,7 +8,7 @@ import (
 
 func dataSourceNetboxCables() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxCablesRead,
+		ReadContext: withContext(dataSourceNetboxCablesRead),
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):Retrieves all cables from NetBox. Narrow the result with filter blocks and cap it with limit.`,
 		Schema: map[string]*schema.Schema{
 			"filter": {

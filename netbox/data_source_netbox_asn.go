@@ -10,7 +10,7 @@ import (
 
 func dataSourceNetboxAsn() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxAsnRead,
+		ReadContext: withContext(dataSourceNetboxAsnRead),
 		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves a single asn from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"id": {

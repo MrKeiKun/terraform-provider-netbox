@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxRegion() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxRegionCreate,
-		Read:   resourceNetboxRegionRead,
-		Update: resourceNetboxRegionUpdate,
-		Delete: resourceNetboxRegionDelete,
+		CreateContext: withContext(resourceNetboxRegionCreate),
+		ReadContext:   withContext(resourceNetboxRegionRead),
+		UpdateContext: withContext(resourceNetboxRegionUpdate),
+		DeleteContext: withContext(resourceNetboxRegionDelete),
 
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://docs.netbox.dev/en/stable/features/sites-and-racks/#regions):
 

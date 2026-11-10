@@ -10,8 +10,8 @@ import (
 func TestAccNetboxTenantDataSource_tags(t *testing.T) {
 	testName := testAccGetTestName("tenant_ds_tags")
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -49,8 +49,8 @@ data "netbox_tenants" "all" {
 func TestAccNetboxVlansDataSource_siteFilter(t *testing.T) {
 	testName := testAccGetTestName("vlans_ds_site")
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -104,8 +104,8 @@ data "netbox_vlans" "not_in_site" {
 func TestAccNetboxIPAddressesDataSource_assignedObject(t *testing.T) {
 	testName := testAccGetTestName("ips_ds_assigned")
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxDeviceInterfaceFullDependencies(testName) + fmt.Sprintf(`

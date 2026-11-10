@@ -18,7 +18,7 @@ func TestAccNetboxModuleTypeProfile_basic(t *testing.T) {
 	testName := testAccGetTestName("moduletypeprof")
 	deps := testAccNetboxModuleTypeProfileDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -60,7 +60,7 @@ func TestAccNetboxModuleTypeProfileDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("moduletypeprof_ds")
 	deps := testAccNetboxModuleTypeProfileDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

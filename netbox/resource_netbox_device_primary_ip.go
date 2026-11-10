@@ -11,10 +11,10 @@ import (
 
 func resourceNetboxDevicePrimaryIP() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxDevicePrimaryIPCreate,
-		Read:   resourceNetboxDevicePrimaryIPRead,
-		Update: resourceNetboxDevicePrimaryIPUpdate,
-		Delete: resourceNetboxDevicePrimaryIPDelete,
+		CreateContext: withContext(resourceNetboxDevicePrimaryIPCreate),
+		ReadContext:   withContext(resourceNetboxDevicePrimaryIPRead),
+		UpdateContext: withContext(resourceNetboxDevicePrimaryIPUpdate),
+		DeleteContext: withContext(resourceNetboxDevicePrimaryIPDelete),
 
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):This resource is used to define the primary IP for a given device. The primary IP is reflected in the device Netbox UI, which identifies the Primary IPv4 and IPv6 addresses.`,
 

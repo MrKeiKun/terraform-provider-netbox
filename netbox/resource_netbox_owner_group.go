@@ -6,10 +6,10 @@ import (
 
 func resourceNetboxOwnerGroup() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxOwnerGroupCreate,
-		Read:   resourceNetboxOwnerGroupRead,
-		Update: resourceNetboxOwnerGroupUpdate,
-		Delete: resourceNetboxOwnerGroupDelete,
+		CreateContext: withContext(resourceNetboxOwnerGroupCreate),
+		ReadContext:   withContext(resourceNetboxOwnerGroupRead),
+		UpdateContext: withContext(resourceNetboxOwnerGroupUpdate),
+		DeleteContext: withContext(resourceNetboxOwnerGroupDelete),
 
 		Description: `:meta:subcategory:Authentication:From the [official documentation](https://docs.netbox.dev/en/stable/models/users/ownergroup/):
 

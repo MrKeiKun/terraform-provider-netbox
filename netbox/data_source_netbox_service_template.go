@@ -9,7 +9,7 @@ import (
 
 func dataSourceNetboxServiceTemplate() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxServiceTemplateRead,
+		ReadContext: withContext(dataSourceNetboxServiceTemplateRead),
 		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves a single service template from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {

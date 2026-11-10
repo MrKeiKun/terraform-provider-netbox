@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxIPSecProfile() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxIPSecProfileCreate,
-		Read:   resourceNetboxIPSecProfileRead,
-		Update: resourceNetboxIPSecProfileUpdate,
-		Delete: resourceNetboxIPSecProfileDelete,
+		CreateContext: withContext(resourceNetboxIPSecProfileCreate),
+		ReadContext:   withContext(resourceNetboxIPSecProfileRead),
+		UpdateContext: withContext(resourceNetboxIPSecProfileUpdate),
+		DeleteContext: withContext(resourceNetboxIPSecProfileDelete),
 
 		Description: `:meta:subcategory:VPN Tunnels:From the [official documentation](https://docs.netbox.dev/en/stable/models/vpn/ipsecprofile/):
 

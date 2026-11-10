@@ -7,10 +7,10 @@ import (
 
 func resourceNetboxFhrpGroupAssignment() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxFhrpGroupAssignmentCreate,
-		Read:   resourceNetboxFhrpGroupAssignmentRead,
-		Update: resourceNetboxFhrpGroupAssignmentUpdate,
-		Delete: resourceNetboxFhrpGroupAssignmentDelete,
+		CreateContext: withContext(resourceNetboxFhrpGroupAssignmentCreate),
+		ReadContext:   withContext(resourceNetboxFhrpGroupAssignmentRead),
+		UpdateContext: withContext(resourceNetboxFhrpGroupAssignmentUpdate),
+		DeleteContext: withContext(resourceNetboxFhrpGroupAssignmentDelete),
 
 		Description: `:meta:subcategory:IP Address Management (IPAM):From the [official documentation](https://netboxlabs.com/docs/netbox/models/ipam/fhrpgroup/):`,
 

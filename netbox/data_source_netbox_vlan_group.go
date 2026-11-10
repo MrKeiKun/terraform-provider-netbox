@@ -10,7 +10,7 @@ import (
 
 func dataSourceNetboxVlanGroup() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxVlanGroupRead,
+		ReadContext: withContext(dataSourceNetboxVlanGroupRead),
 		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves a single vlan group from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"id": {

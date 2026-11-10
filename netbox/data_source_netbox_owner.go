@@ -9,7 +9,7 @@ import (
 
 func dataSourceNetboxOwner() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxOwnerRead,
+		ReadContext: withContext(dataSourceNetboxOwnerRead),
 		Description: `:meta:subcategory:Authentication:Requires NetBox v4.5.0 or newer.`,
 		Schema: map[string]*schema.Schema{
 			"name": {

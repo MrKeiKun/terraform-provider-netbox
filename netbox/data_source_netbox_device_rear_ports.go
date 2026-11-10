@@ -8,7 +8,7 @@ import (
 
 func dataSourceNetboxDeviceRearPorts() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxDeviceRearPortsRead,
+		ReadContext: withContext(dataSourceNetboxDeviceRearPortsRead),
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):Retrieves all device rear ports from NetBox. Narrow the result with filter blocks and cap it with limit.`,
 		Schema: map[string]*schema.Schema{
 			"filter": {

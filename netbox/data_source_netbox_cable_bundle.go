@@ -9,7 +9,7 @@ import (
 
 func dataSourceNetboxCableBundle() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxCableBundleRead,
+		ReadContext: withContext(dataSourceNetboxCableBundleRead),
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):Requires NetBox v4.6.0 or newer.`,
 		Schema: map[string]*schema.Schema{
 			"name": {

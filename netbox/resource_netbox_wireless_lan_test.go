@@ -48,8 +48,8 @@ func TestAccNetboxWirelessLAN_basic(t *testing.T) {
 	testSlug := "wlan_basic"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -77,8 +77,8 @@ func TestAccNetboxWirelessLAN_withDependencies(t *testing.T) {
 	testSlug := "wlan_with_deps"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxWirelessLANDependencies(testName) + fmt.Sprintf(`
@@ -123,8 +123,8 @@ func TestAccNetboxWirelessLAN_clearOptionalFields(t *testing.T) {
 	testSlug := "wlan_clear_opts"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxWirelessLANDependencies(testName) + fmt.Sprintf(`

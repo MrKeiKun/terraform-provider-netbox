@@ -17,7 +17,7 @@ func TestAccNetboxVirtualMachineType_basic(t *testing.T) {
 	testName := testAccGetTestName("virtualmachine")
 	deps := testAccNetboxVirtualMachineTypeDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 			testAccSkipBelowVersion(t, "4.6.0")
@@ -67,7 +67,7 @@ func TestAccNetboxVirtualMachineTypeDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("virtualmachine_ds")
 	deps := testAccNetboxVirtualMachineTypeDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 			testAccSkipBelowVersion(t, "4.6.0")

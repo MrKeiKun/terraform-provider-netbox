@@ -10,7 +10,7 @@ import (
 
 func dataSourceNetboxContactGroup() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxContactGroupRead,
+		ReadContext: withContext(dataSourceNetboxContactGroupRead),
 		Description: `:meta:subcategory:Tenancy:Retrieves a single contact group from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {

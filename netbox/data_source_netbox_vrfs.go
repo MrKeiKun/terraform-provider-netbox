@@ -8,7 +8,7 @@ import (
 
 func dataSourceNetboxVrfs() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxVrfsRead,
+		ReadContext: withContext(dataSourceNetboxVrfsRead),
 		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves all vrfs from NetBox. Narrow the result with filter blocks and cap it with limit.`,
 		Schema: map[string]*schema.Schema{
 			"filter": {

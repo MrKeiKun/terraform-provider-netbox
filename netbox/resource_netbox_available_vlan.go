@@ -12,10 +12,10 @@ import (
 
 func resourceNetboxAvailableVLAN() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxAvailableVLANCreate,
-		Read:   resourceNetboxAvailableVLANRead,
-		Update: resourceNetboxAvailableVLANUpdate,
-		Delete: resourceNetboxAvailableVLANDelete,
+		CreateContext: withContext(resourceNetboxAvailableVLANCreate),
+		ReadContext:   withContext(resourceNetboxAvailableVLANRead),
+		UpdateContext: withContext(resourceNetboxAvailableVLANUpdate),
+		DeleteContext: withContext(resourceNetboxAvailableVLANDelete),
 
 		Description: `:meta:subcategory:IP Address Management (IPAM):Per [the docs](https://netbox.readthedocs.io/en/stable/models/ipam/vlan/):
 

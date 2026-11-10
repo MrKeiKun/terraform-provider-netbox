@@ -10,7 +10,7 @@ import (
 
 func dataSourceNetboxDevicePowerPorts() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxDevicePowerPortRead,
+		ReadContext: withContext(dataSourceNetboxDevicePowerPortRead),
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):Retrieves all device power ports from NetBox. Narrow the result with filter blocks and cap it with limit.`,
 		Schema: map[string]*schema.Schema{
 			"filter": {

@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxServiceTemplate() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxServiceTemplateCreate,
-		Read:   resourceNetboxServiceTemplateRead,
-		Update: resourceNetboxServiceTemplateUpdate,
-		Delete: resourceNetboxServiceTemplateDelete,
+		CreateContext: withContext(resourceNetboxServiceTemplateCreate),
+		ReadContext:   withContext(resourceNetboxServiceTemplateRead),
+		UpdateContext: withContext(resourceNetboxServiceTemplateUpdate),
+		DeleteContext: withContext(resourceNetboxServiceTemplateDelete),
 
 		Description: `:meta:subcategory:IP Address Management (IPAM):From the [official documentation](https://docs.netbox.dev/en/stable/models/ipam/servicetemplate/):
 

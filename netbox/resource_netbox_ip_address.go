@@ -14,10 +14,10 @@ var resourceNetboxIPAddressRoleOptions = []string{"loopback", "secondary", "anyc
 
 func resourceNetboxIPAddress() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxIPAddressCreate,
-		Read:   resourceNetboxIPAddressRead,
-		Update: resourceNetboxIPAddressUpdate,
-		Delete: resourceNetboxIPAddressDelete,
+		CreateContext: withContext(resourceNetboxIPAddressCreate),
+		ReadContext:   withContext(resourceNetboxIPAddressRead),
+		UpdateContext: withContext(resourceNetboxIPAddressUpdate),
+		DeleteContext: withContext(resourceNetboxIPAddressDelete),
 
 		Description: `:meta:subcategory:IP Address Management (IPAM):From the [official documentation](https://docs.netbox.dev/en/stable/features/ipam/#ip-addresses):
 

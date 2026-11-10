@@ -11,7 +11,7 @@ import (
 
 func dataSourceNetboxIPAddress() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxIPAddressRead,
+		ReadContext: withContext(dataSourceNetboxIPAddressRead),
 		Description: `:meta:subcategory:IP Address Management (IPAM):Retrieves a single ip address from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"id": {

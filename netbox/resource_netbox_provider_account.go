@@ -7,10 +7,10 @@ import (
 
 func resourceNetboxProviderAccount() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxProviderAccountCreate,
-		Read:   resourceNetboxProviderAccountRead,
-		Update: resourceNetboxProviderAccountUpdate,
-		Delete: resourceNetboxProviderAccountDelete,
+		CreateContext: withContext(resourceNetboxProviderAccountCreate),
+		ReadContext:   withContext(resourceNetboxProviderAccountRead),
+		UpdateContext: withContext(resourceNetboxProviderAccountUpdate),
+		DeleteContext: withContext(resourceNetboxProviderAccountDelete),
 
 		Description: `:meta:subcategory:Circuits:From the [official documentation](https://docs.netbox.dev/en/stable/models/circuits/provideraccount/):
 

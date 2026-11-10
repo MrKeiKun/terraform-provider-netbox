@@ -10,10 +10,10 @@ import (
 
 func resourceNetboxConfigContext() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxConfigContextCreate,
-		Read:   resourceNetboxConfigContextRead,
-		Update: resourceNetboxConfigContextUpdate,
-		Delete: resourceNetboxConfigContextDelete,
+		CreateContext: withContext(resourceNetboxConfigContextCreate),
+		ReadContext:   withContext(resourceNetboxConfigContextRead),
+		UpdateContext: withContext(resourceNetboxConfigContextUpdate),
+		DeleteContext: withContext(resourceNetboxConfigContextDelete),
 
 		Description: `:meta:subcategory:Extras:From the [official documentation](https://docs.netbox.dev/en/stable/models/extras/configcontext/):
 

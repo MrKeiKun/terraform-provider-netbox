@@ -25,7 +25,7 @@ func TestAccNetboxIPSecProfile_basic(t *testing.T) {
 	testName := testAccGetTestName("ipsecprofile")
 	deps := testAccNetboxIPSecProfileDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -72,7 +72,7 @@ func TestAccNetboxIPSecProfileDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("ipsecprofile_ds")
 	deps := testAccNetboxIPSecProfileDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

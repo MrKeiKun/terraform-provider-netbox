@@ -7,10 +7,10 @@ import (
 
 func resourceNetboxDeviceBay() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxDeviceBayCreate,
-		Read:   resourceNetboxDeviceBayRead,
-		Update: resourceNetboxDeviceBayUpdate,
-		Delete: resourceNetboxDeviceBayDelete,
+		CreateContext: withContext(resourceNetboxDeviceBayCreate),
+		ReadContext:   withContext(resourceNetboxDeviceBayRead),
+		UpdateContext: withContext(resourceNetboxDeviceBayUpdate),
+		DeleteContext: withContext(resourceNetboxDeviceBayDelete),
 
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://docs.netbox.dev/en/stable/models/dcim/devicebay/):
 

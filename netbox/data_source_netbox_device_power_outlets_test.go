@@ -12,7 +12,7 @@ func TestAccNetboxDevicePowerOutletsDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	dependencies := testAccNetboxDevicePowerOutletsDataSourceDependencies(testName)
 	resource.Test(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: dependencies,

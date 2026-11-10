@@ -67,9 +67,9 @@ func TestAccNetboxDeviceBay_basic(t *testing.T) {
 	testSlug := "device_bay_basic"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers:    testAccProviders,
-		PreCheck:     func() { testAccPreCheck(t) },
-		CheckDestroy: testAccCheckDeviceBayDestroy,
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
+		CheckDestroy:      testAccCheckDeviceBayDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxDeviceBayFullDependencies(testName) + fmt.Sprintf(`

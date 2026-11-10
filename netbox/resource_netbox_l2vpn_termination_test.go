@@ -26,7 +26,7 @@ func TestAccNetboxL2VPNTermination_basic(t *testing.T) {
 	testName := testAccGetTestName("l2vpnterminati")
 	deps := testAccNetboxL2VPNTerminationDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

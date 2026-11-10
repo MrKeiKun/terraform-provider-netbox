@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxSiteGroup() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxSiteGroupCreate,
-		Read:   resourceNetboxSiteGroupRead,
-		Update: resourceNetboxSiteGroupUpdate,
-		Delete: resourceNetboxSiteGroupDelete,
+		CreateContext: withContext(resourceNetboxSiteGroupCreate),
+		ReadContext:   withContext(resourceNetboxSiteGroupRead),
+		UpdateContext: withContext(resourceNetboxSiteGroupUpdate),
+		DeleteContext: withContext(resourceNetboxSiteGroupDelete),
 
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://docs.netbox.dev/en/stable/features/facilities/#site-groups):
 

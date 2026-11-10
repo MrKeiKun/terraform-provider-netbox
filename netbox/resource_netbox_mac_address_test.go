@@ -80,8 +80,8 @@ func TestAccNetboxMACAddress_standalone(t *testing.T) {
 	testSlug := "mac-addr"
 	macAddress := "00:1A:2B:3C:4D:5E"
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -119,8 +119,8 @@ func TestAccNetboxMACAddress_customFields(t *testing.T) {
 	testSlug := "mac-addr_cf"
 	macAddress := "00:1A:2B:3F:4D:5E"
 	resource.Test(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -164,8 +164,8 @@ func TestAccNetboxMACAddress_deviceByFieldName(t *testing.T) {
 	macAddress := "01:1A:2B:3C:4D:5E"
 	macAddress2 := "01:1A:2B:7C:4D:5E"
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxMACAddressFullDeviceDependencies(testSlug) + fmt.Sprintf(`
@@ -211,8 +211,8 @@ func TestAccNetboxMACAddress_vmByFieldName(t *testing.T) {
 	testSlug := "mac-addr-vm-fn"
 	macAddress := "02:1A:2B:3C:4D:5E"
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxMACAddressFullVmDependencies(testSlug) + fmt.Sprintf(`
@@ -241,8 +241,8 @@ func TestAccNetboxMACAddress_deviceByObjectType(t *testing.T) {
 	testSlug := "mac-addr-dev-ot"
 	macAddress := "03:1A:2B:3C:4D:5E"
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxMACAddressFullDeviceDependencies(testSlug) + fmt.Sprintf(`
@@ -273,8 +273,8 @@ func TestAccNetboxMACAddress_vmByObjectType(t *testing.T) {
 	testSlug := "mac-addr-vm-ot"
 	macAddress := "04:1A:2B:3C:4D:5E"
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxMACAddressFullVmDependencies(testSlug) + fmt.Sprintf(`

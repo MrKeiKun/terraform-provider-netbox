@@ -18,8 +18,8 @@ func TestAccNetboxToken_basic(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	testToken := testAccGetTestToken()
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -82,8 +82,8 @@ func TestAccNetboxToken_withoutExpires(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	testToken := testAccGetTestToken()
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -134,8 +134,8 @@ func TestAccNetboxToken_v2(t *testing.T) {
 	}
 	testName := testAccGetTestName("token_v2")
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

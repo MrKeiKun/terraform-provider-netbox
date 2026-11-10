@@ -31,9 +31,9 @@ func TestAccNetboxService_basic(t *testing.T) {
 	testSlug := "svc_basic"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckServiceDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckServiceDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxServiceFullDependencies(testName) + fmt.Sprintf(`
@@ -64,9 +64,9 @@ func TestAccNetboxService_customFields(t *testing.T) {
 	testSlug := "svc_custom_fields"
 	testName := testAccGetTestName(testSlug)
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckServiceDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckServiceDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxServiceFullDependencies(testName) + fmt.Sprintf(`
@@ -108,9 +108,9 @@ func TestAccNetboxService_withDescriptionDeviceID(t *testing.T) {
 	testSlug := "svc_with_desc_tags_device"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckServiceDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckServiceDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -170,9 +170,9 @@ func TestAccNetboxService_withDescriptionTagsVirtualMachine(t *testing.T) {
 	testSlug := "svc_with_desc_tags_device"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckServiceDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckServiceDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxServiceFullDependencies(testName) + fmt.Sprintf(

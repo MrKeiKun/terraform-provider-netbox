@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxVrf() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxVrfCreate,
-		Read:   resourceNetboxVrfRead,
-		Update: resourceNetboxVrfUpdate,
-		Delete: resourceNetboxVrfDelete,
+		CreateContext: withContext(resourceNetboxVrfCreate),
+		ReadContext:   withContext(resourceNetboxVrfRead),
+		UpdateContext: withContext(resourceNetboxVrfUpdate),
+		DeleteContext: withContext(resourceNetboxVrfDelete),
 
 		Description: `:meta:subcategory:IP Address Management (IPAM):From the [official documentation](https://docs.netbox.dev/en/stable/features/ipam/#virtual-routing-and-forwarding-vrf):
 

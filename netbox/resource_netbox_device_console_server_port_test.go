@@ -68,9 +68,9 @@ func TestAccNetboxDeviceConsoleServerPort_basic(t *testing.T) {
 	testSlug := "device_console_server_port_basic"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers:    testAccProviders,
-		PreCheck:     func() { testAccPreCheck(t) },
-		CheckDestroy: testAccCheckDeviceConsoleServerPortDestroy,
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
+		CheckDestroy:      testAccCheckDeviceConsoleServerPortDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxDeviceConsoleServerPortFullDependencies(testName) + fmt.Sprintf(`

@@ -9,7 +9,7 @@ import (
 
 func dataSourceNetboxCircuitGroup() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxCircuitGroupRead,
+		ReadContext: withContext(dataSourceNetboxCircuitGroupRead),
 		Description: `:meta:subcategory:Circuits:Retrieves a single circuit group from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {

@@ -10,8 +10,8 @@ import (
 func TestAccNetboxCablesDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("cables_ds")
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxCableFullDependencies(testName) + fmt.Sprintf(`
@@ -67,8 +67,8 @@ data "netbox_cables" "limited" {
 func TestAccNetboxCablesDataSource_empty(t *testing.T) {
 	testName := testAccGetTestName("cables_ds_empty")
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

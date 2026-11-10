@@ -63,7 +63,7 @@ func TestAccNetboxFhrpGroupDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("asn_ds_basic")
 	setUp := testAccNetboxFhrpGroupSetUp(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: setUp,

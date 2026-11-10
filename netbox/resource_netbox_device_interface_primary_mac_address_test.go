@@ -87,8 +87,8 @@ func TestAccNetboxDeviceInterfacePrimaryMACAddress_basic(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxDeviceInterfacePrimaryMACAddressFullDependencies(testName),

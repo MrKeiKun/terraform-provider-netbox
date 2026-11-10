@@ -12,7 +12,7 @@ import (
 
 func dataSourceNetboxDeviceRenderConfig() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxDeviceRenderConfigRead,
+		ReadContext: withContext(dataSourceNetboxDeviceRenderConfigRead),
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):Render the configuration template assigned to a device using the device's config context.`,
 		Schema: map[string]*schema.Schema{
 			"device_id": {

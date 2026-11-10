@@ -10,8 +10,8 @@ import (
 func TestAccNetboxDeviceFrontPortsDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("front_ports_ds")
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxDeviceFrontPortFullDependencies(testName) + fmt.Sprintf(`
@@ -67,8 +67,8 @@ data "netbox_device_front_ports" "limited" {
 func TestAccNetboxDeviceFrontPortsDataSource_empty(t *testing.T) {
 	testName := testAccGetTestName("front_ports_ds_empty")
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

@@ -95,8 +95,8 @@ func TestAccNetboxDevicePrimaryIP4_basic(t *testing.T) {
 	testSlug := "pr_ip_basic"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxDevicePrimaryIPFullDependencies(testName) + `
@@ -142,8 +142,8 @@ func TestAccNetboxDevicePrimaryIP6_basic(t *testing.T) {
 	testSlug := "pr_ipv6_basic"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxDevicePrimaryIPFullDependencies(testName) + `
@@ -183,8 +183,8 @@ func TestAccNetboxDevicePrimaryIP4_removePrimary(t *testing.T) {
 	testSlug := "pr_ip_removePrimary"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxDevicePrimaryIPFullDependencies(testName) + fmt.Sprintf(`
@@ -311,8 +311,8 @@ func TestAccNetboxDevicePrimaryIP4_simpleUpdateDevice(t *testing.T) {
 	testSlug := "pr_ip_updateDevice"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxDevicePrimaryIPFullDependencies(testName) + fmt.Sprintf(`
@@ -531,8 +531,8 @@ func TestAccNetboxDevicePrimaryIP4_refsUpdateDevice(t *testing.T) {
 	testSlug := "pr_ip_refUpdateDevice"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxDevicePrimaryIPFullDependencies(testName) + fmt.Sprintf(`

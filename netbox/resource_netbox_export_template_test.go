@@ -17,7 +17,7 @@ func TestAccNetboxExportTemplate_basic(t *testing.T) {
 	testName := testAccGetTestName("exporttemplate")
 	deps := testAccNetboxExportTemplateDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -62,7 +62,7 @@ func TestAccNetboxExportTemplateDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("exporttemplate_ds")
 	deps := testAccNetboxExportTemplateDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

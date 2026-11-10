@@ -18,7 +18,7 @@ func TestAccNetboxRackGroup_basic(t *testing.T) {
 	testName := testAccGetTestName("rackgroup")
 	deps := testAccNetboxRackGroupDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 			testAccSkipBelowVersion(t, "4.6.0")
@@ -63,7 +63,7 @@ func TestAccNetboxRackGroupDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("rackgroup_ds")
 	deps := testAccNetboxRackGroupDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 			testAccSkipBelowVersion(t, "4.6.0")

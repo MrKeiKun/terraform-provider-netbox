@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxContactRole() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxContactRoleCreate,
-		Read:   resourceNetboxContactRoleRead,
-		Update: resourceNetboxContactRoleUpdate,
-		Delete: resourceNetboxContactRoleDelete,
+		CreateContext: withContext(resourceNetboxContactRoleCreate),
+		ReadContext:   withContext(resourceNetboxContactRoleRead),
+		UpdateContext: withContext(resourceNetboxContactRoleUpdate),
+		DeleteContext: withContext(resourceNetboxContactRoleDelete),
 
 		Description: `:meta:subcategory:Tenancy:From the [official documentation](https://docs.netbox.dev/en/stable/features/contacts/#contactroles):
 

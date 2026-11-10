@@ -14,8 +14,8 @@ func TestAccNetboxLocation_basic(t *testing.T) {
 	randomSlug := testAccGetTestName(testSlug)
 	randomSlugSub := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -96,8 +96,8 @@ func TestAccNetboxLocation_updateParent(t *testing.T) {
 	randomSlug := testAccGetTestName(testSlug)
 	randomSlugSub := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxLocationUpdateParent1(testName, randomSlug, testNameSub, randomSlugSub),

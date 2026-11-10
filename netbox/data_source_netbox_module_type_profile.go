@@ -9,7 +9,7 @@ import (
 
 func dataSourceNetboxModuleTypeProfile() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxModuleTypeProfileRead,
+		ReadContext: withContext(dataSourceNetboxModuleTypeProfileRead),
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):Retrieves a single module type profile from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {

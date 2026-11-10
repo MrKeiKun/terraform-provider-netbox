@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxVirtualCircuitTermination() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxVirtualCircuitTerminationCreate,
-		Read:   resourceNetboxVirtualCircuitTerminationRead,
-		Update: resourceNetboxVirtualCircuitTerminationUpdate,
-		Delete: resourceNetboxVirtualCircuitTerminationDelete,
+		CreateContext: withContext(resourceNetboxVirtualCircuitTerminationCreate),
+		ReadContext:   withContext(resourceNetboxVirtualCircuitTerminationRead),
+		UpdateContext: withContext(resourceNetboxVirtualCircuitTerminationUpdate),
+		DeleteContext: withContext(resourceNetboxVirtualCircuitTerminationDelete),
 
 		Description: `:meta:subcategory:Circuits:From the [official documentation](https://docs.netbox.dev/en/stable/models/circuits/virtualcircuittermination/):
 

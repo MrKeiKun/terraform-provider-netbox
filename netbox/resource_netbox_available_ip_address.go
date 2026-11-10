@@ -16,10 +16,10 @@ import (
 
 func resourceNetboxAvailableIPAddress() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxAvailableIPAddressCreate,
-		Read:   resourceNetboxAvailableIPAddressRead,
-		Update: resourceNetboxAvailableIPAddressUpdate,
-		Delete: resourceNetboxAvailableIPAddressDelete,
+		CreateContext: withContext(resourceNetboxAvailableIPAddressCreate),
+		ReadContext:   withContext(resourceNetboxAvailableIPAddressRead),
+		UpdateContext: withContext(resourceNetboxAvailableIPAddressUpdate),
+		DeleteContext: withContext(resourceNetboxAvailableIPAddressDelete),
 
 		Description: `:meta:subcategory:IP Address Management (IPAM):Per [the docs](https://netbox.readthedocs.io/en/stable/models/ipam/ipaddress/):
 

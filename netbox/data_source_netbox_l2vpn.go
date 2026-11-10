@@ -9,7 +9,7 @@ import (
 
 func dataSourceNetboxL2VPN() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxL2VPNRead,
+		ReadContext: withContext(dataSourceNetboxL2VPNRead),
 		Description: `:meta:subcategory:VPN Tunnels:Retrieves a single l2vpn from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"identifier": {

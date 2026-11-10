@@ -12,8 +12,8 @@ func TestAccNetboxCircuitProvider_basic(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	randomSlug := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

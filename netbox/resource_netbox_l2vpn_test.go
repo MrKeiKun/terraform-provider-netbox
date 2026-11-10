@@ -17,7 +17,7 @@ func TestAccNetboxL2VPN_basic(t *testing.T) {
 	testName := testAccGetTestName("l2vpn")
 	deps := testAccNetboxL2VPNDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -67,7 +67,7 @@ func TestAccNetboxL2VPNDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("l2vpn_ds")
 	deps := testAccNetboxL2VPNDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

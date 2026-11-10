@@ -10,10 +10,10 @@ import (
 
 func resourceNetboxDeviceInterfacePrimaryMACAddress() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxDeviceInterfacePrimaryMACAddressCreate,
-		Read:   resourceNetboxDeviceInterfacePrimaryMACAddressRead,
-		Update: resourceNetboxDeviceInterfacePrimaryMACAddressUpdate,
-		Delete: resourceNetboxDeviceInterfacePrimaryMACAddressDelete,
+		CreateContext: withContext(resourceNetboxDeviceInterfacePrimaryMACAddressCreate),
+		ReadContext:   withContext(resourceNetboxDeviceInterfacePrimaryMACAddressRead),
+		UpdateContext: withContext(resourceNetboxDeviceInterfacePrimaryMACAddressUpdate),
+		DeleteContext: withContext(resourceNetboxDeviceInterfacePrimaryMACAddressDelete),
 
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):This resource is used to define the primary MAC for a given device interface. The primary MAC is reflected in the device interface Netbox UI.`,
 

@@ -10,10 +10,10 @@ import (
 
 func resourceNetboxExportTemplate() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxExportTemplateCreate,
-		Read:   resourceNetboxExportTemplateRead,
-		Update: resourceNetboxExportTemplateUpdate,
-		Delete: resourceNetboxExportTemplateDelete,
+		CreateContext: withContext(resourceNetboxExportTemplateCreate),
+		ReadContext:   withContext(resourceNetboxExportTemplateRead),
+		UpdateContext: withContext(resourceNetboxExportTemplateUpdate),
+		DeleteContext: withContext(resourceNetboxExportTemplateDelete),
 
 		Description: `:meta:subcategory:Extras:From the [official documentation](https://docs.netbox.dev/en/stable/models/customization/exporttemplate/):
 

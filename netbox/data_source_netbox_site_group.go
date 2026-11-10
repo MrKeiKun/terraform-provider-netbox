@@ -9,7 +9,7 @@ import (
 
 func dataSourceNetboxSiteGroup() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxSiteGroupRead,
+		ReadContext: withContext(dataSourceNetboxSiteGroupRead),
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):Retrieves a single site group from NetBox. The lookup fails if no match or more than one match is found.`,
 		Schema: map[string]*schema.Schema{
 			"name": {

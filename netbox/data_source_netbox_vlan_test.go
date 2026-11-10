@@ -15,7 +15,7 @@ func TestAccNetboxVlanDataSource_basic(t *testing.T) {
 	setUp := testAccNetboxVlanSetUp(testVid, testName)
 	extendedSetUp := testAccNetboxVlanSetUpMore(testVid, testVid-1, testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: setUp,
@@ -73,8 +73,8 @@ func TestAccNetboxVlanDataSource_customFields(t *testing.T) {
 	testVid := acctest.RandIntRange(1000, 4000)
 
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxVlanDataSourceWithCustomFields(testName, testField, testVid),

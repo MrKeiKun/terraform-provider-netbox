@@ -10,7 +10,7 @@ import (
 
 func dataSourceNetboxVirtualMachine() *schema.Resource {
 	return &schema.Resource{
-		Read:        dataSourceNetboxVirtualMachineRead,
+		ReadContext: withContext(dataSourceNetboxVirtualMachineRead),
 		Description: `:meta:subcategory:Virtualization:Retrieves all virtual machines from NetBox. Narrow the result with filter blocks and cap it with limit.`,
 		Schema: map[string]*schema.Schema{
 			"filter": {

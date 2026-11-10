@@ -17,10 +17,10 @@ var resourceNetboxEventRuleActionTypeToObjectType = map[string]string{
 
 func resourceNetboxEventRule() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxEventRuleCreate,
-		Read:   resourceNetboxEventRuleRead,
-		Update: resourceNetboxEventRuleUpdate,
-		Delete: resourceNetboxEventRuleDelete,
+		CreateContext: withContext(resourceNetboxEventRuleCreate),
+		ReadContext:   withContext(resourceNetboxEventRuleRead),
+		UpdateContext: withContext(resourceNetboxEventRuleUpdate),
+		DeleteContext: withContext(resourceNetboxEventRuleDelete),
 
 		Description: `:meta:subcategory:Extras:From the [official documentation](https://docs.netbox.dev/en/stable/features/event-rules/):
 

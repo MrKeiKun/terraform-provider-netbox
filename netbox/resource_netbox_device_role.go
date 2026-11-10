@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxDeviceRole() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxDeviceRoleCreate,
-		Read:   resourceNetboxDeviceRoleRead,
-		Update: resourceNetboxDeviceRoleUpdate,
-		Delete: resourceNetboxDeviceRoleDelete,
+		CreateContext: withContext(resourceNetboxDeviceRoleCreate),
+		ReadContext:   withContext(resourceNetboxDeviceRoleRead),
+		UpdateContext: withContext(resourceNetboxDeviceRoleUpdate),
+		DeleteContext: withContext(resourceNetboxDeviceRoleDelete),
 
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://docs.netbox.dev/en/stable/features/devices/#device-roles):
 

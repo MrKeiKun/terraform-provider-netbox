@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxRackGroup() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxRackGroupCreate,
-		Read:   resourceNetboxRackGroupRead,
-		Update: resourceNetboxRackGroupUpdate,
-		Delete: resourceNetboxRackGroupDelete,
+		CreateContext: withContext(resourceNetboxRackGroupCreate),
+		ReadContext:   withContext(resourceNetboxRackGroupRead),
+		UpdateContext: withContext(resourceNetboxRackGroupUpdate),
+		DeleteContext: withContext(resourceNetboxRackGroupDelete),
 
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://docs.netbox.dev/en/stable/models/dcim/rackgroup/):
 

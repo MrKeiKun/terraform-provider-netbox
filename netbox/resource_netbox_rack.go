@@ -14,10 +14,10 @@ var resourceNetboxRackFormFactorOptions = []string{"2-post-frame", "4-post-frame
 
 func resourceNetboxRack() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxRackCreate,
-		Read:   resourceNetboxRackRead,
-		Update: resourceNetboxRackUpdate,
-		Delete: resourceNetboxRackDelete,
+		CreateContext: withContext(resourceNetboxRackCreate),
+		ReadContext:   withContext(resourceNetboxRackRead),
+		UpdateContext: withContext(resourceNetboxRackUpdate),
+		DeleteContext: withContext(resourceNetboxRackDelete),
 
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://docs.netbox.dev/en/stable/models/dcim/rack/):
 

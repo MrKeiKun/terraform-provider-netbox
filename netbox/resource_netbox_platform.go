@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxPlatform() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxPlatformCreate,
-		Read:   resourceNetboxPlatformRead,
-		Update: resourceNetboxPlatformUpdate,
-		Delete: resourceNetboxPlatformDelete,
+		CreateContext: withContext(resourceNetboxPlatformCreate),
+		ReadContext:   withContext(resourceNetboxPlatformRead),
+		UpdateContext: withContext(resourceNetboxPlatformUpdate),
+		DeleteContext: withContext(resourceNetboxPlatformDelete),
 
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://docs.netbox.dev/en/stable/features/devices/#platforms):
 

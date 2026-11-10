@@ -10,10 +10,10 @@ import (
 
 func resourceNetboxModuleTypeProfile() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxModuleTypeProfileCreate,
-		Read:   resourceNetboxModuleTypeProfileRead,
-		Update: resourceNetboxModuleTypeProfileUpdate,
-		Delete: resourceNetboxModuleTypeProfileDelete,
+		CreateContext: withContext(resourceNetboxModuleTypeProfileCreate),
+		ReadContext:   withContext(resourceNetboxModuleTypeProfileRead),
+		UpdateContext: withContext(resourceNetboxModuleTypeProfileUpdate),
+		DeleteContext: withContext(resourceNetboxModuleTypeProfileDelete),
 
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://docs.netbox.dev/en/stable/models/dcim/moduletypeprofile/):
 

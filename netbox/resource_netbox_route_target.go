@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxRouteTarget() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxRouteTargetCreate,
-		Read:   resourceNetboxRouteTargetRead,
-		Update: resourceNetboxRouteTargetUpdate,
-		Delete: resourceNetboxRouteTargetDelete,
+		CreateContext: withContext(resourceNetboxRouteTargetCreate),
+		ReadContext:   withContext(resourceNetboxRouteTargetRead),
+		UpdateContext: withContext(resourceNetboxRouteTargetUpdate),
+		DeleteContext: withContext(resourceNetboxRouteTargetDelete),
 
 		Description: `:meta:subcategory:IP Address Management (IPAM):From the [official documentation](https://docs.netbox.dev/en/stable/models/ipam/routetarget/):
 

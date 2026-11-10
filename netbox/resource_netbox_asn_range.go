@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxASNRange() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxASNRangeCreate,
-		Read:   resourceNetboxASNRangeRead,
-		Update: resourceNetboxASNRangeUpdate,
-		Delete: resourceNetboxASNRangeDelete,
+		CreateContext: withContext(resourceNetboxASNRangeCreate),
+		ReadContext:   withContext(resourceNetboxASNRangeRead),
+		UpdateContext: withContext(resourceNetboxASNRangeUpdate),
+		DeleteContext: withContext(resourceNetboxASNRangeDelete),
 
 		Description: `:meta:subcategory:IP Address Management (IPAM):From the [official documentation](https://docs.netbox.dev/en/stable/models/ipam/asnrange/):
 

@@ -14,8 +14,8 @@ func TestAccNetboxVirtualDiskDataSource_basic(t *testing.T) {
 	dataSourceName := "data.netbox_virtual_disk.test"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -64,8 +64,8 @@ func TestAccNetboxVirtualDiskDataSource_filterByVirtualMachineID(t *testing.T) {
 	dataSourceName := "data.netbox_virtual_disk.by_vm"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -117,8 +117,8 @@ func TestAccNetboxVirtualDiskDataSource_ordering(t *testing.T) {
 	dataSourceNameReverse := "data.netbox_virtual_disk.ordered_reverse"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -183,8 +183,8 @@ func TestAccNetboxVirtualDiskDataSource_filter_and_list(t *testing.T) {
 	dataSourceName := "data.netbox_virtual_disk.filtered"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

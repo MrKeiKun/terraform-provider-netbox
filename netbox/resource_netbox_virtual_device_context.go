@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxVirtualDeviceContext() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxVirtualDeviceContextCreate,
-		Read:   resourceNetboxVirtualDeviceContextRead,
-		Update: resourceNetboxVirtualDeviceContextUpdate,
-		Delete: resourceNetboxVirtualDeviceContextDelete,
+		CreateContext: withContext(resourceNetboxVirtualDeviceContextCreate),
+		ReadContext:   withContext(resourceNetboxVirtualDeviceContextRead),
+		UpdateContext: withContext(resourceNetboxVirtualDeviceContextUpdate),
+		DeleteContext: withContext(resourceNetboxVirtualDeviceContextDelete),
 
 		Description: `:meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://docs.netbox.dev/en/stable/models/dcim/virtualdevicecontext/):
 

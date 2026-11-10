@@ -73,9 +73,9 @@ func TestAccNetboxDevicePowerOutlet_basic(t *testing.T) {
 	testSlug := "device_power_outlet_basic"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers:    testAccProviders,
-		PreCheck:     func() { testAccPreCheck(t) },
-		CheckDestroy: testAccCheckDevicePowerOutletDestroy,
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
+		CheckDestroy:      testAccCheckDevicePowerOutletDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxDevicePowerOutletFullDependencies(testName) + fmt.Sprintf(`
@@ -187,9 +187,9 @@ resource "netbox_cable" "test" {
 }`, testName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		Providers:    testAccProviders,
-		PreCheck:     func() { testAccPreCheck(t) },
-		CheckDestroy: testAccCheckDevicePowerOutletDestroy,
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
+		CheckDestroy:      testAccCheckDevicePowerOutletDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: cabledConfig,

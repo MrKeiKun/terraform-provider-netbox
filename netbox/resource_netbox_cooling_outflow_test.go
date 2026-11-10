@@ -42,7 +42,7 @@ func TestAccNetboxCoolingOutflow_basic(t *testing.T) {
 	testName := testAccGetTestName("coolingoutflow")
 	deps := testAccNetboxCoolingOutflowDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 			testAccSkipBelowVersion(t, "4.7.0")
@@ -95,7 +95,7 @@ func TestAccNetboxCoolingOutflowDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("coolingoutflow_ds")
 	deps := testAccNetboxCoolingOutflowDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 			testAccSkipBelowVersion(t, "4.7.0")

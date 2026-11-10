@@ -8,10 +8,10 @@ import (
 
 func resourceNetboxVirtualCircuitType() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxVirtualCircuitTypeCreate,
-		Read:   resourceNetboxVirtualCircuitTypeRead,
-		Update: resourceNetboxVirtualCircuitTypeUpdate,
-		Delete: resourceNetboxVirtualCircuitTypeDelete,
+		CreateContext: withContext(resourceNetboxVirtualCircuitTypeCreate),
+		ReadContext:   withContext(resourceNetboxVirtualCircuitTypeRead),
+		UpdateContext: withContext(resourceNetboxVirtualCircuitTypeUpdate),
+		DeleteContext: withContext(resourceNetboxVirtualCircuitTypeDelete),
 
 		Description: `:meta:subcategory:Circuits:From the [official documentation](https://docs.netbox.dev/en/stable/models/circuits/virtualcircuittype/):
 

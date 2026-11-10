@@ -88,9 +88,9 @@ func TestAccNetboxCable_basic(t *testing.T) {
 	testSlug := "cable_basic"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers:    testAccProviders,
-		PreCheck:     func() { testAccPreCheck(t) },
-		CheckDestroy: testAccCheckCableDestroy,
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
+		CheckDestroy:      testAccCheckCableDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxCableFullDependencies(testName) + fmt.Sprintf(`

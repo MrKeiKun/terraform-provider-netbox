@@ -39,10 +39,10 @@ func normalizeCustomFieldDefault(v interface{}) string {
 
 func resourceCustomField() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetboxCustomFieldCreate,
-		Read:   resourceNetboxCustomFieldRead,
-		Update: resourceNetboxCustomFieldUpdate,
-		Delete: resourceNetboxCustomFieldDelete,
+		CreateContext: withContext(resourceNetboxCustomFieldCreate),
+		ReadContext:   withContext(resourceNetboxCustomFieldRead),
+		UpdateContext: withContext(resourceNetboxCustomFieldUpdate),
+		DeleteContext: withContext(resourceNetboxCustomFieldDelete),
 
 		Description: `:meta:subcategory:Extras:From the [official documentation](https://docs.netbox.dev/en/stable/customization/custom-fields/#custom-fields):
 

@@ -10,8 +10,8 @@ import (
 func TestAccNetboxRole_tags(t *testing.T) {
 	testName := testAccGetTestName("role_tags")
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

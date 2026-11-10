@@ -38,7 +38,7 @@ func TestAccNetboxRirDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("rir_ds_basic")
 	setUp := testAccNetboxRirSetUp(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: setUp,
