@@ -132,6 +132,11 @@ func deviceRearPortRequestFromResourceData(api *providerState, d *schema.Resourc
 		MarkConnected: d.Get("mark_connected").(bool),
 		Tags:          tags,
 	}
+	// NetBox rejects an update that sends the mapping it already has, so the
+	// mapping is only sent when it changed.
+	if d.Id() != "" && !d.HasChange("front_ports") {
+		data.FrontPorts = nil
+	}
 	if ct, ok := managedCustomFields(d); ok {
 		data.CustomFields = ct
 	}

@@ -146,3 +146,68 @@ func init() {
 		},
 	})
 }
+
+// A rear port that has a front port mapped to it must still be updatable:
+// NetBox rejects an update that sends the existing mapping again.
+func TestAccNetboxDeviceRearPort_updateWithFrontPort(t *testing.T) {
+	testName := testAccGetTestName("drp_mapped")
+	config := func(description string) string {
+		return fmt.Sprintf(`
+resource "netbox_site" "test" {
+  name = "%[1]s"
+}
+
+resource "netbox_manufacturer" "test" {
+  name = "%[1]s"
+}
+
+resource "netbox_device_type" "test" {
+  model = "%[1]s"
+  manufacturer_id = netbox_manufacturer.test.id
+}
+
+resource "netbox_device_role" "test" {
+  name = "%[1]s"
+  color_hex = "123456"
+}
+
+resource "netbox_device" "test" {
+  name = "%[1]s"
+  device_type_id = netbox_device_type.test.id
+  role_id = netbox_device_role.test.id
+  site_id = netbox_site.test.id
+}
+
+resource "netbox_device_rear_port" "test" {
+  device_id = netbox_device.test.id
+  name = "%[1]s"
+  type = "8p8c"
+  positions = 1
+  description = "%[2]s"
+}
+
+resource "netbox_device_front_port" "test" {
+  device_id = netbox_device.test.id
+  name = "%[1]s"
+  type = "8p8c"
+  rear_port_id = netbox_device_rear_port.test.id
+}`, testName, description)
+	}
+	resource.ParallelTest(t, resource.TestCase{
+		Providers: testAccProviders,
+		PreCheck:  func() { testAccPreCheck(t) },
+		Steps: []resource.TestStep{
+			{
+				Config: config("before"),
+				Check:  resource.TestCheckResourceAttr("netbox_device_rear_port.test", "description", "before"),
+			},
+			{
+				Config: config("after"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_device_rear_port.test", "description", "after"),
+					resource.TestCheckResourceAttr("netbox_device_rear_port.test", "front_ports.#", "1"),
+				),
+			},
+		},
+	})
+}
