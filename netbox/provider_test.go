@@ -215,3 +215,18 @@ func testAccCheckIfNetboxAtLeast(version string, check resource.TestCheckFunc) r
 	}
 	return check
 }
+
+// testAccCheckAttrUnset accepts both a missing attribute and a zero ID, which is
+// how an unset relation is stored in the state.
+func testAccCheckAttrUnset(name, attr string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[name]
+		if !ok {
+			return fmt.Errorf("resource %s not found", name)
+		}
+		if v := rs.Primary.Attributes[attr]; v != "" && v != "0" {
+			return fmt.Errorf("%s.%s should be unset, got %q", name, attr, v)
+		}
+		return nil
+	}
+}
