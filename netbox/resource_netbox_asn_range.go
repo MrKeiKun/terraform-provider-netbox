@@ -39,13 +39,13 @@ func resourceNetboxASNRange() *schema.Resource {
 				Type:         schema.TypeInt,
 				Description:  "The start of the asn range.",
 				Required:     true,
-				ValidateFunc: validation.IntBetween(1, 4294967295),
+				ValidateFunc: validation.IntAtLeast(1),
 			},
 			"end": {
 				Type:         schema.TypeInt,
 				Description:  "The end of the asn range.",
 				Required:     true,
-				ValidateFunc: validation.IntBetween(1, 4294967295),
+				ValidateFunc: validation.IntAtLeast(1),
 			},
 			"tenant_id": {
 				Type:        schema.TypeInt,

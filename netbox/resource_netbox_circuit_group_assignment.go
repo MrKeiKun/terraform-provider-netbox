@@ -32,7 +32,7 @@ func resourceNetboxCircuitGroupAssignment() *schema.Resource {
 				Type:         schema.TypeInt,
 				Description:  "The ID of the member associated with the circuit group assignment.",
 				Required:     true,
-				ValidateFunc: validation.IntBetween(0, 9223372036854775807),
+				ValidateFunc: validation.IntAtLeast(0),
 			},
 			"priority": {
 				Type:         schema.TypeString,

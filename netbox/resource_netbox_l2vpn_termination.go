@@ -32,7 +32,7 @@ func resourceNetboxL2VPNTermination() *schema.Resource {
 				Type:         schema.TypeInt,
 				Description:  "The ID of the assigned object associated with the l2vpn termination.",
 				Required:     true,
-				ValidateFunc: validation.IntBetween(0, 9223372036854775807),
+				ValidateFunc: validation.IntAtLeast(0),
 			},
 			tagsKey:         tagsSchema,
 			customFieldsKey: customFieldsSchema,
