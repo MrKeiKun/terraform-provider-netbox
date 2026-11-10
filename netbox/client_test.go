@@ -2,8 +2,11 @@ package netbox
 
 import (
 	"context"
+	"encoding/pem"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -137,6 +140,66 @@ func TestRequestTimeoutIsUsed(t *testing.T) {
 	assert.Equal(t, 90*time.Second, httpClient.Timeout)
 }
 
-/* TODO
-func TestInvalidHttpsCertificate(t *testing.T) {}
-*/
+// newTLSTestServer starts a server with a self-signed certificate that answers
+// every request with an empty JSON object.
+func newTLSTestServer(t *testing.T) *httptest.Server {
+	t.Helper()
+
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte("{}"))
+	}))
+	t.Cleanup(ts.Close)
+
+	return ts
+}
+
+func requestStatus(t *testing.T, config Config) error {
+	t.Helper()
+
+	client, err := config.Client()
+	assert.NoError(t, err)
+
+	_, err = netboxapi.Request[map[string]interface{}](context.Background(), client, http.MethodGet, "status/", nil, nil)
+	return err
+}
+
+func TestInvalidHttpsCertificate(t *testing.T) {
+	ts := newTLSTestServer(t)
+
+	err := requestStatus(t, Config{
+		APIToken:  "07b12b765127747e4afd56cb531b7bf9c61f3c30",
+		ServerURL: ts.URL,
+	})
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "certificate")
+}
+
+func TestAllowInsecureHTTPSAcceptsInvalidCertificate(t *testing.T) {
+	ts := newTLSTestServer(t)
+
+	err := requestStatus(t, Config{
+		APIToken:           "07b12b765127747e4afd56cb531b7bf9c61f3c30",
+		ServerURL:          ts.URL,
+		AllowInsecureHTTPS: true,
+	})
+
+	assert.NoError(t, err)
+}
+
+func TestCACertFileTrustsServerCertificate(t *testing.T) {
+	ts := newTLSTestServer(t)
+
+	certPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: ts.Certificate().Raw})
+	caFile := filepath.Join(t.TempDir(), "ca.pem")
+	assert.NoError(t, os.WriteFile(caFile, certPEM, 0o600))
+
+	err := requestStatus(t, Config{
+		APIToken:   "07b12b765127747e4afd56cb531b7bf9c61f3c30",
+		ServerURL:  ts.URL,
+		CACertFile: caFile,
+	})
+
+	assert.NoError(t, err)
+}
