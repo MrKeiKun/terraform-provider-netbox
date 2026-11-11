@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -84,8 +85,9 @@ const DefaultMaxRetries = 3
 // retryDelay is the base wait between attempts. It grows with every attempt.
 var retryDelay = time.Second
 
-// idempotent reports whether a request can safely be sent again. POST and
-// PATCH are left out, since a lost response could create a duplicate.
+// idempotent reports whether a request can safely be sent again after a
+// temporary failure. POST and PATCH are left out, since a lost response could
+// create a duplicate. A database deadlock is the exception, see isDeadlock.
 func idempotent(method string) bool {
 	switch method {
 	case http.MethodGet, http.MethodHead, http.MethodPut, http.MethodDelete:
@@ -94,10 +96,25 @@ func idempotent(method string) bool {
 	return false
 }
 
+// isDeadlock reports whether NetBox answered with a database deadlock. Postgres
+// rolls the transaction back in that case, so the request changed nothing and
+// can be sent again. NetBox reports it as a 500 error.
+func isDeadlock(status int, body []byte) bool {
+	return status == http.StatusInternalServerError &&
+		bytes.Contains(bytes.ToLower(body), []byte("deadlock detected"))
+}
+
+// isDeadlockError reports whether err is the deadlock answer from NetBox.
+func isDeadlockError(err error) bool {
+	var apiErr *APIError
+	return errors.As(err, &apiErr) && isDeadlock(apiErr.StatusCode, []byte(apiErr.Body))
+}
+
 // Do sends a request to rawURL. body is JSON encoded when not nil. When out
 // is not nil the JSON response is decoded into it. Idempotent requests are
-// sent again (see SetMaxRetries) when the connection fails or NetBox (or a proxy in
-// front of it) answers 502, 503 or 504.
+// sent again (see SetMaxRetries) when the connection fails or NetBox (or a proxy
+// in front of it) answers 502, 503 or 504. Any request is sent again when the
+// NetBox database reports a deadlock.
 func (c *Client) Do(ctx context.Context, method, rawURL string, body, out any) error {
 	var buf []byte
 	if body != nil {
@@ -108,15 +125,15 @@ func (c *Client) Do(ctx context.Context, method, rawURL string, body, out any) e
 		}
 	}
 
-	attempts := 1
-	if idempotent(method) {
-		attempts = 1 + c.maxRetries
-	}
+	attempts := 1 + c.maxRetries
 	var err error
 	for attempt := 1; attempt <= attempts; attempt++ {
 		var retry bool
 		retry, err = c.doOnce(ctx, method, rawURL, buf, out)
 		if err == nil || !retry || attempt == attempts {
+			return err
+		}
+		if !idempotent(method) && !isDeadlockError(err) {
 			return err
 		}
 		select {
@@ -159,7 +176,8 @@ func (c *Client) doOnce(ctx context.Context, method, rawURL string, buf []byte, 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		temporary := resp.StatusCode == http.StatusBadGateway ||
 			resp.StatusCode == http.StatusServiceUnavailable ||
-			resp.StatusCode == http.StatusGatewayTimeout
+			resp.StatusCode == http.StatusGatewayTimeout ||
+			isDeadlock(resp.StatusCode, data)
 		return temporary, &APIError{Method: method, URL: rawURL, StatusCode: resp.StatusCode, Body: string(data)}
 	}
 	if out == nil || len(data) == 0 {

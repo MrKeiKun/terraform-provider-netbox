@@ -371,7 +371,7 @@ func Provider() *schema.Provider {
 				Optional:     true,
 				DefaultFunc:  schema.EnvDefaultFunc("NETBOX_MAX_RETRIES", netboxapi.DefaultMaxRetries),
 				ValidateFunc: validation.IntAtLeast(0),
-				Description:  "How many times a failed GET, PUT or DELETE request is sent again after a connection error or a 502, 503 or 504 response. Requests that create objects are never repeated. Set to `0` to turn retries off. Can be set via the `NETBOX_MAX_RETRIES` environment variable. Defaults to `3`.",
+				Description:  "How many times a failed GET, PUT or DELETE request is sent again after a connection error, or a 502, 503 or 504 response. A request that fails because of a database deadlock in Netbox is sent again whatever its method, since nothing was changed. Other requests that create objects are never repeated. Set to `0` to turn retries off. Can be set via the `NETBOX_MAX_RETRIES` environment variable. Defaults to `3`.",
 			},
 			"default_tags": {
 				Type: schema.TypeSet,
