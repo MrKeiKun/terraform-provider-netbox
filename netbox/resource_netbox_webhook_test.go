@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccNetboxWebhook_basic(t *testing.T) {
@@ -15,8 +15,8 @@ func TestAccNetboxWebhook_basic(t *testing.T) {
 	testAdditionalHeaders := "Authentication: Bearer abcdef123456"
 	testCaFilePath := "/etc/ssl/certs"
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccCheckNetBoxWebhookDestroy,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckNetBoxWebhookDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -52,8 +52,8 @@ func TestAccNetboxWebhook_update(t *testing.T) {
 	testHTTPContentType := "application/xml"
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -69,7 +69,7 @@ resource "netbox_webhook" "test" {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("netbox_webhook.test", "name", testName),
 					resource.TestCheckResourceAttr("netbox_webhook.test", "payload_url", testPayloadURL),
-					resource.TestCheckResourceAttr("netbox_webhook.test", "body_template", testBodyTemplate),
+					resource.TestCheckResourceAttr("netbox_webhook.test", "body_template", testBodyTemplate+"\n"),
 					resource.TestCheckResourceAttr("netbox_webhook.test", "http_method", testHTTPMethod),
 					resource.TestCheckResourceAttr("netbox_webhook.test", "http_content_type", testHTTPContentType),
 				),
@@ -86,7 +86,7 @@ resource "netbox_webhook" "test" {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("netbox_webhook.test", "name", testName+"_updated"),
 					resource.TestCheckResourceAttr("netbox_webhook.test", "payload_url", testPayloadURL),
-					resource.TestCheckResourceAttr("netbox_webhook.test", "body_template", testBodyTemplate),
+					resource.TestCheckResourceAttr("netbox_webhook.test", "body_template", testBodyTemplate+"\n"),
 				),
 			},
 		},
@@ -98,8 +98,8 @@ func TestAccNetboxWebhook_import(t *testing.T) {
 	testPayloadURL := "https://test2.com/webhook"
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

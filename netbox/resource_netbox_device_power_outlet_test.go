@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func testAccNetboxDevicePowerOutletFullDependencies(testName string) string {
@@ -73,9 +73,9 @@ func TestAccNetboxDevicePowerOutlet_basic(t *testing.T) {
 	testSlug := "device_power_outlet_basic"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
-		CheckDestroy:      testAccCheckDevicePowerOutletDestroy,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		CheckDestroy:             testAccCheckDevicePowerOutletDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxDevicePowerOutletFullDependencies(testName) + fmt.Sprintf(`
@@ -187,9 +187,9 @@ resource "netbox_cable" "test" {
 }`, testName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
-		CheckDestroy:      testAccCheckDevicePowerOutletDestroy,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		CheckDestroy:             testAccCheckDevicePowerOutletDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: cabledConfig,

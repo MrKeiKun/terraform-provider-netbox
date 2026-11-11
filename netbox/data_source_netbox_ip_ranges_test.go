@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccNetboxIpRangesDataSource_basic(t *testing.T) {
 	testStartIP := "11.0.0.101/24"
 	testEndIP := "11.0.0.150/24"
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -40,7 +40,7 @@ func TestAccNetboxIpRangesDataSource_filter(t *testing.T) {
 	testStartIP1 := "13.0.0.101/24"
 	testEndIP1 := "13.0.0.150/24"
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxIPAddressFullDependencies(testName) + fmt.Sprintf(`

@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func testAccNetboxVpnTunnelGroupSetUp(testName string) string {
@@ -33,8 +33,8 @@ func TestAccNetboxVpnTunnelGroupDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	setUp := testAccNetboxVpnTunnelGroupSetUp(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: setUp,

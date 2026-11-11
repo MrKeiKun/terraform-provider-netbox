@@ -5,14 +5,14 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccNetboxAvailableIPAddress_basic(t *testing.T) {
 	testPrefix := "1.1.2.0/24"
 	testIP := "1.1.2.1/24"
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -42,7 +42,7 @@ func TestAccNetboxAvailableIPAddress_basic_range(t *testing.T) {
 	endAddress := "1.1.5.50/24"
 	testIP := "1.1.5.1/24"
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -68,7 +68,7 @@ resource "netbox_available_ip_address" "test_range" {
 func TestAccNetboxAvailableIPAddress_multipleIpsParallel(t *testing.T) {
 	testPrefix := "1.1.3.0/24"
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -107,7 +107,7 @@ func TestAccNetboxAvailableIPAddress_multipleIpsParallel_range(t *testing.T) {
 	endAddress := "1.1.6.50/24"
 	testIP := []string{"1.1.6.1/24", "1.1.6.2/24", "1.1.6.3/24"}
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -145,7 +145,7 @@ func TestAccNetboxAvailableIPAddress_multipleIpsSerial(t *testing.T) {
 	testPrefix := "1.1.4.0/24"
 	testIP := []string{"1.1.4.1/24", "1.1.4.2/24", "1.1.4.3/24"}
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -186,7 +186,7 @@ func TestAccNetboxAvailableIPAddress_multipleIpsSerial_range(t *testing.T) {
 	endAddress := "1.1.7.50/24"
 	testIP := []string{"1.1.7.1/24", "1.1.7.2/24", "1.1.7.3/24"}
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -227,7 +227,7 @@ func TestAccNetboxAvailableIPAddress_deviceByObjectType(t *testing.T) {
 	testSlug := "av_ipa_dev_ot"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxIPAddressFullDeviceDependencies(testName) + fmt.Sprintf(`
@@ -258,7 +258,7 @@ func TestAccNetboxAvailableIPAddress_deviceByFieldName(t *testing.T) {
 	testSlug := "av_ipa_dev_fn"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxIPAddressFullDeviceDependencies(testName) + fmt.Sprintf(`
@@ -287,7 +287,7 @@ func TestAccNetboxAvailableIPAddress_cf(t *testing.T) {
 	testSlug := "av_ipa_cf"
 
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -339,8 +339,8 @@ func TestAccNetboxAvailableIPAddress_requiredCustomField(t *testing.T) {
 	testSlug := "av_ipa_reqcf"
 
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -391,8 +391,8 @@ resource "netbox_prefix" "test" {
 }
 `, name)
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: deps + `

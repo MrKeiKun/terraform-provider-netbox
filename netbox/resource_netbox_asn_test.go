@@ -5,15 +5,15 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccNetboxAsn_basic(t *testing.T) {
 	testSlug := "asn_basic"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -80,7 +80,7 @@ resource "netbox_asn" "test" {
 //	testField := strings.ReplaceAll(testAccGetTestName(testSlug), "-", "_")
 //	resource.Test(t, resource.TestCase{
 //		PreCheck:  func() { testAccPreCheck(t) },
-//		ProviderFactories: testAccProviderFactories,
+//		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 //		Steps: []resource.TestStep{
 //			{
 //				Config: fmt.Sprintf(`

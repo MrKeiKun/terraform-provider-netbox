@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func testAccNetboxNotificationGroupDependencies(testName string) string {
@@ -22,12 +22,12 @@ func TestAccNetboxNotificationGroup_basic(t *testing.T) {
 	testName := testAccGetTestName("notificationgr")
 	deps := testAccNetboxNotificationGroupDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
 		CheckDestroy: func(s *terraform.State) error {
-			return testAccCheckObjectsDestroyed(s, "netbox_notification_group", notificationGroupAPIPath)
+			return testAccCheckObjectsDestroyed(s, "netbox_notification_group", "extras/notification-groups/")
 		},
 		Steps: []resource.TestStep{
 			{
@@ -67,7 +67,7 @@ func TestAccNetboxNotificationGroupDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("notificationgr_ds")
 	deps := testAccNetboxNotificationGroupDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

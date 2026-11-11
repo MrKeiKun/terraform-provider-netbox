@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func testAccNetboxVirtualMachineInterfacePrimaryMACAddressFullDependencies(testName string) string {
@@ -81,8 +81,8 @@ func TestAccNetboxVirtualMachineInterfacePrimaryMACAddress_basic(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: testAccProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxVirtualMachineInterfacePrimaryMACAddressFullDependencies(testName),

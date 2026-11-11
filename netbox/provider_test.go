@@ -3,41 +3,31 @@ package netbox
 import (
 	"context"
 	"fmt"
-	"net/http"
-	"net/http/httptest"
 	"os"
 	"regexp"
 	"strings"
 	"testing"
 
 	semver "github.com/Masterminds/semver/v3"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/fwprovider"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
+	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/stretchr/testify/assert"
 )
 
-var testAccProviders map[string]*schema.Provider
-var testAccProviderFactories map[string]func() (*schema.Provider, error)
-var testAccProvider *schema.Provider
-var testPrefix = "test"
-
-func init() {
-	testAccProvider = Provider()
-	testAccProviders = map[string]*schema.Provider{
-		"netbox": testAccProvider,
-	}
-	testAccProviderFactories = map[string]func() (*schema.Provider, error){
-		"netbox": func() (*schema.Provider, error) { return testAccProvider, nil },
-	}
+var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
+	"netbox": providerserver.NewProtocol6WithError(fwprovider.New("test")()),
 }
 
-func TestProvider(t *testing.T) {
-	if err := Provider().InternalValidate(); err != nil {
-		t.Fatalf("provider failed internal validation: %s", err)
-	}
+var testPrefix = "test"
+
+// testAccClient returns a client for the NetBox the acceptance tests run against.
+func testAccClient() (*netboxapi.Client, error) {
+	return netboxapi.New(os.Getenv("NETBOX_SERVER_URL"), os.Getenv("NETBOX_API_TOKEN"), nil)
 }
 
 func testAccGetTestName(testSlug string) string {
@@ -81,107 +71,42 @@ func testProviderConfig(platform string) string {
 	}`, platform)
 }
 
-func providerInvalidConfigure() schema.ConfigureContextFunc {
-	return func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-		var diags diag.Diagnostics
-
-		config := &Config{}
-		config.ServerURL = "https://fake.netbox.server"
-		config.APIToken = "1234567890"
-
-		netboxClient, clientError := config.Client()
-		if clientError != nil {
-			return nil, diag.FromErr(clientError)
-		}
-
-		return &providerState{
-			rest:        netboxClient,
-			defaultTags: schema.NewSet(schema.HashString, nil),
-		}, diags
-	}
-}
-
 func TestAccNetboxProviderConfigure_failure(t *testing.T) {
-	testAccInvalidProvider := Provider()
-	testAccInvalidProvider.ConfigureContextFunc = providerInvalidConfigure()
-	testAccInvalidProviderFactories := map[string]func() (*schema.Provider, error){
-		"netbox": func() (*schema.Provider, error) { return testAccInvalidProvider, nil },
-	}
-
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccInvalidProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      testProviderConfig(acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)),
-				ExpectError: regexp.MustCompile("Post \"https://fake.netbox.server/api/dcim/platforms/\": dial tcp: lookup fake.netbox.server.*: no such host"),
+				Config: `
+provider "netbox" {
+  server_url         = "https://fake.netbox.server"
+  api_token          = "1234567890"
+  skip_version_check = true
+}
+` + testProviderConfig(acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)),
+				ExpectError: regexp.MustCompile("(?s)fake.netbox.server.*no such host"),
 			},
 		},
 	})
-}
-
-// TestProviderConfigure_nonJSONStatusResponse verifies that when the Netbox
-// version check (GET /api/status/) gets a non-JSON response - for example
-// from a misconfigured server_url or a proxy/ingress returning an HTML error
-// page - providerConfigure returns a clear, actionable diagnostic instead of
-// the raw JSON decoding error. See
-// https://github.com/MrKeiKun/terraform-provider-netbox/issues/263,
-// https://github.com/MrKeiKun/terraform-provider-netbox/issues/606, and
-// others reporting this same unhelpful error message.
-func TestProviderConfigure_nonJSONStatusResponse(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte("<html><body>not json</body></html>"))
-	}))
-	defer ts.Close()
-
-	raw := map[string]interface{}{
-		"server_url": ts.URL,
-		"api_token":  "0123456789abcdef0123456789abcdef01234567",
-	}
-	d := schema.TestResourceDataRaw(t, Provider().Schema, raw)
-
-	_, diags := providerConfigure(context.Background(), d)
-
-	if assert.True(t, diags.HasError(), "expected providerConfigure to return an error") {
-		found := false
-		for _, diagnostic := range diags {
-			if diagnostic.Severity != diag.Error {
-				continue
-			}
-			found = true
-			assert.Equal(t, "Failed to determine Netbox version", diagnostic.Summary)
-			assert.Contains(t, diagnostic.Detail, "skip_version_check")
-			assert.Contains(t, diagnostic.Detail, ts.URL+"/api/status/")
-			assert.True(t, strings.Contains(diagnostic.Detail, "Original error:"),
-				"expected the original error to still be included for debugging, prefixed by an explanation")
-		}
-		assert.True(t, found, "expected an error diagnostic")
-	}
 }
 
 func TestAccNetboxProviderDefaultTags(t *testing.T) {
 	defaultTag := fmt.Sprintf("managed-%s", acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
 
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: map[string]func() (*schema.Provider, error){
-			"netbox": func() (*schema.Provider, error) {
-				p := Provider()
-				p.ConfigureContextFunc = func(ctx context.Context, rd *schema.ResourceData) (interface{}, diag.Diagnostics) {
-					rd.Set("default_tags", []string{defaultTag})
-					return providerConfigure(ctx, rd)
-				}
-				return p, nil
-			},
-		},
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
+					provider "netbox" {
+						default_tags = ["%[1]s"]
+					}
+
 					resource "netbox_tag" "managed" {
-						name = "%s"
+						name = "%[1]s"
 					}
 
 					resource "netbox_site" "testsite" {
-						name = "%s"
+						name = "%[2]s"
 
 						depends_on = [
 							netbox_tag.managed
@@ -229,4 +154,21 @@ func testAccCheckAttrUnset(name, attr string) resource.TestCheckFunc {
 		}
 		return nil
 	}
+}
+
+// TestProviderSchema checks that the provider server starts and reports the schemas of all
+// resources and data sources without errors.
+func TestProviderSchema(t *testing.T) {
+	server, err := testAccProtoV6ProviderFactories["netbox"]()
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp, err := server.GetProviderSchema(context.Background(), &tfprotov6.GetProviderSchemaRequest{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, d := range resp.Diagnostics {
+		t.Errorf("%s: %s", d.Summary, d.Detail)
+	}
+	assert.NotEmpty(t, resp.ResourceSchemas)
 }

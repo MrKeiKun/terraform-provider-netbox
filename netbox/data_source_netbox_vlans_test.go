@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func testAccNetboxVlansSetUp() string {
@@ -81,7 +81,7 @@ func TestAccNetboxVlansDataSource_basic(t *testing.T) {
 	// This test cannot be run in parallel with other tests, because other tests create also Vlans
 	// These Vlans then interfere with the __n filter test
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: setUp,
@@ -135,8 +135,8 @@ func TestAccNetboxVlansDataSource_customFields(t *testing.T) {
 	testVidSkip := acctest.RandIntRange(2001, 4000)
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxVlansWithCustomFields(testName, testField, testVidMatch, testVidSkip),

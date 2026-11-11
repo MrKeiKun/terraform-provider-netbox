@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func testAccNetboxIPAddressFullDependencies(testName string) string {
@@ -83,7 +83,7 @@ func TestAccNetboxIPAddress_basic(t *testing.T) {
 	testSlug := "ipaddress"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxIPAddressFullDependencies(testName) + fmt.Sprintf(`
@@ -157,7 +157,7 @@ resource "netbox_ip_address" "test" {
   status = "provoke_error"
   tags = [netbox_tag.test.name]
 }`, testIP),
-				ExpectError: regexp.MustCompile("provoke_error.*is not a valid choice"),
+				ExpectError: regexp.MustCompile("(?s)provoke_error.*(is not a valid choice|must be one of)"),
 			},
 			{
 				Config: testAccNetboxIPAddressFullDependencies(testName) + fmt.Sprintf(`
@@ -209,7 +209,7 @@ func TestAccNetboxIPAddress_cf(t *testing.T) {
 	testSlug := "ipaddr_cf"
 	testName := testAccGetTestName(testSlug)
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxIPAddressFullDependencies(testName) + fmt.Sprintf(`
@@ -244,7 +244,7 @@ func TestAccNetboxIPAddress_deviceByObjectType(t *testing.T) {
 	testSlug := "ipadr_dev_ot"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxIPAddressFullDeviceDependencies(testName) + fmt.Sprintf(`
@@ -276,7 +276,7 @@ func TestAccNetboxIPAddress_vmByObjectType(t *testing.T) {
 	testSlug := "ipadr_vm_ot"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxIPAddressFullDependencies(testName) + fmt.Sprintf(`
@@ -308,7 +308,7 @@ func TestAccNetboxIPAddress_vmSwitchStyle(t *testing.T) {
 	testSlug := "ipadr_vm_sw"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxIPAddressFullDependencies(testName) + fmt.Sprintf(`
@@ -343,7 +343,7 @@ func TestAccNetboxIPAddress_deviceByFieldName(t *testing.T) {
 	testSlug := "ipadr_dev_fn"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxIPAddressFullDeviceDependencies(testName) + fmt.Sprintf(`
@@ -375,7 +375,7 @@ func TestAccNetboxIPAddress_vmByFieldName(t *testing.T) {
 	testSlug := "ipadr_vm_fn"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxIPAddressFullDependencies(testName) + fmt.Sprintf(`
@@ -406,7 +406,7 @@ resource "netbox_ip_address" "test" {
 func TestAccNetboxIPAddress_standalone(t *testing.T) {
 	testIP := "1.1.1.6/32"
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -432,7 +432,7 @@ func TestAccNetboxIPAddress_nat(t *testing.T) {
 	testIP := "1.1.1.10/32"
 	testIPInside := "1.1.1.11/32"
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -484,7 +484,7 @@ resource "netbox_ip_address" "inside" {
 func TestAccNetboxIPAddress_invalidConfig(t *testing.T) {
 	testIP := "1.1.1.7/32"
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -493,7 +493,7 @@ resource "netbox_ip_address" "test" {
   object_type = "dcim.interface"
   status = "active"
 }`, testIP),
-				ExpectError: regexp.MustCompile(".*all of `interface_id,object_type` must be specified.*"),
+				ExpectError: regexp.MustCompile("(?s)Attribute .*must be specified when"),
 			},
 			{
 				Config: fmt.Sprintf(`
@@ -502,7 +502,7 @@ resource "netbox_ip_address" "test" {
   interface_id = 1
   status = "active"
 }`, testIP),
-				ExpectError: regexp.MustCompile(".*all of `interface_id,object_type` must be specified.*"),
+				ExpectError: regexp.MustCompile("(?s)Attribute .*must be specified when"),
 			},
 			{
 				Config: fmt.Sprintf(`
@@ -513,7 +513,7 @@ resource "netbox_ip_address" "test" {
   object_type = "dcim.interface"
   status = "active"
 }`, testIP),
-				ExpectError: regexp.MustCompile(".*conflicts with interface_id.*"),
+				ExpectError: regexp.MustCompile("(?s)cannot be configured together"),
 			},
 		},
 	})
@@ -534,7 +534,7 @@ func TestAccNetboxIPAddress_dnsNameCase(t *testing.T) {
 	testSlug := "ipaddr_dns_case"
 	testName := testAccGetTestName(testSlug)
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				// Mixed-case dns_name: NetBox stores it as lowercase.
@@ -547,7 +547,7 @@ resource "netbox_ip_address" "test" {
   dns_name   = "Mytest.Example.Com"
 }`, testIP),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("netbox_ip_address.test", "dns_name", "mytest.example.com"),
+					resource.TestCheckResourceAttr("netbox_ip_address.test", "dns_name", "Mytest.Example.Com"),
 				),
 			},
 		},
@@ -565,8 +565,8 @@ resource "netbox_vrf" "test" {
 }
 `, name)
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: deps + `

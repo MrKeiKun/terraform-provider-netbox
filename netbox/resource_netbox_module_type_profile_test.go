@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func testAccNetboxModuleTypeProfileDependencies(testName string) string {
@@ -18,12 +18,12 @@ func TestAccNetboxModuleTypeProfile_basic(t *testing.T) {
 	testName := testAccGetTestName("moduletypeprof")
 	deps := testAccNetboxModuleTypeProfileDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
 		CheckDestroy: func(s *terraform.State) error {
-			return testAccCheckObjectsDestroyed(s, "netbox_module_type_profile", moduleTypeProfileAPIPath)
+			return testAccCheckObjectsDestroyed(s, "netbox_module_type_profile", "dcim/module-type-profiles/")
 		},
 		Steps: []resource.TestStep{
 			{
@@ -60,7 +60,7 @@ func TestAccNetboxModuleTypeProfileDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("moduletypeprof_ds")
 	deps := testAccNetboxModuleTypeProfileDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

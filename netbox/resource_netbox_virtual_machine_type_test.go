@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func testAccNetboxVirtualMachineTypeDependencies(testName string) string {
@@ -17,13 +17,13 @@ func TestAccNetboxVirtualMachineType_basic(t *testing.T) {
 	testName := testAccGetTestName("virtualmachine")
 	deps := testAccNetboxVirtualMachineTypeDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 			testAccSkipBelowVersion(t, "4.6.0")
 		},
 		CheckDestroy: func(s *terraform.State) error {
-			return testAccCheckObjectsDestroyed(s, "netbox_virtual_machine_type", virtualMachineTypeAPIPath)
+			return testAccCheckObjectsDestroyed(s, "netbox_virtual_machine_type", "virtualization/virtual-machine-types/")
 		},
 		Steps: []resource.TestStep{
 			{
@@ -67,7 +67,7 @@ func TestAccNetboxVirtualMachineTypeDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("virtualmachine_ds")
 	deps := testAccNetboxVirtualMachineTypeDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 			testAccSkipBelowVersion(t, "4.6.0")

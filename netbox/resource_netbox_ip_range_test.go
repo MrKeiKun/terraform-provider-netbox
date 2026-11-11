@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func testAccNetboxIPRangeFullDependencies(testStartAddress string, testSlug string) string {
@@ -40,8 +40,8 @@ func TestAccNetboxIpRange_basic(t *testing.T) {
 	testEndAddress := "10.0.0.50/24"
 	testDescription := "Test Description"
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxIPRangeFullDependencies(testName, randomSlug) + fmt.Sprintf(`
@@ -99,8 +99,8 @@ func TestAccNetboxIpRange_with_dependencies(t *testing.T) {
 	testEndAddress := "10.0.0.100/24"
 	testDescription := "Test Description"
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxIPRangeFullDependencies(testName, randomSlug) + fmt.Sprintf(`
@@ -144,8 +144,8 @@ func TestAccNetboxIpRange_utilized_populated(t *testing.T) {
 	testEndAddress := "10.0.0.50/24"
 
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxIPRangeFullDependencies(testName, randomSlug) + fmt.Sprintf(`
@@ -212,8 +212,8 @@ func TestAccNetboxIpRange_cf(t *testing.T) {
 	testEndAddress := "10.0.1.50/24"
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

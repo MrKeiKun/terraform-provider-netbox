@@ -2,18 +2,19 @@ package netbox
 
 import (
 	"fmt"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/fwresource"
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccNetboxClusterGroup_basic(t *testing.T) {
 	testSlug := "clstrgrp_basic"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -52,8 +53,8 @@ func TestAccNetboxClusterGroup_defaultSlug(t *testing.T) {
 	testSlug := "clstrgrp_defSlug"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -63,7 +64,7 @@ resource "netbox_cluster_group" "test" {
 }`, testName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("netbox_cluster_group.test", "name", testName),
-					resource.TestCheckResourceAttr("netbox_cluster_group.test", "slug", getSlug(testName)),
+					resource.TestCheckResourceAttr("netbox_cluster_group.test", "slug", fwresource.Slug(testName)),
 					resource.TestCheckResourceAttr("netbox_cluster_group.test", "description", testName),
 				),
 			},

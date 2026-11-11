@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func testAccNetboxIKEProposalDependencies(testName string) string {
@@ -17,12 +17,12 @@ func TestAccNetboxIKEProposal_basic(t *testing.T) {
 	testName := testAccGetTestName("ikeproposal")
 	deps := testAccNetboxIKEProposalDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
 		CheckDestroy: func(s *terraform.State) error {
-			return testAccCheckObjectsDestroyed(s, "netbox_ike_proposal", iKEProposalAPIPath)
+			return testAccCheckObjectsDestroyed(s, "netbox_ike_proposal", "vpn/ike-proposals/")
 		},
 		Steps: []resource.TestStep{
 			{
@@ -70,7 +70,7 @@ func TestAccNetboxIKEProposalDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("ikeproposal_ds")
 	deps := testAccNetboxIKEProposalDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

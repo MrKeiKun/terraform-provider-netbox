@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func testAccNetboxInterfaceFullDependencies(testName string) string {
@@ -107,9 +107,9 @@ func TestAccNetboxInterface_basic(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	setUp := testAccNetboxInterfaceFullDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccCheckInterfaceDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckInterfaceDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: setUp + testAccNetboxInterfaceBasic(testName),
@@ -134,9 +134,9 @@ func TestAccNetboxInterface_opts(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	setUp := testAccNetboxInterfaceFullDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccCheckInterfaceDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckInterfaceDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: setUp + testAccNetboxInterfaceOpts(testName, "true"),
@@ -172,9 +172,9 @@ func TestAccNetboxInterface_vlans(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	setUp := testAccNetboxInterfaceFullDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccCheckInterfaceDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckInterfaceDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: setUp + testAccNetboxInterfaceVlans(testName),
@@ -212,9 +212,9 @@ func TestAccNetboxInterface_bridge(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	setUp := testAccNetboxInterfaceFullDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccCheckInterfaceDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckInterfaceDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: setUp + testAccNetboxInterfaceBridge(testName),
@@ -255,9 +255,9 @@ func TestAccNetboxInterface_clearDescription(t *testing.T) {
 	testName := testAccGetTestName("iface_cleardesc")
 	setUp := testAccNetboxInterfaceFullDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccCheckInterfaceDestroy,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckInterfaceDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: setUp + testAccNetboxInterfaceOpts(testName, "true"),

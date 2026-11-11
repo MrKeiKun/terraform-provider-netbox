@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func testAccNetboxASNRangeDependencies(testName string) string {
@@ -20,12 +20,12 @@ func TestAccNetboxASNRange_basic(t *testing.T) {
 	testName := testAccGetTestName("asnrange")
 	deps := testAccNetboxASNRangeDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
 		CheckDestroy: func(s *terraform.State) error {
-			return testAccCheckObjectsDestroyed(s, "netbox_asn_range", aSNRangeAPIPath)
+			return testAccCheckObjectsDestroyed(s, "netbox_asn_range", "ipam/asn-ranges/")
 		},
 		Steps: []resource.TestStep{
 			{
@@ -69,7 +69,7 @@ func TestAccNetboxASNRangeDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("asnrange_ds")
 	deps := testAccNetboxASNRangeDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

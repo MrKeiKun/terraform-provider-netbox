@@ -49,7 +49,7 @@ testacc-specific-test: docker-up
 
 .PHONY: test
 test:
-	go test $(TEST) $(TESTARGS) -timeout=120s -parallel=4 -cover
+	go test $(TEST) ./internal/... $(TESTARGS) -timeout=120s -parallel=4 -cover
 
 # Run dockerized Netbox for acceptance testing
 .PHONY: docker-up
@@ -75,5 +75,4 @@ docs:
 # The following make goals are only for local usage
 .PHONY: fmt
 fmt:
-	go fmt
-	go fmt netbox/*.go
+	go fmt ./...

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccNetboxIpAddressesDataSource_basic(t *testing.T) {
@@ -12,7 +12,7 @@ func TestAccNetboxIpAddressesDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	testIP := "203.0.113.1/24"
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxIPAddressFullDependencies(testName) + fmt.Sprintf(`
@@ -46,7 +46,7 @@ func TestAccNetboxIpAddressesDataSource_filter(t *testing.T) {
 	testIP0 := "203.0.113.1/24"
 	testIP1 := "203.0.113.2/24"
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxIPAddressFullDependencies(testName) + fmt.Sprintf(`
@@ -91,7 +91,7 @@ func TestAccNetboxIpAddressesDataSource_filter2(t *testing.T) {
 	testIP0 := "203.0.113.1/24"
 	testIP1 := "203.0.113.2/24"
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxIPAddressFullDependencies(testName) + fmt.Sprintf(`
@@ -139,7 +139,7 @@ func TestAccNetboxIpAddressesDataSource_filter_parent_prefix(t *testing.T) {
 	testIP0 := "203.0.113.1/24"
 	testIP1 := "203.0.200.1/24"
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxIPAddressFullDependencies(testName) + fmt.Sprintf(`
@@ -189,7 +189,7 @@ func TestAccNetboxIpAddressesDataSource_multiple(t *testing.T) {
 	testIP1 := "203.0.113.2/24"
 	testName := testAccGetTestName(testSlug)
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxIPAddressFullDependencies(testName) + fmt.Sprintf(`
@@ -232,7 +232,7 @@ func TestAccNetboxIpAddressesDataSource_flattenTenant(t *testing.T) {
 	testIP1 := "203.0.113.20/24"
 	testName := testAccGetTestName(testSlug)
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxIPAddressFullDependencies(testName) + fmt.Sprintf(`
@@ -304,7 +304,7 @@ func TestAccNetboxIpAddressessDataSource_many(t *testing.T) {
 	testSlug := "ip_adrs_ds_many"
 	testName := testAccGetTestName(testSlug)
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxIPAddressesDataSourceDependenciesMany(testName) + fmt.Sprintf(`
@@ -341,7 +341,7 @@ func TestAccNetboxIpAddressesDataSource_filter_tags(t *testing.T) {
 	testIP1 := "203.0.113.2/24"
 	testIP2 := "203.0.113.3/24"
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxIPAddressFullDependencies(testName) + fmt.Sprintf(`
@@ -392,7 +392,7 @@ func TestAccNetboxIpAddressesDataSource_filter_description(t *testing.T) {
 	testIP0 := "203.0.113.1/24"
 	testIP1 := "203.0.113.2/24"
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxIPAddressFullDependencies(testName) + fmt.Sprintf(`
@@ -435,7 +435,7 @@ func TestAccNetboxIpAddressesDataSource_filter_customFields(t *testing.T) {
 	testIP0 := "203.0.113.1/24"
 	testIP1 := "203.0.113.2/24"
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxIPAddressFullDependencies(testName) + fmt.Sprintf(`
@@ -484,7 +484,7 @@ func TestAccNetboxIpAddressesDataSource_empty(t *testing.T) {
 	testSlug := "ipam_ipaddrs_ds_empty"
 	testName := testAccGetTestName(testSlug)
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxIPAddressFullDependencies(testName) + `

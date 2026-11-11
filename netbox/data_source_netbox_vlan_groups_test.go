@@ -3,7 +3,7 @@ package netbox
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func testAccNetboxVlanGroupsSetUp() string {
@@ -91,7 +91,7 @@ data "netbox_vlan_groups" "test" {
 func TestAccNetboxVlanGroupsDataSource_basic(t *testing.T) {
 	setUp := testAccNetboxVlanGroupsSetUp()
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: setUp,
@@ -128,7 +128,7 @@ func TestAccNetboxVlanGroupsDataSource_basic(t *testing.T) {
 func TestAccNetboxVlanGroupsDataSource_search(t *testing.T) {
 	setUp := testAccNetboxVlanGroupsSetUp()
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: setUp,
@@ -152,7 +152,7 @@ func TestAccNetboxVlanGroupsDataSource_search(t *testing.T) {
 func TestAccNetboxVlanGroupsDataSource_byID(t *testing.T) {
 	setUp := testAccNetboxVlanGroupsSetUp()
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: setUp,
@@ -171,7 +171,7 @@ func TestAccNetboxVlanGroupsDataSource_byID(t *testing.T) {
 func TestAccNetboxVlanGroupsDataSource_limit(t *testing.T) {
 	setUp := testAccNetboxVlanGroupsSetUp()
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: setUp,

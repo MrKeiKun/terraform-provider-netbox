@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func testAccNetboxPrefixFullDependencies(testName string, testSlug string, testVid string) string {
@@ -50,7 +50,7 @@ func TestAccNetboxPrefix_basic(t *testing.T) {
 	testDesc := "test prefix"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxPrefixFullDependencies(testName, randomSlug, testVid) + fmt.Sprintf(`
@@ -81,7 +81,7 @@ resource "netbox_prefix" "test" {
   tags = [netbox_tag.test.name]
   mark_utilized = true
 }`, testPrefix, testDesc),
-				ExpectError: regexp.MustCompile("provoke_error.*is not a valid choice"),
+				ExpectError: regexp.MustCompile("(?s)provoke_error.*(is not a valid choice|must be one of)"),
 			},
 			{
 				Config: testAccNetboxPrefixFullDependencies(testName, randomSlug, testVid) + fmt.Sprintf(`
@@ -238,7 +238,7 @@ func TestAccNetboxPrefix_cf(t *testing.T) {
 	testDesc := "test cf prefix"
 	testName := testAccGetTestName(testSlug)
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxPrefixFullDependencies(testName, randomSlug, testVid) + fmt.Sprintf(`
@@ -281,7 +281,7 @@ func TestAccNetboxPrefix_scopes(t *testing.T) {
 	randomSlug := testAccGetTestName(testSlug)
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxPrefixFullDependencies(testName, randomSlug, testVid) + fmt.Sprintf(`
@@ -398,8 +398,8 @@ resource "netbox_tag" "test" {
 }
 `, name)
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: deps + `

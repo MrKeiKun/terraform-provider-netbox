@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccNetboxVlanDataSource_basic(t *testing.T) {
@@ -15,7 +15,7 @@ func TestAccNetboxVlanDataSource_basic(t *testing.T) {
 	setUp := testAccNetboxVlanSetUp(testVid, testName)
 	extendedSetUp := testAccNetboxVlanSetUpMore(testVid, testVid-1, testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: setUp,
@@ -73,8 +73,8 @@ func TestAccNetboxVlanDataSource_customFields(t *testing.T) {
 	testVid := acctest.RandIntRange(1000, 4000)
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxVlanDataSourceWithCustomFields(testName, testField, testVid),

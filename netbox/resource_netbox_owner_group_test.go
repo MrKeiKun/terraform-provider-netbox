@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func testAccNetboxOwnerGroupDependencies(testName string) string {
@@ -18,13 +18,13 @@ func TestAccNetboxOwnerGroup_basic(t *testing.T) {
 	testName := testAccGetTestName("ownergroup")
 	deps := testAccNetboxOwnerGroupDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 			testAccSkipBelowVersion(t, "4.5.0")
 		},
 		CheckDestroy: func(s *terraform.State) error {
-			return testAccCheckObjectsDestroyed(s, "netbox_owner_group", ownerGroupAPIPath)
+			return testAccCheckObjectsDestroyed(s, "netbox_owner_group", "users/owner-groups/")
 		},
 		Steps: []resource.TestStep{
 			{
@@ -62,7 +62,7 @@ func TestAccNetboxOwnerGroupDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("ownergroup_ds")
 	deps := testAccNetboxOwnerGroupDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 			testAccSkipBelowVersion(t, "4.5.0")

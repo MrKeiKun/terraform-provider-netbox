@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func testAccNetboxMACAddressFullVmDependencies(testName string) string {
@@ -80,8 +80,8 @@ func TestAccNetboxMACAddress_standalone(t *testing.T) {
 	testSlug := "mac-addr"
 	macAddress := "00:1A:2B:3C:4D:5E"
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -119,8 +119,8 @@ func TestAccNetboxMACAddress_customFields(t *testing.T) {
 	testSlug := "mac-addr_cf"
 	macAddress := "00:1A:2B:3F:4D:5E"
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -151,6 +151,10 @@ resource "netbox_mac_address" "test" {
 				),
 			},
 			{
+				// the custom field is gone, so a refresh drops its value from the state
+				RefreshState: true,
+			},
+			{
 				ResourceName:      "netbox_mac_address.test",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -164,8 +168,8 @@ func TestAccNetboxMACAddress_deviceByFieldName(t *testing.T) {
 	macAddress := "01:1A:2B:3C:4D:5E"
 	macAddress2 := "01:1A:2B:7C:4D:5E"
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxMACAddressFullDeviceDependencies(testSlug) + fmt.Sprintf(`
@@ -211,8 +215,8 @@ func TestAccNetboxMACAddress_vmByFieldName(t *testing.T) {
 	testSlug := "mac-addr-vm-fn"
 	macAddress := "02:1A:2B:3C:4D:5E"
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxMACAddressFullVmDependencies(testSlug) + fmt.Sprintf(`
@@ -241,8 +245,8 @@ func TestAccNetboxMACAddress_deviceByObjectType(t *testing.T) {
 	testSlug := "mac-addr-dev-ot"
 	macAddress := "03:1A:2B:3C:4D:5E"
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxMACAddressFullDeviceDependencies(testSlug) + fmt.Sprintf(`
@@ -273,8 +277,8 @@ func TestAccNetboxMACAddress_vmByObjectType(t *testing.T) {
 	testSlug := "mac-addr-vm-ot"
 	macAddress := "04:1A:2B:3C:4D:5E"
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxMACAddressFullVmDependencies(testSlug) + fmt.Sprintf(`

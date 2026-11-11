@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccNetboxCircuitProviderNetworksDataSource_basic(t *testing.T) {
@@ -13,7 +13,7 @@ func TestAccNetboxCircuitProviderNetworksDataSource_basic(t *testing.T) {
 	dependencies := testAccNetboxCircuitProviderNetworksDataSourceDependencies(testName, testSlug)
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: dependencies,
@@ -54,7 +54,7 @@ func TestAccNetboxCircuitProviderNetworksDataSource_tags(t *testing.T) {
 	dependencies := testAccNetboxCircuitProviderNetworksDataSourceDependenciesWithTags(testName, testSlug)
 
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: dependencies,

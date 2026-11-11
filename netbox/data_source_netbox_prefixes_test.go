@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccNetboxPrefixesDataSource_basic(t *testing.T) {
@@ -13,7 +13,7 @@ func TestAccNetboxPrefixesDataSource_basic(t *testing.T) {
 	testVlanVids := []int{4093, 4094}
 	testName := testAccGetTestName(testSlug)
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -251,7 +251,7 @@ func TestAccNetboxPrefixesDataSource_customFields(t *testing.T) {
 	testPrefix := "10.100.0.0/24"
 	testGatewayIP := "10.100.0.1/24"
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

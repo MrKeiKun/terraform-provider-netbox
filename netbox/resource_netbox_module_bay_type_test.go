@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func testAccNetboxModuleBayTypeDependencies(testName string) string {
@@ -17,13 +17,13 @@ func TestAccNetboxModuleBayType_basic(t *testing.T) {
 	testName := testAccGetTestName("modulebaytype")
 	deps := testAccNetboxModuleBayTypeDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 			testAccSkipBelowVersion(t, "4.7.0")
 		},
 		CheckDestroy: func(s *terraform.State) error {
-			return testAccCheckObjectsDestroyed(s, "netbox_module_bay_type", moduleBayTypeAPIPath)
+			return testAccCheckObjectsDestroyed(s, "netbox_module_bay_type", "dcim/module-bay-types/")
 		},
 		Steps: []resource.TestStep{
 			{
@@ -64,7 +64,7 @@ func TestAccNetboxModuleBayTypeDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("modulebaytype_ds")
 	deps := testAccNetboxModuleBayTypeDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 			testAccSkipBelowVersion(t, "4.7.0")
