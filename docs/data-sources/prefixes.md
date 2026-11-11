@@ -30,21 +30,21 @@ output "prefixes" {
 
 ### Optional
 
-- `filter` (Block Set) A list of filters to apply to the API query when requesting prefixes. (see [below for nested schema](#nestedblock--filter))
-- `limit` (Number) The limit of objects to return from the API lookup. Defaults to `0`.
+- `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
+- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `prefixes` (List of Object) The prefixes of the prefixes. (see [below for nested schema](#nestedatt--prefixes))
+- `prefixes` (Attributes List) The prefixes found. (see [below for nested schema](#nestedatt--prefixes))
 
 <a id="nestedblock--filter"></a>
 ### Nested Schema for `filter`
 
 Required:
 
-- `name` (String) The name of the field to filter on. Supported fields are: `prefix`, `contains`, `vlan_vid`, `vrf_id`, `vlan_id`, `status`, `tenant_id`, `site_id`, `role_id`, `region_id`, `description` & `tag`.
-- `value` (String) The value to pass to the specified filter.
+- `name` (String) The name of the field to filter by.
+- `value` (String) The value of the field to filter by.
 
 
 <a id="nestedatt--prefixes"></a>
@@ -53,17 +53,17 @@ Required:
 Read-Only:
 
 - `custom_fields` (Map of String)
-- `description` (String)
-- `id` (Number)
-- `location_id` (Number)
-- `prefix` (String)
-- `region_id` (Number)
-- `role_id` (Number)
-- `site_group_id` (Number)
-- `site_id` (Number)
-- `status` (String)
-- `tags` (Set of String)
-- `tenant_id` (Number)
-- `vlan_id` (Number)
-- `vlan_vid` (Number)
-- `vrf_id` (Number)
+- `description` (String) A description of the prefixes.
+- `id` (Number) The numeric ID of the prefixes.
+- `location_id` (Number) The ID of the location associated with the prefixes.
+- `prefix` (String) The prefix in CIDR notation.
+- `region_id` (Number) The ID of the region associated with the prefixes.
+- `role_id` (Number) The ID of the role associated with the prefixes.
+- `site_group_id` (Number) The ID of the site group associated with the prefixes.
+- `site_id` (Number) The ID of the site associated with the prefixes.
+- `status` (String) The status of the prefixes.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the prefixes.
+- `vlan_id` (Number) The ID of the vlan associated with the prefixes.
+- `vlan_vid` (Number) The vlan vid of the prefixes.
+- `vrf_id` (Number) The ID of the vrf associated with the prefixes.

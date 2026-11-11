@@ -41,13 +41,13 @@ resource "netbox_front_port_template" "example" {
 - `positions` (Number) The positions of the front port template.
 - `rear_port_id` (Number) ID of the rear port template this port is mapped to. Use `rear_ports` to map more than one position. Conflicts with `rear_ports`.
 - `rear_port_position` (Number) The rear port position of the front port template.
-- `rear_ports` (Block List) The ports and positions this port is mapped to. Needs NetBox 4.5 or newer. (see [below for nested schema](#nestedblock--rear_ports))
+- `rear_ports` (Attributes List) The ports and positions this port is mapped to. Needs NetBox 4.5 or newer. (see [below for nested schema](#nestedatt--rear_ports))
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
 
-<a id="nestedblock--rear_ports"></a>
+<a id="nestedatt--rear_ports"></a>
 ### Nested Schema for `rear_ports`
 
 Required:

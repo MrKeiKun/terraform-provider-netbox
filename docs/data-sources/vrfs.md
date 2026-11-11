@@ -31,12 +31,12 @@ output "vrfs" {
 ### Optional
 
 - `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
-- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items. Defaults to `0`.
+- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `vrfs` (List of Object) The vrfs of the vrfs. (see [below for nested schema](#nestedatt--vrfs))
+- `vrfs` (Attributes List) The VRFs found. (see [below for nested schema](#nestedatt--vrfs))
 
 <a id="nestedblock--filter"></a>
 ### Nested Schema for `filter`
@@ -52,8 +52,8 @@ Required:
 
 Read-Only:
 
-- `description` (String)
-- `id` (Number)
-- `name` (String)
-- `rd` (String)
-- `tenant` (Number)
+- `description` (String) A description of the vrfs.
+- `id` (Number) The numeric ID of the vrfs.
+- `name` (String) The name of the vrfs.
+- `rd` (String) The route distinguisher of the vrfs.
+- `tenant` (Number) The tenant of the vrfs.

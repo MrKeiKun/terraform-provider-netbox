@@ -31,13 +31,13 @@ output "device_interfaces" {
 ### Optional
 
 - `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
-- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items. Defaults to `0`.
+- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items.
 - `name_regex` (String) The name regex of the device interfaces.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `interfaces` (List of Object) The interfaces of the device interfaces. (see [below for nested schema](#nestedatt--interfaces))
+- `interfaces` (Attributes List) The interfaces found. (see [below for nested schema](#nestedatt--interfaces))
 
 <a id="nestedblock--filter"></a>
 ### Nested Schema for `filter`
@@ -53,47 +53,47 @@ Required:
 
 Read-Only:
 
-- `description` (String)
-- `device_id` (Number)
-- `enabled` (Boolean)
-- `id` (Number)
-- `lag_device_interface_id` (Number)
-- `mac_address` (String)
-- `mac_addresses` (Set of Object) (see [below for nested schema](#nestedobjatt--interfaces--mac_addresses))
-- `mgmt_only` (Boolean)
-- `mode` (Map of String)
-- `mtu` (Number)
-- `name` (String)
-- `tag_ids` (List of Number)
-- `tagged_vlans` (List of Object) (see [below for nested schema](#nestedobjatt--interfaces--tagged_vlans))
-- `type` (String)
-- `untagged_vlan` (List of Object) (see [below for nested schema](#nestedobjatt--interfaces--untagged_vlan))
+- `description` (String) A description of the device interfaces.
+- `device_id` (Number) The ID of the device associated with the device interfaces.
+- `enabled` (Boolean) Whether the device interfaces is enabled.
+- `id` (Number) The numeric ID of the device interfaces.
+- `lag_device_interface_id` (Number) The ID of the LAG interface this interface is a member of, if any.
+- `mac_address` (String) The MAC address as string from the first MAC address assigned to this interface, if any.
+- `mac_addresses` (Attributes Set) The mac addresses of the device interfaces. (see [below for nested schema](#nestedatt--interfaces--mac_addresses))
+- `mgmt_only` (Boolean) Whether this interface is used only for out-of-band management.
+- `mode` (Map of String) The mode of the device interfaces.
+- `mtu` (Number) The MTU of the device interfaces.
+- `name` (String) The name of the device interfaces.
+- `tag_ids` (Set of Number) The IDs of the tag associated with the device interfaces.
+- `tagged_vlans` (Attributes List) The tagged vlans of the device interfaces. (see [below for nested schema](#nestedatt--interfaces--tagged_vlans))
+- `type` (String) The type of the device interfaces.
+- `untagged_vlan` (Attributes List) The untagged vlan of the device interfaces. (see [below for nested schema](#nestedatt--interfaces--untagged_vlan))
 
-<a id="nestedobjatt--interfaces--mac_addresses"></a>
+<a id="nestedatt--interfaces--mac_addresses"></a>
 ### Nested Schema for `interfaces.mac_addresses`
 
 Read-Only:
 
-- `description` (String)
-- `id` (Number)
-- `mac_address` (String)
+- `description` (String) A description of the device interfaces.
+- `id` (Number) The numeric ID of the device interfaces.
+- `mac_address` (String) The MAC address of the device interfaces.
 
 
-<a id="nestedobjatt--interfaces--tagged_vlans"></a>
+<a id="nestedatt--interfaces--tagged_vlans"></a>
 ### Nested Schema for `interfaces.tagged_vlans`
 
 Read-Only:
 
-- `id` (Number)
-- `name` (String)
-- `vid` (Number)
+- `id` (Number) The numeric ID of the device interfaces.
+- `name` (String) The name of the device interfaces.
+- `vid` (Number) The VLAN ID (1-4094).
 
 
-<a id="nestedobjatt--interfaces--untagged_vlan"></a>
+<a id="nestedatt--interfaces--untagged_vlan"></a>
 ### Nested Schema for `interfaces.untagged_vlan`
 
 Read-Only:
 
-- `id` (Number)
-- `name` (String)
-- `vid` (Number)
+- `id` (Number) The numeric ID of the device interfaces.
+- `name` (String) The name of the device interfaces.
+- `vid` (Number) The VLAN ID (1-4094).

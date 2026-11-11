@@ -63,13 +63,13 @@ data "netbox_circuit_provider_networks" "limit" {
 ### Optional
 
 - `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
-- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items. Defaults to `0`.
+- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items.
 - `name_regex` (String) The name regex of the circuit provider networks.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `provider_networks` (List of Object) The provider networks of the circuit provider networks. (see [below for nested schema](#nestedatt--provider_networks))
+- `provider_networks` (Attributes List) The Provider Networks found. (see [below for nested schema](#nestedatt--provider_networks))
 
 <a id="nestedblock--filter"></a>
 ### Nested Schema for `filter`
@@ -85,11 +85,11 @@ Required:
 
 Read-Only:
 
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `name` (String)
-- `provider_id` (Number)
-- `provider_network_id` (Number)
-- `service_id` (String)
-- `tags` (Set of String)
+- `comments` (String) Free-form comments about the circuit provider networks.
+- `custom_fields` (Map of String) Custom field values of the circuit provider networks, as a map of field name to value.
+- `description` (String) A description of the circuit provider networks.
+- `name` (String) The name of the circuit provider networks.
+- `provider_id` (Number) The ID of the provider associated with the circuit provider networks.
+- `provider_network_id` (Number) The ID of the provider network associated with the circuit provider networks.
+- `service_id` (String) The ID of the service associated with the circuit provider networks.
+- `tags` (Set of String) Tags assigned to the object, by name.

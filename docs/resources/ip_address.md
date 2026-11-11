@@ -129,7 +129,7 @@ resource "netbox_ip_address" "this" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `nat_outside_addresses` (List of Object) The nat outside addresses of the ip address. (see [below for nested schema](#nestedatt--nat_outside_addresses))
+- `nat_outside_addresses` (Attributes List) The nat outside addresses of the ip address. (see [below for nested schema](#nestedatt--nat_outside_addresses))
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 <a id="nestedatt--nat_outside_addresses"></a>
@@ -137,9 +137,9 @@ resource "netbox_ip_address" "this" {
 
 Read-Only:
 
-- `address_family` (Number)
-- `id` (Number)
-- `ip_address` (String)
+- `address_family` (Number) The address family of the ip address.
+- `id` (Number) The numeric ID of the ip address.
+- `ip_address` (String) The IP address of the ip address, in CIDR notation.
 
 ## Import
 

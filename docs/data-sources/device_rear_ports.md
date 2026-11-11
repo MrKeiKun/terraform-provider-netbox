@@ -31,12 +31,12 @@ output "device_rear_ports" {
 ### Optional
 
 - `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
-- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items. Defaults to `0`.
+- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `rear_ports` (List of Object) The rear ports of the device rear ports. (see [below for nested schema](#nestedatt--rear_ports))
+- `rear_ports` (Attributes List) The rear ports found. (see [below for nested schema](#nestedatt--rear_ports))
 
 <a id="nestedblock--filter"></a>
 ### Nested Schema for `filter`
@@ -52,14 +52,14 @@ Required:
 
 Read-Only:
 
-- `color` (String)
-- `description` (String)
-- `device_id` (Number)
-- `id` (Number)
-- `label` (String)
-- `mark_connected` (Boolean)
-- `module_id` (Number)
-- `name` (String)
-- `positions` (Number)
-- `tags` (Set of String)
-- `type` (String)
+- `color` (String) The color of the device rear ports as a hex string without the leading #.
+- `description` (String) A description of the device rear ports.
+- `device_id` (Number) The ID of the device associated with the device rear ports.
+- `id` (Number) The numeric ID of the device rear ports.
+- `label` (String) The label of the device rear ports.
+- `mark_connected` (Boolean) Whether the device rear ports is marked as connected even without a cable.
+- `module_id` (Number) The ID of the module associated with the device rear ports.
+- `name` (String) The name of the device rear ports.
+- `positions` (Number) The positions of the device rear ports.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `type` (String) The type of the device rear ports.

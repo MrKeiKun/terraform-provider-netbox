@@ -28,13 +28,13 @@ data "netbox_interfaces" "myvm_eth0" {
 ### Optional
 
 - `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
-- `limit` (Number) The limit of objects to return from the API lookup. Defaults to `0`.
+- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items.
 - `name_regex` (String) The name regex of the interfaces.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `interfaces` (List of Object) The interfaces of the interfaces. (see [below for nested schema](#nestedatt--interfaces))
+- `interfaces` (Attributes List) The interfaces found. (see [below for nested schema](#nestedatt--interfaces))
 
 <a id="nestedblock--filter"></a>
 ### Nested Schema for `filter`
@@ -50,33 +50,33 @@ Required:
 
 Read-Only:
 
-- `description` (String)
-- `enabled` (Boolean)
-- `id` (Number)
-- `mac_address` (String)
-- `mode` (Map of String)
-- `mtu` (Number)
-- `name` (String)
-- `tag_ids` (List of Number)
-- `tagged_vlans` (List of Object) (see [below for nested schema](#nestedobjatt--interfaces--tagged_vlans))
-- `untagged_vlan` (List of Object) (see [below for nested schema](#nestedobjatt--interfaces--untagged_vlan))
-- `vm_id` (Number)
+- `description` (String) A description of the interfaces.
+- `enabled` (Boolean) Whether the interfaces is enabled.
+- `id` (Number) The numeric ID of the interfaces.
+- `mac_address` (String) The MAC address of the interfaces.
+- `mode` (Map of String) The mode of the interfaces.
+- `mtu` (Number) The MTU of the interfaces.
+- `name` (String) The name of the interfaces.
+- `tag_ids` (Set of Number) The IDs of the tag associated with the interfaces.
+- `tagged_vlans` (Attributes List) The tagged vlans of the interfaces. (see [below for nested schema](#nestedatt--interfaces--tagged_vlans))
+- `untagged_vlan` (Attributes List) The untagged vlan of the interfaces. (see [below for nested schema](#nestedatt--interfaces--untagged_vlan))
+- `vm_id` (Number) The ID of the vm associated with the interfaces.
 
-<a id="nestedobjatt--interfaces--tagged_vlans"></a>
+<a id="nestedatt--interfaces--tagged_vlans"></a>
 ### Nested Schema for `interfaces.tagged_vlans`
 
 Read-Only:
 
-- `id` (Number)
-- `name` (String)
-- `vid` (Number)
+- `id` (Number) The numeric ID of the interfaces.
+- `name` (String) The name of the interfaces.
+- `vid` (Number) The VLAN ID (1-4094).
 
 
-<a id="nestedobjatt--interfaces--untagged_vlan"></a>
+<a id="nestedatt--interfaces--untagged_vlan"></a>
 ### Nested Schema for `interfaces.untagged_vlan`
 
 Read-Only:
 
-- `id` (Number)
-- `name` (String)
-- `vid` (Number)
+- `id` (Number) The numeric ID of the interfaces.
+- `name` (String) The name of the interfaces.
+- `vid` (Number) The VLAN ID (1-4094).

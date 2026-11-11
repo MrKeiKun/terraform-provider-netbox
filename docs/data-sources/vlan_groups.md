@@ -31,12 +31,12 @@ output "vlan_groups" {
 ### Optional
 
 - `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
-- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items. Defaults to `0`.
+- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `vlan_groups` (List of Object) The vlan groups of the vlan groups. (see [below for nested schema](#nestedatt--vlan_groups))
+- `vlan_groups` (Attributes List) The VLAN groups found. (see [below for nested schema](#nestedatt--vlan_groups))
 
 <a id="nestedblock--filter"></a>
 ### Nested Schema for `filter`
@@ -52,18 +52,18 @@ Required:
 
 Read-Only:
 
-- `description` (String)
-- `id` (Number)
-- `name` (String)
-- `ranges` (List of Object) (see [below for nested schema](#nestedobjatt--vlan_groups--ranges))
-- `slug` (String)
-- `tag_ids` (List of Number)
-- `used` (Number)
+- `description` (String) A description of the vlan groups.
+- `id` (Number) The numeric ID of the vlan groups.
+- `name` (String) The name of the vlan groups.
+- `ranges` (Attributes List) The ranges of the vlan groups. (see [below for nested schema](#nestedatt--vlan_groups--ranges))
+- `slug` (String) The URL-friendly slug of the vlan groups.
+- `tag_ids` (Set of Number) The IDs of the tag associated with the vlan groups.
+- `used` (Number) The used of the vlan groups.
 
-<a id="nestedobjatt--vlan_groups--ranges"></a>
+<a id="nestedatt--vlan_groups--ranges"></a>
 ### Nested Schema for `vlan_groups.ranges`
 
 Read-Only:
 
-- `end` (Number)
-- `start` (Number)
+- `end` (Number) The end of the vlan groups.
+- `start` (Number) The start of the vlan groups.

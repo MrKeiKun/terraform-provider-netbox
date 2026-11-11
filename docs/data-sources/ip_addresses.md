@@ -32,12 +32,12 @@ output "ip_addresses" {
 
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
-- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items. Defaults to `0`.
+- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `ip_addresses` (List of Object) The ip addresses of the ip addresses. (see [below for nested schema](#nestedatt--ip_addresses))
+- `ip_addresses` (Attributes List) The IP addresses found. (see [below for nested schema](#nestedatt--ip_addresses))
 
 <a id="nestedblock--filter"></a>
 ### Nested Schema for `filter`
@@ -53,37 +53,37 @@ Required:
 
 Read-Only:
 
-- `address_family` (String)
-- `assigned_object_id` (Number)
-- `assigned_object_type` (String)
-- `created` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `dns_name` (String)
-- `id` (Number)
-- `ip_address` (String)
-- `last_updated` (String)
-- `role` (String)
-- `status` (String)
-- `tags` (List of Object) (see [below for nested schema](#nestedobjatt--ip_addresses--tags))
-- `tenant` (List of Object) (see [below for nested schema](#nestedobjatt--ip_addresses--tenant))
+- `address_family` (String) The address family of the ip addresses.
+- `assigned_object_id` (Number) ID of the object the address is assigned to.
+- `assigned_object_type` (String) Content type of the object the address is assigned to, for example dcim.interface.
+- `created` (String) The created of the ip addresses.
+- `custom_fields` (Map of String) Custom field values of the ip addresses, as a map of field name to value.
+- `description` (String) A description of the ip addresses.
+- `dns_name` (String) The DNS name of the ip addresses.
+- `id` (Number) The numeric ID of the ip addresses.
+- `ip_address` (String) The IP address of the ip addresses, in CIDR notation.
+- `last_updated` (String) The last updated of the ip addresses.
+- `role` (String) The role of the ip addresses.
+- `status` (String) The status of the ip addresses.
+- `tags` (Attributes List) Tags to assign to the ip addresses. (see [below for nested schema](#nestedatt--ip_addresses--tags))
+- `tenant` (Attributes List) The tenant of the ip addresses. (see [below for nested schema](#nestedatt--ip_addresses--tenant))
 
-<a id="nestedobjatt--ip_addresses--tags"></a>
+<a id="nestedatt--ip_addresses--tags"></a>
 ### Nested Schema for `ip_addresses.tags`
 
 Read-Only:
 
-- `display` (String)
-- `id` (Number)
-- `name` (String)
-- `slug` (String)
+- `display` (String) The display of the ip addresses.
+- `id` (Number) The numeric ID of the ip addresses.
+- `name` (String) The name of the ip addresses.
+- `slug` (String) The URL-friendly slug of the ip addresses.
 
 
-<a id="nestedobjatt--ip_addresses--tenant"></a>
+<a id="nestedatt--ip_addresses--tenant"></a>
 ### Nested Schema for `ip_addresses.tenant`
 
 Read-Only:
 
-- `id` (Number)
-- `name` (String)
-- `slug` (String)
+- `id` (Number) The numeric ID of the ip addresses.
+- `name` (String) The name of the ip addresses.
+- `slug` (String) The URL-friendly slug of the ip addresses.

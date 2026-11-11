@@ -31,11 +31,11 @@ data "netbox_asns" "asns" {
 ### Optional
 
 - `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
-- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items. Defaults to `0`.
+- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items.
 
 ### Read-Only
 
-- `asns` (List of Object) The asns of the asns. (see [below for nested schema](#nestedatt--asns))
+- `asns` (Attributes List) The ASNs found. (see [below for nested schema](#nestedatt--asns))
 - `id` (String) The ID of this resource.
 
 <a id="nestedblock--filter"></a>
@@ -52,7 +52,7 @@ Required:
 
 Read-Only:
 
-- `asn` (Number)
-- `id` (Number)
-- `rir_id` (Number)
-- `tags` (Set of String)
+- `asn` (Number) The AS number.
+- `id` (Number) The numeric ID of the asns.
+- `rir_id` (Number) The ID of the rir associated with the asns.
+- `tags` (Set of String) Tags assigned to the object, by name.

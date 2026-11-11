@@ -11,9 +11,7 @@ description: |-
 # netbox_custom_field_choice_set (Resource)
 
 From the [official documentation](https://docs.netbox.dev/en/stable/models/extras/customfieldchoiceset/):
-
 Single- and multi-selection custom fields must define a set of valid choices from which the user may choose when defining the field value. These choices are defined as sets that may be reused among multiple custom fields.
-
 A choice set must define a base choice set and/or a set of arbitrary extra choices.
 
 ## Example Usage
@@ -38,11 +36,11 @@ resource "netbox_custom_field_choice_set" "test" {
 
 ### Optional
 
-- `base_choices` (String) Valid values are `IATA`, `ISO_3166` and `UN_LOCODE`. At least one of `base_choices` or `extra_choices` must be given.
+- `base_choices` (String) Valid values are `IATA`, `ISO_3166` and `UN_LOCODE`.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the custom field choice set.
-- `extra_choices` (List of List of String) This length of the inner lists must be exactly two, where the first value is the value of a choice and the second value is the label of the choice. At least one of `base_choices` or `extra_choices` must be given.
-- `order_alphabetically` (Boolean) experimental. Defaults to `false`.
+- `extra_choices` (List of List of String) This length of the inner lists must be exactly two, where the first value is the value of a choice and the second value is the label of the choice.
+- `order_alphabetically` (Boolean) experimental
 - `owner_id` (Number) The ID of the owner associated with the custom field choice set.
 
 ### Read-Only

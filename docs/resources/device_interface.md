@@ -69,7 +69,7 @@ resource "netbox_device_interface" "test" {
 
 - `id` (String) The ID of this resource.
 - `mac_address` (String) The MAC address as string from the first MAC address assigned to this interface, if any.
-- `mac_addresses` (Set of Object) The mac addresses of the device interface. (see [below for nested schema](#nestedatt--mac_addresses))
+- `mac_addresses` (Attributes Set) The mac addresses of the device interface. (see [below for nested schema](#nestedatt--mac_addresses))
 - `primary_mac_address_id` (Number) The primary MAC address id.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
@@ -78,9 +78,9 @@ resource "netbox_device_interface" "test" {
 
 Read-Only:
 
-- `description` (String)
-- `id` (Number)
-- `mac_address` (String)
+- `description` (String) A description of the device interface.
+- `id` (Number) The numeric ID of the device interface.
+- `mac_address` (String) The MAC address of the device interface.
 
 ## Import
 

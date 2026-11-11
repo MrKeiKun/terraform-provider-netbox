@@ -37,20 +37,20 @@ output "manufacturers" {
 ### Optional
 
 - `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
-- `limit` (Number) The maximum number of items to return. Will return all items if not set. Defaults to `0`.
+- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `manufacturers` (List of Object) The manufacturers of the manufacturer. (see [below for nested schema](#nestedatt--manufacturers))
+- `manufacturers` (Attributes List) The manufacturers found. (see [below for nested schema](#nestedatt--manufacturers))
 
 <a id="nestedblock--filter"></a>
 ### Nested Schema for `filter`
 
 Required:
 
-- `name` (String) The name of the field to filter by. Supported values are "name", "slug" and "tag".
-- `value` (String) The value to filter by. For "name" and "slug" this is a string, for "tag" this is the name of the tag.
+- `name` (String) The name of the field to filter by.
+- `value` (String) The value of the field to filter by.
 
 
 <a id="nestedatt--manufacturers"></a>
@@ -58,7 +58,7 @@ Required:
 
 Read-Only:
 
-- `description` (String)
-- `id` (Number)
-- `name` (String)
-- `slug` (String)
+- `description` (String) A description of the manufacturer.
+- `id` (Number) The numeric ID of the manufacturer.
+- `name` (String) The name of the manufacturer.
+- `slug` (String) The URL-friendly slug of the manufacturer.

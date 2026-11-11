@@ -24,6 +24,7 @@ data "netbox_cluster" "vmw_cluster_01" {
 ### Optional
 
 - `cluster_group_id` (Number) The ID of the cluster group associated with the cluster.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `id` (String) The numeric ID of the cluster. At least one of `name`, `site_id` or `id` must be given.
 - `name` (String) The name of the cluster. At least one of `name`, `site_id` or `id` must be given.
 - `site_id` (Number) The ID of the site associated with the cluster. At least one of `name`, `site_id` or `id` must be given.
@@ -33,7 +34,6 @@ data "netbox_cluster" "vmw_cluster_01" {
 - `cluster_id` (Number) The ID of the cluster associated with the cluster.
 - `cluster_type_id` (Number) The ID of the cluster type associated with the cluster.
 - `comments` (String) Free-form comments about the cluster.
-- `custom_fields` (Map of String) Custom field values of the cluster, as a map of field name to value.
 - `description` (String) A description of the cluster.
 - `location_id` (Number) The ID of the location associated with the cluster.
 - `region_id` (Number) The ID of the region associated with the cluster.

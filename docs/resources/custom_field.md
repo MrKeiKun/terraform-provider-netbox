@@ -57,7 +57,7 @@ resource "netbox_custom_field" "test" {
 - `validation_maximum` (Number) The maximum allowed value.
 - `validation_minimum` (Number) The minimum allowed value.
 - `validation_regex` (String) A regular expression that values must match.
-- `weight` (Number) The weight of the custom field.
+- `weight` (Number) The weight of the custom field. Defaults to `100`.
 
 ### Read-Only
 

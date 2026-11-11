@@ -30,22 +30,22 @@ output "locations" {
 
 ### Optional
 
-- `filter` (Block Set) A list of filter to apply to the API query when requesting locations. (see [below for nested schema](#nestedblock--filter))
-- `limit` (Number) The limit of objects to return from the API lookup. Defaults to `0`.
+- `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
+- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items.
 - `tags` (Set of String) A list of tags to filter on.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `locations` (List of Object) The locations of the locations. (see [below for nested schema](#nestedatt--locations))
+- `locations` (Attributes List) The locations found. (see [below for nested schema](#nestedatt--locations))
 
 <a id="nestedblock--filter"></a>
 ### Nested Schema for `filter`
 
 Required:
 
-- `name` (String) The name of the field to filter on. Supported fields are: .
-- `value` (String) The value to pass to the specified filter.
+- `name` (String) The name of the field to filter by.
+- `value` (String) The value of the field to filter by.
 
 
 <a id="nestedatt--locations"></a>
@@ -53,12 +53,12 @@ Required:
 
 Read-Only:
 
-- `description` (String)
-- `facility` (String)
-- `id` (String)
-- `name` (String)
-- `parent_id` (Number)
-- `site_id` (Number)
-- `slug` (String)
-- `status` (String)
-- `tenant_id` (Number)
+- `description` (String) A description of the locations.
+- `facility` (String) The facility of the locations.
+- `id` (String) The numeric ID of the locations.
+- `name` (String) The name of the locations.
+- `parent_id` (Number) The ID of the parent associated with the locations.
+- `site_id` (Number) The ID of the site associated with the locations.
+- `slug` (String) The URL-friendly slug of the locations.
+- `status` (String) The status of the locations.
+- `tenant_id` (Number) The ID of the tenant associated with the locations.

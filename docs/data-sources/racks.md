@@ -31,12 +31,12 @@ output "racks" {
 ### Optional
 
 - `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
-- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items. Defaults to `0`.
+- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `racks` (List of Object) The racks of the racks. (see [below for nested schema](#nestedatt--racks))
+- `racks` (Attributes List) The racks found. (see [below for nested schema](#nestedatt--racks))
 
 <a id="nestedblock--filter"></a>
 ### Nested Schema for `filter`
@@ -52,28 +52,28 @@ Required:
 
 Read-Only:
 
-- `asset_tag` (String)
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `desc_units` (Boolean)
-- `description` (String)
-- `facility_id` (String)
-- `id` (Number)
-- `location_id` (Number)
-- `max_weight` (Number)
-- `mounting_depth` (Number)
-- `name` (String)
-- `outer_depth` (Number)
-- `outer_unit` (String)
-- `outer_width` (Number)
-- `role_id` (Number)
-- `serial` (String)
-- `site_id` (Number)
-- `status` (String)
-- `tags` (Set of String)
-- `tenant_id` (Number)
-- `type_id` (Number)
-- `u_height` (Number)
-- `weight` (Number)
-- `weight_unit` (String)
-- `width` (Number)
+- `asset_tag` (String) The asset tag of the racks.
+- `comments` (String) Free-form comments about the racks.
+- `custom_fields` (Map of String) Custom field values of the racks, as a map of field name to value.
+- `desc_units` (Boolean) Whether desc units is enabled for the racks.
+- `description` (String) A description of the racks.
+- `facility_id` (String) The ID of the facility associated with the racks.
+- `id` (Number) The numeric ID of the racks.
+- `location_id` (Number) The ID of the location associated with the racks.
+- `max_weight` (Number) The max weight of the racks.
+- `mounting_depth` (Number) The mounting depth of the racks.
+- `name` (String) The name of the racks.
+- `outer_depth` (Number) The outer depth of the racks.
+- `outer_unit` (String) The outer unit of the racks.
+- `outer_width` (Number) The outer width of the racks.
+- `role_id` (Number) The ID of the role associated with the racks.
+- `serial` (String) The serial number of the racks.
+- `site_id` (Number) The ID of the site associated with the racks.
+- `status` (String) The status of the racks.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the racks.
+- `type_id` (Number) The ID of the type associated with the racks.
+- `u_height` (Number) The height of the racks in rack units.
+- `weight` (Number) The weight of the racks.
+- `weight_unit` (String) The unit of the weight.
+- `width` (Number) The width of the racks.

@@ -37,12 +37,12 @@ data "netbox_tags" "not_ansible_tags" {
 ### Optional
 
 - `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
-- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items. Defaults to `0`.
+- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags` (List of Object) Tags to assign to the tags. (see [below for nested schema](#nestedatt--tags))
+- `tags` (Attributes List) The tags found. (see [below for nested schema](#nestedatt--tags))
 
 <a id="nestedblock--filter"></a>
 ### Nested Schema for `filter`
@@ -58,8 +58,8 @@ Required:
 
 Read-Only:
 
-- `color` (String)
-- `description` (String)
-- `name` (String)
-- `slug` (String)
-- `tag_id` (Number)
+- `color` (String) The color of the tags as a hex string without the leading #.
+- `description` (String) A description of the tags.
+- `name` (String) The name of the tags.
+- `slug` (String) The URL-friendly slug of the tags.
+- `tag_id` (Number) The ID of the tag associated with the tags.

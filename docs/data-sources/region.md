@@ -26,7 +26,7 @@ data "netbox_region" "example" {
 
 ### Optional
 
-- `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
+- `filter` (Block Set) Filters that select the object. (see [below for nested schema](#nestedblock--filter))
 
 ### Read-Only
 

@@ -49,7 +49,7 @@ resource "netbox_service" "ssh" {
 - `port_mappings` (Set of String) The ports of the service as `protocol/port` strings, for example `tcp/80`. Use this for a service that spans more than one protocol. Needs NetBox 4.6 or newer. Exactly one of `port`, `ports` or `port_mappings` must be given. Conflicts with `protocol`.
 - `ports` (Set of Number) The ports of the service. Exactly one of `port`, `ports` or `port_mappings` must be given.
 - `protocol` (String) Valid values are `tcp`, `udp` and `sctp`. Conflicts with `port_mappings`.
-- `tags` (Set of String) Tags to assign to the service.
+- `tags` (Set of String) Tags assigned to the object, by name.
 - `virtual_machine_id` (Number) The ID of the virtual machine associated with the service. Exactly one of `virtual_machine_id` or `device_id` must be given.
 
 ### Read-Only

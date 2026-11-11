@@ -50,12 +50,12 @@ resource "netbox_cable" "test" {
 
 ### Required
 
-- `a_termination` (Block Set, Min: 1) The a termination of the cable. (see [below for nested schema](#nestedblock--a_termination))
-- `b_termination` (Block Set, Min: 1) The b termination of the cable. (see [below for nested schema](#nestedblock--b_termination))
 - `status` (String) One of [connected, planned, decommissioning].
 
 ### Optional
 
+- `a_termination` (Block Set) The a termination of the cable. (see [below for nested schema](#nestedblock--a_termination))
+- `b_termination` (Block Set) The b termination of the cable. (see [below for nested schema](#nestedblock--b_termination))
 - `bundle_id` (Number) The ID of the bundle associated with the cable.
 - `color_hex` (String) The color hex of the cable.
 - `comments` (String) Free-form comments about the cable.

@@ -31,12 +31,12 @@ output "tenants" {
 ### Optional
 
 - `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
-- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items. Defaults to `0`.
+- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tenants` (List of Object) The tenants of the tenants. (see [below for nested schema](#nestedatt--tenants))
+- `tenants` (Attributes List) The tenants found. (see [below for nested schema](#nestedatt--tenants))
 
 <a id="nestedblock--filter"></a>
 ### Nested Schema for `filter`
@@ -52,33 +52,33 @@ Required:
 
 Read-Only:
 
-- `circuit_count` (Number)
-- `cluster_count` (Number)
-- `comments` (String)
-- `created` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `device_count` (Number)
-- `id` (Number)
-- `ip_address_count` (Number)
-- `last_updated` (String)
-- `name` (String)
-- `prefix_count` (Number)
-- `rack_count` (Number)
-- `site_count` (Number)
-- `slug` (String)
-- `tags` (Set of String)
-- `tenant_group` (List of Object) (see [below for nested schema](#nestedobjatt--tenants--tenant_group))
-- `vlan_count` (Number)
-- `vm_count` (Number)
-- `vrf_count` (Number)
+- `circuit_count` (Number) The circuit count of the tenants.
+- `cluster_count` (Number) The cluster count of the tenants.
+- `comments` (String) Free-form comments about the tenants.
+- `created` (String) The created of the tenants.
+- `custom_fields` (Map of String) Custom field values of the tenants, as a map of field name to value.
+- `description` (String) A description of the tenants.
+- `device_count` (Number) The device count of the tenants.
+- `id` (Number) The numeric ID of the tenants.
+- `ip_address_count` (Number) The ip address count of the tenants.
+- `last_updated` (String) The last updated of the tenants.
+- `name` (String) The name of the tenants.
+- `prefix_count` (Number) The prefix count of the tenants.
+- `rack_count` (Number) The rack count of the tenants.
+- `site_count` (Number) The site count of the tenants.
+- `slug` (String) The URL-friendly slug of the tenants.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_group` (Attributes List) The tenant group of the tenants. (see [below for nested schema](#nestedatt--tenants--tenant_group))
+- `vlan_count` (Number) The vlan count of the tenants.
+- `vm_count` (Number) The vm count of the tenants.
+- `vrf_count` (Number) The vrf count of the tenants.
 
-<a id="nestedobjatt--tenants--tenant_group"></a>
+<a id="nestedatt--tenants--tenant_group"></a>
 ### Nested Schema for `tenants.tenant_group`
 
 Read-Only:
 
-- `id` (Number)
-- `name` (String)
-- `slug` (String)
-- `tenant_count` (Number)
+- `id` (Number) The numeric ID of the tenants.
+- `name` (String) The name of the tenants.
+- `slug` (String) The URL-friendly slug of the tenants.
+- `tenant_count` (Number) The tenant count of the tenants.

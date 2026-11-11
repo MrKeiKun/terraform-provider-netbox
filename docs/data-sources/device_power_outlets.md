@@ -31,13 +31,13 @@ output "device_power_outlets" {
 ### Optional
 
 - `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
-- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items. Defaults to `0`.
+- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items.
 - `name_regex` (String) The name regex of the device power outlets.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `power_outlets` (List of Object) The power outlets of the device power outlets. (see [below for nested schema](#nestedatt--power_outlets))
+- `power_outlets` (Attributes List) The power outlets found. (see [below for nested schema](#nestedatt--power_outlets))
 
 <a id="nestedblock--filter"></a>
 ### Nested Schema for `filter`
@@ -53,12 +53,12 @@ Required:
 
 Read-Only:
 
-- `description` (String)
-- `device_id` (Number)
-- `feed_leg` (String)
-- `id` (Number)
-- `module_id` (Number)
-- `name` (String)
-- `power_port_id` (Number)
-- `tag_ids` (List of Number)
-- `type` (String)
+- `description` (String) A description of the device power outlets.
+- `device_id` (Number) The ID of the device associated with the device power outlets.
+- `feed_leg` (String) The feed leg of the device power outlets.
+- `id` (Number) The numeric ID of the device power outlets.
+- `module_id` (Number) The ID of the module associated with the device power outlets.
+- `name` (String) The name of the device power outlets.
+- `power_port_id` (Number) The ID of the power port associated with the device power outlets.
+- `tag_ids` (Set of Number) The IDs of the tag associated with the device power outlets.
+- `type` (String) The type of the device power outlets.

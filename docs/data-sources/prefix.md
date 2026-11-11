@@ -23,8 +23,8 @@ data "netbox_prefix" "example" {
 
 ### Optional
 
-- `cidr` (String, Deprecated) The cidr of the prefix. At least one of `description`, `family`, `prefix`, `vlan_vid`, `vrf_id`, `vlan_id`, `tenant_id`, `site_id`, `role_id`, `cidr`, `custom_fields`, `tag` or `status` must be given. Conflicts with `prefix`.
-- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value. At least one of `description`, `family`, `prefix`, `vlan_vid`, `vrf_id`, `vlan_id`, `tenant_id`, `site_id`, `role_id`, `cidr`, `custom_fields`, `tag` or `status` must be given.
+- `cidr` (String) The cidr of the prefix. At least one of `description`, `family`, `prefix`, `vlan_vid`, `vrf_id`, `vlan_id`, `tenant_id`, `site_id`, `role_id`, `cidr`, `custom_fields`, `tag` or `status` must be given. Conflicts with `prefix`.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) Description to include in the data source filter. At least one of `description`, `family`, `prefix`, `vlan_vid`, `vrf_id`, `vlan_id`, `tenant_id`, `site_id`, `role_id`, `cidr`, `custom_fields`, `tag` or `status` must be given.
 - `family` (Number) The IP family of the prefix. One of 4 or 6. At least one of `description`, `family`, `prefix`, `vlan_vid`, `vrf_id`, `vlan_id`, `tenant_id`, `site_id`, `role_id`, `cidr`, `custom_fields`, `tag` or `status` must be given.
 - `prefix` (String) The prefix in CIDR notation. At least one of `description`, `family`, `prefix`, `vlan_vid`, `vrf_id`, `vlan_id`, `tenant_id`, `site_id`, `role_id`, `cidr`, `custom_fields`, `tag` or `status` must be given. Conflicts with `cidr`.

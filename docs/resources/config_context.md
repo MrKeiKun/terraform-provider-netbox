@@ -54,7 +54,6 @@ resource "netbox_config_context" "test" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import
 

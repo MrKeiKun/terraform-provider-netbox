@@ -28,21 +28,31 @@ output "terminations" {
 
 ### Optional
 
-- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items. Defaults to `0`.
+- `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
+- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `terminations` (List of Object) The terminations of the vpn tunnel terminations. (see [below for nested schema](#nestedatt--terminations))
+- `terminations` (Attributes List) The Tunnel Terminations found. (see [below for nested schema](#nestedatt--terminations))
+
+<a id="nestedblock--filter"></a>
+### Nested Schema for `filter`
+
+Required:
+
+- `name` (String) The name of the field to filter by.
+- `value` (String) The value of the field to filter by.
+
 
 <a id="nestedatt--terminations"></a>
 ### Nested Schema for `terminations`
 
 Read-Only:
 
-- `id` (Number)
-- `role` (String)
-- `tags` (Set of String)
-- `termination_id` (Number)
-- `termination_type` (String)
-- `tunnel_id` (Number)
+- `id` (Number) The numeric ID of the vpn tunnel terminations.
+- `role` (String) Valid values are `peer`, `hub` and `spoke`.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `termination_id` (Number) The ID of the termination associated with the vpn tunnel terminations.
+- `termination_type` (String) The termination type of the vpn tunnel terminations.
+- `tunnel_id` (Number) The ID of the tunnel associated with the vpn tunnel terminations.

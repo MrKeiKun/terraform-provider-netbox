@@ -31,12 +31,12 @@ output "tunnels" {
 ### Optional
 
 - `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
-- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items. Defaults to `0`.
+- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tunnels` (List of Object) The tunnels of the tunnels. (see [below for nested schema](#nestedatt--tunnels))
+- `tunnels` (Attributes List) The tunnels found. (see [below for nested schema](#nestedatt--tunnels))
 
 <a id="nestedblock--filter"></a>
 ### Nested Schema for `filter`
@@ -52,14 +52,14 @@ Required:
 
 Read-Only:
 
-- `comments` (String)
-- `description` (String)
-- `encapsulation` (String)
-- `group_id` (Number)
-- `id` (Number)
-- `ipsec_profile_id` (Number)
-- `name` (String)
-- `status` (String)
-- `tags` (Set of String)
-- `tenant_id` (Number)
-- `tunnel_id` (Number)
+- `comments` (String) Free-form comments about the tunnels.
+- `description` (String) A description of the tunnels.
+- `encapsulation` (String) The encapsulation of the tunnels.
+- `group_id` (Number) The ID of the group associated with the tunnels.
+- `id` (Number) The numeric ID of the tunnels.
+- `ipsec_profile_id` (Number) The ID of the ipsec profile associated with the tunnels.
+- `name` (String) The name of the tunnels.
+- `status` (String) The status of the tunnels.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the tunnels.
+- `tunnel_id` (Number) The ID of the tunnel associated with the tunnels.

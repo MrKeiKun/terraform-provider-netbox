@@ -32,12 +32,12 @@ output "vlans" {
 
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
-- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items. Defaults to `0`.
+- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `vlans` (List of Object) The vlans of the vlans. (see [below for nested schema](#nestedatt--vlans))
+- `vlans` (Attributes List) The VLANs found. (see [below for nested schema](#nestedatt--vlans))
 
 <a id="nestedblock--filter"></a>
 ### Nested Schema for `filter`
@@ -54,13 +54,13 @@ Required:
 Read-Only:
 
 - `custom_fields` (Map of String)
-- `description` (String)
-- `group_id` (Number)
-- `id` (Number)
-- `name` (String)
-- `role` (Number)
-- `site` (Number)
-- `status` (String)
-- `tag_ids` (List of Number)
-- `tenant` (Number)
-- `vid` (Number)
+- `description` (String) A description of the vlans.
+- `group_id` (Number) The ID of the group associated with the vlans.
+- `id` (Number) The numeric ID of the vlans.
+- `name` (String) The name of the vlans.
+- `role` (Number) The role of the vlans.
+- `site` (Number) The site of the vlans.
+- `status` (String) The status of the vlans.
+- `tag_ids` (Set of Number) The IDs of the tag associated with the vlans.
+- `tenant` (Number) The tenant of the vlans.
+- `vid` (Number) The VLAN ID (1-4094).

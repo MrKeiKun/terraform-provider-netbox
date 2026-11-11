@@ -4,14 +4,13 @@ page_title: "netbox_virtual_disk Resource - terraform-provider-netbox"
 subcategory: "Virtualization"
 description: |-
   From the official documentation https://docs.netbox.dev/en/stable/models/virtualization/virtualdisk/:
-  	> A virtual disk is used to model discrete virtual hard disks assigned to virtual machines.
+  A virtual disk is used to model discrete virtual hard disks assigned to virtual machines.
 ---
 
 # netbox_virtual_disk (Resource)
 
 From the [official documentation](https://docs.netbox.dev/en/stable/models/virtualization/virtualdisk/):
-
-		> A virtual disk is used to model discrete virtual hard disks assigned to virtual machines.
+> A virtual disk is used to model discrete virtual hard disks assigned to virtual machines.
 
 ## Example Usage
 

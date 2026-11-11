@@ -33,13 +33,13 @@ data "netbox_virtual_machines" "base_vm" {
 ### Optional
 
 - `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
-- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items. Defaults to `0`.
+- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items.
 - `name_regex` (String) The name regex of the virtual machines.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `vms` (List of Object) The vms of the virtual machines. (see [below for nested schema](#nestedatt--vms))
+- `vms` (Attributes List) The virtual machines found. (see [below for nested schema](#nestedatt--vms))
 
 <a id="nestedblock--filter"></a>
 ### Nested Schema for `filter`
@@ -55,27 +55,27 @@ Required:
 
 Read-Only:
 
-- `cluster_id` (Number)
-- `comments` (String)
-- `config_context` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `device_id` (Number)
-- `device_name` (String)
-- `disk_size_mb` (Number)
-- `local_context_data` (String)
-- `memory_mb` (Number)
-- `name` (String)
-- `platform_id` (Number)
-- `platform_name` (String)
-- `platform_slug` (String)
-- `primary_ip` (String)
-- `primary_ip4` (String)
-- `primary_ip6` (String)
-- `role_id` (Number)
-- `site_id` (Number)
-- `status` (String)
-- `tag_ids` (List of Number)
-- `tenant_id` (Number)
-- `vcpus` (Number)
-- `vm_id` (Number)
+- `cluster_id` (Number) The ID of the cluster associated with the virtual machines.
+- `comments` (String) Free-form comments about the virtual machines.
+- `config_context` (String) The config context of the virtual machines.
+- `custom_fields` (Map of String) Custom field values of the virtual machines, as a map of field name to value.
+- `description` (String) A description of the virtual machines.
+- `device_id` (Number) The ID of the device associated with the virtual machines.
+- `device_name` (String) The device name of the virtual machines.
+- `disk_size_mb` (Number) The disk size mb of the virtual machines.
+- `local_context_data` (String) The local context data of the virtual machines.
+- `memory_mb` (Number) The memory mb of the virtual machines.
+- `name` (String) The name of the virtual machines.
+- `platform_id` (Number) The ID of the platform associated with the virtual machines.
+- `platform_name` (String) The platform name of the virtual machines.
+- `platform_slug` (String) The platform slug of the virtual machines.
+- `primary_ip` (String) The primary ip of the virtual machines.
+- `primary_ip4` (String) The primary ip4 of the virtual machines.
+- `primary_ip6` (String) The primary ip6 of the virtual machines.
+- `role_id` (Number) The ID of the role associated with the virtual machines.
+- `site_id` (Number) The ID of the site associated with the virtual machines.
+- `status` (String) The status of the virtual machines.
+- `tag_ids` (Set of Number) The IDs of the tag associated with the virtual machines.
+- `tenant_id` (Number) The ID of the tenant associated with the virtual machines.
+- `vcpus` (Number) The vcpus of the virtual machines.
+- `vm_id` (Number) The ID of the vm associated with the virtual machines.

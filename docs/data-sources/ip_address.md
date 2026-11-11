@@ -36,18 +36,18 @@ data "netbox_ip_address" "ip_address" {
 - `last_updated` (String) The last updated of the ip address.
 - `role` (String) The role of the ip address.
 - `status` (String) The status of the ip address.
-- `tags` (List of Object) Tags to assign to the ip address. (see [below for nested schema](#nestedatt--tags))
-- `tenant` (List of Object) The tenant of the ip address. (see [below for nested schema](#nestedatt--tenant))
+- `tags` (Attributes List) Tags to assign to the ip address. (see [below for nested schema](#nestedatt--tags))
+- `tenant` (Attributes List) The tenant of the ip address. (see [below for nested schema](#nestedatt--tenant))
 
 <a id="nestedatt--tags"></a>
 ### Nested Schema for `tags`
 
 Read-Only:
 
-- `display` (String)
-- `id` (Number)
-- `name` (String)
-- `slug` (String)
+- `display` (String) The display of the ip address.
+- `id` (Number) The numeric ID of the ip address.
+- `name` (String) The name of the ip address.
+- `slug` (String) The URL-friendly slug of the ip address.
 
 
 <a id="nestedatt--tenant"></a>
@@ -55,6 +55,6 @@ Read-Only:
 
 Read-Only:
 
-- `id` (Number)
-- `name` (String)
-- `slug` (String)
+- `id` (Number) The numeric ID of the ip address.
+- `name` (String) The name of the ip address.
+- `slug` (String) The URL-friendly slug of the ip address.

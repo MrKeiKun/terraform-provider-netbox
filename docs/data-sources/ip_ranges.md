@@ -31,12 +31,12 @@ output "ip_ranges" {
 ### Optional
 
 - `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
-- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items. Defaults to `0`.
+- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `ip_ranges` (List of Object) The ip ranges of the ip ranges. (see [below for nested schema](#nestedatt--ip_ranges))
+- `ip_ranges` (Attributes List) The IP ranges found. (see [below for nested schema](#nestedatt--ip_ranges))
 
 <a id="nestedblock--filter"></a>
 ### Nested Schema for `filter`
@@ -52,35 +52,35 @@ Required:
 
 Read-Only:
 
-- `address_family` (String)
-- `created` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `end_address` (String)
-- `id` (Number)
-- `last_updated` (String)
-- `role` (String)
-- `start_address` (String)
-- `status` (String)
-- `tags` (List of Object) (see [below for nested schema](#nestedobjatt--ip_ranges--tags))
-- `tenant` (List of Object) (see [below for nested schema](#nestedobjatt--ip_ranges--tenant))
+- `address_family` (String) The address family of the ip ranges.
+- `created` (String) The created of the ip ranges.
+- `custom_fields` (Map of String) Custom field values of the ip ranges, as a map of field name to value.
+- `description` (String) A description of the ip ranges.
+- `end_address` (String) The end address of the ip ranges.
+- `id` (Number) The numeric ID of the ip ranges.
+- `last_updated` (String) The last updated of the ip ranges.
+- `role` (String) The role of the ip ranges.
+- `start_address` (String) The start address of the ip ranges.
+- `status` (String) The status of the ip ranges.
+- `tags` (Attributes List) Tags to assign to the ip ranges. (see [below for nested schema](#nestedatt--ip_ranges--tags))
+- `tenant` (Attributes List) The tenant of the ip ranges. (see [below for nested schema](#nestedatt--ip_ranges--tenant))
 
-<a id="nestedobjatt--ip_ranges--tags"></a>
+<a id="nestedatt--ip_ranges--tags"></a>
 ### Nested Schema for `ip_ranges.tags`
 
 Read-Only:
 
-- `display` (String)
-- `id` (Number)
-- `name` (String)
-- `slug` (String)
+- `display` (String) The display of the ip ranges.
+- `id` (Number) The numeric ID of the ip ranges.
+- `name` (String) The name of the ip ranges.
+- `slug` (String) The URL-friendly slug of the ip ranges.
 
 
-<a id="nestedobjatt--ip_ranges--tenant"></a>
+<a id="nestedatt--ip_ranges--tenant"></a>
 ### Nested Schema for `ip_ranges.tenant`
 
 Read-Only:
 
-- `id` (Number)
-- `name` (String)
-- `slug` (String)
+- `id` (Number) The numeric ID of the ip ranges.
+- `name` (String) The name of the ip ranges.
+- `slug` (String) The URL-friendly slug of the ip ranges.

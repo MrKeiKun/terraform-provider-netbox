@@ -81,12 +81,12 @@ resource "netbox_available_ip_address" "myvm-ip" {
 - `device_interface_id` (Number) The ID of the device interface associated with the available ip address. Conflicts with `interface_id` and `virtual_machine_interface_id`.
 - `dns_name` (String) The DNS name of the available ip address.
 - `interface_id` (Number) The ID of the interface associated with the available ip address. Required when `object_type` is set.
-- `ip_range_id` (Number) The ID of the ip range associated with the available ip address. Exactly one of `prefix_id` or `ip_range_id` must be given.
-- `nat_inside_address_id` (Number) The ID of the IP address this address is the NAT outside address of.
+- `ip_range_id` (Number) The ID of the ip range associated with the available ip address.
+- `nat_inside_address_id` (Number) The ID of the nat inside address associated with the available ip address.
 - `object_type` (String) Valid values are `virtualization.vminterface`, `dcim.interface` and `ipam.fhrpgroup`. Required when `interface_id` is set.
-- `prefix_id` (Number) The ID of the prefix associated with the available ip address. Exactly one of `prefix_id` or `ip_range_id` must be given.
+- `prefix_id` (Number) The ID of the prefix associated with the available ip address.
 - `role` (String) Valid values are `loopback`, `secondary`, `anycast`, `vip`, `vrrp`, `hsrp`, `glbp` and `carp`.
-- `status` (String) Valid values are `active`, `reserved`, `deprecated`, `dhcp` and `slaac`. Defaults to `active`.
+- `status` (String) Valid values are `active`, `reserved`, `deprecated`, `dhcp` and `slaac`.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the available ip address.
 - `virtual_machine_interface_id` (Number) The ID of the virtual machine interface associated with the available ip address. Conflicts with `interface_id` and `device_interface_id`.

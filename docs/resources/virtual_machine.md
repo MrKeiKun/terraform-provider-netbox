@@ -10,7 +10,6 @@ description: |-
 # netbox_virtual_machine (Resource)
 
 From the [official documentation](https://docs.netbox.dev/en/stable/features/virtualization/#virtual-machines):
-
 > A virtual machine is a virtualized compute instance. These behave in NetBox very similarly to device objects, but without any physical attributes. For example, a VM may have interfaces assigned to it with IP addresses and VLANs, however its interfaces cannot be connected via cables (because they are virtual). Each VM may also define its compute, memory, and storage resources as well.
 
 ## Example Usage
@@ -81,7 +80,7 @@ resource "netbox_virtual_machine" "full_vm" {
 - `memory_mb` (Number) The memory mb of the virtual machine.
 - `platform_id` (Number) The ID of the platform associated with the virtual machine.
 - `role_id` (Number) The ID of the role associated with the virtual machine.
-- `site_id` (Number) The ID of the site associated with the virtual machine. At least one of `site_id` or `cluster_id` must be given.
+- `site_id` (Number) The ID of the site associated with the virtual machine. NetBox takes it from the cluster when it is not set. At least one of `site_id` or `cluster_id` must be given.
 - `status` (String) Valid values are `offline`, `active`, `planned`, `staged`, `failed` and `decommissioning`. Defaults to `active`.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the virtual machine.

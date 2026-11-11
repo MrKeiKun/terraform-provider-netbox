@@ -23,18 +23,18 @@ data "netbox_available_prefix" "example" {
 
 ### Required
 
-- `prefix_id` (Number) The ID of the prefix associated with the available prefix.
+- `prefix_id` (Number) The ID of the prefix to list the available prefixes of.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `prefixes_available` (List of Object) The prefixes available of the available prefix. (see [below for nested schema](#nestedatt--prefixes_available))
+- `prefixes_available` (Attributes List) The prefixes_available found. (see [below for nested schema](#nestedatt--prefixes_available))
 
 <a id="nestedatt--prefixes_available"></a>
 ### Nested Schema for `prefixes_available`
 
 Read-Only:
 
-- `family` (Number)
-- `prefix` (String)
-- `vrf_id` (Number)
+- `family` (Number) The IP family, 4 or 6.
+- `prefix` (String) The prefix in CIDR notation.
+- `vrf_id` (Number) The ID of the vrf associated with the available prefix.

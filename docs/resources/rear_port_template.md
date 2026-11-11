@@ -49,7 +49,7 @@ resource "netbox_rear_port_template" "test" {
 - `color_hex` (String) The color hex of the rear port template.
 - `description` (String) A description of the rear port template.
 - `device_type_id` (Number) The ID of the device type associated with the rear port template. Exactly one of `device_type_id` or `module_type_id` must be given.
-- `front_ports` (Block List) The ports and positions this port is mapped to. Needs NetBox 4.5 or newer. (see [below for nested schema](#nestedblock--front_ports))
+- `front_ports` (Attributes List) The ports and positions this port is mapped to. Needs NetBox 4.5 or newer. (see [below for nested schema](#nestedatt--front_ports))
 - `label` (String) The label of the rear port template.
 - `module_type_id` (Number) The ID of the module type associated with the rear port template. Exactly one of `device_type_id` or `module_type_id` must be given.
 - `positions` (Number) Number of front ports which may be mapped to this rear port. Defaults to `1`.
@@ -58,7 +58,7 @@ resource "netbox_rear_port_template" "test" {
 
 - `id` (String) The ID of this resource.
 
-<a id="nestedblock--front_ports"></a>
+<a id="nestedatt--front_ports"></a>
 ### Nested Schema for `front_ports`
 
 Required:
