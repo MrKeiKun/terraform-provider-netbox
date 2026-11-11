@@ -553,3 +553,46 @@ resource "netbox_ip_address" "test" {
 		},
 	})
 }
+
+func TestAccNetboxIPAddress_clearOptionalFields(t *testing.T) {
+	name := testAccGetTestName("ip_clear")
+	deps := fmt.Sprintf(`
+resource "netbox_tenant" "test" {
+  name = "%[1]s"
+}
+resource "netbox_vrf" "test" {
+  name = "%[1]s"
+}
+`, name)
+	resource.Test(t, resource.TestCase{
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
+		Steps: []resource.TestStep{
+			{
+				Config: deps + `
+resource "netbox_ip_address" "test" {
+  ip_address  = "10.77.1.1/24"
+  status      = "active"
+  description = "set"
+  dns_name    = "set.example.com"
+  tenant_id   = netbox_tenant.test.id
+  vrf_id      = netbox_vrf.test.id
+}`,
+				Check: resource.TestCheckResourceAttr("netbox_ip_address.test", "dns_name", "set.example.com"),
+			},
+			{
+				Config: deps + `
+resource "netbox_ip_address" "test" {
+  ip_address = "10.77.1.1/24"
+  status     = "active"
+}`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_ip_address.test", "description", ""),
+					resource.TestCheckResourceAttr("netbox_ip_address.test", "dns_name", ""),
+					testAccCheckAttrUnset("netbox_ip_address.test", "tenant_id"),
+					testAccCheckAttrUnset("netbox_ip_address.test", "vrf_id"),
+				),
+			},
+		},
+	})
+}

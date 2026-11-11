@@ -381,3 +381,56 @@ func init() {
 		},
 	})
 }
+
+// Optional values that are removed from the configuration must be cleared in
+// NetBox, not silently kept (upstream issue 857).
+func TestAccNetboxPrefix_clearOptionalFields(t *testing.T) {
+	name := testAccGetTestName("prefix_clear")
+	deps := fmt.Sprintf(`
+resource "netbox_tenant" "test" {
+  name = "%[1]s"
+}
+resource "netbox_vrf" "test" {
+  name = "%[1]s"
+}
+resource "netbox_tag" "test" {
+  name = "%[1]s"
+}
+`, name)
+	resource.Test(t, resource.TestCase{
+		ProviderFactories: testAccProviderFactories,
+		PreCheck:          func() { testAccPreCheck(t) },
+		Steps: []resource.TestStep{
+			{
+				Config: deps + `
+resource "netbox_prefix" "test" {
+  prefix      = "10.77.0.0/24"
+  status      = "active"
+  description = "set"
+  comments    = "set"
+  tenant_id   = netbox_tenant.test.id
+  vrf_id      = netbox_vrf.test.id
+  tags        = [netbox_tag.test.name]
+}`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_prefix.test", "description", "set"),
+					resource.TestCheckResourceAttrSet("netbox_prefix.test", "tenant_id"),
+				),
+			},
+			{
+				Config: deps + `
+resource "netbox_prefix" "test" {
+  prefix = "10.77.0.0/24"
+  status = "active"
+}`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_prefix.test", "description", ""),
+					resource.TestCheckResourceAttr("netbox_prefix.test", "comments", ""),
+					testAccCheckAttrUnset("netbox_prefix.test", "tenant_id"),
+					testAccCheckAttrUnset("netbox_prefix.test", "vrf_id"),
+					resource.TestCheckResourceAttr("netbox_prefix.test", "tags.#", "0"),
+				),
+			},
+		},
+	})
+}
