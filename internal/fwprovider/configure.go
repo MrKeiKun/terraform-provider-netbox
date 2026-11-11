@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/providerstate"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -37,28 +39,40 @@ func envString(v types.String, env string) string {
 	return os.Getenv(env)
 }
 
-func envBool(v types.Bool, env string, def bool) bool {
+func envBool(v types.Bool, env string, def bool, diags *diag.Diagnostics) bool {
 	if !v.IsNull() && !v.IsUnknown() {
 		return v.ValueBool()
 	}
 	if s := os.Getenv(env); s != "" {
-		if b, err := strconv.ParseBool(s); err == nil {
-			return b
+		b, err := strconv.ParseBool(s)
+		if err != nil {
+			diags.AddError("Invalid "+env, fmt.Sprintf("%q is not true or false", s))
+			return def
 		}
+		return b
 	}
 	return def
 }
 
-func envInt(v types.Int64, env string, def int64) int64 {
+// envInt returns a whole number from 0 to math.MaxInt32, taken from the configuration or the
+// environment variable.
+func envInt(v types.Int64, env string, def int, diags *diag.Diagnostics) int {
+	n := int64(def)
 	if !v.IsNull() && !v.IsUnknown() {
-		return v.ValueInt64()
-	}
-	if s := os.Getenv(env); s != "" {
-		if n, err := strconv.ParseInt(s, 10, 64); err == nil {
-			return n
+		n = v.ValueInt64()
+	} else if s := os.Getenv(env); s != "" {
+		parsed, err := strconv.ParseInt(s, 10, 64)
+		if err != nil {
+			diags.AddError("Invalid "+env, fmt.Sprintf("%q is not a whole number", s))
+			return def
 		}
+		n = parsed
 	}
-	return def
+	if n < 0 || n > math.MaxInt32 {
+		diags.AddError("Invalid "+env, fmt.Sprintf("%d is not a whole number from 0 to %d", n, math.MaxInt32))
+		return def
+	}
+	return int(n)
 }
 
 // Configure creates the client the resources and data sources of the framework provider use. The
@@ -78,11 +92,11 @@ func (p *Provider) Configure(ctx context.Context, req provider.ConfigureRequest,
 	settings := providerstate.Settings{}
 	settings.ServerURL = envString(cfg.ServerURL, "NETBOX_SERVER_URL")
 	settings.APIToken = envString(cfg.APIToken, "NETBOX_API_TOKEN")
-	settings.AllowInsecureHTTPS = envBool(cfg.AllowInsecureHTTPS, "NETBOX_ALLOW_INSECURE_HTTPS", false)
-	settings.StripTrailingSlashesFromURL = envBool(cfg.StripTrailingSlashesFromURL, "NETBOX_STRIP_TRAILING_SLASHES_FROM_URL", true)
-	settings.SkipVersionCheck = envBool(cfg.SkipVersionCheck, "NETBOX_SKIP_VERSION_CHECK", false)
-	settings.RequestTimeout = int(envInt(cfg.RequestTimeout, "NETBOX_REQUEST_TIMEOUT", 10))
-	settings.MaxRetries = int(envInt(cfg.MaxRetries, "NETBOX_MAX_RETRIES", int64(netboxapi.DefaultMaxRetries)))
+	settings.AllowInsecureHTTPS = envBool(cfg.AllowInsecureHTTPS, "NETBOX_ALLOW_INSECURE_HTTPS", false, &resp.Diagnostics)
+	settings.StripTrailingSlashesFromURL = envBool(cfg.StripTrailingSlashesFromURL, "NETBOX_STRIP_TRAILING_SLASHES_FROM_URL", true, &resp.Diagnostics)
+	settings.SkipVersionCheck = envBool(cfg.SkipVersionCheck, "NETBOX_SKIP_VERSION_CHECK", false, &resp.Diagnostics)
+	settings.RequestTimeout = envInt(cfg.RequestTimeout, "NETBOX_REQUEST_TIMEOUT", 10, &resp.Diagnostics)
+	settings.MaxRetries = envInt(cfg.MaxRetries, "NETBOX_MAX_RETRIES", netboxapi.DefaultMaxRetries, &resp.Diagnostics)
 	settings.CACertFile = envString(cfg.CACertFile, "NETBOX_CA_CERT_FILE")
 
 	if settings.ServerURL == "" {
@@ -92,11 +106,6 @@ func (p *Provider) Configure(ctx context.Context, req provider.ConfigureRequest,
 		resp.Diagnostics.AddAttributeError(path.Root("api_token"), "Missing api_token", "Set `api_token` in the provider configuration or the `NETBOX_API_TOKEN` environment variable.")
 	}
 	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	if settings.MaxRetries < 0 {
-		resp.Diagnostics.AddAttributeError(path.Root("max_retries"), "Invalid value", "`max_retries` must be at least 0")
 		return
 	}
 
