@@ -13,7 +13,7 @@ ENHANCEMENTS
   * About 70 existing resources get `owner_id`, `comments`, `custom_fields` and other fields that were missing.
   * Front and rear ports support the new `rear_ports` and `front_ports` mappings, and services support `port_mappings`.
   * NetBox 4.6.6 to 4.6.10 are added to the supported versions.
-* Add the `max_retries` provider setting (or `NETBOX_MAX_RETRIES`). Failed GET, PUT and DELETE requests are sent again after a connection error or a 502, 503 or 504 response, 3 times by default. Requests that create objects are never repeated. Set it to `0` to turn retries off (#3).
+* Add the `max_retries` provider setting (or `NETBOX_MAX_RETRIES`). Failed GET, PUT and DELETE requests are sent again after a connection error or a 502, 503 or 504 response, 3 times by default. Any request is also sent again when NetBox reports a database deadlock, since nothing was changed. Other requests that create objects are never repeated. Set it to `0` to turn retries off (#3, #11).
 * Add the data sources `netbox_aggregates`, `netbox_cables`, `netbox_tunnels`, `netbox_device_front_ports`, `netbox_device_rear_ports` and `netbox_device_module_bays` (#3).
 * Add `airflow` on devices, tags on IPAM roles and `nat_inside` on `netbox_available_ip_address`. Status values are no longer checked by the provider, NetBox does that (#3).
 * `netbox_available_vlan` can now be imported (#5).
