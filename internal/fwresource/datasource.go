@@ -333,6 +333,9 @@ func queryValue(v attr.Value) []string {
 }
 
 func (d *DataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	if notConfigured(&resp.Diagnostics, d.state) {
+		return
+	}
 	cfg, diags := d.load(ctx, req.Config)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -382,7 +385,7 @@ func (d *DataSource) Read(ctx context.Context, req datasource.ReadRequest, resp 
 					param = a.Name
 				}
 				for _, v := range queryValue(obj.Attributes()[a.Name]) {
-					query.Set(param, v)
+					query.Add(param, v)
 				}
 			}
 		}

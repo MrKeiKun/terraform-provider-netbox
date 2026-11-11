@@ -182,6 +182,9 @@ func (r *assignResource) values(ctx context.Context, g getter) (target, ref, ver
 }
 
 func (r *assignResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	if notConfigured(&resp.Diagnostics, r.state) {
+		return
+	}
 	target, ref, version, err := r.values(ctx, req.Plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid configuration", err.Error())
@@ -196,6 +199,9 @@ func (r *assignResource) Create(ctx context.Context, req resource.CreateRequest,
 }
 
 func (r *assignResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	if notConfigured(&resp.Diagnostics, r.state) {
+		return
+	}
 	target, ref, version, err := r.values(ctx, req.Plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid configuration", err.Error())
@@ -210,6 +216,9 @@ func (r *assignResource) Update(ctx context.Context, req resource.UpdateRequest,
 }
 
 func (r *assignResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	if notConfigured(&resp.Diagnostics, r.state) {
+		return
+	}
 	target, _, version, err := r.values(ctx, req.State)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid state", err.Error())
@@ -246,6 +255,9 @@ func (r *assignResource) Read(ctx context.Context, req resource.ReadRequest, res
 }
 
 func (r *assignResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	if notConfigured(&resp.Diagnostics, r.state) {
+		return
+	}
 	target, _, version, err := r.values(ctx, req.State)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid state", err.Error())

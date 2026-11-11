@@ -64,6 +64,16 @@ func (r *Resource) Configure(_ context.Context, req resource.ConfigureRequest, r
 	r.state = state
 }
 
+// notConfigured adds an error when the provider could not be configured, for example because its
+// settings are not known yet, and tells whether it did.
+func notConfigured(diags *diag.Diagnostics, s *providerstate.State) bool {
+	if s != nil {
+		return false
+	}
+	diags.AddError("The provider is not configured", "The provider settings are not known yet, for example because they come from another resource. Set them in the provider configuration or the environment.")
+	return true
+}
+
 // UpgradeState upgrades the state of older versions of the schema.
 func (r *Resource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
 	out := map[int64]resource.StateUpgrader{}
@@ -465,6 +475,9 @@ func (r *Resource) ModifyPlan(ctx context.Context, req resource.ModifyPlanReques
 }
 
 func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	if notConfigured(&resp.Diagnostics, r.state) {
+		return
+	}
 	plan, diags := r.spec.load(ctx, req.Plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -477,11 +490,22 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 
+	// Once the object exists its id goes into the state. When a later step fails Terraform then
+	// knows the object (it is marked as tainted) and removes it, instead of leaving it behind.
+	remember := func(id int64) {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), types.StringValue(strconv.FormatInt(id, 10)))...)
+	}
+
 	var obj *map[string]any
 	if r.spec.Allocate != nil {
-		obj, err = r.allocate(ctx, req.Config, plan, body)
+		obj, err = r.allocate(ctx, req.Config, plan, body, remember)
 	} else {
 		obj, err = netboxapi.Create[map[string]any](ctx, r.state.Rest, r.spec.Path, body)
+		if err == nil {
+			if id, ok := intFromJSON((*obj)["id"]); ok {
+				remember(id)
+			}
+		}
 	}
 	if err != nil {
 		resp.Diagnostics.AddError("Could not create "+r.spec.TypeName, err.Error())
@@ -518,7 +542,7 @@ func (r *Resource) afterWrite(ctx context.Context, obj *map[string]any, plan, pr
 }
 
 // allocate lets NetBox pick the object and then sets all attributes with an update.
-func (r *Resource) allocate(ctx context.Context, cfg getter, plan Values, body map[string]any) (*map[string]any, error) {
+func (r *Resource) allocate(ctx context.Context, cfg getter, plan Values, body map[string]any, remember func(id int64)) (*map[string]any, error) {
 	picked, err := r.spec.Allocate(ctx, r.state, plan, body)
 	if err != nil {
 		return nil, err
@@ -527,6 +551,7 @@ func (r *Resource) allocate(ctx context.Context, cfg getter, plan Values, body m
 	if !ok {
 		return nil, fmt.Errorf("the response has no id")
 	}
+	remember(id)
 	prior, err := r.stateFromObject(ctx, picked, plan, true)
 	if err != nil {
 		return nil, err
@@ -542,6 +567,9 @@ func (r *Resource) allocate(ctx context.Context, cfg getter, plan Values, body m
 }
 
 func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	if notConfigured(&resp.Diagnostics, r.state) {
+		return
+	}
 	prior, diags := r.spec.load(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -573,6 +601,9 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 }
 
 func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	if notConfigured(&resp.Diagnostics, r.state) {
+		return
+	}
 	plan, diags := r.spec.load(ctx, req.Plan)
 	resp.Diagnostics.Append(diags...)
 	prior, diags := r.spec.load(ctx, req.State)
@@ -618,6 +649,9 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 }
 
 func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	if notConfigured(&resp.Diagnostics, r.state) {
+		return
+	}
 	var idStr types.String
 	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("id"), &idStr)...)
 	if resp.Diagnostics.HasError() {

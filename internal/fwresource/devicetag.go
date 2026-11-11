@@ -110,6 +110,9 @@ func (r *deviceTag) updateTags(ctx context.Context, deviceID int64, tags []netbo
 }
 
 func (r *deviceTag) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	if notConfigured(&resp.Diagnostics, r.state) {
+		return
+	}
 	var deviceID types.Int64
 	var tagName types.String
 	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("device_id"), &deviceID)...)
@@ -150,6 +153,9 @@ func (r *deviceTag) Create(ctx context.Context, req resource.CreateRequest, resp
 }
 
 func (r *deviceTag) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	if notConfigured(&resp.Diagnostics, r.state) {
+		return
+	}
 	var id types.String
 	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("id"), &id)...)
 	if resp.Diagnostics.HasError() {
@@ -185,6 +191,9 @@ func (r *deviceTag) Read(ctx context.Context, req resource.ReadRequest, resp *re
 func (r *deviceTag) Update(_ context.Context, _ resource.UpdateRequest, _ *resource.UpdateResponse) {}
 
 func (r *deviceTag) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	if notConfigured(&resp.Diagnostics, r.state) {
+		return
+	}
 	var id types.String
 	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("id"), &id)...)
 	if resp.Diagnostics.HasError() {
