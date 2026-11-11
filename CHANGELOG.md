@@ -4,6 +4,8 @@ NOTES
 
 * The provider supports Netbox 4.4.0 to 4.7.4. Older Netbox versions are not supported.
 * The provider now talks to Netbox with its own small REST client. The generated `go-netbox` client is no longer used, so new Netbox releases do not need a client update.
+* The provider now uses the Terraform Plugin Framework (plugin protocol 6) in place of the plugin SDK. It needs Terraform 1.0 or newer. Existing state upgrades on its own, and resource names and arguments stay the same. See the [upgrade guide](https://registry.terraform.io/providers/mrkeikun/netbox/latest/docs/guides/upgrading-to-plugin-framework) (#12).
+* **Breaking:** `rear_ports` on `netbox_device_front_port` and `netbox_front_port_template`, and `front_ports` on `netbox_device_rear_port` and `netbox_rear_port_template`, are now attributes instead of blocks. Write `rear_ports = [{ ... }]` in place of `rear_ports { ... }` (#12).
 
 ENHANCEMENTS
 
@@ -18,6 +20,7 @@ ENHANCEMENTS
 * Add `airflow` on devices, tags on IPAM roles and `nat_inside` on `netbox_available_ip_address`. Status values are no longer checked by the provider, NetBox does that (#3).
 * `netbox_available_vlan` can now be imported (#5).
 * Add import docs for every resource, and fill in missing docs, examples and schema descriptions (#5).
+* `server_url` and `api_token` are now optional in the provider schema, since they can come from `NETBOX_SERVER_URL` and `NETBOX_API_TOKEN`. The provider reports an error at startup when neither the provider block nor the environment sets them (#12).
 
 BUG FIXES
 
@@ -33,3 +36,6 @@ BUG FIXES
 * Fix importing the primary IP of a device or virtual machine (#5).
 * `netbox_available_prefix` now sends all configured fields when it allocates a prefix, so NetBox rules like a required tenant pass on the first request (#6).
 * Fix updating `netbox_device_rear_port` and `netbox_rear_port_template` when a front port is mapped (#7).
+* `netbox_interface_template` `channels` and `netbox_webhook` `timeout` are no longer sent as `0` when they are not set. NetBox 4.7 rejects that (#12).
+* `netbox_device` `location_id` is cleared when both `location_id` and `rack_id` are removed from the configuration (#12).
+* Fix the API field behind `netbox_site` `timezone`, `netbox_power_feed` `max_percent_utilization` and `netbox_contact` `group_id` (#12).
