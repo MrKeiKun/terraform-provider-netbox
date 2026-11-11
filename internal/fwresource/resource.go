@@ -516,6 +516,10 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		resp.Diagnostics.AddError("Could not create "+r.spec.TypeName, err.Error())
 		return
 	}
+	if obj, err = r.reload(ctx, obj); err != nil {
+		resp.Diagnostics.AddError("Could not read the created object", err.Error())
+		return
+	}
 
 	vals, err := r.stateFromObject(ctx, *obj, plan, false)
 	if err != nil {
@@ -537,6 +541,17 @@ func (r *Resource) afterWrite(ctx context.Context, obj *map[string]any, plan, pr
 	changed, err := r.spec.AfterWrite(ctx, r.state, id, plan, prior)
 	if err != nil || !changed {
 		return obj, err
+	}
+	return netboxapi.Get[map[string]any](ctx, r.state.Rest, r.spec.Path, id)
+}
+
+// reload reads the object again after it was written. The response to a write is not always the
+// same as what a read returns: NetBox 4.4 for example reports the end of every range of a VLAN group
+// one too low. The state must hold what a read returns, or the next refresh shows a change.
+func (r *Resource) reload(ctx context.Context, obj *map[string]any) (*map[string]any, error) {
+	id, ok := intFromJSON((*obj)["id"])
+	if !ok || r.spec.NoReload {
+		return obj, nil
 	}
 	return netboxapi.Get[map[string]any](ctx, r.state.Rest, r.spec.Path, id)
 }
@@ -637,6 +652,10 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 
 	if obj, err = r.afterWrite(ctx, obj, plan, prior); err != nil {
 		resp.Diagnostics.AddError("Could not update "+r.spec.TypeName, err.Error())
+		return
+	}
+	if obj, err = r.reload(ctx, obj); err != nil {
+		resp.Diagnostics.AddError("Could not read the updated object", err.Error())
 		return
 	}
 

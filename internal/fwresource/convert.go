@@ -133,6 +133,12 @@ func (a Attr) fromJSON(v any, prior attr.Value) attr.Value {
 			}
 			return types.StringValue("")
 		}
+		if a.Time {
+			// A timestamp is written the same way whatever NetBox returns, with milliseconds.
+			if parsed, err := time.Parse(time.RFC3339, s); err == nil {
+				s = parsed.UTC().Format("2006-01-02T15:04:05.000Z")
+			}
+		}
 		return types.StringValue(s)
 	case JSON:
 		if v == nil {

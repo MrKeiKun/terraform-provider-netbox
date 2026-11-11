@@ -177,6 +177,9 @@ type Spec struct {
 	// ImportID splits an import ID into the ID of the object and the values of attributes that
 	// cannot be read from the API (Int and String values only).
 	ImportID func(id string) (objectID string, attrs map[string]any, err error)
+	// NoReload skips reading the object again after a write. Use it when the response to the write has
+	// something a read does not, like the key of a token that NetBox only shows once.
+	NoReload bool
 	// ModifyPlan returns planned values to replace, given the configuration and the plan. It lets a
 	// computed attribute become null when nothing in the configuration can set it any more.
 	ModifyPlan func(config, plan Values) map[string]attr.Value

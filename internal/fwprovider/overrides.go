@@ -183,6 +183,20 @@ var overrides = map[string]func(s *fwresource.Spec){
 	},
 	"netbox_token": func(s *fwresource.Spec) {
 		setAttr(s, "expires", func(a *fwresource.Attr) { a.Time = true; a.NoZero = true })
+		// NetBox shows the key of a token once, in the response to its creation. Later responses
+		// have none, or on NetBox 4.4 none at all, and then the key we already know is kept.
+		s.NoReload = true
+		s.ModifyState = func(_ context.Context, obj map[string]any, prior fwresource.Values, out fwresource.Values) error {
+			if key, _ := obj["key"].(string); key != "" {
+				return nil
+			}
+			if k, ok := prior["key"].(types.String); ok && !k.IsNull() && !k.IsUnknown() {
+				out["key"] = k
+			} else {
+				out["key"] = types.StringNull()
+			}
+			return nil
+		}
 	},
 	"netbox_user": func(s *fwresource.Spec) {
 		setAttr(s, "password", func(a *fwresource.Attr) { a.WriteOnly = true })
