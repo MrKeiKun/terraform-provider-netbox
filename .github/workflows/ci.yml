@@ -40,7 +40,14 @@ jobs:
         with:
           go-version-file: go.mod
       - name: Run unit tests
-        run: make test
+        run: make test UNIT_COVER_ARGS="-coverprofile=coverage-unit.out -coverpkg=./internal/..."
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage-unit.out
+          flags: unit
+          fail_ci_if_error: false
 
   acceptance-test:
     name: Acceptance tests (NetBox ${{ matrix.netbox-version }})

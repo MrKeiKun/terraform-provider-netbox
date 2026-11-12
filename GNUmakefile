@@ -1,6 +1,8 @@
 TEST?=netbox/*.go
 TEST_FUNC?=TestAccNetboxMACAddr*
 TESTACC_ARGS?=
+# Extra arguments for the unit tests of ./internal, CI uses them to write a coverage profile.
+UNIT_COVER_ARGS?=
 GOFMT_FILES?=$$(find . -name '*.go' | grep -v vendor)
 DOCKER_COMPOSE=docker compose
 
@@ -50,7 +52,7 @@ testacc-specific-test: docker-up
 .PHONY: test
 test:
 	go test $(TEST) $(TESTARGS) -timeout=120s -parallel=4 -cover
-	go test ./internal/... $(TESTARGS) -timeout=120s -parallel=4 -cover
+	go test ./internal/... $(TESTARGS) $(UNIT_COVER_ARGS) -timeout=120s -parallel=4 -cover
 
 # Run dockerized Netbox for acceptance testing
 .PHONY: docker-up
