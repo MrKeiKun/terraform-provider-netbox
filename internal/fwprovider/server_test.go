@@ -21,6 +21,26 @@ type fakeNetBox struct {
 	next    int
 	objects map[string]map[int]map[string]any // collection path -> id -> object
 	calls   []string
+	fails   []failRule
+}
+
+// failRule makes the fake answer with an error status for matching requests.
+type failRule struct {
+	method, contains string
+	status           int
+}
+
+// failOn makes every request with the method and a URL path containing the text fail.
+func (f *fakeNetBox) failOn(method, contains string, status int) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.fails = append(f.fails, failRule{method, contains, status})
+}
+
+func (f *fakeNetBox) clearFailures() {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.fails = nil
 }
 
 func newFakeNetBox() (*fakeNetBox, *httptest.Server) {
@@ -33,6 +53,13 @@ func (f *fakeNetBox) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer f.mu.Unlock()
 	f.calls = append(f.calls, r.Method+" "+r.URL.Path)
 	w.Header().Set("Content-Type", "application/json")
+	for _, rule := range f.fails {
+		if rule.method == r.Method && strings.Contains(r.URL.Path, rule.contains) {
+			w.WriteHeader(rule.status)
+			_, _ = w.Write([]byte(`{"detail":"injected failure"}`))
+			return
+		}
+	}
 
 	rest := strings.Trim(strings.TrimPrefix(r.URL.Path, "/api/"), "/")
 	if rest == "status" {

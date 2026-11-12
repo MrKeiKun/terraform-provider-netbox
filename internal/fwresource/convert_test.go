@@ -353,3 +353,15 @@ func mustJSON(v any) string {
 	b, _ := json.Marshal(v)
 	return string(b)
 }
+
+func TestConvertEdgeCases(t *testing.T) {
+	if s, ok := stringFromJSON(make(chan int)); ok || s != "" {
+		t.Errorf("an unencodable value gave %q, %v", s, ok)
+	}
+	if got := (Attr{Kind: Kind(99)}).fromJSON("x", nil); got != nil {
+		t.Errorf("an unknown kind gave %v", got)
+	}
+	if _, _, err := (Attr{Name: "m", Kind: StringMap}).toJSON(types.MapValueMust(types.StringType, map[string]attr.Value{"a": types.StringValue("b")}), nil); err == nil {
+		t.Error("a value of an unsupported type was accepted")
+	}
+}

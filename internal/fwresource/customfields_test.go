@@ -1,6 +1,7 @@
 package fwresource
 
 import (
+	"encoding/json"
 	"reflect"
 	"testing"
 )
@@ -77,5 +78,23 @@ func TestCustomFieldsFromObject(t *testing.T) {
 	got = customFieldsFromObject(map[string]any{}, map[string]string{"gone": "v"}, false, true)
 	if got["gone"] != "v" {
 		t.Errorf("missing field dropped: %v", got)
+	}
+}
+
+func TestCustomFieldValueToStringEdgeCases(t *testing.T) {
+	if got := customFieldValueToString(json.Number("12")); got != "12" {
+		t.Errorf("json number = %q", got)
+	}
+	if got := customFieldValueToString([]any{map[string]any{"value": "a", "label": "A"}, map[string]any{"id": float64(3), "name": "n"}, "plain"}); got != `["a",{"id":3,"name":"n"},"plain"]` {
+		t.Errorf("list of choices = %q", got)
+	}
+	if got := customFieldValueToString([]any{make(chan int)}); got == "" {
+		t.Error("an unencodable list gave nothing")
+	}
+	if got := customFieldValueToString(make(chan int)); got == "" {
+		t.Error("an unencodable value gave nothing")
+	}
+	if !customFieldValuesEqual("1", "1.0") {
+		t.Error("1 and 1.0 should be the same number")
 	}
 }

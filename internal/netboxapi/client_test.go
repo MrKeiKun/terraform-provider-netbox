@@ -131,3 +131,38 @@ func TestListIgnoresHostOfNextLink(t *testing.T) {
 		t.Errorf("queries = %v", queries)
 	}
 }
+
+func TestCRUDErrors(t *testing.T) {
+	c := newTestClient(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte(`{"detail":"no"}`))
+	}))
+	ctx := context.Background()
+	if _, err := Create[tag](ctx, c, "extras/tags/", tag{Name: "a"}); err == nil {
+		t.Error("create")
+	}
+	if _, err := Update[tag](ctx, c, "extras/tags/", 1, tag{Name: "a"}); err == nil {
+		t.Error("update")
+	}
+	if _, err := Patch[tag](ctx, c, "extras/tags/", 1, tag{Name: "a"}); err == nil {
+		t.Error("patch")
+	}
+	if _, err := Get[tag](ctx, c, "extras/tags/", 1); err == nil {
+		t.Error("get")
+	}
+	if _, err := ListPage[tag](ctx, c, "extras/tags/", nil); err == nil {
+		t.Error("list page")
+	}
+	if _, err := List[tag](ctx, c, "extras/tags/", nil); err == nil {
+		t.Error("list")
+	}
+}
+
+func TestListRejectsInvalidNextLink(t *testing.T) {
+	c := newTestClient(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`{"next":"http://bad host/%zz","results":[]}`))
+	}))
+	if _, err := List[tag](context.Background(), c, "extras/tags/", nil); err == nil {
+		t.Error("an invalid next page link was followed")
+	}
+}
