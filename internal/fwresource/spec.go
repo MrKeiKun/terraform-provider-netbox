@@ -153,7 +153,8 @@ type Spec struct {
 	AtLeastOneOf [][]string
 	// Conflicts lists groups of attributes of which at most one may be set.
 	Conflicts [][]string
-	// RequiredWith lists groups of attributes that must all be set when one of them is.
+	// RequiredWith lists pairs of attributes: when the first is set, the second must be set too.
+	// Groups of any other size are ignored.
 	RequiredWith [][]string
 
 	// ModifyBody changes the request body, which already holds the fields of all attributes.

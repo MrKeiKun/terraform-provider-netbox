@@ -2,14 +2,14 @@
 
 NOTES
 
-* The provider supports Netbox 4.4.0 to 4.7.4. Older Netbox versions are not supported.
+* The provider supports Netbox 4.4.0 to 4.7.5. Older Netbox versions are not supported.
 * The provider now talks to Netbox with its own small REST client. The generated `go-netbox` client is no longer used, so new Netbox releases do not need a client update.
 * The provider now uses the Terraform Plugin Framework (plugin protocol 6) in place of the plugin SDK. It needs Terraform 1.0 or newer. Existing state upgrades on its own, and resource names and arguments stay the same. See the [upgrade guide](https://registry.terraform.io/providers/mrkeikun/netbox/latest/docs/guides/upgrading-to-plugin-framework) (#12).
 * **Breaking:** `rear_ports` on `netbox_device_front_port` and `netbox_front_port_template`, and `front_ports` on `netbox_device_rear_port` and `netbox_rear_port_template`, are now attributes instead of blocks. Write `rear_ports = [{ ... }]` in place of `rear_ports { ... }` (#12).
 
 ENHANCEMENTS
 
-* Add the resources and data sources the provider was missing for NetBox 4.4.0 to 4.7.4 (#2):
+* Add the resources and data sources the provider was missing for NetBox 4.4.0 to 4.7.5 (#2):
   * 12 objects new in NetBox 4.5 to 4.7, for example `netbox_rack_group`, `netbox_cable_bundle`, `netbox_virtual_machine_type`, `netbox_owner`, `netbox_owner_group`, `netbox_module_bay_type` and the cooling objects.
   * 29 objects from NetBox 4.4 the provider never had, for example l2vpn, the IKE and IPsec objects, the virtual circuit objects, `netbox_provider_account`, `netbox_custom_link`, `netbox_export_template` and `netbox_wireless_link`.
   * About 70 existing resources get `owner_id`, `comments`, `custom_fields` and other fields that were missing.

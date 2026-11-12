@@ -25,7 +25,7 @@ Each version of the provider has a built-in list of all Netbox versions it suppo
 
 | Netbox version | Provider version |
 | -------------- | ---------------- |
-| v4.4.0 - 4.7.4 | v1.0.0 and up    |
+| v4.4.0 - 4.7.5 | v1.0.0 and up    |
 
 ## Upgrading
 
@@ -103,7 +103,7 @@ For example:
 TEST_FUNC=TestAccNetboxLocationDataSource_basic make testacc-specific-test
 ```
 
-_Note:_ Acceptance tests create a docker compose stack on port 8001. They run against Netbox v4.7.4 by default. To test another version, set `NETBOX_VERSION`:
+_Note:_ Acceptance tests create a docker compose stack on port 8001. They run against Netbox v4.7.5 by default. To test another version, set `NETBOX_VERSION`:
 
 ```sh
 make testacc NETBOX_VERSION=v4.6.0

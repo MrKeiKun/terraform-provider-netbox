@@ -18,7 +18,7 @@ Netbox often makes breaking API changes even in non-major releases. Check the ta
 
 | Netbox version  | Provider version |
 | --------------- | ---------------- |
-| v4.4.0 - 4.7.4  | v1.0.0 and up    |
+| v4.4.0 - 4.7.5  | v1.0.0 and up    |
 
 Additionally, each version of the provider has a built-in list of all Netbox versions it supports at release time. Upon initialization, the provider will probe your Netbox version and include a (non-blocking) warning if the used Netbox version is not supported.
 
