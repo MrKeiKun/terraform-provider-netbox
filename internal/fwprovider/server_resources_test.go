@@ -360,3 +360,52 @@ func TestCustomDataSources(t *testing.T) {
 		t.Error("a missing notification group did not fail")
 	}
 }
+
+// After an import the parent is not in the configuration's attribute, and that must not replace the address.
+func TestImportedAvailableIPIsNotReplaced(t *testing.T) {
+	fake, srv := newFakeNetBox()
+	defer srv.Close()
+	h := newHarness(t, srv.URL)
+	ctx := context.Background()
+	const name = "netbox_available_ip_address"
+
+	fake.put("ipam/prefixes", map[string]any{"id": float64(1), "prefix": "10.0.0.0/24"})
+	fake.put("ipam/ip-addresses", map[string]any{"id": float64(50), "address": "10.0.0.5/24"})
+
+	imp, err := h.server.ImportResourceState(ctx, &tfprotov6.ImportResourceStateRequest{TypeName: name, ID: "50"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr, _ := h.server.ReadResource(ctx, &tfprotov6.ReadResourceRequest{TypeName: name, CurrentState: imp.ImportedResources[0].State})
+	typ := h.schemas.ResourceSchemas[name].ValueType()
+	prior, _ := rr.NewState.Unmarshal(typ)
+
+	// the configuration names an IP range, the state holds the prefix found by the import
+	cfg := h.object(typ, map[string]tftypes.Value{"ip_range_id": num(7)})
+	plan, err := h.server.PlanResourceChange(ctx, &tfprotov6.PlanResourceChangeRequest{
+		TypeName: name, PriorState: h.dynamic(prior), ProposedNewState: h.dynamic(h.proposed(name, typ, prior, cfg)), Config: h.dynamic(cfg),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	h.noErrors("plan", plan.Diagnostics)
+	if len(plan.RequiresReplace) != 0 {
+		t.Errorf("the address would be replaced: %v", plan.RequiresReplace)
+	}
+
+	// a change from one prefix to another still replaces it
+	var m map[string]tftypes.Value
+	_ = prior.As(&m)
+	m["prefix_id"] = num(1)
+	prior = tftypes.NewValue(typ, m)
+	cfg = h.object(typ, map[string]tftypes.Value{"prefix_id": num(2)})
+	plan, err = h.server.PlanResourceChange(ctx, &tfprotov6.PlanResourceChangeRequest{
+		TypeName: name, PriorState: h.dynamic(prior), ProposedNewState: h.dynamic(h.proposed(name, typ, prior, cfg)), Config: h.dynamic(cfg),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(plan.RequiresReplace) == 0 {
+		t.Error("a different prefix did not replace the address")
+	}
+}

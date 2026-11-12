@@ -526,3 +526,25 @@ func TestAllSchemas(t *testing.T) {
 		}
 	}
 }
+
+// If any provider setting is not known yet, the provider stays unconfigured.
+func TestUnknownSettingsLeaveProviderUnconfigured(t *testing.T) {
+	_, srv := newFakeNetBox()
+	defer srv.Close()
+	h := newHarness(t, srv.URL)
+	typ := h.schemas.Provider.ValueType()
+	cfg := h.object(typ, map[string]tftypes.Value{
+		"server_url":   str(srv.URL),
+		"api_token":    str("t"),
+		"default_tags": tftypes.NewValue(typ.(tftypes.Object).AttributeTypes["default_tags"], tftypes.UnknownValue),
+	})
+	resp, err := h.server.ConfigureProvider(context.Background(), &tfprotov6.ConfigureProviderRequest{Config: h.dynamic(cfg)})
+	if err != nil || h.hasError(resp.Diagnostics) {
+		t.Fatalf("configure: %v %v", err, resp.Diagnostics)
+	}
+	rtyp := h.schemas.ResourceSchemas["netbox_tenant"].ValueType()
+	state := h.object(rtyp, map[string]tftypes.Value{"id": str("1"), "name": str("x")})
+	if !h.hasError(h.read("netbox_tenant", state).Diagnostics) {
+		t.Error("the provider was configured although default_tags is unknown")
+	}
+}

@@ -85,7 +85,9 @@ func (p *Provider) Configure(ctx context.Context, req provider.ConfigureRequest,
 	}
 
 	// Values that are not known yet (for example computed by another resource) cannot be used.
-	if cfg.ServerURL.IsUnknown() || cfg.APIToken.IsUnknown() {
+	if cfg.ServerURL.IsUnknown() || cfg.APIToken.IsUnknown() || cfg.AllowInsecureHTTPS.IsUnknown() ||
+		cfg.Headers.IsUnknown() || cfg.StripTrailingSlashesFromURL.IsUnknown() || cfg.SkipVersionCheck.IsUnknown() ||
+		cfg.RequestTimeout.IsUnknown() || cfg.MaxRetries.IsUnknown() || cfg.DefaultTags.IsUnknown() || cfg.CACertFile.IsUnknown() {
 		return
 	}
 

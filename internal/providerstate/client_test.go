@@ -203,3 +203,25 @@ func TestCACertFileTrustsServerCertificate(t *testing.T) {
 
 	assert.NoError(t, err)
 }
+
+// The transport must not change the request it gets, and a configured header replaces the old one.
+func TestCustomHeaderTransportClonesRequest(t *testing.T) {
+	var seen http.Header
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { seen = r.Header.Clone() }))
+	defer ts.Close()
+
+	rt := customHeaderTransport{original: http.DefaultTransport, headers: map[string]interface{}{"X-Proxy": "new"}}
+	req, _ := http.NewRequest(http.MethodGet, ts.URL, nil)
+	req.Header.Set("X-Proxy", "old")
+	resp, err := rt.RoundTrip(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+	if got := seen.Values("X-Proxy"); len(got) != 1 || got[0] != "new" {
+		t.Errorf("X-Proxy = %v", got)
+	}
+	if req.Header.Get("X-Proxy") != "old" {
+		t.Error("the caller's request was changed")
+	}
+}

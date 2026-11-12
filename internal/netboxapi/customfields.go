@@ -59,6 +59,23 @@ func (c *Client) encodeBody(ctx context.Context, method, rawURL string, body any
 		return buf, nil
 	}
 
+	// A list of objects, as sent when NetBox allocates addresses, is converted object by object.
+	var list []json.RawMessage
+	if json.Unmarshal(buf, &list) == nil {
+		for i, raw := range list {
+			converted, err := c.convertCustomFields(ctx, raw)
+			if err != nil {
+				return nil, err
+			}
+			list[i] = converted
+		}
+		return json.Marshal(list)
+	}
+	return c.convertCustomFields(ctx, buf)
+}
+
+// convertCustomFields turns the custom field values of one JSON object into the types NetBox expects.
+func (c *Client) convertCustomFields(ctx context.Context, buf []byte) ([]byte, error) {
 	var obj map[string]json.RawMessage
 	if json.Unmarshal(buf, &obj) != nil {
 		return buf, nil

@@ -214,3 +214,28 @@ func TestPluralDataSource(t *testing.T) {
 		t.Errorf("limited tenants = %d, want at most 2", got)
 	}
 }
+
+// Deleting an assignment leaves the field alone when it points at another object by now.
+func TestAssignDeleteKeepsChangedField(t *testing.T) {
+	fake, srv := newFakeNetBox()
+	defer srv.Close()
+	h := newHarness(t, srv.URL)
+	const name = "netbox_device_primary_ip"
+
+	fake.put("dcim/devices", map[string]any{"id": float64(5), "name": "d"})
+	state := h.apply(name, nullObject(), map[string]tftypes.Value{"device_id": num(5), "ip_address_id": num(10), "ip_address_version": num(4)})
+
+	fake.get("dcim/devices", 5)["primary_ip4"] = map[string]any{"id": float64(99)}
+	h.noErrors("destroy", h.destroy(name, state))
+	if ref, _ := fake.get("dcim/devices", 5)["primary_ip4"].(map[string]any); ref == nil || ref["id"] != float64(99) {
+		t.Errorf("an assignment made elsewhere was cleared: %v", fake.get("dcim/devices", 5)["primary_ip4"])
+	}
+
+	// when it still points at our IP, it is cleared
+	state = h.apply(name, nullObject(), map[string]tftypes.Value{"device_id": num(5), "ip_address_id": num(10), "ip_address_version": num(4)})
+	fake.get("dcim/devices", 5)["primary_ip4"] = map[string]any{"id": float64(10)}
+	h.noErrors("destroy", h.destroy(name, state))
+	if fake.get("dcim/devices", 5)["primary_ip4"] != nil {
+		t.Errorf("the assignment was not cleared: %v", fake.get("dcim/devices", 5)["primary_ip4"])
+	}
+}

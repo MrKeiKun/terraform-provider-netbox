@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -45,4 +47,26 @@ func TestConnect_nonJSONStatusResponse(t *testing.T) {
 			"expected the original error to still be included for debugging, prefixed by an explanation")
 	}
 	assert.True(t, found, "expected an error diagnostic")
+}
+
+// A wrong token is reported at once, not after several retries.
+func TestConnectDoesNotRetryAWrongToken(t *testing.T) {
+	var calls int32
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		atomic.AddInt32(&calls, 1)
+		w.WriteHeader(http.StatusForbidden)
+	}))
+	defer ts.Close()
+
+	start := time.Now()
+	state, diags := Connect(context.Background(), Settings{ServerURL: ts.URL, APIToken: "0123456789abcdef0123456789abcdef01234567", RequestTimeout: 10, MaxRetries: 3})
+	if state != nil || len(diags) == 0 {
+		t.Fatal("a wrong token was accepted")
+	}
+	if n := atomic.LoadInt32(&calls); n != 1 {
+		t.Errorf("the status endpoint was called %d times, want 1", n)
+	}
+	if time.Since(start) > 3*time.Second {
+		t.Errorf("took %s", time.Since(start))
+	}
 }

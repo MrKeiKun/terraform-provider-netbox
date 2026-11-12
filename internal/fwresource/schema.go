@@ -1,6 +1,7 @@
 package fwresource
 
 import (
+	"context"
 	"regexp"
 	"strconv"
 
@@ -178,7 +179,14 @@ func (a Attr) schemaAttribute() schema.Attribute {
 		if stable {
 			out.PlanModifiers = append(out.PlanModifiers, int64planmodifier.UseStateForUnknown())
 		}
-		if a.ForceNew {
+		if a.ForceNew && a.Local && !a.Required {
+			// Only a change from one value to another replaces the object. A value that is not in
+			// the state, as after an import, or that moved to another attribute, does not.
+			out.PlanModifiers = append(out.PlanModifiers, int64planmodifier.RequiresReplaceIf(
+				func(_ context.Context, req planmodifier.Int64Request, resp *int64planmodifier.RequiresReplaceIfFuncResponse) {
+					resp.RequiresReplace = !req.StateValue.IsNull() && !req.PlanValue.IsNull() && !req.PlanValue.Equal(req.StateValue)
+				}, "Replaces the object when the value changes to another one.", "Replaces the object when the value changes to another one."))
+		} else if a.ForceNew {
 			out.PlanModifiers = append(out.PlanModifiers, int64planmodifier.RequiresReplace())
 		}
 		switch {

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"sort"
 	"time"
 
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
@@ -86,8 +87,14 @@ func (cfg *Config) httpClient() (*http.Client, error) {
 
 	var roundTripper http.RoundTripper = transport
 	if len(cfg.Headers) > 0 {
+		// Only the names are logged, the values may be secrets.
+		names := make([]string, 0, len(cfg.Headers))
+		for name := range cfg.Headers {
+			names = append(names, name)
+		}
+		sort.Strings(names)
 		log.WithFields(log.Fields{
-			"custom_headers": cfg.Headers,
+			"custom_headers": names,
 		}).Debug("Setting custom headers on every request to Netbox")
 
 		roundTripper = customHeaderTransport{
@@ -104,10 +111,11 @@ func (cfg *Config) httpClient() (*http.Client, error) {
 
 // RoundTrip adds the headers specified in the transport on every request.
 func (t customHeaderTransport) RoundTrip(r *http.Request) (*http.Response, error) {
+	// A round tripper must not change the request it is given.
+	r = r.Clone(r.Context())
 	for key, value := range t.headers {
-		r.Header.Add(key, fmt.Sprintf("%v", value))
+		r.Header.Set(key, fmt.Sprintf("%v", value))
 	}
 
-	resp, err := t.original.RoundTrip(r)
-	return resp, err
+	return t.original.RoundTrip(r)
 }

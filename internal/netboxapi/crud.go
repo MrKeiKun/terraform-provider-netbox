@@ -89,8 +89,23 @@ func List[T any](ctx context.Context, c *Client, path string, query url.Values) 
 		}
 		all = append(all, p.Results...)
 		next = ""
-		if p.Next != nil {
-			next = *p.Next
+		if p.Next != nil && *p.Next != "" {
+			// Only the paging parameters are taken from the link. The host and scheme come from
+			// the configured server, so the token never goes to a host named in a response.
+			link, err := url.Parse(*p.Next)
+			if err != nil {
+				return nil, fmt.Errorf("invalid next page link %q: %w", *p.Next, err)
+			}
+			q := url.Values{}
+			for k, v := range query {
+				q[k] = v
+			}
+			for _, k := range []string{"limit", "offset"} {
+				if v := link.Query().Get(k); v != "" {
+					q.Set(k, v)
+				}
+			}
+			next = c.endpoint(path, q)
 		}
 	}
 	return all, nil

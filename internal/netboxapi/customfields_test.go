@@ -84,3 +84,31 @@ func TestClientTypesCustomFieldsInRequests(t *testing.T) {
 		t.Error("expected the custom field definitions to be fetched")
 	}
 }
+
+// A list of objects, as sent when NetBox allocates addresses, gets typed custom fields too.
+func TestClientTypesCustomFieldsInListBodies(t *testing.T) {
+	var got []map[string]any
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			_, _ = w.Write([]byte(`{"count":1,"next":null,"results":[{"name":"num","type":{"value":"integer"}}]}`))
+			return
+		}
+		_ = json.NewDecoder(r.Body).Decode(&got)
+		_, _ = w.Write([]byte(`[]`))
+	}))
+	defer srv.Close()
+	c, err := New(srv.URL, "token", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := []any{map[string]any{"custom_fields": map[string]any{"num": "5"}}}
+	if _, err := Request[[]map[string]any](context.Background(), c, http.MethodPost, "ipam/prefixes/1/available-ips/", nil, body); err != nil {
+		t.Fatal(err)
+	}
+	if len(got) != 1 {
+		t.Fatalf("got %v", got)
+	}
+	if cf := got[0]["custom_fields"].(map[string]any); cf["num"] != float64(5) {
+		t.Errorf("custom field was not typed: %v", cf)
+	}
+}

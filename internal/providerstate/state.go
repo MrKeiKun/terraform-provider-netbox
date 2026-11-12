@@ -10,7 +10,6 @@ import (
 	"regexp"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 )
@@ -110,20 +109,9 @@ func Connect(ctx context.Context, s Settings) (*State, []Diag) {
 }
 
 func checkVersion(ctx context.Context, rest *netboxapi.Client, serverURL string) []Diag {
-	// The status endpoint can be transiently unavailable (e.g. Netbox still starting, a worker
-	// restart, or a flaky proxy), so retry a few times with a linear backoff before giving up.
-	const attempts = 5
-	var res *map[string]interface{}
-	var err error
-	for attempt := 1; attempt <= attempts; attempt++ {
-		res, err = netboxapi.Request[map[string]interface{}](ctx, rest, http.MethodGet, "status/", nil, nil)
-		if err == nil {
-			break
-		}
-		if attempt < attempts {
-			time.Sleep(time.Duration(attempt) * time.Second)
-		}
-	}
+	// The client already sends the request again when the connection fails or NetBox answers 502,
+	// 503 or 504, and stops when the context is cancelled. A wrong URL or token is reported at once.
+	res, err := netboxapi.Request[map[string]interface{}](ctx, rest, http.MethodGet, "status/", nil, nil)
 	if err != nil {
 		return []Diag{{
 			Error:   true,

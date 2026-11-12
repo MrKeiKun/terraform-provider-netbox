@@ -239,3 +239,67 @@ func TestApiErrorsAreReported(t *testing.T) {
 		t.Error("an unreachable NetBox did not fail the delete")
 	}
 }
+
+func mapOf(m map[string]string) tftypes.Value {
+	vals := map[string]tftypes.Value{}
+	for k, v := range m {
+		vals[k] = str(v)
+	}
+	return tftypes.NewValue(tftypes.Map{ElementType: tftypes.String}, vals)
+}
+
+// A custom field that is no longer in the configuration is cleared in NetBox.
+func TestRemovedCustomFieldIsCleared(t *testing.T) {
+	fake, srv := newFakeNetBox()
+	defer srv.Close()
+	h := newHarness(t, srv.URL)
+	const name = "netbox_tenant"
+
+	state := h.apply(name, nullObject(), map[string]tftypes.Value{
+		"name": str("cf"), "custom_fields": mapOf(map[string]string{"a": "1", "b": "2"}),
+	})
+	obj := fake.get("tenancy/tenants", int(numberAttr(t, state, "id")))
+
+	state = h.apply(name, state, map[string]tftypes.Value{"name": str("cf"), "custom_fields": mapOf(map[string]string{"a": "1"})})
+	cf, _ := obj["custom_fields"].(map[string]any)
+	if v, present := cf["b"]; !present || v != nil {
+		t.Errorf("b was not cleared: %v", cf)
+	}
+	if cf["a"] != "1" {
+		t.Errorf("a = %v", cf["a"])
+	}
+
+	// not mentioning custom fields at all leaves them alone
+	obj["custom_fields"] = map[string]any{"a": "1", "c": "3"}
+	h.apply(name, state, map[string]tftypes.Value{"name": str("cf")})
+	if cf, _ := obj["custom_fields"].(map[string]any); cf["a"] != "1" || cf["c"] != "3" {
+		t.Errorf("custom fields were touched without being configured: %v", cf)
+	}
+}
+
+// A tag with the name of a default tag is shown on an object that does not use default tags.
+func TestNoDefaultTagsShowsAllTags(t *testing.T) {
+	fake, srv := newFakeNetBox()
+	defer srv.Close()
+	fake.put("extras/tags", map[string]any{"id": float64(1), "name": "managed", "slug": "managed"})
+
+	h := newHarness(t, srv.URL)
+	cfg := h.object(h.schemas.Provider.ValueType(), map[string]tftypes.Value{
+		"server_url": str(srv.URL), "api_token": str("t"), "default_tags": setOf(tftypes.String, str("managed")),
+	})
+	resp, err := h.server.ConfigureProvider(context.Background(), &tfprotov6.ConfigureProviderRequest{Config: h.dynamic(cfg)})
+	if err != nil {
+		t.Fatal(err)
+	}
+	h.noErrors("configure", resp.Diagnostics)
+
+	state := h.apply("netbox_tag", nullObject(), map[string]tftypes.Value{"name": str("plain")})
+	obj := fake.get("extras/tags", int(numberAttr(t, state, "id")))
+	obj["tags"] = []any{map[string]any{"name": "managed", "slug": "managed"}}
+
+	got := h.decode(h.schemas.ResourceSchemas["netbox_tag"].ValueType(), h.read("netbox_tag", state).NewState)
+	var tags []tftypes.Value
+	if err := got["tags"].As(&tags); err != nil || len(tags) != 1 {
+		t.Errorf("tags = %v, %v", got["tags"], err)
+	}
+}

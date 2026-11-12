@@ -306,6 +306,24 @@ func (r *Resource) body(ctx context.Context, plan, prior Values) (map[string]any
 			}
 			body["custom_fields"] = m
 		}
+		// A field that was in the state but is no longer in the configuration is cleared. Null
+		// custom fields in the configuration leave all fields alone.
+		if cf, ok := stringMapValues(plan[customFieldsKey]); ok && prior != nil {
+			if old, hadOld := stringMapValues(prior[customFieldsKey]); hadOld {
+				m, _ := body["custom_fields"].(map[string]any)
+				for k := range old {
+					if _, kept := cf[k]; !kept {
+						if m == nil {
+							m = map[string]any{}
+						}
+						m[k] = nil
+					}
+				}
+				if m != nil {
+					body["custom_fields"] = m
+				}
+			}
+		}
 	}
 
 	if r.spec.ModifyBody != nil {
@@ -368,7 +386,7 @@ func (r *Resource) stateFromObject(ctx context.Context, obj map[string]any, prio
 		own := make([]attr.Value, 0, len(names))
 		for _, n := range names {
 			all = append(all, types.StringValue(n))
-			if !r.state.DefaultTags[n] || configured[n] {
+			if r.spec.NoDefaultTags || !r.state.DefaultTags[n] || configured[n] {
 				own = append(own, types.StringValue(n))
 			}
 		}

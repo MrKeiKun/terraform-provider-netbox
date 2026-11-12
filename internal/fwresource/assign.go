@@ -258,9 +258,21 @@ func (r *assignResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	if notConfigured(&resp.Diagnostics, r.state) {
 		return
 	}
-	target, _, version, err := r.values(ctx, req.State)
+	target, ref, version, err := r.values(ctx, req.State)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid state", err.Error())
+		return
+	}
+	// Leave the field alone when it was changed elsewhere since the last refresh.
+	cur, err := netboxapi.Get[map[string]any](ctx, r.state.Rest, r.spec.Path, target)
+	if err != nil {
+		if netboxapi.IsNotFound(err) {
+			return
+		}
+		resp.Diagnostics.AddError("Could not read "+r.spec.TypeName, err.Error())
+		return
+	}
+	if id, ok := refID((*cur)[r.field(version)]); !ok || id != ref {
 		return
 	}
 	if err := r.patch(ctx, target, version, nil); err != nil {
