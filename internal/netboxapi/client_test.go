@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 )
 
@@ -97,5 +98,71 @@ func TestListFollowsPagination(t *testing.T) {
 	got, err := List[tag](context.Background(), c, "extras/tags/", nil)
 	if err != nil || len(got) != 2 || got[1].Name != "b" {
 		t.Fatalf("list: %v %+v", err, got)
+	}
+}
+
+// The link to the next page may name another host. The request goes to the configured server.
+func TestListIgnoresHostOfNextLink(t *testing.T) {
+	evil := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		t.Error("the request went to the host named in the response")
+	}))
+	defer evil.Close()
+
+	var queries []url.Values
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		queries = append(queries, r.URL.Query())
+		if r.URL.Query().Get("offset") == "" {
+			_ = json.NewEncoder(w).Encode(map[string]any{"next": evil.URL + "/api/dcim/sites/?limit=1&offset=1&name=x", "results": []any{map[string]any{"id": 1}}})
+			return
+		}
+		_ = json.NewEncoder(w).Encode(map[string]any{"next": nil, "results": []any{map[string]any{"id": 2}}})
+	}))
+	defer srv.Close()
+
+	c, _ := New(srv.URL, "token", nil)
+	all, err := List[map[string]any](context.Background(), c, "dcim/sites/", url.Values{"name": {"x"}, "limit": {"1"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(all) != 2 {
+		t.Fatalf("got %d objects, want 2", len(all))
+	}
+	if len(queries) != 2 || queries[1].Get("offset") != "1" || queries[1].Get("name") != "x" {
+		t.Errorf("queries = %v", queries)
+	}
+}
+
+func TestCRUDErrors(t *testing.T) {
+	c := newTestClient(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte(`{"detail":"no"}`))
+	}))
+	ctx := context.Background()
+	if _, err := Create[tag](ctx, c, "extras/tags/", tag{Name: "a"}); err == nil {
+		t.Error("create")
+	}
+	if _, err := Update[tag](ctx, c, "extras/tags/", 1, tag{Name: "a"}); err == nil {
+		t.Error("update")
+	}
+	if _, err := Patch[tag](ctx, c, "extras/tags/", 1, tag{Name: "a"}); err == nil {
+		t.Error("patch")
+	}
+	if _, err := Get[tag](ctx, c, "extras/tags/", 1); err == nil {
+		t.Error("get")
+	}
+	if _, err := ListPage[tag](ctx, c, "extras/tags/", nil); err == nil {
+		t.Error("list page")
+	}
+	if _, err := List[tag](ctx, c, "extras/tags/", nil); err == nil {
+		t.Error("list")
+	}
+}
+
+func TestListRejectsInvalidNextLink(t *testing.T) {
+	c := newTestClient(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`{"next":"http://bad host/%zz","results":[]}`))
+	}))
+	if _, err := List[tag](context.Background(), c, "extras/tags/", nil); err == nil {
+		t.Error("an invalid next page link was followed")
 	}
 }

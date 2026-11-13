@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func testAccNetboxWirelessLinkDependencies(testName string) string {
@@ -54,12 +54,12 @@ func TestAccNetboxWirelessLink_basic(t *testing.T) {
 	testName := testAccGetTestName("wirelesslink")
 	deps := testAccNetboxWirelessLinkDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
 		CheckDestroy: func(s *terraform.State) error {
-			return testAccCheckObjectsDestroyed(s, "netbox_wireless_link", wirelessLinkAPIPath)
+			return testAccCheckObjectsDestroyed(s, "netbox_wireless_link", "wireless/wireless-links/")
 		},
 		Steps: []resource.TestStep{
 			{
@@ -101,7 +101,7 @@ func TestAccNetboxWirelessLinkDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("wirelesslink_ds")
 	deps := testAccNetboxWirelessLinkDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

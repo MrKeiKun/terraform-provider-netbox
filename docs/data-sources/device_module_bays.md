@@ -31,12 +31,12 @@ output "device_module_bays" {
 ### Optional
 
 - `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
-- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items. Defaults to `0`.
+- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `module_bays` (List of Object) The module bays of the device module bays. (see [below for nested schema](#nestedatt--module_bays))
+- `module_bays` (Attributes List) The module bays found. (see [below for nested schema](#nestedatt--module_bays))
 
 <a id="nestedblock--filter"></a>
 ### Nested Schema for `filter`
@@ -52,11 +52,11 @@ Required:
 
 Read-Only:
 
-- `description` (String)
-- `device_id` (Number)
-- `id` (Number)
-- `installed_module_id` (Number)
-- `label` (String)
-- `name` (String)
-- `position` (String)
-- `tags` (Set of String)
+- `description` (String) A description of the device module bays.
+- `device_id` (Number) The ID of the device associated with the device module bays.
+- `id` (Number) The numeric ID of the device module bays.
+- `installed_module_id` (Number) The ID of the installed module associated with the device module bays.
+- `label` (String) The label of the device module bays.
+- `name` (String) The name of the device module bays.
+- `position` (String) The position of the device module bays.
+- `tags` (Set of String) Tags assigned to the object, by name.

@@ -1,11 +1,12 @@
 package main
 
 import (
+	"context"
 	"flag"
+	"log"
 
-	"github.com/MrKeiKun/terraform-provider-netbox/netbox"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/fwprovider"
+	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 )
 
 // Run "go generate" to format example terraform files and generate the docs for the registry/website
@@ -17,17 +18,20 @@ import (
 // ":meta:subcategory:<name>:" marker. This step moves it into the page header of the generated docs.
 //go:generate go run ./scripts/postprocess-docs docs
 
+// version is set at build time.
+var version = "dev"
+
 func main() {
 	var debug bool
 
 	flag.BoolVar(&debug, "debug", false, "set to true to run the provider with support for debuggers like delve")
 	flag.Parse()
 
-	plugin.Serve(&plugin.ServeOpts{
-		Debug:        debug,
-		ProviderAddr: "registry.terraform.io/mrkeikun/netbox",
-		ProviderFunc: func() *schema.Provider {
-			return netbox.Provider()
-		},
-	})
+	opts := providerserver.ServeOpts{
+		Address: "registry.terraform.io/mrkeikun/netbox",
+		Debug:   debug,
+	}
+	if err := providerserver.Serve(context.Background(), fwprovider.New(version), opts); err != nil {
+		log.Fatal(err)
+	}
 }

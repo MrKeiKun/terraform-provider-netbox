@@ -10,7 +10,7 @@ permissions:
 jobs:
   generated-docs:
     name: Generated docs are up to date
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -26,7 +26,7 @@ jobs:
 
   examples:
     name: Docs examples exist
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -35,7 +35,7 @@ jobs:
 
   subcategories:
     name: Docs subcategories are allowed
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7

@@ -49,7 +49,7 @@ resource "netbox_device_rear_port" "test" {
 - `color_hex` (String) The color hex of the device rear port.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the device rear port.
-- `front_ports` (Block List) The ports and positions this port is mapped to. Needs NetBox 4.5 or newer. (see [below for nested schema](#nestedblock--front_ports))
+- `front_ports` (Attributes List) The ports and positions this port is mapped to. Needs NetBox 4.5 or newer. (see [below for nested schema](#nestedatt--front_ports))
 - `label` (String) The label of the device rear port.
 - `mark_connected` (Boolean) Whether the device rear port is marked as connected even without a cable. Defaults to `false`.
 - `module_id` (Number) The ID of the module associated with the device rear port.
@@ -61,7 +61,7 @@ resource "netbox_device_rear_port" "test" {
 - `id` (String) The ID of this resource.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
-<a id="nestedblock--front_ports"></a>
+<a id="nestedatt--front_ports"></a>
 ### Nested Schema for `front_ports`
 
 Required:

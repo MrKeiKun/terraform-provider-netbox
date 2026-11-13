@@ -44,7 +44,7 @@ resource "netbox_device_primary_ip" "test_v4" {
 
 ### Optional
 
-- `ip_address_version` (Number) The ip address version of the device primary ip. Defaults to `4`.
+- `ip_address_version` (Number) The ip address version of the device primary ip.
 
 ### Read-Only
 

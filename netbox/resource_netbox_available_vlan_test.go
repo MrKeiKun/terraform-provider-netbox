@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 // TestAccNetboxAvailableVLAN_basic verifies that a basic available VLAN can be
@@ -15,7 +15,7 @@ import (
 // like name, status, and vid are correctly set and persisted.
 func TestAccNetboxAvailableVLAN_basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -90,7 +90,7 @@ func TestAccNetboxAvailableVLAN_basic_range(t *testing.T) {
 	)
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -143,7 +143,7 @@ resource "netbox_available_vlan" "vlan_test" {
 // can be allocated serially from the same VLAN group.
 func TestAccNetboxAvailableVLAN_multipleSerial(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -195,7 +195,7 @@ func TestAccNetboxAvailableVLAN_multipleSerial_range(t *testing.T) {
 		maxVID2 = 17
 	)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -264,7 +264,7 @@ resource "netbox_available_vlan" "vlan3" {
 // can be allocated in parallel from the same VLAN group.
 func TestAccNetboxAvailableVLAN_multipleParallel(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -309,7 +309,7 @@ resource "netbox_available_vlan" "vlan2" {
 // vid_ranges allow (i.e., resource exhaustion).
 func TestAccNetboxAvailableVLAN_vidExhaustion(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -344,7 +344,7 @@ resource "netbox_available_vlan" "vlan2" {
 // is not yet implemented in the netbox API (as of 05.05.2025 at least)
 func TestAccNetboxAvailableVLAN_withTenant(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -376,7 +376,7 @@ resource "netbox_available_vlan" "vlan" {
 
 func TestAccNetboxAvailableVLAN_import(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: `

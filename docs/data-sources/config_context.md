@@ -40,7 +40,7 @@ data "netbox_config_context" "example" {
 - `roles` (List of Number) The roles of the config context.
 - `site_groups` (List of Number) The site groups of the config context.
 - `sites` (List of Number) The sites of the config context.
-- `tags` (List of String) Tags to assign to the config context.
+- `tags` (Set of String) Tags to assign to the config context.
 - `tenant_groups` (List of Number) The tenant groups of the config context.
 - `tenants` (List of Number) The tenants of the config context.
 - `weight` (Number) The weight of the config context.

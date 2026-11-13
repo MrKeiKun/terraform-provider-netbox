@@ -63,7 +63,7 @@ resource "netbox_device_front_port" "test" {
 - `positions` (Number) The positions of the device front port.
 - `rear_port_id` (Number) The ID of the rear port associated with the device front port. Conflicts with `rear_ports`.
 - `rear_port_position` (Number) The rear port position of the device front port.
-- `rear_ports` (Block List) The ports and positions this port is mapped to. Needs NetBox 4.5 or newer. (see [below for nested schema](#nestedblock--rear_ports))
+- `rear_ports` (Attributes List) The ports and positions this port is mapped to. Needs NetBox 4.5 or newer. (see [below for nested schema](#nestedatt--rear_ports))
 - `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only
@@ -71,7 +71,7 @@ resource "netbox_device_front_port" "test" {
 - `id` (String) The ID of this resource.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
-<a id="nestedblock--rear_ports"></a>
+<a id="nestedatt--rear_ports"></a>
 ### Nested Schema for `rear_ports`
 
 Required:

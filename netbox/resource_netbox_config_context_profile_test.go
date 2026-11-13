@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func testAccNetboxConfigContextProfileDependencies(testName string) string {
@@ -18,12 +18,12 @@ func TestAccNetboxConfigContextProfile_basic(t *testing.T) {
 	testName := testAccGetTestName("configcontextp")
 	deps := testAccNetboxConfigContextProfileDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
 		CheckDestroy: func(s *terraform.State) error {
-			return testAccCheckObjectsDestroyed(s, "netbox_config_context_profile", configContextProfileAPIPath)
+			return testAccCheckObjectsDestroyed(s, "netbox_config_context_profile", "extras/config-context-profiles/")
 		},
 		Steps: []resource.TestStep{
 			{
@@ -60,7 +60,7 @@ func TestAccNetboxConfigContextProfileDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("configcontextp_ds")
 	deps := testAccNetboxConfigContextProfileDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func testAccNetboxCircuitProviderNetworkDependencies(testName string, testSlug string) string {
@@ -25,8 +25,8 @@ func TestAccNetboxCircuitProviderNetwork_basic(t *testing.T) {
 	testSlug := "circuit_prov_network"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxCircuitProviderNetworkDependencies(testName, testSlug) + fmt.Sprintf(`

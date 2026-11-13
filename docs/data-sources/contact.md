@@ -29,6 +29,6 @@ data "netbox_contact" "example" {
 
 ### Read-Only
 
-- `group_id` (Number, Deprecated) The ID of the group associated with the contact.
+- `group_id` (Number) The ID of the group associated with the contact.
 - `group_ids` (List of Number) The IDs of the group associated with the contact.
 - `id` (String) The ID of this resource.

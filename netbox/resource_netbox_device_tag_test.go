@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func testAccNetboxDeviceTagDependencies(testName string) string {
@@ -50,8 +50,8 @@ func TestAccNetboxDeviceTag_basic(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	dependencies := testAccNetboxDeviceTagDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: testAccProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: dependencies + `
@@ -123,8 +123,11 @@ func testAccCheckNetboxDevicePrimaryIP4(deviceResourceName, ipResourceName strin
 			return err
 		}
 
-		api := testAccProvider.Meta().(*providerState)
-		device, err := netboxapi.Get[primaryIPResponse](context.Background(), api.rest, deviceAPIPath, deviceID)
+		client, err := testAccClient()
+		if err != nil {
+			return err
+		}
+		device, err := netboxapi.Get[primaryIPResponse](context.Background(), client, "dcim/devices/", deviceID)
 		if err != nil {
 			return err
 		}
@@ -145,8 +148,8 @@ func TestAccNetboxDeviceTag_preservesPrimaryIP(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	dependencies := testAccNetboxDeviceTagPrimaryIPDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: testAccProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				// baseline: primary IP set, no netbox_device_tag involved yet
@@ -180,4 +183,10 @@ resource "netbox_device_tag" "test" {
 			},
 		},
 	})
+}
+
+// primaryIPResponse holds the primary IPs of a device.
+type primaryIPResponse struct {
+	ID         int64          `json:"id"`
+	PrimaryIp4 *netboxapi.Ref `json:"primary_ip4"`
 }

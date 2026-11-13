@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func testAccNetboxVirtualCircuitDependencies(testName string) string {
@@ -29,12 +29,12 @@ func TestAccNetboxVirtualCircuit_basic(t *testing.T) {
 	testName := testAccGetTestName("virtualcircuit")
 	deps := testAccNetboxVirtualCircuitDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
 		CheckDestroy: func(s *terraform.State) error {
-			return testAccCheckObjectsDestroyed(s, "netbox_virtual_circuit", virtualCircuitAPIPath)
+			return testAccCheckObjectsDestroyed(s, "netbox_virtual_circuit", "circuits/virtual-circuits/")
 		},
 		Steps: []resource.TestStep{
 			{
@@ -76,7 +76,7 @@ func TestAccNetboxVirtualCircuitDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("virtualcircuit_ds")
 	deps := testAccNetboxVirtualCircuitDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

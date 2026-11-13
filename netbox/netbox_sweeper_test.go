@@ -4,47 +4,27 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
-
-// sweeperNetboxClients is a shared cache of netbox clients
-// This prevents client re-initialization for every resource with no benefit
-var sweeperNetboxClients map[string]interface{}
 
 func TestMain(m *testing.M) {
 	resource.TestMain(m)
 }
 
-// sharedClientForRegion returns a common provider state configured for the specified region
-func sharedClientForRegion(region string) (interface{}, error) {
-	if client, ok := sweeperNetboxClients[region]; ok {
-		return client, nil
-	}
-
-	c, err := netboxapi.New(os.Getenv("NETBOX_SERVER_URL"), os.Getenv("NETBOX_API_TOKEN"), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return &providerState{rest: c}, nil
-}
-
 // sweepByName deletes every object under path whose nameField starts with testPrefix.
 func sweepByName(region, path, nameField string) error {
-	m, err := sharedClientForRegion(region)
+	client, err := testAccClient()
 	if err != nil {
 		return fmt.Errorf("Error getting client: %s", err)
 	}
-	api := m.(*providerState)
 
-	objects, err := netboxapi.List[map[string]interface{}](context.Background(), api.rest, path, nil)
+	objects, err := netboxapi.List[map[string]interface{}](context.Background(), client, path, nil)
 	if err != nil {
 		return err
 	}
@@ -57,7 +37,7 @@ func sweepByName(region, path, nameField string) error {
 		if !ok {
 			continue
 		}
-		if err := netboxapi.Delete(context.Background(), api.rest, path, int64(id)); err != nil {
+		if err := netboxapi.Delete(context.Background(), client, path, int64(id)); err != nil {
 			return err
 		}
 		log.Printf("[DEBUG] Deleted %s %q", path, name)
@@ -68,7 +48,10 @@ func sweepByName(region, path, nameField string) error {
 // testAccCheckObjectsDestroyed is the destroy check of the acceptance tests: no
 // object of resourceType in the state may still exist in NetBox under path.
 func testAccCheckObjectsDestroyed(s *terraform.State, resourceType, path string) error {
-	api := testAccProvider.Meta().(*providerState)
+	client, err := testAccClient()
+	if err != nil {
+		return err
+	}
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != resourceType {
@@ -76,7 +59,7 @@ func testAccCheckObjectsDestroyed(s *terraform.State, resourceType, path string)
 		}
 
 		id, _ := strconv.ParseInt(rs.Primary.ID, 10, 64)
-		_, err := netboxapi.Get[netboxapi.Ref](context.Background(), api.rest, path, id)
+		_, err := netboxapi.Get[netboxapi.Ref](context.Background(), client, path, id)
 		if err == nil {
 			return fmt.Errorf("%s (%s) still exists", resourceType, rs.Primary.ID)
 		}
@@ -90,13 +73,12 @@ func testAccCheckObjectsDestroyed(s *terraform.State, resourceType, path string)
 
 // sweepAll deletes every object under path, for objects that have no name to match on.
 func sweepAll(region, path string) error {
-	m, err := sharedClientForRegion(region)
+	client, err := testAccClient()
 	if err != nil {
 		return fmt.Errorf("Error getting client: %s", err)
 	}
-	api := m.(*providerState)
 
-	objects, err := netboxapi.List[map[string]interface{}](context.Background(), api.rest, path, nil)
+	objects, err := netboxapi.List[map[string]interface{}](context.Background(), client, path, nil)
 	if err != nil {
 		return err
 	}
@@ -105,7 +87,7 @@ func sweepAll(region, path string) error {
 		if !ok {
 			continue
 		}
-		if err := netboxapi.Delete(context.Background(), api.rest, path, int64(id)); err != nil {
+		if err := netboxapi.Delete(context.Background(), client, path, int64(id)); err != nil {
 			return err
 		}
 		log.Printf("[DEBUG] Deleted %s %d", path, int64(id))

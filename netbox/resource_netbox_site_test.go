@@ -1,14 +1,11 @@
 package netbox
 
 import (
-	"context"
 	"fmt"
-	"log"
 	"strings"
 	"testing"
 
-	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccNetboxSite_basic(t *testing.T) {
@@ -16,8 +13,8 @@ func TestAccNetboxSite_basic(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	randomSlug := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -73,8 +70,8 @@ func TestAccNetboxSite_customFields(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	testField := strings.ReplaceAll(testAccGetTestName(testSlug), "-", "_")
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: testAccProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -108,8 +105,8 @@ func TestAccNetboxSite_fieldUpdate(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	testField := strings.ReplaceAll(testAccGetTestName(testSlug), "-", "_")
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: testAccProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -154,24 +151,7 @@ func init() {
 		Name:         "netbox_site",
 		Dependencies: []string{},
 		F: func(region string) error {
-			m, err := sharedClientForRegion(region)
-			if err != nil {
-				return fmt.Errorf("Error getting client: %s", err)
-			}
-			api := m.(*providerState)
-			sites, err := netboxapi.List[siteResponse](context.Background(), api.rest, siteAPIPath, nil)
-			if err != nil {
-				return err
-			}
-			for _, site := range sites {
-				if strings.HasPrefix(site.Name, testPrefix) {
-					if err := netboxapi.Delete(context.Background(), api.rest, siteAPIPath, site.ID); err != nil {
-						return err
-					}
-					log.Print("[DEBUG] Deleted a site")
-				}
-			}
-			return nil
+			return sweepByName(region, "dcim/sites/", "name")
 		},
 	})
 }

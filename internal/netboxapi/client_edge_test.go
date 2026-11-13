@@ -131,3 +131,22 @@ func TestDoReportsUnencodableBodies(t *testing.T) {
 		t.Fatal("expected an encoding error")
 	}
 }
+
+func TestDoReportsRequestAndResponseProblems(t *testing.T) {
+	c := newTestClient(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// promise more bytes than are sent
+		w.Header().Set("Content-Length", "100")
+		_, _ = w.Write([]byte("short"))
+	}))
+	c.SetMaxRetries(0)
+	var out map[string]any
+	if err := c.Do(context.Background(), http.MethodGet, c.endpoint("dcim/sites/", nil), nil, &out); err == nil {
+		t.Error("a truncated response was accepted")
+	}
+	if err := c.Do(context.Background(), "BAD METHOD", c.endpoint("dcim/sites/", nil), nil, &out); err == nil {
+		t.Error("an invalid method was accepted")
+	}
+	if err := c.Do(context.Background(), http.MethodPost, c.endpoint("dcim/sites/", nil), make(chan int), &out); err == nil {
+		t.Error("a body that cannot be encoded was accepted")
+	}
+}

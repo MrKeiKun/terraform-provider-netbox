@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func testAccNetboxAvailablePrefixFullDependencies(testName string, parentPrefix string) string {
@@ -24,7 +24,7 @@ resource "netbox_prefix" "parent" {
     ignore_changes = [%[3]s]
   }
 }
-`, testName, parentPrefix, customFieldsKey)
+`, testName, parentPrefix, "custom_fields")
 }
 
 func TestAccNetboxAvailablePrefix_basic(t *testing.T) {
@@ -39,7 +39,7 @@ func TestAccNetboxAvailablePrefix_basic(t *testing.T) {
 	resourceName := "netbox_available_prefix.test"
 
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxAvailablePrefixFullDependencies(testName, testParentPrefix) + fmt.Sprintf(`
@@ -110,7 +110,7 @@ func TestAccNetboxAvailablePrefix_cf(t *testing.T) {
 	resourceName := "netbox_available_prefix.test"
 
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxAvailablePrefixFullDependencies(testName, testParentPrefix) + fmt.Sprintf(`
@@ -167,7 +167,7 @@ func TestAccNetboxAvailablePrefix_multiplePrefixesSerial(t *testing.T) {
 	testSlug := "prefix"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxAvailablePrefixFullDependencies(testName, testParentPrefix) + fmt.Sprintf(`
@@ -217,7 +217,7 @@ resource "netbox_available_prefix" "test3" {
 					resource.TestCheckResourceAttr("netbox_available_prefix.test1", "prefix", expectedPrefixes[0]),
 					resource.TestCheckResourceAttr("netbox_available_prefix.test2", "prefix", expectedPrefixes[1]),
 				),
-				ExpectError: regexp.MustCompile(".*Insufficient resources are available to satisfy the request.*"),
+				ExpectError: regexp.MustCompile(`(?s)Insufficient\s+resources\s+are\s+available\s+to\s+satisfy\s+the\s+request`),
 			},
 		},
 	})
@@ -251,7 +251,7 @@ func TestAccNetboxAvailablePrefix_scopes(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxAvailablePrefixFullDependencies(testName, testParentPrefix) + testAccNetboxAvailablePrefixScopeDependencies(testName) + fmt.Sprintf(`

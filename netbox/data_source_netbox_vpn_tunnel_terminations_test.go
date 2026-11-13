@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func testAccNetboxTunnelTerminationsSetUp(testName string) string {
@@ -87,7 +87,7 @@ func TestAccNetboxTunnelTerminationsDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("vpntun_terminations_ds_basic")
 	setUp := testAccNetboxTunnelTerminationsSetUp(testName)
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: setUp,

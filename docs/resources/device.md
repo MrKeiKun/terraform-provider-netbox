@@ -10,7 +10,6 @@ description: |-
 # netbox_device (Resource)
 
 From the [official documentation](https://docs.netbox.dev/en/stable/features/devices/#devices):
-
 > Every piece of hardware which is installed within a site or rack exists in NetBox as a device. Devices are measured in rack units (U) and can be half depth or full depth. A device may have a height of 0U: These devices do not consume vertical rack space and cannot be assigned to a particular rack unit. A common example of a 0U device is a vertically-mounted PDU.
 
 ## Example Usage
@@ -58,7 +57,7 @@ resource "netbox_device" "test" {
 
 ### Optional
 
-- `airflow` (String) Airflow direction of the device. One of [front-to-rear, rear-to-front, left-to-right, right-to-left, side-to-rear, rear-to-side, bottom-to-top, top-to-bottom, passive, mixed].
+- `airflow` (String) Airflow direction of the device. One of [front-to-rear, rear-to-front, left-to-right, right-to-left, side-to-rear, rear-to-side, bottom-to-top, top-to-bottom, passive, mixed]
 - `asset_tag` (String) The asset tag of the device.
 - `cluster_id` (Number) The ID of the cluster associated with the device.
 - `comments` (String) Free-form comments about the device.
@@ -66,17 +65,17 @@ resource "netbox_device" "test" {
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the device.
 - `local_context_data` (String) This is best managed through the use of `jsonencode` and a map of settings.
-- `location_id` (Number) The ID of the location associated with the device.
+- `location_id` (Number) The ID of the location associated with the device. NetBox takes it from the rack when it is not set.
 - `platform_id` (Number) The ID of the platform associated with the device.
-- `rack_face` (String) Valid values are `front` and `rear`. Required when `rack_position` is set.
+- `rack_face` (String) Valid values are `front` and `rear`.
 - `rack_id` (Number) The ID of the rack associated with the device.
 - `rack_position` (Number) The rack position of the device.
 - `serial` (String) The serial number of the device.
-- `status` (String) Valid values are `offline`, `active`, `planned`, `staged`, `failed`, `inventory` and `decommissioning`. Defaults to `active`.
+- `status` (String) Valid values are `offline`, `active`, `planned`, `staged`, `failed`, `inventory` and `decommissioning`.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the device.
-- `virtual_chassis_id` (Number) The ID of the virtual chassis associated with the device. Required when `virtual_chassis_master` and `virtual_chassis_id` is set.
-- `virtual_chassis_master` (Boolean) Whether virtual chassis master is enabled for the device. Required when `virtual_chassis_master` and `virtual_chassis_id` is set.
+- `virtual_chassis_id` (Number) The ID of the virtual chassis associated with the device.
+- `virtual_chassis_master` (Boolean) Whether virtual chassis master is enabled for the device.
 - `virtual_chassis_position` (Number) The virtual chassis position of the device.
 - `virtual_chassis_priority` (Number) The virtual chassis priority of the device.
 

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func testAccNetboxDeviceBayFullDependencies(testName string) string {
@@ -67,9 +67,9 @@ func TestAccNetboxDeviceBay_basic(t *testing.T) {
 	testSlug := "device_bay_basic"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
-		CheckDestroy:      testAccCheckDeviceBayDestroy,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		CheckDestroy:             testAccCheckDeviceBayDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxDeviceBayFullDependencies(testName) + fmt.Sprintf(`

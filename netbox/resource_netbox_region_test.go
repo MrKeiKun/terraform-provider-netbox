@@ -2,10 +2,11 @@ package netbox
 
 import (
 	"fmt"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/fwresource"
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccNetboxRegion_basic(t *testing.T) {
@@ -13,8 +14,8 @@ func TestAccNetboxRegion_basic(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	randomSlug := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -54,8 +55,8 @@ func TestAccNetboxRegion_defaultSlug(t *testing.T) {
 	testSlug := "region_defSlug"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -64,7 +65,7 @@ resource "netbox_region" "test" {
 }`, testName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("netbox_region.test", "name", testName),
-					resource.TestCheckResourceAttr("netbox_region.test", "slug", getSlug(testName)),
+					resource.TestCheckResourceAttr("netbox_region.test", "slug", fwresource.Slug(testName)),
 				),
 			},
 		},

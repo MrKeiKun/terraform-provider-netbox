@@ -10,7 +10,6 @@ description: |-
 # netbox_vlan_group (Resource)
 
 
-
 > A VLAN Group represents a collection of VLANs. Generally, these are limited by one of a number of scopes such as "Site" or "Virtualization Cluster".
 
 ## Example Usage

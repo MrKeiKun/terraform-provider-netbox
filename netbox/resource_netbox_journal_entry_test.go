@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func testAccNetboxJournalEntryDependencies(testName string) string {
@@ -21,12 +21,12 @@ func TestAccNetboxJournalEntry_basic(t *testing.T) {
 	testName := testAccGetTestName("journalentry")
 	deps := testAccNetboxJournalEntryDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
 		CheckDestroy: func(s *terraform.State) error {
-			return testAccCheckObjectsDestroyed(s, "netbox_journal_entry", journalEntryAPIPath)
+			return testAccCheckObjectsDestroyed(s, "netbox_journal_entry", "extras/journal-entries/")
 		},
 		Steps: []resource.TestStep{
 			{

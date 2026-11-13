@@ -45,12 +45,12 @@ data "netbox_clusters" "site_clusters" {
 ### Optional
 
 - `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
-- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items. Defaults to `0`.
+- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items.
 - `name_regex` (String) The name regex of the clusters.
 
 ### Read-Only
 
-- `clusters` (List of Object) The clusters of the clusters. (see [below for nested schema](#nestedatt--clusters))
+- `clusters` (Attributes List) The clusters found. (see [below for nested schema](#nestedatt--clusters))
 - `id` (String) The ID of this resource.
 
 <a id="nestedblock--filter"></a>
@@ -67,18 +67,18 @@ Required:
 
 Read-Only:
 
-- `cluster_group_id` (Number)
-- `cluster_id` (Number)
-- `cluster_type_id` (Number)
-- `comments` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `location_id` (Number)
-- `name` (String)
-- `region_id` (Number)
-- `scope_id` (Number)
-- `scope_type` (String)
-- `site_group_id` (Number)
-- `site_id` (Number)
-- `tags` (Set of String)
-- `tenant_id` (Number)
+- `cluster_group_id` (Number) The ID of the cluster group associated with the clusters.
+- `cluster_id` (Number) The ID of the cluster associated with the clusters.
+- `cluster_type_id` (Number) The ID of the cluster type associated with the clusters.
+- `comments` (String) Free-form comments about the clusters.
+- `custom_fields` (Map of String) Custom field values of the clusters, as a map of field name to value.
+- `description` (String) A description of the clusters.
+- `location_id` (Number) The ID of the location associated with the clusters.
+- `name` (String) The name of the clusters.
+- `region_id` (Number) The ID of the region associated with the clusters.
+- `scope_id` (Number) The ID of the scope associated with the clusters.
+- `scope_type` (String) The scope type of the clusters.
+- `site_group_id` (Number) The ID of the site group associated with the clusters.
+- `site_id` (Number) The ID of the site associated with the clusters.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the clusters.

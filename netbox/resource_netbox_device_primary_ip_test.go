@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func testAccNetboxDevicePrimaryIPFullDependencies(testName string) string {
@@ -95,8 +95,8 @@ func TestAccNetboxDevicePrimaryIP4_basic(t *testing.T) {
 	testSlug := "pr_ip_basic"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: testAccProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxDevicePrimaryIPFullDependencies(testName) + `
@@ -142,8 +142,8 @@ func TestAccNetboxDevicePrimaryIP6_basic(t *testing.T) {
 	testSlug := "pr_ipv6_basic"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: testAccProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxDevicePrimaryIPFullDependencies(testName) + `
@@ -183,8 +183,8 @@ func TestAccNetboxDevicePrimaryIP4_removePrimary(t *testing.T) {
 	testSlug := "pr_ip_removePrimary"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: testAccProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxDevicePrimaryIPFullDependencies(testName) + fmt.Sprintf(`
@@ -297,7 +297,7 @@ resource "netbox_device_interface" "test2" {
 `, testName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("netbox_device.test2", "name", testName),
-					resource.TestCheckResourceAttr("netbox_device.test2", "primary_ipv4", "0"),
+					testAccCheckAttrUnset("netbox_device.test2", "primary_ipv4"),
 					resource.TestCheckResourceAttr("netbox_device.test2", "tags.#", "1"),
 					resource.TestCheckResourceAttr("netbox_device.test2", "tags.0", testName),
 					resource.TestCheckResourceAttr("netbox_device.test2", "status", "planned"),
@@ -311,8 +311,8 @@ func TestAccNetboxDevicePrimaryIP4_simpleUpdateDevice(t *testing.T) {
 	testSlug := "pr_ip_updateDevice"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: testAccProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxDevicePrimaryIPFullDependencies(testName) + fmt.Sprintf(`
@@ -531,8 +531,8 @@ func TestAccNetboxDevicePrimaryIP4_refsUpdateDevice(t *testing.T) {
 	testSlug := "pr_ip_refUpdateDevice"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: testAccProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxDevicePrimaryIPFullDependencies(testName) + fmt.Sprintf(`

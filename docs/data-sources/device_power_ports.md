@@ -31,13 +31,13 @@ output "device_power_ports" {
 ### Optional
 
 - `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
-- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items. Defaults to `0`.
+- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items.
 - `name_regex` (String) The name regex of the device power ports.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `power_ports` (List of Object) The power ports of the device power ports. (see [below for nested schema](#nestedatt--power_ports))
+- `power_ports` (Attributes List) The power ports found. (see [below for nested schema](#nestedatt--power_ports))
 
 <a id="nestedblock--filter"></a>
 ### Nested Schema for `filter`
@@ -53,12 +53,12 @@ Required:
 
 Read-Only:
 
-- `allocated_draw` (Number)
-- `description` (String)
-- `device_id` (Number)
-- `id` (Number)
-- `maximum_draw` (Number)
-- `module_id` (Number)
-- `name` (String)
-- `tag_ids` (List of Number)
-- `type` (String)
+- `allocated_draw` (Number) The allocated draw of the device power ports.
+- `description` (String) A description of the device power ports.
+- `device_id` (Number) The ID of the device associated with the device power ports.
+- `id` (Number) The numeric ID of the device power ports.
+- `maximum_draw` (Number) The maximum draw of the device power ports.
+- `module_id` (Number) The ID of the module associated with the device power ports.
+- `name` (String) The name of the device power ports.
+- `tag_ids` (Set of Number) The IDs of the tag associated with the device power ports.
+- `type` (String) The type of the device power ports.

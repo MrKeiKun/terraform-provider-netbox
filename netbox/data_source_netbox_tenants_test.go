@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccNetboxTenantsDataSource_basic(t *testing.T) {
 	testSlug := "tnts_ds_basic"
 	testName := testAccGetTestName(testSlug)
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -40,7 +40,7 @@ func TestAccNetboxTenantsDataSource_filter(t *testing.T) {
 	testSlug := "tnts_ds_filter"
 	testName := testAccGetTestName(testSlug)
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -71,7 +71,7 @@ func TestAccNetboxTenantsDataSource_empty(t *testing.T) {
 	testSlug := "tnts_ds_empty"
 	testName := testAccGetTestName(testSlug)
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -93,7 +93,7 @@ func TestAccNetboxTenantsDataSource_tenantgroups(t *testing.T) {
 	testSlug := "tnts_ds_tenant_group_filter"
 	testName := testAccGetTestName(testSlug)
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

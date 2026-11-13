@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func testAccNetboxVirtualCircuitTerminationDependencies(testName string) string {
@@ -67,12 +67,12 @@ func TestAccNetboxVirtualCircuitTermination_basic(t *testing.T) {
 	testName := testAccGetTestName("virtualcircuit")
 	deps := testAccNetboxVirtualCircuitTerminationDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
 		CheckDestroy: func(s *terraform.State) error {
-			return testAccCheckObjectsDestroyed(s, "netbox_virtual_circuit_termination", virtualCircuitTerminationAPIPath)
+			return testAccCheckObjectsDestroyed(s, "netbox_virtual_circuit_termination", "circuits/virtual-circuit-terminations/")
 		},
 		Steps: []resource.TestStep{
 			{

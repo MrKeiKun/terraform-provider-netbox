@@ -31,7 +31,7 @@ jobs:
   unit-test:
     name: Unit tests
     needs: [pre-commit, lint, docs]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -40,14 +40,21 @@ jobs:
         with:
           go-version-file: go.mod
       - name: Run unit tests
-        run: make test
+        run: make test UNIT_COVER_ARGS="-coverprofile=coverage-unit.out -coverpkg=./internal/..."
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v7
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage-unit.out
+          flags: unit
+          fail_ci_if_error: false
 
   acceptance-test:
     name: Acceptance tests (NetBox ${{ matrix.netbox-version }})
     needs: unit-test
     env:
-      COVERAGE_NETBOX_VERSION: v4.7.4
-    runs-on: ubuntu-22.04
+      COVERAGE_NETBOX_VERSION: v4.7.5
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -86,6 +93,7 @@ jobs:
           - v4.7.2
           - v4.7.3
           - v4.7.4
+          - v4.7.5
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -93,6 +101,12 @@ jobs:
         uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
+      # The runner images after Ubuntu 22.04 do not have Terraform. Without it the tests install a
+      # copy for every test and sometimes fail with "text file busy".
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_wrapper: false
       - name: Run acceptance tests
         # Retry once on failure. Netbox itself is occasionally flaky at startup
         # or hits transient server-side bugs on a specific patch version; a
@@ -113,7 +127,7 @@ jobs:
           TESTACC_ARGS: ${{ matrix.netbox-version == env.COVERAGE_NETBOX_VERSION && '-coverprofile=coverage.out -coverpkg=./...' || '' }}
       - name: Upload coverage to Codecov
         if: matrix.netbox-version == env.COVERAGE_NETBOX_VERSION
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.out

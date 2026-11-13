@@ -2,10 +2,11 @@ package netbox
 
 import (
 	"fmt"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/fwresource"
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccNetboxTag_basic(t *testing.T) {
@@ -13,8 +14,8 @@ func TestAccNetboxTag_basic(t *testing.T) {
 	testName := testAccGetTestName(testSlug)
 	randomSlug := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -56,8 +57,8 @@ func TestAccNetboxTag_defaultSlug(t *testing.T) {
 	testSlug := "tag_defSlug"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -66,7 +67,7 @@ resource "netbox_tag" "test" {
 }`, testName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("netbox_tag.test", "name", testName),
-					resource.TestCheckResourceAttr("netbox_tag.test", "slug", getSlug(testName)),
+					resource.TestCheckResourceAttr("netbox_tag.test", "slug", fwresource.Slug(testName)),
 				),
 			},
 		},

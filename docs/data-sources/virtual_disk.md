@@ -70,15 +70,15 @@ data "netbox_virtual_disk" "disk_regex" {
 
 ### Optional
 
-- `filter` (Block List) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
-- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items. Defaults to `0`.
+- `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
+- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items.
 - `name_regex` (String) The name regex of the virtual disk.
 - `ordering` (List of String) One or more fields to use for ordering the results. Prefix a field name with `-` to reverse the order. E.g. `id`, `-name`.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `virtual_disks` (List of Object) The virtual disks of the virtual disk. (see [below for nested schema](#nestedatt--virtual_disks))
+- `virtual_disks` (Attributes List) The virtual_disks found. (see [below for nested schema](#nestedatt--virtual_disks))
 
 <a id="nestedblock--filter"></a>
 ### Nested Schema for `filter`
@@ -95,9 +95,9 @@ Required:
 Read-Only:
 
 - `custom_fields` (Map of String)
-- `description` (String)
-- `id` (Number)
-- `name` (String)
-- `size_mb` (Number)
+- `description` (String) A description of the virtual disk.
+- `id` (Number) The numeric ID of the virtual disk.
+- `name` (String) The name of the virtual disk.
+- `size_mb` (Number) The size mb of the virtual disk.
 - `tags` (List of String)
-- `virtual_machine_id` (Number)
+- `virtual_machine_id` (Number) The ID of the virtual machine associated with the virtual disk.

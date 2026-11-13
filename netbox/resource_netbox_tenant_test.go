@@ -2,9 +2,10 @@ package netbox
 
 import (
 	"fmt"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/fwresource"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func testAccNetboxTenantTagDependencies(testName string) string {
@@ -25,8 +26,8 @@ func TestAccNetboxTenant_basic(t *testing.T) {
 	testDescription := testAccGetTestName(testSlug)
 	randomSlug := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -54,8 +55,8 @@ func TestAccNetboxTenant_defaultSlug(t *testing.T) {
 	testSlug := "tenant_defSlug"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -64,7 +65,7 @@ resource "netbox_tenant" "test" {
 }`, testName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("netbox_tenant.test", "name", testName),
-					resource.TestCheckResourceAttr("netbox_tenant.test", "slug", getSlug(testName)),
+					resource.TestCheckResourceAttr("netbox_tenant.test", "slug", fwresource.Slug(testName)),
 				),
 			},
 		},
@@ -75,8 +76,8 @@ func TestAccNetboxTenant_tags(t *testing.T) {
 	testSlug := "tenant_tags"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxTenantTagDependencies(testName) + fmt.Sprintf(`

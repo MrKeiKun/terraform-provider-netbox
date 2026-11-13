@@ -1,10 +1,12 @@
 TEST?=netbox/*.go
 TEST_FUNC?=TestAccNetboxMACAddr*
 TESTACC_ARGS?=
+# Extra arguments for the unit tests of ./internal, CI uses them to write a coverage profile.
+UNIT_COVER_ARGS?=
 GOFMT_FILES?=$$(find . -name '*.go' | grep -v vendor)
 DOCKER_COMPOSE=docker compose
 
-export NETBOX_VERSION=v4.7.4
+export NETBOX_VERSION=v4.7.5
 export NETBOX_SERVER_URL=http://localhost:8001
 SUPERUSER_API_TOKEN := Iw2JZtpMdYjBuIVIZLItd4lB2RYEiv6xhY23W0tQ
 SUPERUSER_API_KEY   := mrcLJrER9ves
@@ -50,6 +52,7 @@ testacc-specific-test: docker-up
 .PHONY: test
 test:
 	go test $(TEST) $(TESTARGS) -timeout=120s -parallel=4 -cover
+	go test ./internal/... $(TESTARGS) $(UNIT_COVER_ARGS) -timeout=120s -parallel=4 -cover
 
 # Run dockerized Netbox for acceptance testing
 .PHONY: docker-up
@@ -75,5 +78,4 @@ docs:
 # The following make goals are only for local usage
 .PHONY: fmt
 fmt:
-	go fmt
-	go fmt netbox/*.go
+	go fmt ./...

@@ -31,12 +31,12 @@ output "devices" {
 ### Optional
 
 - `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
-- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items. Defaults to `0`.
+- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items.
 - `name_regex` (String) The name regex of the devices.
 
 ### Read-Only
 
-- `devices` (List of Object) The devices of the devices. (see [below for nested schema](#nestedatt--devices))
+- `devices` (Attributes List) The devices found. (see [below for nested schema](#nestedatt--devices))
 - `id` (String) The ID of this resource.
 
 <a id="nestedblock--filter"></a>
@@ -53,29 +53,29 @@ Required:
 
 Read-Only:
 
-- `asset_tag` (String)
-- `cluster_id` (Number)
-- `comments` (String)
-- `config_context` (String)
-- `custom_fields` (Map of String)
-- `description` (String)
-- `device_id` (Number)
-- `device_type_id` (Number)
-- `local_context_data` (String)
-- `location_id` (Number)
-- `manufacturer_id` (Number)
-- `model` (String)
-- `name` (String)
-- `oob_ip` (String)
-- `platform_id` (Number)
-- `primary_ipv4` (String)
-- `primary_ipv6` (String)
-- `rack_face` (String)
-- `rack_id` (Number)
-- `rack_position` (Number)
-- `role_id` (Number)
-- `serial` (String)
-- `site_id` (Number)
-- `status` (String)
-- `tags` (Set of String)
-- `tenant_id` (Number)
+- `asset_tag` (String) The asset tag of the devices.
+- `cluster_id` (Number) The ID of the cluster associated with the devices.
+- `comments` (String) Free-form comments about the devices.
+- `config_context` (String) The config context of the devices.
+- `custom_fields` (Map of String) Custom field values of the devices, as a map of field name to value.
+- `description` (String) A description of the devices.
+- `device_id` (Number) The ID of the device associated with the devices.
+- `device_type_id` (Number) The ID of the device type associated with the devices.
+- `local_context_data` (String) The local context data of the devices.
+- `location_id` (Number) The ID of the location associated with the devices.
+- `manufacturer_id` (Number) The ID of the manufacturer associated with the devices.
+- `model` (String) The model of the devices.
+- `name` (String) The name of the devices.
+- `oob_ip` (String) The oob ip of the devices.
+- `platform_id` (Number) The ID of the platform associated with the devices.
+- `primary_ipv4` (String) The primary ipv4 of the devices.
+- `primary_ipv6` (String) The primary ipv6 of the devices.
+- `rack_face` (String) The rack face of the devices.
+- `rack_id` (Number) The ID of the rack associated with the devices.
+- `rack_position` (Number) The rack position of the devices.
+- `role_id` (Number) The ID of the role associated with the devices.
+- `serial` (String) The serial number of the devices.
+- `site_id` (Number) The ID of the site associated with the devices.
+- `status` (String) The status of the devices.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the devices.

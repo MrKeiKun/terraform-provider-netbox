@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func testAccNetboxDeviceFrontPortFullDependencies(testName string) string {
@@ -76,9 +76,9 @@ func TestAccNetboxDeviceFrontPort_basic(t *testing.T) {
 	testSlug := "device_front_port_basic"
 	testName := testAccGetTestName(testSlug)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
-		PreCheck:          func() { testAccPreCheck(t) },
-		CheckDestroy:      testAccCheckDeviceFrontPortDestroy,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		CheckDestroy:             testAccCheckDeviceFrontPortDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccNetboxDeviceFrontPortFullDependencies(testName) + fmt.Sprintf(`

@@ -27,3 +27,6 @@ example.tf
 # Logs and backups
 *.log
 *.bak
+
+# Coverage profiles
+coverage*.out

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func testAccNetboxCoolingOutflowDependencies(testName string) string {
@@ -42,13 +42,13 @@ func TestAccNetboxCoolingOutflow_basic(t *testing.T) {
 	testName := testAccGetTestName("coolingoutflow")
 	deps := testAccNetboxCoolingOutflowDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 			testAccSkipBelowVersion(t, "4.7.0")
 		},
 		CheckDestroy: func(s *terraform.State) error {
-			return testAccCheckObjectsDestroyed(s, "netbox_cooling_outflow", coolingOutflowAPIPath)
+			return testAccCheckObjectsDestroyed(s, "netbox_cooling_outflow", "dcim/cooling-outflows/")
 		},
 		Steps: []resource.TestStep{
 			{
@@ -95,7 +95,7 @@ func TestAccNetboxCoolingOutflowDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("coolingoutflow_ds")
 	deps := testAccNetboxCoolingOutflowDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 			testAccSkipBelowVersion(t, "4.7.0")

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func testAccNetboxIPSecPolicyDependencies(testName string) string {
@@ -21,12 +21,12 @@ func TestAccNetboxIPSecPolicy_basic(t *testing.T) {
 	testName := testAccGetTestName("ipsecpolicy")
 	deps := testAccNetboxIPSecPolicyDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
 		CheckDestroy: func(s *terraform.State) error {
-			return testAccCheckObjectsDestroyed(s, "netbox_ipsec_policy", iPSecPolicyAPIPath)
+			return testAccCheckObjectsDestroyed(s, "netbox_ipsec_policy", "vpn/ipsec-policies/")
 		},
 		Steps: []resource.TestStep{
 			{
@@ -67,7 +67,7 @@ func TestAccNetboxIPSecPolicyDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("ipsecpolicy_ds")
 	deps := testAccNetboxIPSecPolicyDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func testAccNetboxCircuitGroupDependencies(testName string) string {
@@ -18,12 +18,12 @@ func TestAccNetboxCircuitGroup_basic(t *testing.T) {
 	testName := testAccGetTestName("circuitgroup")
 	deps := testAccNetboxCircuitGroupDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
 		CheckDestroy: func(s *terraform.State) error {
-			return testAccCheckObjectsDestroyed(s, "netbox_circuit_group", circuitGroupAPIPath)
+			return testAccCheckObjectsDestroyed(s, "netbox_circuit_group", "circuits/circuit-groups/")
 		},
 		Steps: []resource.TestStep{
 			{
@@ -61,7 +61,7 @@ func TestAccNetboxCircuitGroupDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("circuitgroup_ds")
 	deps := testAccNetboxCircuitGroupDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

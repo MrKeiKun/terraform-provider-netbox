@@ -31,11 +31,11 @@ output "aggregates" {
 ### Optional
 
 - `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
-- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items. Defaults to `0`.
+- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items.
 
 ### Read-Only
 
-- `aggregates` (List of Object) The aggregates of the aggregates. (see [below for nested schema](#nestedatt--aggregates))
+- `aggregates` (Attributes List) The aggregates found. (see [below for nested schema](#nestedatt--aggregates))
 - `id` (String) The ID of this resource.
 
 <a id="nestedblock--filter"></a>
@@ -52,10 +52,10 @@ Required:
 
 Read-Only:
 
-- `date_added` (String)
-- `description` (String)
-- `id` (Number)
-- `prefix` (String)
-- `rir_id` (Number)
-- `tags` (Set of String)
-- `tenant_id` (Number)
+- `date_added` (String) The date added of the aggregates.
+- `description` (String) A description of the aggregates.
+- `id` (Number) The numeric ID of the aggregates.
+- `prefix` (String) The prefix in CIDR notation.
+- `rir_id` (Number) The ID of the rir associated with the aggregates.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the aggregates.

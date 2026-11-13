@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func testAccNetboxServiceTemplateDependencies(testName string) string {
@@ -17,12 +17,12 @@ func TestAccNetboxServiceTemplate_basic(t *testing.T) {
 	testName := testAccGetTestName("servicetemplat")
 	deps := testAccNetboxServiceTemplateDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
 		CheckDestroy: func(s *terraform.State) error {
-			return testAccCheckObjectsDestroyed(s, "netbox_service_template", serviceTemplateAPIPath)
+			return testAccCheckObjectsDestroyed(s, "netbox_service_template", "ipam/service-templates/")
 		},
 		Steps: []resource.TestStep{
 			{
@@ -63,7 +63,7 @@ func TestAccNetboxServiceTemplateDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("servicetemplat_ds")
 	deps := testAccNetboxServiceTemplateDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

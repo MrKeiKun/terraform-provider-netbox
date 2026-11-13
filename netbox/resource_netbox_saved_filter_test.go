@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func testAccNetboxSavedFilterDependencies(testName string) string {
@@ -17,12 +17,12 @@ func TestAccNetboxSavedFilter_basic(t *testing.T) {
 	testName := testAccGetTestName("savedfilter")
 	deps := testAccNetboxSavedFilterDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
 		CheckDestroy: func(s *terraform.State) error {
-			return testAccCheckObjectsDestroyed(s, "netbox_saved_filter", savedFilterAPIPath)
+			return testAccCheckObjectsDestroyed(s, "netbox_saved_filter", "extras/saved-filters/")
 		},
 		Steps: []resource.TestStep{
 			{
@@ -65,7 +65,7 @@ func TestAccNetboxSavedFilterDataSource_basic(t *testing.T) {
 	testName := testAccGetTestName("savedfilter_ds")
 	deps := testAccNetboxSavedFilterDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},

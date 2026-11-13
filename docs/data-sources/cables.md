@@ -31,11 +31,11 @@ output "cables" {
 ### Optional
 
 - `filter` (Block Set) Filters that select which items are returned. Each filter is a name/value pair. (see [below for nested schema](#nestedblock--filter))
-- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items. Defaults to `0`.
+- `limit` (Number) The maximum number of items to return. Defaults to 0, which returns all items.
 
 ### Read-Only
 
-- `cables` (List of Object) The cables of the cables. (see [below for nested schema](#nestedatt--cables))
+- `cables` (Attributes List) The cables found. (see [below for nested schema](#nestedatt--cables))
 - `id` (String) The ID of this resource.
 
 <a id="nestedblock--filter"></a>
@@ -52,32 +52,32 @@ Required:
 
 Read-Only:
 
-- `a_terminations` (List of Object) (see [below for nested schema](#nestedobjatt--cables--a_terminations))
-- `b_terminations` (List of Object) (see [below for nested schema](#nestedobjatt--cables--b_terminations))
-- `color` (String)
-- `description` (String)
-- `id` (Number)
-- `label` (String)
-- `length` (Number)
-- `length_unit` (String)
-- `status` (String)
-- `tags` (Set of String)
-- `tenant_id` (Number)
-- `type` (String)
+- `a_terminations` (Attributes List) The a terminations of the cables. (see [below for nested schema](#nestedatt--cables--a_terminations))
+- `b_terminations` (Attributes List) The b terminations of the cables. (see [below for nested schema](#nestedatt--cables--b_terminations))
+- `color` (String) The color of the cables as a hex string without the leading #.
+- `description` (String) A description of the cables.
+- `id` (Number) The numeric ID of the cables.
+- `label` (String) The label of the cables.
+- `length` (Number) The length of the cables.
+- `length_unit` (String) The length unit of the cables.
+- `status` (String) The status of the cables.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the cables.
+- `type` (String) The type of the cables.
 
-<a id="nestedobjatt--cables--a_terminations"></a>
+<a id="nestedatt--cables--a_terminations"></a>
 ### Nested Schema for `cables.a_terminations`
 
 Read-Only:
 
-- `object_id` (Number)
-- `object_type` (String)
+- `object_id` (Number) The ID of the object associated with the cables.
+- `object_type` (String) The object type of the cables.
 
 
-<a id="nestedobjatt--cables--b_terminations"></a>
+<a id="nestedatt--cables--b_terminations"></a>
 ### Nested Schema for `cables.b_terminations`
 
 Read-Only:
 
-- `object_id` (Number)
-- `object_type` (String)
+- `object_id` (Number) The ID of the object associated with the cables.
+- `object_type` (String) The object type of the cables.

@@ -14,7 +14,7 @@ See: [Official documentation](https://registry.terraform.io/providers/mrkeikun/n
 
 ## Requirements
 
-- [Terraform](https://www.terraform.io/downloads.html) >= 0.13 (needed to install the provider from the registry)
+- [Terraform](https://www.terraform.io/downloads.html) >= 1.0 (the provider uses plugin protocol 6)
 - [Go](https://go.dev/dl/) 1.26 or newer, only if you build the provider yourself (see `go.mod`)
 
 ## Supported netbox versions
@@ -25,7 +25,11 @@ Each version of the provider has a built-in list of all Netbox versions it suppo
 
 | Netbox version | Provider version |
 | -------------- | ---------------- |
-| v4.4.0 - 4.7.4 | v1.0.0 and up    |
+| v4.4.0 - 4.7.5 | v1.0.0 and up    |
+
+## Upgrading
+
+The provider now uses the Terraform Plugin Framework. See the [upgrade guide](docs/guides/upgrading-to-plugin-framework.md) for the few changes to configurations, such as `rear_ports` and `front_ports` becoming attributes.
 
 ## Building The Provider
 
@@ -77,6 +81,8 @@ For a more examples, see the [provider documentation](https://registry.terraform
 
 If you wish to work on the provider, you need [Go](http://www.golang.org) installed on your machine.
 
+See [DEVELOPMENT.md](DEVELOPMENT.md) for how the provider is built and how to add a resource.
+
 To compile the provider, run `go install`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
 
 To generate or update documentation, run `make docs`. The files in `docs/` are generated, so do not edit them by hand. CI fails if they are out of date.
@@ -97,7 +103,7 @@ For example:
 TEST_FUNC=TestAccNetboxLocationDataSource_basic make testacc-specific-test
 ```
 
-_Note:_ Acceptance tests create a docker compose stack on port 8001. They run against Netbox v4.7.4 by default. To test another version, set `NETBOX_VERSION`:
+_Note:_ Acceptance tests create a docker compose stack on port 8001. They run against Netbox v4.7.5 by default. To test another version, set `NETBOX_VERSION`:
 
 ```sh
 make testacc NETBOX_VERSION=v4.6.0

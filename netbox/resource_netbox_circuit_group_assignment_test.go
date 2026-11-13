@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func testAccNetboxCircuitGroupAssignmentDependencies(testName string) string {
@@ -35,12 +35,12 @@ func TestAccNetboxCircuitGroupAssignment_basic(t *testing.T) {
 	testName := testAccGetTestName("circuitgroupas")
 	deps := testAccNetboxCircuitGroupAssignmentDependencies(testName)
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: testAccProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
 		CheckDestroy: func(s *terraform.State) error {
-			return testAccCheckObjectsDestroyed(s, "netbox_circuit_group_assignment", circuitGroupAssignmentAPIPath)
+			return testAccCheckObjectsDestroyed(s, "netbox_circuit_group_assignment", "circuits/circuit-group-assignments/")
 		},
 		Steps: []resource.TestStep{
 			{
