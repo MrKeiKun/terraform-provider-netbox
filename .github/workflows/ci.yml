@@ -106,6 +106,9 @@ jobs:
             if make -e testacc; then exit 0; fi
             echo "::endgroup::"
             echo "::warning::testacc attempt $attempt failed on ${NETBOX_VERSION}; tearing down and retrying"
+            echo "::group::Last lines of the Netbox log"
+            docker compose -f docker/docker-compose.yml logs --tail 300 netbox || true
+            echo "::endgroup::"
             make docker-down || true
           done
           exit 1
