@@ -79,3 +79,9 @@ docs:
 .PHONY: fmt
 fmt:
 	go fmt ./...
+
+# Compare the NetBox API schema with the provider and fail on gaps that are not in the baseline.
+# Rewrite the baseline after closing gaps: go run ./tools/netboxdrift -url $(NETBOX_SERVER_URL) -baseline tools/netboxdrift/baseline.txt -write-baseline
+.PHONY: drift
+drift: docker-up
+	go run ./tools/netboxdrift -url $(NETBOX_SERVER_URL) -baseline tools/netboxdrift/baseline.txt
