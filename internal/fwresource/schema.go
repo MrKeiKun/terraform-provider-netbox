@@ -20,6 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
@@ -88,6 +89,7 @@ func (s *Spec) buildSchema() schema.Schema {
 	return schema.Schema{
 		Version:             s.Version,
 		MarkdownDescription: s.Description,
+		DeprecationMessage:  s.Deprecated,
 		Attributes:          attrs,
 		Blocks:              blocks,
 	}
@@ -267,6 +269,26 @@ func (a Attr) schemaAttribute() schema.Attribute {
 		}
 		if len(a.ElemOneOf) > 0 {
 			out.Validators = []validator.Set{setvalidator.ValueStringsAre(stringvalidator.OneOf(a.ElemOneOf...))}
+		}
+		return out
+	case StringMap:
+		out := schema.MapAttribute{
+			ElementType:         types.StringType,
+			Required:            a.Required,
+			Optional:            a.Optional,
+			Computed:            computed,
+			Sensitive:           a.Sensitive,
+			MarkdownDescription: a.Description,
+			DeprecationMessage:  a.Deprecated,
+		}
+		if a.Default != nil {
+			out.Default = mapdefault.StaticValue(types.MapValueMust(types.StringType, map[string]attr.Value{}))
+		}
+		if stable {
+			out.PlanModifiers = append(out.PlanModifiers, mapplanmodifier.UseStateForUnknown())
+		}
+		if a.ForceNew {
+			out.PlanModifiers = append(out.PlanModifiers, mapplanmodifier.RequiresReplace())
 		}
 		return out
 	case NestedSet:

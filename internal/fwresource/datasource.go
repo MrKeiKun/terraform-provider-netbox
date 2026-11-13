@@ -32,6 +32,11 @@ type DataSourceSpec struct {
 	Description string
 	// Path is the API collection, for example "dcim/sites/".
 	Path string
+	// SinceVersion is the first NetBox version that has the object type, for example "4.5.0".
+	SinceVersion string
+	// FilterSince maps filters of a plural data source to the first NetBox version that has them. An older
+	// NetBox would refuse the request.
+	FilterSince map[string]string
 	// Noun names the object in error messages, for example "site".
 	Noun string
 	// Attrs are the attributes. Optional ones are filters (singular) and Computed ones are results.
@@ -341,6 +346,10 @@ func (d *DataSource) Read(ctx context.Context, req datasource.ReadRequest, resp 
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	if d.state != nil && serverOlderThan(d.state.Version, d.spec.SinceVersion) {
+		resp.Diagnostics.AddError("NetBox is too old", fmt.Sprintf("%s needs NetBox %s or later, and the server runs %s.", d.spec.TypeName, d.spec.SinceVersion, d.state.Version))
+		return
+	}
 	if d.spec.Plural != nil {
 		d.readPlural(ctx, req, resp, cfg)
 		return
@@ -532,6 +541,10 @@ func (d *DataSource) readPlural(ctx context.Context, req datasource.ReadRequest,
 		param, ok := p.Filters[name]
 		if !ok {
 			resp.Diagnostics.AddError("Invalid filter", fmt.Sprintf("'%s' is not a supported filter parameter", name))
+			return
+		}
+		if since := d.spec.FilterSince[name]; d.state != nil && serverOlderThan(d.state.Version, since) {
+			resp.Diagnostics.AddError("NetBox is too old", fmt.Sprintf("The filter %s of %s needs NetBox %s or later, and the server runs %s.", name, d.spec.TypeName, since, d.state.Version))
 			return
 		}
 		if value == "" {

@@ -442,6 +442,10 @@ func (r *Resource) ModifyPlan(ctx context.Context, req resource.ModifyPlanReques
 	if req.Plan.Raw.IsNull() || r.state == nil {
 		return
 	}
+	if d := r.checkVersion(ctx, req); d.HasError() {
+		resp.Diagnostics.Append(d...)
+		return
+	}
 	if r.spec.ModifyPlan != nil {
 		config, diags := r.spec.load(ctx, req.Config)
 		resp.Diagnostics.Append(diags...)

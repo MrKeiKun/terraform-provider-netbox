@@ -389,6 +389,8 @@ func (a Attr) toJSON(val attr.Value, prior attr.Value) (any, bool, error) {
 			return "", true, nil
 		case StringSet, StringList, IntSet, IntList, IntLists, StringLists:
 			return []any{}, true, nil
+		case StringMap:
+			return map[string]any{}, true, nil
 		}
 		return nil, true, nil
 	}
@@ -420,6 +422,14 @@ func (a Attr) toJSON(val attr.Value, prior attr.Value) (any, bool, error) {
 		return a.collectionJSON(v.Elements()), true, nil
 	case types.List:
 		return a.collectionJSON(v.Elements()), true, nil
+	case types.Map:
+		out := map[string]any{}
+		for k, e := range v.Elements() {
+			if s, ok := e.(types.String); ok {
+				out[k] = s.ValueString()
+			}
+		}
+		return out, true, nil
 	}
 	return nil, false, fmt.Errorf("attribute %s has an unsupported value", a.Name)
 }
@@ -485,6 +495,8 @@ func isZero(v attr.Value) bool {
 	case types.Set:
 		return len(x.Elements()) == 0
 	case types.List:
+		return len(x.Elements()) == 0
+	case types.Map:
 		return len(x.Elements()) == 0
 	}
 	return false
