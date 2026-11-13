@@ -3,12 +3,12 @@
 page_title: "netbox_virtual_machine_type Data Source - terraform-provider-netbox"
 subcategory: "Virtualization"
 description: |-
-  Requires NetBox v4.6.0 or newer.
+  Requires NetBox v4.6.0 or newer. Needs NetBox 4.6.0 or later.
 ---
 
 # netbox_virtual_machine_type (Data Source)
 
-Requires NetBox v4.6.0 or newer.
+Requires NetBox v4.6.0 or newer. Needs NetBox 4.6.0 or later.
 
 ## Example Usage
 

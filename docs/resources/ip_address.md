@@ -119,7 +119,7 @@ resource "netbox_ip_address" "this" {
 - `interface_id` (Number) The ID of the interface associated with the ip address. Required when `object_type` is set.
 - `nat_inside_address_id` (Number) The ID of the nat inside address associated with the ip address.
 - `object_type` (String) Valid values are `virtualization.vminterface`, `dcim.interface` and `ipam.fhrpgroup`. Required when `interface_id` is set.
-- `owner_id` (Number) The ID of the owner associated with the ip address.
+- `owner_id` (Number) The ID of the owner associated with the ip address. Needs NetBox 4.5.0 or later.
 - `role` (String) Valid values are `loopback`, `secondary`, `anycast`, `vip`, `vrrp`, `hsrp`, `glbp` and `carp`.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the ip address.

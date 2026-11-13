@@ -3,12 +3,12 @@
 page_title: "netbox_owner_group Data Source - terraform-provider-netbox"
 subcategory: "Authentication"
 description: |-
-  Requires NetBox v4.5.0 or newer.
+  Requires NetBox v4.5.0 or newer. Needs NetBox 4.5.0 or later.
 ---
 
 # netbox_owner_group (Data Source)
 
-Requires NetBox v4.5.0 or newer.
+Requires NetBox v4.5.0 or newer. Needs NetBox 4.5.0 or later.
 
 ## Example Usage
 

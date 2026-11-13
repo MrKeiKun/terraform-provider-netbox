@@ -3,12 +3,12 @@
 page_title: "netbox_cooling_source Data Source - terraform-provider-netbox"
 subcategory: "Data Center Inventory Management (DCIM)"
 description: |-
-  Requires NetBox v4.7.0 or newer.
+  Requires NetBox v4.7.0 or newer. Needs NetBox 4.7.0 or later.
 ---
 
 # netbox_cooling_source (Data Source)
 
-Requires NetBox v4.7.0 or newer.
+Requires NetBox v4.7.0 or newer. Needs NetBox 4.7.0 or later.
 
 ## Example Usage
 

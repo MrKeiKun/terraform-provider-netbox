@@ -67,7 +67,7 @@ resource "netbox_inventory_item" "test" {
 - `discovered` (Boolean) Whether discovered is enabled for the inventory item. Defaults to `false`.
 - `label` (String) The label of the inventory item.
 - `manufacturer_id` (Number) The ID of the manufacturer associated with the inventory item.
-- `owner_id` (Number) The ID of the owner associated with the inventory item.
+- `owner_id` (Number) The ID of the owner associated with the inventory item. Needs NetBox 4.5.0 or later.
 - `parent_id` (Number) The ID of the parent associated with the inventory item.
 - `part_id` (String) The ID of the part associated with the inventory item.
 - `role_id` (Number) The ID of the role associated with the inventory item.

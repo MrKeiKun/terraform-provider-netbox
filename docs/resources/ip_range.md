@@ -38,7 +38,7 @@ resource "netbox_ip_range" "cust_a_prod" {
 - `description` (String) A description of the ip range.
 - `mark_populated` (Boolean) Whether mark populated is enabled for the ip range.
 - `mark_utilized` (Boolean) Whether the ip range is treated as fully utilized.
-- `owner_id` (Number) The ID of the owner associated with the ip range.
+- `owner_id` (Number) The ID of the owner associated with the ip range. Needs NetBox 4.5.0 or later.
 - `role_id` (Number) The ID of the role associated with the ip range.
 - `status` (String) Valid values are `active`, `reserved` and `deprecated`. Defaults to `active`.
 - `tags` (Set of String) Tags assigned to the object, by name.

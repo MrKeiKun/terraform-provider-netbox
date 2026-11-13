@@ -35,7 +35,9 @@ resource "netbox_vrf" "cust_a_prod" {
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the vrf.
 - `enforce_unique` (Boolean) Whether enforce unique is enabled for the vrf. Defaults to `true`.
-- `owner_id` (Number) The ID of the owner associated with the vrf.
+- `export_targets` (Set of Number) The IDs of the route targets the VRF exports.
+- `import_targets` (Set of Number) The IDs of the route targets the VRF imports.
+- `owner_id` (Number) The ID of the owner associated with the vrf. Needs NetBox 4.5.0 or later.
 - `rd` (String) The route distinguisher of the vrf.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the vrf.

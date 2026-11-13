@@ -34,7 +34,7 @@ resource "netbox_saved_filter" "example" {
 
 - `description` (String) A description of the saved filter.
 - `enabled` (Boolean) Whether the saved filter is enabled. Defaults to `false`.
-- `owner_id` (Number) The ID of the owner associated with the saved filter.
+- `owner_id` (Number) The ID of the owner associated with the saved filter. Needs NetBox 4.5.0 or later.
 - `shared` (Boolean) Whether shared is enabled for the saved filter. Defaults to `false`.
 - `slug` (String) The URL-friendly slug of the saved filter.
 - `user_id` (Number) The ID of the user associated with the saved filter.

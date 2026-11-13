@@ -37,6 +37,8 @@ resource "netbox_device_interface" "test" {
 
 - `bridge` (Number) The bridge of the device interface.
 - `channel_id` (Number) The channel on the parent interface to which this subinterface is bound.
+- `channels` (Number) The number of channels into which the interface is channelized. Needs NetBox 4.7.0 or later.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the device interface.
 - `duplex` (String) One of [half, full, auto].
 - `enabled` (Boolean) Whether the device interface is enabled. Defaults to `true`.
@@ -47,7 +49,7 @@ resource "netbox_device_interface" "test" {
 - `mode` (String) Valid values are `access`, `tagged`, `tagged-all` and `q-in-q`.
 - `module_id` (Number) The ID of the module associated with the device interface.
 - `mtu` (Number) The MTU of the device interface.
-- `owner_id` (Number) The ID of the owner associated with the device interface.
+- `owner_id` (Number) The ID of the owner associated with the device interface. Needs NetBox 4.5.0 or later.
 - `parent_device_interface_id` (Number) The netbox_device_interface id of the parent interface. Useful if this interface is a logical interface.
 - `poe_mode` (String) One of [pd, pse].
 - `poe_type` (String) One of [type1-ieee802.3af, type2-ieee802.3at, type3-ieee802.3bt, type4-ieee802.3bt, passive-24v-2pair, passive-24v-4pair, passive-48v-2pair, passive-48v-4pair].
@@ -61,8 +63,10 @@ resource "netbox_device_interface" "test" {
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tx_power` (Number) The tx power of the device interface.
 - `untagged_vlan` (Number) The untagged vlan of the device interface.
+- `vdcs` (Set of Number) The IDs of the virtual device contexts the interface belongs to.
 - `vlan_translation_policy_id` (Number) The ID of the vlan translation policy associated with the device interface.
 - `vrf_id` (Number) The ID of the vrf associated with the device interface.
+- `wireless_lans` (Set of Number) The IDs of the wireless LANs the interface is part of.
 - `wwn` (String) The wwn of the device interface.
 
 ### Read-Only

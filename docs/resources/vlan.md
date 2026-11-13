@@ -49,7 +49,7 @@ resource "netbox_vlan" "example2" {
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the vlan. Defaults to `""`.
 - `group_id` (Number) The ID of the group associated with the vlan.
-- `owner_id` (Number) The ID of the owner associated with the vlan.
+- `owner_id` (Number) The ID of the owner associated with the vlan. Needs NetBox 4.5.0 or later.
 - `qinq_role` (String) One of [svlan, cvlan].
 - `qinq_svlan` (Number) The qinq svlan of the vlan.
 - `role_id` (Number) The ID of the role associated with the vlan.

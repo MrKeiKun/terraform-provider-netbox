@@ -52,7 +52,7 @@ resource "netbox_power_outlet_template" "test" {
 
 ### Optional
 
-- `color_hex` (String) The color hex of the power outlet template.
+- `color_hex` (String) The color hex of the power outlet template. Needs NetBox 4.5.0 or later.
 - `description` (String) A description of the power outlet template.
 - `device_type_id` (Number) The ID of the device type associated with the power outlet template. Exactly one of `device_type_id` or `module_type_id` must be given.
 - `feed_leg` (String) One of [A, B, C].

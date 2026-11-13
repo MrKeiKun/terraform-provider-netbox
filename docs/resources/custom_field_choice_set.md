@@ -37,11 +37,12 @@ resource "netbox_custom_field_choice_set" "test" {
 ### Optional
 
 - `base_choices` (String) Valid values are `IATA`, `ISO_3166` and `UN_LOCODE`.
+- `choice_colors` (Map of String) The color of each choice, as a map of the choice to a color name such as `blue`, `red` or `green`. Needs NetBox 4.6.0 or later.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the custom field choice set.
 - `extra_choices` (List of List of String) This length of the inner lists must be exactly two, where the first value is the value of a choice and the second value is the label of the choice.
 - `order_alphabetically` (Boolean) experimental
-- `owner_id` (Number) The ID of the owner associated with the custom field choice set.
+- `owner_id` (Number) The ID of the owner associated with the custom field choice set. Needs NetBox 4.5.0 or later.
 
 ### Read-Only
 

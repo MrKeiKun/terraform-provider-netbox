@@ -36,13 +36,15 @@ resource "netbox_region" "test" {
 - `comments` (String) Free-form comments about the region.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the region.
-- `owner_id` (Number) The ID of the owner associated with the region.
+- `owner_id` (Number) The ID of the owner associated with the region. Needs NetBox 4.5.0 or later.
 - `parent_region_id` (Number) The ID of the parent region associated with the region.
 - `slug` (String) The URL-friendly slug of the region.
+- `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only
 
 - `id` (String) The numeric ID of the region.
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import
 

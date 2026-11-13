@@ -35,7 +35,7 @@ resource "netbox_ipsec_proposal" "example" {
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the ipsec proposal.
 - `encryption_algorithm` (String) One of [aes-128-cbc, aes-128-gcm, aes-192-cbc, aes-192-gcm, aes-256-cbc, aes-256-gcm, 3des-cbc, des-cbc].
-- `owner_id` (Number) The ID of the owner associated with the ipsec proposal.
+- `owner_id` (Number) The ID of the owner associated with the ipsec proposal. Needs NetBox 4.5.0 or later.
 - `sa_lifetime_data` (Number) Security association lifetime (in kilobytes).
 - `sa_lifetime_seconds` (Number) Security association lifetime (seconds).
 - `tags` (Set of String) Tags assigned to the object, by name.

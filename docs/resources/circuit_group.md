@@ -30,10 +30,10 @@ resource "netbox_circuit_group" "example" {
 
 ### Optional
 
-- `comments` (String) Free-form comments about the circuit group.
+- `comments` (String) Free-form comments about the circuit group. Needs NetBox 4.5.0 or later.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the circuit group.
-- `owner_id` (Number) The ID of the owner associated with the circuit group.
+- `owner_id` (Number) The ID of the owner associated with the circuit group. Needs NetBox 4.5.0 or later.
 - `slug` (String) The URL-friendly slug of the circuit group.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the circuit group.

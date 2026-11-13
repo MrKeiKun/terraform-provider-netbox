@@ -38,7 +38,7 @@ resource "netbox_route_target" "test" {
 - `comments` (String) Free-form comments about the route target.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the route target.
-- `owner_id` (Number) The ID of the owner associated with the route target.
+- `owner_id` (Number) The ID of the owner associated with the route target. Needs NetBox 4.5.0 or later.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the route target.
 

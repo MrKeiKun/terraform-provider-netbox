@@ -42,8 +42,9 @@ resource "netbox_asn" "test" {
 - `comments` (String) Comments field for the AS Number record.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) Description field for the AS Number record.
-- `owner_id` (Number) The ID of the owner associated with the asn.
-- `role_id` (Number) The ID of the role associated with the asn.
+- `owner_id` (Number) The ID of the owner associated with the asn. Needs NetBox 4.5.0 or later.
+- `role_id` (Number) The ID of the role associated with the asn. Needs NetBox 4.6.0 or later.
+- `sites` (Set of Number) The IDs of the sites the AS number is assigned to. The sites can also list their AS numbers with `asn_ids`, so set the relation on one side only. Needs NetBox 4.5.0 or later.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the asn.
 

@@ -46,7 +46,8 @@ resource "netbox_device_role" "web_server" {
 - `config_template_id` (Number) The ID of the config template associated with the device role.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the device role.
-- `owner_id` (Number) The ID of the owner associated with the device role.
+- `owner_id` (Number) The ID of the owner associated with the device role. Needs NetBox 4.5.0 or later.
+- `parent_id` (Number) The ID of the parent associated with the device role.
 - `slug` (String) The URL-friendly slug of the device role.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `vm_role` (Boolean) Virtual machines may be assigned to this role. Defaults to `false`.

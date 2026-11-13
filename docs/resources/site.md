@@ -46,7 +46,7 @@ resource "netbox_site" "example1" {
 - `group_id` (Number) The ID of the group associated with the site.
 - `latitude` (Number) The latitude of the site.
 - `longitude` (Number) The longitude of the site.
-- `owner_id` (Number) The ID of the owner associated with the site.
+- `owner_id` (Number) The ID of the owner associated with the site. Needs NetBox 4.5.0 or later.
 - `physical_address` (String) The physical address of the site.
 - `region_id` (Number) The ID of the region associated with the site.
 - `shipping_address` (String) The shipping address of the site.

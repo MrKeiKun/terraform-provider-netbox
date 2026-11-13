@@ -39,7 +39,7 @@ resource "netbox_config_context" "test" {
 - `device_types` (Set of Number) The device types of the config context.
 - `is_active` (Boolean) Whether the config context is active.
 - `locations` (Set of Number) The locations of the config context.
-- `owner_id` (Number) The ID of the owner associated with the config context.
+- `owner_id` (Number) The ID of the owner associated with the config context. Needs NetBox 4.5.0 or later.
 - `platforms` (Set of Number) The platforms of the config context.
 - `profile_id` (Number) The ID of the profile associated with the config context.
 - `regions` (Set of Number) The regions of the config context.

@@ -50,11 +50,12 @@ resource "netbox_interface" "myvm_eth1" {
 ### Optional
 
 - `bridge_interface_id` (Number) ID of the bridge interface this interface belongs to.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the interface.
 - `enabled` (Boolean) Whether the interface is enabled. Defaults to `true`.
 - `mode` (String) Valid values are `access`, `tagged` and `tagged-all`.
 - `mtu` (Number) The MTU of the interface.
-- `owner_id` (Number) The ID of the owner associated with the interface.
+- `owner_id` (Number) The ID of the owner associated with the interface. Needs NetBox 4.5.0 or later.
 - `parent` (Number) The parent of the interface.
 - `qinq_svlan_id` (Number) The ID of the qinq svlan associated with the interface.
 - `tagged_vlans` (Set of Number) The tagged vlans of the interface.

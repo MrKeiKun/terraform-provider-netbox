@@ -28,6 +28,7 @@ resource "netbox_group" "test" {
 ### Optional
 
 - `description` (String) A description of the group. Defaults to `""`.
+- `permissions` (Set of Number) The IDs of the object permissions granted to the group. A `netbox_permission` can also list its groups, so set the relation on one side only.
 
 ### Read-Only
 

@@ -33,7 +33,7 @@ resource "netbox_ipsec_policy" "example" {
 - `comments` (String) Free-form comments about the ipsec policy.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the ipsec policy.
-- `owner_id` (Number) The ID of the owner associated with the ipsec policy.
+- `owner_id` (Number) The ID of the owner associated with the ipsec policy. Needs NetBox 4.5.0 or later.
 - `pfs_group` (Number) One of [1, 2, 5, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34].
 - `proposal_ids` (Set of Number) The IDs of the proposal associated with the ipsec policy.
 - `tags` (Set of String) Tags assigned to the object, by name.

@@ -53,8 +53,8 @@ resource "netbox_rack_type" "test" {
 ### Optional
 
 - `comments` (String) Free-form comments about the rack type.
-- `cooling_capability` (String) One of [air-only, hybrid, liquid-only].
-- `cooling_capacity` (Number) Cooling capacity (kW).
+- `cooling_capability` (String) One of [air-only, hybrid, liquid-only]. Needs NetBox 4.7.0 or later.
+- `cooling_capacity` (Number) Cooling capacity (kW). Needs NetBox 4.7.0 or later.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `desc_units` (Boolean) Units are numbered top-to-bottom.
 - `description` (String) A description of the rack type.
@@ -65,7 +65,7 @@ resource "netbox_rack_type" "test" {
 - `outer_height` (Number) Outer dimension of rack (height).
 - `outer_unit` (String) Valid values are `mm` and `in`. Required when `outer_width` and `outer_depth` is set.
 - `outer_width` (Number) The outer width of the rack type.
-- `owner_id` (Number) The ID of the owner associated with the rack type.
+- `owner_id` (Number) The ID of the owner associated with the rack type. Needs NetBox 4.5.0 or later.
 - `slug` (String) The URL-friendly slug of the rack type.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `weight` (Number) The weight of the rack type.

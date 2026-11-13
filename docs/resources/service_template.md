@@ -33,7 +33,7 @@ resource "netbox_service_template" "example" {
 - `comments` (String) Free-form comments about the service template.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the service template.
-- `owner_id` (Number) The ID of the owner associated with the service template.
+- `owner_id` (Number) The ID of the owner associated with the service template. Needs NetBox 4.5.0 or later.
 - `port_mappings` (Set of String) The ports as `protocol/port` strings, for example `tcp/80`. Use this for a template that spans more than one protocol. Needs NetBox 4.6 or newer. Use `protocol` and `ports` on older versions. Conflicts with `protocol` and `ports`.
 - `ports` (Set of Number) The ports, together with `protocol`. Use `port_mappings` for a template that spans more than one protocol.
 - `protocol` (String) One of [tcp, udp, sctp].

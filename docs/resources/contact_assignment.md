@@ -48,10 +48,12 @@ resource "netbox_contact_assignment" "test" {
 
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `priority` (String) Valid values are `primary`, `secondary`, `tertiary` and `inactive`.
+- `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import
 

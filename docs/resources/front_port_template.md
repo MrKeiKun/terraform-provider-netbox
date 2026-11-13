@@ -38,7 +38,7 @@ resource "netbox_front_port_template" "example" {
 - `device_type_id` (Number) The ID of the device type associated with the front port template.
 - `label` (String) Physical label.
 - `module_type_id` (Number) The ID of the module type associated with the front port template.
-- `positions` (Number) The positions of the front port template.
+- `positions` (Number) The positions of the front port template. Needs NetBox 4.5.0 or later.
 - `rear_port_id` (Number) ID of the rear port template this port is mapped to. Use `rear_ports` to map more than one position. Conflicts with `rear_ports`.
 - `rear_port_position` (Number) The rear port position of the front port template.
 - `rear_ports` (Attributes List) The ports and positions this port is mapped to. Needs NetBox 4.5 or newer. (see [below for nested schema](#nestedatt--rear_ports))

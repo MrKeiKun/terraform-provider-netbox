@@ -45,7 +45,7 @@ resource "netbox_device_bay_template" "example" {
 ### Optional
 
 - `description` (String) A description of the device bay template.
-- `enabled` (Boolean) Whether the device bay template is enabled.
+- `enabled` (Boolean) Whether the device bay template is enabled. Needs NetBox 4.6.0 or later.
 - `label` (String) The label of the device bay template.
 
 ### Read-Only

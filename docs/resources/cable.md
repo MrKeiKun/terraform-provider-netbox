@@ -56,7 +56,7 @@ resource "netbox_cable" "test" {
 
 - `a_termination` (Block Set) The a termination of the cable. (see [below for nested schema](#nestedblock--a_termination))
 - `b_termination` (Block Set) The b termination of the cable. (see [below for nested schema](#nestedblock--b_termination))
-- `bundle_id` (Number) The ID of the bundle associated with the cable.
+- `bundle_id` (Number) The ID of the bundle associated with the cable. Needs NetBox 4.6.0 or later.
 - `color_hex` (String) The color hex of the cable.
 - `comments` (String) Free-form comments about the cable.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
@@ -64,8 +64,8 @@ resource "netbox_cable" "test" {
 - `label` (String) The label of the cable.
 - `length` (Number) The length of the cable.
 - `length_unit` (String) One of [km, m, cm, mi, ft, in]. Required when `length` is set.
-- `owner_id` (Number) The ID of the owner associated with the cable.
-- `profile` (String) One of [single-1c1p, single-1c2p, single-1c4p, single-1c6p, single-1c8p, single-1c12p, single-1c16p, trunk-2c1p, trunk-2c2p, trunk-2c4p, trunk-2c4p-shuffle, trunk-2c6p, trunk-2c8p, trunk-2c12p, trunk-4c1p, trunk-4c2p, trunk-4c4p, trunk-4c4p-shuffle, trunk-4c6p, trunk-4c8p, trunk-8c1p, trunk-8c4p, trunk-12c1p, trunk-24c1p, breakout-1c2p-2c1p, breakout-1c4p-4c1p, breakout-1c6p-6c1p, breakout-1c8p-8c1p, breakout-2c4p-8c1p-shuffle].
+- `owner_id` (Number) The ID of the owner associated with the cable. Needs NetBox 4.5.0 or later.
+- `profile` (String) One of [single-1c1p, single-1c2p, single-1c4p, single-1c6p, single-1c8p, single-1c12p, single-1c16p, trunk-2c1p, trunk-2c2p, trunk-2c4p, trunk-2c4p-shuffle, trunk-2c6p, trunk-2c8p, trunk-2c12p, trunk-4c1p, trunk-4c2p, trunk-4c4p, trunk-4c4p-shuffle, trunk-4c6p, trunk-4c8p, trunk-8c1p, trunk-8c4p, trunk-12c1p, trunk-24c1p, breakout-1c2p-2c1p, breakout-1c4p-4c1p, breakout-1c6p-6c1p, breakout-1c8p-8c1p, breakout-2c4p-8c1p-shuffle]. Needs NetBox 4.5.0 or later.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the cable.
 - `type` (String) One of [cat3, cat5, cat5e, cat6, cat6a, cat7, cat7a, cat8, dac-active, dac-passive, mrj21-trunk, coaxial, mmf, mmf-om1, mmf-om2, mmf-om3, mmf-om4, mmf-om5, smf, smf-os1, smf-os2, aoc, power, usb].

@@ -46,8 +46,9 @@ resource "netbox_custom_field" "test" {
 - `group_name` (String) The group the custom field is shown in.
 - `is_cloneable` (Boolean) Replicate this value when cloning objects.
 - `label` (String) The label of the custom field.
-- `nulls_first` (Boolean) Sort null values before non-null values when ordering by this field.
-- `owner_id` (Number) The ID of the owner associated with the custom field.
+- `nulls_first` (Boolean) Sort null values before non-null values when ordering by this field. Needs NetBox 4.7.0 or later.
+- `owner_id` (Number) The ID of the owner associated with the custom field. Needs NetBox 4.5.0 or later.
+- `related_object_filter` (String) Filter the object choices of the custom field with a JSON object of query parameters. This is best managed through the use of `jsonencode`.
 - `related_object_type` (String) The related object type of the custom field.
 - `required` (Boolean) Whether a value is required for the custom field.
 - `search_weight` (Number) Weighting for search. Lower values are considered more important. Fields with a search weight of zero will be ignored.
@@ -57,6 +58,7 @@ resource "netbox_custom_field" "test" {
 - `validation_maximum` (Number) The maximum allowed value.
 - `validation_minimum` (Number) The minimum allowed value.
 - `validation_regex` (String) A regular expression that values must match.
+- `validation_schema` (String) A JSON schema that the value of the custom field is validated against. This is best managed through the use of `jsonencode`. Needs NetBox 4.6.0 or later.
 - `weight` (Number) The weight of the custom field. Defaults to `100`.
 
 ### Read-Only

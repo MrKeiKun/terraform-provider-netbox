@@ -43,13 +43,15 @@ resource "netbox_site_group" "child" {
 - `comments` (String) Free-form comments about the site group.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the site group.
-- `owner_id` (Number) The ID of the owner associated with the site group.
+- `owner_id` (Number) The ID of the owner associated with the site group. Needs NetBox 4.5.0 or later.
 - `parent_id` (Number) The ID of the parent associated with the site group.
 - `slug` (String) The URL-friendly slug of the site group.
+- `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import
 

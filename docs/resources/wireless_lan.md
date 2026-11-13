@@ -38,7 +38,7 @@ resource "netbox_wireless_lan" "guest" {
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the wireless lan.
 - `group_id` (Number) The ID of the group associated with the wireless lan.
-- `owner_id` (Number) The ID of the owner associated with the wireless lan.
+- `owner_id` (Number) The ID of the owner associated with the wireless lan. Needs NetBox 4.5.0 or later.
 - `scope_id` (Number) The ID of the scope associated with the wireless lan.
 - `scope_type` (String) The scope type of the wireless lan.
 - `status` (String) Valid values are `active`, `reserved`, `disabled` and `deprecated`. Defaults to `active`.

@@ -66,7 +66,7 @@ resource "netbox_power_feed" "test" {
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the device power feed.
 - `mark_connected` (Boolean) Whether the device power feed is marked as connected even without a cable. Defaults to `false`.
-- `owner_id` (Number) The ID of the owner associated with the device power feed.
+- `owner_id` (Number) The ID of the owner associated with the device power feed. Needs NetBox 4.5.0 or later.
 - `rack_id` (Number) The ID of the rack associated with the device power feed.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the device power feed.

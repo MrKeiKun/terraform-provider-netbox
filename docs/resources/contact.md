@@ -42,7 +42,7 @@ resource "netbox_contact" "test" {
 - `group_id` (Number, Deprecated) The ID of the group associated with the contact.
 - `group_ids` (List of Number) The IDs of the group associated with the contact.
 - `link` (String) A link associated with the contact.
-- `owner_id` (Number) The ID of the owner associated with the contact.
+- `owner_id` (Number) The ID of the owner associated with the contact. Needs NetBox 4.5.0 or later.
 - `phone` (String) The phone number of the contact.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `title` (String) The title of the contact.

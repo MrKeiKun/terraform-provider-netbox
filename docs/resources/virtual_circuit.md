@@ -37,7 +37,7 @@ resource "netbox_virtual_circuit" "example" {
 - `comments` (String) Free-form comments about the virtual circuit.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the virtual circuit.
-- `owner_id` (Number) The ID of the owner associated with the virtual circuit.
+- `owner_id` (Number) The ID of the owner associated with the virtual circuit. Needs NetBox 4.5.0 or later.
 - `provider_account_id` (Number) The ID of the provider account associated with the virtual circuit.
 - `status` (String) One of [planned, provisioning, active, offline, deprovisioning, decommissioned].
 - `tags` (Set of String) Tags assigned to the object, by name.

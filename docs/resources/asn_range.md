@@ -33,10 +33,10 @@ resource "netbox_asn_range" "example" {
 
 ### Optional
 
-- `comments` (String) Free-form comments about the asn range.
+- `comments` (String) Free-form comments about the asn range. Needs NetBox 4.5.0 or later.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the asn range.
-- `owner_id` (Number) The ID of the owner associated with the asn range.
+- `owner_id` (Number) The ID of the owner associated with the asn range. Needs NetBox 4.5.0 or later.
 - `slug` (String) The URL-friendly slug of the asn range.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the asn range.

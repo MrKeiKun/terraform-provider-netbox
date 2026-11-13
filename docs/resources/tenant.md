@@ -36,7 +36,7 @@ resource "netbox_tenant" "customer_a" {
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the tenant.
 - `group_id` (Number) The ID of the group associated with the tenant.
-- `owner_id` (Number) The ID of the owner associated with the tenant.
+- `owner_id` (Number) The ID of the owner associated with the tenant. Needs NetBox 4.5.0 or later.
 - `slug` (String) The URL-friendly slug of the tenant.
 - `tags` (Set of String) Tags assigned to the object, by name.
 

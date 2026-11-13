@@ -33,7 +33,7 @@ resource "netbox_module_type_profile" "example" {
 - `comments` (String) Free-form comments about the module type profile.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the module type profile.
-- `owner_id` (Number) The ID of the owner associated with the module type profile.
+- `owner_id` (Number) The ID of the owner associated with the module type profile. Needs NetBox 4.5.0 or later.
 - `schema` (String) The schema of the module type profile.
 - `tags` (Set of String) Tags assigned to the object, by name.
 
