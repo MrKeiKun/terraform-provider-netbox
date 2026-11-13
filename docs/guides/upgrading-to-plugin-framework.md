@@ -61,7 +61,6 @@ If you set `default_tags` on the provider, those tags are added to these resourc
   }
   ```
 
-
 - `netbox_circuit_provider_account` is the same resource as `netbox_provider_account`. Both names stay. A `moved` block works the same way for it.
 - `netbox_available_asn` lets NetBox pick the next free AS number of an ASN range. Set `asn_range_id` and read the number from `asn`.
 - `netbox_bookmark`, `netbox_notification`, `netbox_subscription` and `netbox_table_config` manage the objects that belong to a NetBox user. Image attachments are not available, since NetBox only takes them as a file upload.

@@ -11,9 +11,9 @@ Tools that want to serve the provider in process, instead of starting it as a pl
 
 ```go
 import (
-	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+    "github.com/hashicorp/terraform-plugin-framework/providerserver"
 
-	"github.com/MrKeiKun/terraform-provider-netbox/provider"
+    "github.com/MrKeiKun/terraform-provider-netbox/provider"
 )
 
 // version is reported as the provider version.

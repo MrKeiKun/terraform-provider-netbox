@@ -26,7 +26,7 @@ func init() {
 func supportedVersions() *fwresource.DataSourceSpec {
 	return &fwresource.DataSourceSpec{
 		TypeName:    "netbox_supported_versions",
-		Description: ":meta:subcategory:Miscellaneous:The NetBox versions this provider release was tested against. Any other version only gets a \"Possibly unsupported Netbox version\" warning at startup.",
+		Description: ":meta:subcategory:Extras:The NetBox versions this provider release was tested against. Any other version only gets a \"Possibly unsupported Netbox version\" warning at startup.",
 		Noun:        "supported versions",
 		Attrs: []fwresource.Attr{
 			{Name: "versions", Kind: fwresource.StringList, Computed: true, Description: "The supported NetBox versions."},
