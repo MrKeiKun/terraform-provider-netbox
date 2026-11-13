@@ -46,7 +46,7 @@ resource "netbox_virtual_disk" "example" {
 
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the virtual disk.
-- `owner_id` (Number) The ID of the owner associated with the virtual disk.
+- `owner_id` (Number) The ID of the owner associated with the virtual disk. Needs NetBox 4.5.0 or later.
 - `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only

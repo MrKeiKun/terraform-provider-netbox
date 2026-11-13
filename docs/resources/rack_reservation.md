@@ -50,7 +50,7 @@ resource "netbox_rack_reservation" "test" {
 
 - `comments` (String) Free-form comments about the rack reservation.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
-- `owner_id` (Number) The ID of the owner associated with the rack reservation.
+- `owner_id` (Number) The ID of the owner associated with the rack reservation. Needs NetBox 4.5.0 or later.
 - `status` (String) One of [pending, active, stale].
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the rack reservation.

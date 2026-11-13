@@ -62,10 +62,15 @@ resource "netbox_device" "test" {
 - `cluster_id` (Number) The ID of the cluster associated with the device.
 - `comments` (String) Free-form comments about the device.
 - `config_template_id` (Number) The ID of the config template associated with the device.
+- `cooling_method` (String) How the device is cooled. One of [air, liquid, hybrid, immersion]. Needs NetBox 4.7.0 or later.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the device.
+- `latitude` (Number) GPS latitude of the device in decimal format.
 - `local_context_data` (String) This is best managed through the use of `jsonencode` and a map of settings.
 - `location_id` (Number) The ID of the location associated with the device. NetBox takes it from the rack when it is not set.
+- `longitude` (Number) GPS longitude of the device in decimal format.
+- `oob_ip_id` (Number) The ID of the out of band IP address associated with the device. It can also be set with `netbox_device_oob_ip`.
+- `owner_id` (Number) The ID of the owner associated with the device. Needs NetBox 4.5.0 or later.
 - `platform_id` (Number) The ID of the platform associated with the device.
 - `rack_face` (String) Valid values are `front` and `rear`.
 - `rack_id` (Number) The ID of the rack associated with the device.

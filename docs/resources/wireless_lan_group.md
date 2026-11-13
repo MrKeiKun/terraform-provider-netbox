@@ -38,7 +38,7 @@ resource "netbox_wireless_lan_group" "child" {
 - `comments` (String) Free-form comments about the wireless lan group.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the wireless lan group.
-- `owner_id` (Number) The ID of the owner associated with the wireless lan group.
+- `owner_id` (Number) The ID of the owner associated with the wireless lan group. Needs NetBox 4.5.0 or later.
 - `parent_id` (Number) The ID of the parent associated with the wireless lan group.
 - `slug` (String) The URL-friendly slug of the wireless lan group.
 - `tags` (Set of String) Tags assigned to the object, by name.

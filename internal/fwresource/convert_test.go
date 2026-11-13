@@ -361,7 +361,27 @@ func TestConvertEdgeCases(t *testing.T) {
 	if got := (Attr{Kind: Kind(99)}).fromJSON("x", nil); got != nil {
 		t.Errorf("an unknown kind gave %v", got)
 	}
-	if _, _, err := (Attr{Name: "m", Kind: StringMap}).toJSON(types.MapValueMust(types.StringType, map[string]attr.Value{"a": types.StringValue("b")}), nil); err == nil {
+	if _, _, err := (Attr{Name: "m", Kind: String}).toJSON(types.ObjectValueMust(map[string]attr.Type{}, map[string]attr.Value{}), nil); err == nil {
 		t.Error("a value of an unsupported type was accepted")
+	}
+}
+
+func TestStringMapToJSON(t *testing.T) {
+	a := Attr{Name: "m", Kind: StringMap, Optional: true}
+	got, ok, err := a.toJSON(types.MapValueMust(types.StringType, map[string]attr.Value{"a": types.StringValue("b")}), nil)
+	if err != nil || !ok {
+		t.Fatalf("a map was not sent: %v %v", ok, err)
+	}
+	if m, isMap := got.(map[string]any); !isMap || m["a"] != "b" {
+		t.Errorf("got %v", got)
+	}
+
+	// a map that was removed from the configuration is cleared on update
+	cleared, ok, err := a.toJSON(types.MapNull(types.StringType), types.MapValueMust(types.StringType, map[string]attr.Value{"a": types.StringValue("b")}))
+	if err != nil || !ok {
+		t.Fatalf("a removed map was not cleared: %v %v", ok, err)
+	}
+	if m, isMap := cleared.(map[string]any); !isMap || len(m) != 0 {
+		t.Errorf("got %v", cleared)
 	}
 }

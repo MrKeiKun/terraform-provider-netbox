@@ -49,7 +49,7 @@ resource "netbox_device_console_port" "test" {
 - `label` (String) The label of the device console port.
 - `mark_connected` (Boolean) Whether the device console port is marked as connected even without a cable. Defaults to `false`.
 - `module_id` (Number) The ID of the module associated with the device console port.
-- `owner_id` (Number) The ID of the owner associated with the device console port.
+- `owner_id` (Number) The ID of the owner associated with the device console port. Needs NetBox 4.5.0 or later.
 - `speed` (Number) One of [1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200].
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `type` (String) One of [de-9, db-25, rj-11, rj-12, rj-45, mini-din-8, usb-a, usb-b, usb-c, usb-mini-a, usb-mini-b, usb-micro-a, usb-micro-b, usb-micro-ab, other].

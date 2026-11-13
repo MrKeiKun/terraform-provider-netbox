@@ -41,7 +41,7 @@ resource "netbox_available_prefix" "test" {
 - `is_pool` (Boolean) Whether all addresses of the available prefix, including network and broadcast addresses, are usable.
 - `location_id` (Number) The ID of the location associated with the available prefix. Conflicts with `site_id`, `site_group_id` and `region_id`.
 - `mark_utilized` (Boolean) Whether the available prefix is treated as fully utilized.
-- `owner_id` (Number) The ID of the owner associated with the available prefix.
+- `owner_id` (Number) The ID of the owner associated with the available prefix. Needs NetBox 4.5.0 or later.
 - `region_id` (Number) The ID of the region associated with the available prefix. Conflicts with `location_id`, `site_id` and `site_group_id`.
 - `role_id` (Number) The ID of the role associated with the available prefix.
 - `site_group_id` (Number) The ID of the site group associated with the available prefix. Conflicts with `location_id`, `site_id` and `region_id`.

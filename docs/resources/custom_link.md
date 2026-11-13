@@ -37,7 +37,7 @@ resource "netbox_custom_link" "example" {
 - `enabled` (Boolean) Whether the custom link is enabled. Defaults to `false`.
 - `group_name` (String) Links with the same group will appear as a dropdown menu.
 - `new_window` (Boolean) Force link to open in a new window. Defaults to `false`.
-- `owner_id` (Number) The ID of the owner associated with the custom link.
+- `owner_id` (Number) The ID of the owner associated with the custom link. Needs NetBox 4.5.0 or later.
 - `weight` (Number) The weight of the custom link.
 
 ### Read-Only

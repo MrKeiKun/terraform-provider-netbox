@@ -41,7 +41,7 @@ resource "netbox_wireless_link" "example" {
 - `description` (String) A description of the wireless link.
 - `distance` (Number) The distance of the wireless link.
 - `distance_unit` (String) One of [km, m, mi, ft].
-- `owner_id` (Number) The ID of the owner associated with the wireless link.
+- `owner_id` (Number) The ID of the owner associated with the wireless link. Needs NetBox 4.5.0 or later.
 - `ssid` (String) The ssid of the wireless link.
 - `status` (String) One of [connected, planned, decommissioning].
 - `tags` (Set of String) Tags assigned to the object, by name.

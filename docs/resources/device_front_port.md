@@ -59,8 +59,8 @@ resource "netbox_device_front_port" "test" {
 - `label` (String) The label of the device front port.
 - `mark_connected` (Boolean) Whether the device front port is marked as connected even without a cable. Defaults to `false`.
 - `module_id` (Number) The ID of the module associated with the device front port.
-- `owner_id` (Number) The ID of the owner associated with the device front port.
-- `positions` (Number) The positions of the device front port.
+- `owner_id` (Number) The ID of the owner associated with the device front port. Needs NetBox 4.5.0 or later.
+- `positions` (Number) The positions of the device front port. Needs NetBox 4.5.0 or later.
 - `rear_port_id` (Number) The ID of the rear port associated with the device front port. Conflicts with `rear_ports`.
 - `rear_port_position` (Number) The rear port position of the device front port.
 - `rear_ports` (Attributes List) The ports and positions this port is mapped to. Needs NetBox 4.5 or newer. (see [below for nested schema](#nestedatt--rear_ports))

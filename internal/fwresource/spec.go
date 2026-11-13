@@ -130,6 +130,16 @@ type Spec struct {
 	// TypeName is the full name of the resource, for example netbox_manufacturer.
 	TypeName    string
 	Description string
+	// Deprecated holds the deprecation message when the whole resource is deprecated.
+	Deprecated string
+	// MoveFrom lists the names of resources that have the same attributes, so that a moved block can turn
+	// them into this one without replacing the object.
+	MoveFrom []string
+	// SinceVersion is the first NetBox version that has the object type, for example "4.5.0".
+	SinceVersion string
+	// Since maps attributes to the first NetBox version that has the field they map to. Setting such an
+	// attribute on an older NetBox is an error, since NetBox would ignore the field.
+	Since map[string]string
 	// Path is the API collection, for example "dcim/manufacturers/".
 	Path    string
 	Version int64

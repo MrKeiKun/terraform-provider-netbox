@@ -37,7 +37,7 @@ resource "netbox_l2vpn" "example" {
 - `export_target_ids` (Set of Number) The IDs of the export target associated with the l2vpn.
 - `identifier` (Number) The identifier of the l2vpn.
 - `import_target_ids` (Set of Number) The IDs of the import target associated with the l2vpn.
-- `owner_id` (Number) The ID of the owner associated with the l2vpn.
+- `owner_id` (Number) The ID of the owner associated with the l2vpn. Needs NetBox 4.5.0 or later.
 - `slug` (String) The URL-friendly slug of the l2vpn.
 - `status` (String) One of [active, planned, decommissioning].
 - `tags` (Set of String) Tags assigned to the object, by name.

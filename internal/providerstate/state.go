@@ -33,7 +33,10 @@ type Diag struct {
 
 // State is what resources and data sources get from the provider.
 type State struct {
-	Rest        *netboxapi.Client
+	Rest *netboxapi.Client
+	// Version is the version of the NetBox server, for example 4.7.5. It is empty when the provider
+	// does not check the version.
+	Version     string
 	DefaultTags map[string]bool
 
 	// concurrent access ok, only populated on provider start
@@ -80,8 +83,10 @@ func Connect(ctx context.Context, s Settings) (*State, []Diag) {
 		return nil, append(diags, Diag{Error: true, Summary: err.Error()})
 	}
 
+	serverVersion := ""
 	if !s.SkipVersionCheck {
-		if d := checkVersion(ctx, rest, serverURL); d != nil {
+		var d []Diag
+		if serverVersion, d = checkVersion(ctx, rest, serverURL); d != nil {
 			diags = append(diags, d...)
 			for _, x := range d {
 				if x.Error {
@@ -93,6 +98,7 @@ func Connect(ctx context.Context, s Settings) (*State, []Diag) {
 
 	state := &State{
 		Rest:        rest,
+		Version:     serverVersion,
 		DefaultTags: make(map[string]bool, len(s.DefaultTags)),
 		tagCache:    make(map[string]netboxapi.TagRef, len(s.DefaultTags)),
 	}
@@ -108,12 +114,12 @@ func Connect(ctx context.Context, s Settings) (*State, []Diag) {
 	return state, diags
 }
 
-func checkVersion(ctx context.Context, rest *netboxapi.Client, serverURL string) []Diag {
+func checkVersion(ctx context.Context, rest *netboxapi.Client, serverURL string) (string, []Diag) {
 	// The client already sends the request again when the connection fails or NetBox answers 502,
 	// 503 or 504, and stops when the context is cancelled. A wrong URL or token is reported at once.
 	res, err := netboxapi.Request[map[string]interface{}](ctx, rest, http.MethodGet, "status/", nil, nil)
 	if err != nil {
-		return []Diag{{
+		return "", []Diag{{
 			Error:   true,
 			Summary: "Failed to determine Netbox version",
 			Detail: fmt.Sprintf(
@@ -132,15 +138,15 @@ func checkVersion(ctx context.Context, rest *netboxapi.Client, serverURL string)
 	raw, _ := (*res)["netbox-version"].(string)
 	version, err := ExtractVersion(raw)
 	if err != nil {
-		return []Diag{{Error: true, Summary: fmt.Sprintf("error extracting netbox version. try using the `skip_version_check` provider parameter to bypass this error. original error: %s", err)}}
+		return "", []Diag{{Error: true, Summary: fmt.Sprintf("error extracting netbox version. try using the `skip_version_check` provider parameter to bypass this error. original error: %s", err)}}
 	}
 	if !slices.Contains(SupportedVersions, version) {
-		return []Diag{{
+		return version, []Diag{{
 			Summary: "Possibly unsupported Netbox version",
 			Detail:  fmt.Sprintf("Your Netbox reports version %v. From that, the provider extracted Netbox version %v.\nThe provider was successfully tested against the following versions:\n\n  %v\n\nUnexpected errors may occur.", raw, version, strings.Join(SupportedVersions, ", ")),
 		}}
 	}
-	return nil
+	return version, nil
 }
 
 // FindTagRef looks up a tag by its unique name.

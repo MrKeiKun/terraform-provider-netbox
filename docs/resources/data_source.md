@@ -37,7 +37,7 @@ resource "netbox_data_source" "example" {
 - `description` (String) A description of the data source.
 - `enabled` (Boolean) Whether the data source is enabled. Defaults to `false`.
 - `ignore_rules` (String) Patterns (one per line) matching files or paths to ignore when syncing.
-- `owner_id` (Number) The ID of the owner associated with the data source.
+- `owner_id` (Number) The ID of the owner associated with the data source. Needs NetBox 4.5.0 or later.
 - `parameters` (String) The parameters of the data source.
 - `sync_interval` (Number) One of [1, 60, 720, 1440, 10080, 43200].
 - `tags` (Set of String) Tags assigned to the object, by name.

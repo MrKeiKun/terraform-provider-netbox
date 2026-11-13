@@ -33,7 +33,7 @@ resource "netbox_config_context_profile" "example" {
 - `comments` (String) Free-form comments about the config context profile.
 - `data_source_id` (Number) The ID of the data source associated with the config context profile.
 - `description` (String) A description of the config context profile.
-- `owner_id` (Number) The ID of the owner associated with the config context profile.
+- `owner_id` (Number) The ID of the owner associated with the config context profile. Needs NetBox 4.5.0 or later.
 - `schema` (String) A JSON schema specifying the structure of the context data for this profile.
 - `tags` (Set of String) Tags assigned to the object, by name.
 

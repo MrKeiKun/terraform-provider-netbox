@@ -7,6 +7,10 @@ GOFMT_FILES?=$$(find . -name '*.go' | grep -v vendor)
 DOCKER_COMPOSE=docker compose
 
 export NETBOX_VERSION=v4.7.5
+# The image build of a NetBox version is rebuilt now and then. Name the build here when a newer one breaks the
+# tests. The build 5.1.2 of v4.7.5 answers many requests with a RecursionError, with and without our changes.
+NETBOX_IMAGE_PIN_v4.7.5=-5.1.1
+export NETBOX_IMAGE_TAG=$(NETBOX_VERSION)$(NETBOX_IMAGE_PIN_$(NETBOX_VERSION))
 export NETBOX_SERVER_URL=http://localhost:8001
 SUPERUSER_API_TOKEN := Iw2JZtpMdYjBuIVIZLItd4lB2RYEiv6xhY23W0tQ
 SUPERUSER_API_KEY   := mrcLJrER9ves
@@ -79,3 +83,9 @@ docs:
 .PHONY: fmt
 fmt:
 	go fmt ./...
+
+# Compare the NetBox API schema with the provider and fail on gaps that are not in the baseline.
+# Rewrite the baseline after closing gaps: go run ./tools/netboxdrift -url $(NETBOX_SERVER_URL) -baseline tools/netboxdrift/baseline.txt -write-baseline
+.PHONY: drift
+drift: docker-up
+	go run ./tools/netboxdrift -url $(NETBOX_SERVER_URL) -baseline tools/netboxdrift/baseline.txt

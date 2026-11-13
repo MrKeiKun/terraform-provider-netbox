@@ -39,7 +39,7 @@ resource "netbox_fhrp_group" "test" {
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) Description.
 - `name` (String) Name.
-- `owner_id` (Number) The ID of the owner associated with the fhrp group.
+- `owner_id` (Number) The ID of the owner associated with the fhrp group. Needs NetBox 4.5.0 or later.
 - `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only

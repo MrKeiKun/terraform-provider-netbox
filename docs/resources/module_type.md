@@ -37,13 +37,15 @@ resource "netbox_module_type" "test" {
 ### Optional
 
 - `airflow` (String) One of [front-to-rear, rear-to-front, left-to-right, right-to-left, side-to-rear, passive].
+- `attributes` (String) The attributes of the module type, defined by its profile. This is best managed through the use of `jsonencode`.
 - `comments` (String) Free-form comments about the module type.
-- `cooling_method` (String) One of [air, liquid, hybrid, immersion].
+- `cooling_method` (String) One of [air, liquid, hybrid, immersion]. Needs NetBox 4.7.0 or later.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the module type.
-- `end_of_life` (String) The date after which this module type is no longer supported by the manufacturer.
+- `end_of_life` (String) The date after which this module type is no longer supported by the manufacturer. Needs NetBox 4.7.0 or later.
 - `module_bay_type_ids` (Set of Number) The IDs of the module bay type associated with the module type.
-- `owner_id` (Number) The ID of the owner associated with the module type.
+- `module_bay_types` (Set of Number) The IDs of the module bay types of the module type. Needs NetBox 4.7 or later.
+- `owner_id` (Number) The ID of the owner associated with the module type. Needs NetBox 4.5.0 or later.
 - `part_number` (String) The part number of the module type.
 - `profile_id` (Number) The ID of the profile associated with the module type.
 - `tags` (Set of String) Tags assigned to the object, by name.

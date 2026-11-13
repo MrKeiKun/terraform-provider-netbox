@@ -53,7 +53,7 @@ resource "netbox_device_power_outlet" "test" {
 - `label` (String) The label of the device power outlet.
 - `mark_connected` (Boolean) Whether the device power outlet is marked as connected even without a cable. Defaults to `false`.
 - `module_id` (Number) The ID of the module associated with the device power outlet.
-- `owner_id` (Number) The ID of the owner associated with the device power outlet.
+- `owner_id` (Number) The ID of the owner associated with the device power outlet. Needs NetBox 4.5.0 or later.
 - `power_port_id` (Number) The ID of the power port associated with the device power outlet.
 - `status` (String) One of [enabled, disabled, faulty].
 - `tags` (Set of String) Tags assigned to the object, by name.

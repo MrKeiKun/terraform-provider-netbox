@@ -103,7 +103,7 @@ resource "netbox_mac_address" "this" {
 - `device_interface_id` (Number) The ID of the device interface associated with the mac address. Conflicts with `interface_id` and `virtual_machine_interface_id`.
 - `interface_id` (Number) The ID of the interface associated with the mac address. Required when `object_type` is set.
 - `object_type` (String) Valid values are `virtualization.vminterface` and `dcim.interface`. Required when `interface_id` is set.
-- `owner_id` (Number) The ID of the owner associated with the mac address.
+- `owner_id` (Number) The ID of the owner associated with the mac address. Needs NetBox 4.5.0 or later.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `virtual_machine_interface_id` (Number) The ID of the virtual machine interface associated with the mac address. Conflicts with `interface_id` and `device_interface_id`.
 

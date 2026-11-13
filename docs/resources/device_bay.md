@@ -84,10 +84,10 @@ resource "netbox_device_bay" "example" {
 
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the device bay.
-- `enabled` (Boolean) Whether the device bay is enabled.
+- `enabled` (Boolean) Whether the device bay is enabled. Needs NetBox 4.6.0 or later.
 - `installed_device_id` (Number) The ID of the installed device associated with the device bay.
 - `label` (String) The label of the device bay.
-- `owner_id` (Number) The ID of the owner associated with the device bay.
+- `owner_id` (Number) The ID of the owner associated with the device bay. Needs NetBox 4.5.0 or later.
 - `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only

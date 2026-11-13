@@ -39,7 +39,7 @@ resource "netbox_aggregate" "test" {
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `date_added` (String) The date added of the aggregate.
 - `description` (String) A description of the aggregate.
-- `owner_id` (Number) The ID of the owner associated with the aggregate.
+- `owner_id` (Number) The ID of the owner associated with the aggregate. Needs NetBox 4.5.0 or later.
 - `rir_id` (Number) The ID of the rir associated with the aggregate.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the aggregate.

@@ -61,11 +61,12 @@ resource "netbox_event_rule" "script" {
 
 ### Optional
 
+- `action_object_type` (String) The object type of the action object, for example extras.script.
 - `conditions` (String) The conditions of the event rule.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the event rule.
 - `enabled` (Boolean) Whether the event rule is enabled. Defaults to `true`.
-- `owner_id` (Number) The ID of the owner associated with the event rule.
+- `owner_id` (Number) The ID of the owner associated with the event rule. Needs NetBox 4.5.0 or later.
 - `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only

@@ -36,6 +36,7 @@ resource "netbox_user" "test" {
 - `first_name` (String) The first name of the user. Defaults to `""`.
 - `group_ids` (Set of Number) The IDs of the group associated with the user.
 - `last_name` (String) The last name of the user. Defaults to `""`.
+- `permissions` (Set of Number) The IDs of the object permissions granted to the user. A `netbox_permission` can also list its users, so set the relation on one side only.
 - `staff` (Boolean, Deprecated) Whether staff is enabled for the user. Defaults to `false`.
 
 ### Read-Only

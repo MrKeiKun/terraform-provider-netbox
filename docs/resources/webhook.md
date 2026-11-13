@@ -40,13 +40,16 @@ resource "netbox_webhook" "test" {
 - `description` (String) A description of the webhook.
 - `http_content_type` (String) The complete list of official content types is available [here](https://www.iana.org/assignments/media-types/media-types.xhtml). Defaults to `application/json`.
 - `http_method` (String) Valid values are `GET`, `POST`, `PUT`, `PATCH` and `DELETE`. Defaults to `POST`.
-- `owner_id` (Number) The ID of the owner associated with the webhook.
+- `owner_id` (Number) The ID of the owner associated with the webhook. Needs NetBox 4.5.0 or later.
+- `secret` (String, Sensitive) Secret used to sign the payload of the request in the X-Hook-Signature header.
 - `ssl_verification` (Boolean) Enable SSL certificate verification. Disable with caution!.
-- `timeout` (Number) The maximum time (in seconds) to wait for a response before failing the request. Leave blank to use the system default (60 seconds).
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `timeout` (Number) The maximum time (in seconds) to wait for a response before failing the request. Leave blank to use the system default (60 seconds). Needs NetBox 4.7.0 or later.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import
 

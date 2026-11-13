@@ -32,15 +32,18 @@ resource "netbox_circuit_provider" "test" {
 
 ### Optional
 
+- `asns` (Set of Number) The IDs of the AS numbers of the provider.
 - `comments` (String) Free-form comments about the circuit provider.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the circuit provider.
-- `owner_id` (Number) The ID of the owner associated with the circuit provider.
+- `owner_id` (Number) The ID of the owner associated with the circuit provider. Needs NetBox 4.5.0 or later.
 - `slug` (String) The URL-friendly slug of the circuit provider.
+- `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import
 

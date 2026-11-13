@@ -3,12 +3,12 @@
 page_title: "netbox_cable_bundle Data Source - terraform-provider-netbox"
 subcategory: "Data Center Inventory Management (DCIM)"
 description: |-
-  Requires NetBox v4.6.0 or newer.
+  Requires NetBox v4.6.0 or newer. Needs NetBox 4.6.0 or later.
 ---
 
 # netbox_cable_bundle (Data Source)
 
-Requires NetBox v4.6.0 or newer.
+Requires NetBox v4.6.0 or newer. Needs NetBox 4.6.0 or later.
 
 ## Example Usage
 

@@ -31,15 +31,17 @@ resource "netbox_cluster_group" "dc_west" {
 
 ### Optional
 
-- `comments` (String) Free-form comments about the cluster group.
+- `comments` (String) Free-form comments about the cluster group. Needs NetBox 4.5.0 or later.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the cluster group.
-- `owner_id` (Number) The ID of the owner associated with the cluster group.
+- `owner_id` (Number) The ID of the owner associated with the cluster group. Needs NetBox 4.5.0 or later.
 - `slug` (String) The URL-friendly slug of the cluster group.
+- `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import
 

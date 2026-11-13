@@ -49,7 +49,7 @@ resource "netbox_location" "test" {
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the location.
 - `facility` (String) The facility of the location.
-- `owner_id` (Number) The ID of the owner associated with the location.
+- `owner_id` (Number) The ID of the owner associated with the location. Needs NetBox 4.5.0 or later.
 - `parent_id` (Number) The ID of the parent associated with the location.
 - `slug` (String) The URL-friendly slug of the location.
 - `status` (String) One of [planned, staging, active, decommissioning, retired].

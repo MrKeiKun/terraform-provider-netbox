@@ -64,13 +64,13 @@ resource "netbox_module" "test" {
 
 ### Optional
 
-- `adopt_components` (Boolean) Adopt already existing components.
+- `adopt_components` (Boolean) Adopt already existing components. Needs NetBox 4.6.0 or later.
 - `asset_tag` (String) The asset tag of the module.
 - `comments` (String) Free-form comments about the module.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the module.
-- `owner_id` (Number) The ID of the owner associated with the module.
-- `replicate_components` (Boolean) Automatically populate components associated with this module type (default: true).
+- `owner_id` (Number) The ID of the owner associated with the module. Needs NetBox 4.5.0 or later.
+- `replicate_components` (Boolean) Automatically populate components associated with this module type (default: true). Needs NetBox 4.6.0 or later.
 - `serial` (String) The serial number of the module.
 - `tags` (Set of String) Tags assigned to the object, by name.
 

@@ -46,9 +46,10 @@ resource "netbox_module_bay_template" "test" {
 ### Optional
 
 - `description` (String) A description of the module bay template.
-- `enabled` (Boolean) Whether the module bay template is enabled.
+- `enabled` (Boolean) Whether the module bay template is enabled. Needs NetBox 4.6.0 or later.
 - `label` (String) The label of the module bay template.
 - `module_bay_type_ids` (Set of Number) The IDs of the module bay type associated with the module bay template.
+- `module_bay_types` (Set of Number) The IDs of the module bay types of the module bay template. Needs NetBox 4.7 or later.
 - `module_type_id` (Number) The ID of the module type associated with the module bay template.
 - `position` (String) Identifier to reference when renaming installed components.
 

@@ -33,14 +33,14 @@ resource "netbox_export_template" "example" {
 ### Optional
 
 - `as_attachment` (Boolean) Download file as attachment. Defaults to `false`.
-- `auto_sync_enabled` (Boolean) Enable automatic synchronization of data when the data file is updated. Defaults to `false`.
+- `auto_sync_enabled` (Boolean) Enable automatic synchronization of data when the data file is updated. Defaults to `false`. Needs NetBox 4.7.0 or later.
 - `data_source_id` (Number) The ID of the data source associated with the export template.
 - `description` (String) A description of the export template.
 - `environment_params` (String) Any <a href="https://jinja.palletsprojects.com/en/stable/api/#jinja2.Environment">additional parameters</a> to pass when constructing the Jinja environment.
 - `file_extension` (String) Extension to append to the rendered filename.
 - `file_name` (String) Filename to give to the rendered export file.
 - `mime_type` (String) Defaults to <code>text/plain; charset=utf-8</code>.
-- `owner_id` (Number) The ID of the owner associated with the export template.
+- `owner_id` (Number) The ID of the owner associated with the export template. Needs NetBox 4.5.0 or later.
 
 ### Read-Only
 

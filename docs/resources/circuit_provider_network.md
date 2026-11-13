@@ -40,7 +40,7 @@ resource "netbox_circuit_provider_network" "networka" {
 - `comments` (String) Free-form comments about the circuit provider network.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the circuit provider network.
-- `owner_id` (Number) The ID of the owner associated with the circuit provider network.
+- `owner_id` (Number) The ID of the owner associated with the circuit provider network. Needs NetBox 4.5.0 or later.
 - `service_id` (String) The ID of the service associated with the circuit provider network.
 - `tags` (Set of String) Tags assigned to the object, by name.
 

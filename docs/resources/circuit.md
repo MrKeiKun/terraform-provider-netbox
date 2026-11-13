@@ -57,14 +57,16 @@ resource "netbox_circuit" "test" {
 - `distance` (Number) The distance of the circuit.
 - `distance_unit` (String) One of [km, m, mi, ft].
 - `install_date` (String) The installation date of the circuit, in YYYY-MM-DD format.
-- `owner_id` (Number) The ID of the owner associated with the circuit.
+- `owner_id` (Number) The ID of the owner associated with the circuit. Needs NetBox 4.5.0 or later.
 - `provider_account_id` (Number) The ID of the provider account associated with the circuit.
+- `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the circuit.
 - `termination_date` (String) The termination date of the circuit, in YYYY-MM-DD format.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import
 

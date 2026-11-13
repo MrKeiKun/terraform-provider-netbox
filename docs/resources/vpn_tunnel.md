@@ -48,7 +48,7 @@ resource "netbox_vpn_tunnel" "test" {
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the vpn tunnel.
 - `ipsec_profile_id` (Number) The ID of the ipsec profile associated with the vpn tunnel.
-- `owner_id` (Number) The ID of the owner associated with the vpn tunnel.
+- `owner_id` (Number) The ID of the owner associated with the vpn tunnel. Needs NetBox 4.5.0 or later.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the vpn tunnel.
 - `tunnel_id` (Number) The ID of the tunnel associated with the vpn tunnel.

@@ -48,6 +48,7 @@ var manualResources = []*fwresource.Spec{
 		},
 		Attrs: []fwresource.Attr{
 			{Name: "base_choices", Kind: fwresource.String, Nullable: true, Optional: true, Description: "Valid values are `IATA`, `ISO_3166` and `UN_LOCODE`.", OneOf: []string{"IATA", "ISO_3166", "UN_LOCODE"}},
+			{Name: "choice_colors", Kind: fwresource.StringMap, Optional: true, Description: "The color of each choice, as a map of the choice to a color name such as `blue`, `red` or `green`."},
 			{Name: "description", Kind: fwresource.String, Optional: true, Description: "A description of the custom field choice set."},
 			{Name: "extra_choices", Kind: fwresource.StringLists, Optional: true, Description: "This length of the inner lists must be exactly two, where the first value is the value of a choice and the second value is the label of the choice."},
 			{Name: "name", Kind: fwresource.String, Required: true, Description: "The name of the custom field choice set."},

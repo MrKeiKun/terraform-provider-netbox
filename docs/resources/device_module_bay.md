@@ -43,11 +43,12 @@ resource "netbox_device_module_bay" "test" {
 
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the device module bay.
-- `enabled` (Boolean) Whether the device module bay is enabled.
+- `enabled` (Boolean) Whether the device module bay is enabled. Needs NetBox 4.6.0 or later.
 - `label` (String) The label of the device module bay.
 - `module_bay_type_ids` (Set of Number) The IDs of the module bay type associated with the device module bay.
+- `module_bay_types` (Set of Number) The IDs of the module bay types of the device module bay. Needs NetBox 4.7 or later.
 - `module_id` (Number) The ID of the module associated with the device module bay.
-- `owner_id` (Number) The ID of the owner associated with the device module bay.
+- `owner_id` (Number) The ID of the owner associated with the device module bay. Needs NetBox 4.5.0 or later.
 - `position` (String) The position of the device module bay.
 - `tags` (Set of String) Tags assigned to the object, by name.
 

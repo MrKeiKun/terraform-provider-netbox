@@ -53,7 +53,7 @@ resource "netbox_device_rear_port" "test" {
 - `label` (String) The label of the device rear port.
 - `mark_connected` (Boolean) Whether the device rear port is marked as connected even without a cable. Defaults to `false`.
 - `module_id` (Number) The ID of the module associated with the device rear port.
-- `owner_id` (Number) The ID of the owner associated with the device rear port.
+- `owner_id` (Number) The ID of the owner associated with the device rear port. Needs NetBox 4.5.0 or later.
 - `tags` (Set of String) Tags assigned to the object, by name.
 
 ### Read-Only

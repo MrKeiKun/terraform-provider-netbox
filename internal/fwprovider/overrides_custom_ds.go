@@ -153,6 +153,12 @@ func init() {
 		}
 		spec.Path = "virtualization/virtual-disks/"
 		spec.Plural.Filters = map[string]string{"name": "name__ic", "virtual_machine_id": "virtual_machine_id", "tag": "tag"}
+		// this replaced the filters that were added from the API schema when the provider started
+		for name, param := range generatedFilters[spec.TypeName] {
+			if _, ok := spec.Plural.Filters[name]; !ok {
+				spec.Plural.Filters[name] = param
+			}
+		}
 		spec.Plural.NameRegex = "name_regex"
 		setDSAttr(spec, "size_mb", func(a *fwresource.Attr) { a.Key = "size" })
 		setDSAttr(spec, "virtual_machine_id", func(a *fwresource.Attr) { a.Key = "virtual_machine" })

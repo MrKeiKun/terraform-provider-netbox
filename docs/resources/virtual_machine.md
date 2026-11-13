@@ -72,19 +72,24 @@ resource "netbox_virtual_machine" "full_vm" {
 
 - `cluster_id` (Number) The ID of the cluster associated with the virtual machine. At least one of `site_id` or `cluster_id` must be given.
 - `comments` (String) Free-form comments about the virtual machine.
+- `config_template_id` (Number) The ID of the config template associated with the virtual machine.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the virtual machine.
 - `device_id` (Number) The ID of the device associated with the virtual machine.
 - `disk_size_mb` (Number) The disk size in MB. When virtual disks are attached to this VM, NetBox automatically computes this as the aggregate of those disks and rejects manual values. In that case, omit this field from the configuration and let it be computed.
 - `local_context_data` (String) This is best managed through the use of `jsonencode` and a map of settings.
 - `memory_mb` (Number) The memory mb of the virtual machine.
+- `owner_id` (Number) The ID of the owner associated with the virtual machine. Needs NetBox 4.5.0 or later.
 - `platform_id` (Number) The ID of the platform associated with the virtual machine.
 - `role_id` (Number) The ID of the role associated with the virtual machine.
+- `serial` (String) The serial number of the virtual machine.
 - `site_id` (Number) The ID of the site associated with the virtual machine. NetBox takes it from the cluster when it is not set. At least one of `site_id` or `cluster_id` must be given.
+- `start_on_boot` (String) Whether the virtual machine starts on boot. One of [on, off, laststate]. Needs NetBox 4.5.0 or later.
 - `status` (String) Valid values are `offline`, `active`, `planned`, `staged`, `failed` and `decommissioning`. Defaults to `active`.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the virtual machine.
 - `vcpus` (Number) The vcpus of the virtual machine.
+- `virtual_machine_type_id` (Number) The ID of the virtual machine type associated with the virtual machine. Needs NetBox 4.6.0 or later.
 
 ### Read-Only
 

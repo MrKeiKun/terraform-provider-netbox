@@ -39,6 +39,7 @@ var standardResources = []*fwresource.Spec{
 			{Name: "owner_id", Kind: fwresource.Int, Key: "owner", Ref: true, Nullable: true, Optional: true, Description: "The ID of the owner associated with the asn."},
 			{Name: "rir_id", Kind: fwresource.Int, Key: "rir", Ref: true, Nullable: true, Required: true, Description: "ID for the RIR for the AS Number record."},
 			{Name: "role_id", Kind: fwresource.Int, Key: "role", Ref: true, Nullable: true, Optional: true, Description: "The ID of the role associated with the asn."},
+			{Name: "sites", Kind: fwresource.IntSet, Ref: true, Optional: true, Computed: true, Description: "The IDs of the sites the AS number is assigned to. The sites can also list their AS numbers with `asn_ids`, so set the relation on one side only."},
 			{Name: "tenant_id", Kind: fwresource.Int, Key: "tenant", Ref: true, Nullable: true, Optional: true, Description: "The ID of the tenant associated with the asn."},
 		},
 	},
@@ -107,6 +108,7 @@ var standardResources = []*fwresource.Spec{
 	{
 		TypeName:     "netbox_circuit",
 		Path:         "circuits/circuits/",
+		Tags:         true,
 		Description:  ":meta:subcategory:Circuits:From the [official documentation](https://docs.netbox.dev/en/stable/features/circuits/#circuits_1):\n\n> A communications circuit represents a single physical link connecting exactly two endpoints, commonly referred to as its A and Z terminations. A circuit in NetBox may have zero, one, or two terminations defined. It is common to have only one termination defined when you don't necessarily care about the details of the provider side of the circuit, e.g. for Internet access circuits. Both terminations would likely be modeled for circuits which connect one customer site to another.\n>\n> Each circuit is associated with a provider and a user-defined type. For example, you might have Internet access circuits delivered to each site by one provider, and private MPLS circuits delivered by another. Each circuit must be assigned a circuit ID, each of which must be unique per provider.",
 		CustomFields: true,
 		Attrs: []fwresource.Attr{
@@ -158,10 +160,12 @@ var standardResources = []*fwresource.Spec{
 	{
 		TypeName:     "netbox_circuit_provider",
 		Path:         "circuits/providers/",
+		Tags:         true,
 		Description:  ":meta:subcategory:Circuits:From the [official documentation](https://docs.netbox.dev/en/stable/features/circuits/#providers):\n\n> A circuit provider is any entity which provides some form of connectivity of among sites or organizations within a site. While this obviously includes carriers which offer Internet and private transit service, it might also include Internet exchange (IX) points and even organizations with whom you peer directly. Each circuit within NetBox must be assigned a provider and a circuit ID which is unique to that provider.\n>\n> Each provider may be assigned an autonomous system number (ASN), an account number, and contact information.",
 		CustomFields: true,
 		SlugFrom:     "name",
 		Attrs: []fwresource.Attr{
+			{Name: "asns", Kind: fwresource.IntSet, Ref: true, Optional: true, Description: "The IDs of the AS numbers of the provider."},
 			{Name: "comments", Kind: fwresource.String, Optional: true, Description: "Free-form comments about the circuit provider."},
 			{Name: "description", Kind: fwresource.String, Optional: true, Description: "A description of the circuit provider.", MaxLen: 200},
 			{Name: "name", Kind: fwresource.String, Required: true, Description: "The name of the circuit provider.", MaxLen: 100},
@@ -210,6 +214,7 @@ var standardResources = []*fwresource.Spec{
 	{
 		TypeName:     "netbox_circuit_type",
 		Path:         "circuits/circuit-types/",
+		Tags:         true,
 		Description:  ":meta:subcategory:Circuits:From the [official documentation](https://docs.netbox.dev/en/stable/features/circuits/#circuit-types):\n\n> Circuits are classified by functional type. These types are completely customizable, and are typically used to convey the type of service being delivered over a circuit.",
 		CustomFields: true,
 		SlugFrom:     "name",
@@ -247,6 +252,7 @@ var standardResources = []*fwresource.Spec{
 	{
 		TypeName:     "netbox_cluster_group",
 		Path:         "virtualization/cluster-groups/",
+		Tags:         true,
 		Description:  ":meta:subcategory:Virtualization:From the [official documentation](https://docs.netbox.dev/en/stable/features/virtualization/#cluster-groups):\n\n> Cluster groups may be created for the purpose of organizing clusters. The arrangement of clusters into groups is optional.",
 		CustomFields: true,
 		SlugFrom:     "name",
@@ -261,6 +267,7 @@ var standardResources = []*fwresource.Spec{
 	{
 		TypeName:     "netbox_cluster_type",
 		Path:         "virtualization/cluster-types/",
+		Tags:         true,
 		Description:  ":meta:subcategory:Virtualization:From the [official documentation](https://docs.netbox.dev/en/stable/features/virtualization/#cluster-types):\n\n> A cluster type represents a technology or mechanism by which a cluster is formed. For example, you might create a cluster type named \"VMware vSphere\" for a locally hosted cluster or \"DigitalOcean NYC3\" for one hosted by a cloud provider.",
 		CustomFields: true,
 		SlugFrom:     "name",
@@ -384,6 +391,7 @@ var standardResources = []*fwresource.Spec{
 	{
 		TypeName:     "netbox_contact_assignment",
 		Path:         "tenancy/contact-assignments/",
+		Tags:         true,
 		Description:  ":meta:subcategory:Tenancy:From the [official documentation](https://docs.netbox.dev/en/stable/features/contacts#contactassignments_1):\n\n> Much like tenancy, contact assignment enables you to track ownership of resources modeled in NetBox.",
 		CustomFields: true,
 		Attrs: []fwresource.Attr{
@@ -397,6 +405,7 @@ var standardResources = []*fwresource.Spec{
 	{
 		TypeName:     "netbox_contact_group",
 		Path:         "tenancy/contact-groups/",
+		Tags:         true,
 		Description:  ":meta:subcategory:Tenancy:From the [official documentation](https://docs.netbox.dev/en/stable/features/contacts/#contact-groups):\n\n> Contacts can be grouped arbitrarily into a recursive hierarchy, and a contact can be assigned to a group at any level within the hierarchy.",
 		CustomFields: true,
 		SlugFrom:     "name",
@@ -412,6 +421,7 @@ var standardResources = []*fwresource.Spec{
 	{
 		TypeName:     "netbox_contact_role",
 		Path:         "tenancy/contact-roles/",
+		Tags:         true,
 		Description:  ":meta:subcategory:Tenancy:From the [official documentation](https://docs.netbox.dev/en/stable/features/contacts/#contactroles):\n\n> A contact role defines the relationship of a contact to an assigned object. For example, you might define roles for administrative, operational, and emergency contacts",
 		CustomFields: true,
 		SlugFrom:     "name",
@@ -553,6 +563,7 @@ var standardResources = []*fwresource.Spec{
 			{Name: "name", Kind: fwresource.String, Required: true, Description: "The name of the custom field.", MaxLen: 50},
 			{Name: "nulls_first", Kind: fwresource.Bool, Optional: true, Computed: true, Description: "Sort null values before non-null values when ordering by this field."},
 			{Name: "owner_id", Kind: fwresource.Int, Key: "owner", Ref: true, Nullable: true, Optional: true, Description: "The ID of the owner associated with the custom field."},
+			{Name: "related_object_filter", Kind: fwresource.JSON, Nullable: true, Optional: true, Description: "Filter the object choices of the custom field with a JSON object of query parameters. This is best managed through the use of `jsonencode`."},
 			{Name: "related_object_type", Kind: fwresource.String, Nullable: true, Optional: true, Description: "The related object type of the custom field."},
 			{Name: "required", Kind: fwresource.Bool, Optional: true, Description: "Whether a value is required for the custom field."},
 			{Name: "search_weight", Kind: fwresource.Int, Optional: true, Computed: true, Description: "Weighting for search. Lower values are considered more important. Fields with a search weight of zero will be ignored.", Min: i64(0), Max: i64(32767)},
@@ -563,6 +574,7 @@ var standardResources = []*fwresource.Spec{
 			{Name: "validation_maximum", Kind: fwresource.Int, Nullable: true, Optional: true, Description: "The maximum allowed value.", Min: i64(-1000000000000), Max: i64(1000000000000)},
 			{Name: "validation_minimum", Kind: fwresource.Int, Nullable: true, Optional: true, Description: "The minimum allowed value.", Min: i64(-1000000000000), Max: i64(1000000000000)},
 			{Name: "validation_regex", Kind: fwresource.String, Optional: true, Description: "A regular expression that values must match.", MaxLen: 500},
+			{Name: "validation_schema", Kind: fwresource.JSON, Nullable: true, Optional: true, Description: "A JSON schema that the value of the custom field is validated against. This is best managed through the use of `jsonencode`."},
 			{Name: "weight", Kind: fwresource.Int, Optional: true, Default: int64(100), Description: "The weight of the custom field. Defaults to `100`.", Min: i64(0), Max: i64(32767)},
 		},
 	},
@@ -694,13 +706,15 @@ var standardResources = []*fwresource.Spec{
 		},
 	},
 	{
-		TypeName:    "netbox_device_interface",
-		Path:        "dcim/interfaces/",
-		Description: ":meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://docs.netbox.dev/en/stable/features/device/#interface):\n\n> Interfaces in NetBox represent network interfaces used to exchange data with connected devices. On modern networks, these are most commonly Ethernet, but other types are supported as well. IP addresses and VLANs can be assigned to interfaces.",
-		Tags:        true,
+		TypeName:     "netbox_device_interface",
+		Path:         "dcim/interfaces/",
+		Description:  ":meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://docs.netbox.dev/en/stable/features/device/#interface):\n\n> Interfaces in NetBox represent network interfaces used to exchange data with connected devices. On modern networks, these are most commonly Ethernet, but other types are supported as well. IP addresses and VLANs can be assigned to interfaces.",
+		CustomFields: true,
+		Tags:         true,
 		Attrs: []fwresource.Attr{
 			{Name: "bridge", Kind: fwresource.Int, Nullable: true, Optional: true, Description: "The bridge of the device interface."},
 			{Name: "channel_id", Kind: fwresource.Int, Key: "channel", Ref: true, Optional: true, Description: "The channel on the parent interface to which this subinterface is bound."},
+			{Name: "channels", Kind: fwresource.Int, Nullable: true, Optional: true, Description: "The number of channels into which the interface is channelized.", Min: i64(1), Max: i64(1024)},
 			{Name: "description", Kind: fwresource.String, Optional: true, Description: "A description of the device interface.", MaxLen: 200},
 			{Name: "device_id", Kind: fwresource.Int, Key: "device", Ref: true, Required: true, Description: "The ID of the device associated with the device interface."},
 			{Name: "duplex", Kind: fwresource.String, Nullable: true, Optional: true, Description: "One of [half, full, auto].", OneOf: []string{"auto", "full", "half"}},
@@ -734,8 +748,10 @@ var standardResources = []*fwresource.Spec{
 			{Name: "tx_power", Kind: fwresource.Int, Nullable: true, Optional: true, Description: "The tx power of the device interface.", Min: i64(-40), Max: i64(127)},
 			{Name: "type", Kind: fwresource.String, Required: true, Description: "The type of the device interface.", OneOf: []string{"1.6tbase-cr8", "1.6tbase-dr8", "1.6tbase-dr8-2", "1.6tbase-kr8", "1.6tbase-x-osfp1600", "1.6tbase-x-osfp1600-rhs", "1.6tbase-x-qsfpdd1600", "1000base-bx10-d", "1000base-bx10-u", "1000base-cwdm", "1000base-cx", "1000base-dwdm", "1000base-ex", "1000base-kx", "1000base-lsx", "1000base-lx", "1000base-lx10", "1000base-sx", "1000base-t", "1000base-tx", "1000base-x-gbic", "1000base-x-sfp", "1000base-zx", "100base-fx", "100base-lfx", "100base-t1", "100base-tx", "100base-x-sfp", "100gbase-cr1", "100gbase-cr10", "100gbase-cr2", "100gbase-cr4", "100gbase-cwdm4", "100gbase-dr", "100gbase-er4", "100gbase-fr1", "100gbase-kp4", "100gbase-kr2", "100gbase-kr4", "100gbase-lr1", "100gbase-lr4", "100gbase-sr1", "100gbase-sr1.2", "100gbase-sr10", "100gbase-sr2", "100gbase-sr4", "100gbase-x-cfp", "100gbase-x-cfp2", "100gbase-x-cfp4", "100gbase-x-cpak", "100gbase-x-cxp", "100gbase-x-dsfp", "100gbase-x-qsfp28", "100gbase-x-qsfpdd", "100gbase-x-sfpdd", "100gbase-zr", "10g-epon", "10gbase-br-d", "10gbase-br-u", "10gbase-cu", "10gbase-cx4", "10gbase-er", "10gbase-kr", "10gbase-kx4", "10gbase-lr", "10gbase-lrm", "10gbase-lx4", "10gbase-sr", "10gbase-t", "10gbase-x-sfpp", "10gbase-x-x2", "10gbase-x-xenpak", "10gbase-x-xfp", "10gbase-zr", "128gfc-qsfp28", "16gfc-sfpp", "1gfc-sfp", "2.5gbase-kx", "2.5gbase-t", "2.5gbase-x-sfp", "200gbase-cr2", "200gbase-cr4", "200gbase-dr4", "200gbase-er4", "200gbase-fr4", "200gbase-lr4", "200gbase-sr2", "200gbase-sr4", "200gbase-vr2", "200gbase-x-cfp2", "200gbase-x-qsfp56", "200gbase-x-qsfpdd", "25g-pon", "25gbase-cr", "25gbase-er", "25gbase-kr", "25gbase-lr", "25gbase-sr", "25gbase-t", "25gbase-x-sfp28", "2gfc-sfp", "32gfc-sfp28", "32gfc-sfpp", "400gbase-cr4", "400gbase-dr4", "400gbase-er8", "400gbase-fr4", "400gbase-fr8", "400gbase-lr4", "400gbase-lr8", "400gbase-sr16", "400gbase-sr4", "400gbase-sr4_2", "400gbase-sr8", "400gbase-vr4", "400gbase-x-cdfp", "400gbase-x-cfp2", "400gbase-x-cfp8", "400gbase-x-osfp", "400gbase-x-osfp-rhs", "400gbase-x-qsfp112", "400gbase-x-qsfpdd", "400gbase-zr", "40gbase-cr4", "40gbase-er4", "40gbase-fr4", "40gbase-kr4", "40gbase-lr4", "40gbase-sr4", "40gbase-sr4-bd", "40gbase-x-qsfpp", "4g", "4gfc-sfp", "50g-pon", "50gbase-cr", "50gbase-er", "50gbase-fr", "50gbase-kr", "50gbase-lr", "50gbase-sr", "50gbase-x-sfp28", "50gbase-x-sfp56", "5g", "5gbase-kr", "5gbase-t", "64gfc-qsfpp", "64gfc-sfpdd", "64gfc-sfpp", "800gbase-cr8", "800gbase-dr8", "800gbase-sr8", "800gbase-vr8", "800gbase-x-osfp", "800gbase-x-qsfpdd", "8gfc-sfpp", "bpon", "bridge", "cdma", "cisco-flexstack", "cisco-flexstack-plus", "cisco-stackwise", "cisco-stackwise-160", "cisco-stackwise-1t", "cisco-stackwise-320", "cisco-stackwise-480", "cisco-stackwise-80", "cisco-stackwise-plus", "docsis", "e1", "e3", "epon", "extreme-summitstack", "extreme-summitstack-128", "extreme-summitstack-256", "extreme-summitstack-512", "gpon", "gsm", "ieee802.11a", "ieee802.11ac", "ieee802.11ad", "ieee802.11ax", "ieee802.11ay", "ieee802.11be", "ieee802.11g", "ieee802.11n", "ieee802.15.1", "ieee802.15.4", "infiniband-ddr", "infiniband-edr", "infiniband-fdr", "infiniband-fdr10", "infiniband-hdr", "infiniband-ndr", "infiniband-qdr", "infiniband-sdr", "infiniband-xdr", "juniper-vcp", "lag", "lte", "moca", "ng-pon2", "other", "other-wireless", "sonet-oc12", "sonet-oc192", "sonet-oc1920", "sonet-oc3", "sonet-oc3840", "sonet-oc48", "sonet-oc768", "t1", "t3", "virtual", "xdsl", "xg-pon", "xgs-pon"}},
 			{Name: "untagged_vlan", Kind: fwresource.Int, Ref: true, Nullable: true, Optional: true, Description: "The untagged vlan of the device interface."},
+			{Name: "vdcs", Kind: fwresource.IntSet, Ref: true, Optional: true, Description: "The IDs of the virtual device contexts the interface belongs to."},
 			{Name: "vlan_translation_policy_id", Kind: fwresource.Int, Key: "vlan_translation_policy", Ref: true, Nullable: true, Optional: true, Description: "The ID of the vlan translation policy associated with the device interface."},
 			{Name: "vrf_id", Kind: fwresource.Int, Key: "vrf", Ref: true, Nullable: true, Optional: true, Description: "The ID of the vrf associated with the device interface."},
+			{Name: "wireless_lans", Kind: fwresource.IntSet, Ref: true, Optional: true, Description: "The IDs of the wireless LANs the interface is part of."},
 			{Name: "wwn", Kind: fwresource.String, Nullable: true, Optional: true, Description: "The wwn of the device interface."},
 		},
 	},
@@ -751,6 +767,7 @@ var standardResources = []*fwresource.Spec{
 			{Name: "enabled", Kind: fwresource.Bool, Optional: true, Computed: true, Description: "Whether the device module bay is enabled."},
 			{Name: "label", Kind: fwresource.String, Optional: true, Description: "The label of the device module bay.", MaxLen: 64},
 			{Name: "module_bay_type_ids", Kind: fwresource.IntSet, Optional: true, Description: "The IDs of the module bay type associated with the device module bay."},
+			{Name: "module_bay_types", Kind: fwresource.IntSet, Ref: true, Optional: true, Description: "The IDs of the module bay types of the device module bay. Needs NetBox 4.7 or later."},
 			{Name: "module_id", Kind: fwresource.Int, Key: "module", Ref: true, Nullable: true, Optional: true, Description: "The ID of the module associated with the device module bay."},
 			{Name: "name", Kind: fwresource.String, Required: true, Description: "The name of the device module bay.", MaxLen: 64},
 			{Name: "owner_id", Kind: fwresource.Int, Key: "owner", Ref: true, Nullable: true, Optional: true, Description: "The ID of the owner associated with the device module bay."},
@@ -835,6 +852,7 @@ var standardResources = []*fwresource.Spec{
 			{Name: "description", Kind: fwresource.String, Optional: true, Description: "A description of the device role.", MaxLen: 200},
 			{Name: "name", Kind: fwresource.String, Required: true, Description: "The name of the device role.", MaxLen: 100},
 			{Name: "owner_id", Kind: fwresource.Int, Key: "owner", Ref: true, Nullable: true, Optional: true, Description: "The ID of the owner associated with the device role."},
+			{Name: "parent_id", Kind: fwresource.Int, Key: "parent", Ref: true, Nullable: true, Optional: true, Description: "The ID of the parent associated with the device role."},
 			{Name: "slug", Kind: fwresource.String, Optional: true, Computed: true, Description: "The URL-friendly slug of the device role.", MaxLen: 100},
 			{Name: "vm_role", Kind: fwresource.Bool, Optional: true, Default: false, Description: "Virtual machines may be assigned to this role. Defaults to `false`."},
 		},
@@ -875,6 +893,7 @@ var standardResources = []*fwresource.Spec{
 		Put:          true,
 		Attrs: []fwresource.Attr{
 			{Name: "action_object_id", Kind: fwresource.Int, Nullable: true, Required: true, Description: "The ID of the action object associated with the event rule."},
+			{Name: "action_object_type", Kind: fwresource.String, Nullable: true, Optional: true, Computed: true, Description: "The object type of the action object, for example extras.script."},
 			{Name: "action_type", Kind: fwresource.String, Required: true, Description: "Valid values are `webhook` and `script`.", OneOf: []string{"notification", "script", "webhook"}},
 			{Name: "conditions", Kind: fwresource.String, Nullable: true, Optional: true, Description: "The conditions of the event rule."},
 			{Name: "content_types", Kind: fwresource.StringSet, Key: "object_types", Required: true, Description: "The object types the event rule applies to."},
@@ -965,6 +984,7 @@ var standardResources = []*fwresource.Spec{
 		Attrs: []fwresource.Attr{
 			{Name: "description", Kind: fwresource.String, Optional: true, Default: "", Description: "A description of the group. Defaults to `\"\"`.", MaxLen: 200},
 			{Name: "name", Kind: fwresource.String, Required: true, Description: "The name of the group.", MaxLen: 150},
+			{Name: "permissions", Kind: fwresource.IntSet, Ref: true, Optional: true, Computed: true, Description: "The IDs of the object permissions granted to the group. A `netbox_permission` can also list its groups, so set the relation on one side only."},
 		},
 	},
 	{
@@ -1003,10 +1023,11 @@ var standardResources = []*fwresource.Spec{
 		},
 	},
 	{
-		TypeName:    "netbox_interface",
-		Path:        "virtualization/interfaces/",
-		Description: ":meta:subcategory:Virtualization:From the [official documentation](https://docs.netbox.dev/en/stable/features/virtualization/#interfaces):\n\n> Virtual machine interfaces behave similarly to device interfaces, and can be assigned to VRFs, and may have IP addresses, VLANs, and services attached to them. However, given their virtual nature, they lack properties pertaining to physical attributes. For example, VM interfaces do not have a physical type and cannot have cables attached to them.",
-		Tags:        true,
+		TypeName:     "netbox_interface",
+		Path:         "virtualization/interfaces/",
+		Description:  ":meta:subcategory:Virtualization:From the [official documentation](https://docs.netbox.dev/en/stable/features/virtualization/#interfaces):\n\n> Virtual machine interfaces behave similarly to device interfaces, and can be assigned to VRFs, and may have IP addresses, VLANs, and services attached to them. However, given their virtual nature, they lack properties pertaining to physical attributes. For example, VM interfaces do not have a physical type and cannot have cables attached to them.",
+		CustomFields: true,
+		Tags:         true,
 		Attrs: []fwresource.Attr{
 			{Name: "bridge_interface_id", Kind: fwresource.Int, Key: "bridge", Ref: true, Nullable: true, Optional: true, Description: "ID of the bridge interface this interface belongs to."},
 			{Name: "description", Kind: fwresource.String, Optional: true, Description: "A description of the interface.", MaxLen: 200},
@@ -1043,6 +1064,7 @@ var standardResources = []*fwresource.Spec{
 			{Name: "mgmt_only", Kind: fwresource.Bool, Optional: true, Description: "Whether mgmt only is enabled for the interface template."},
 			{Name: "module_type_id", Kind: fwresource.Int, Key: "module_type", Ref: true, Nullable: true, Optional: true, ForceNew: true, Description: "The ID of the module type associated with the interface template. Exactly one of `device_type_id` or `module_type_id` must be given."},
 			{Name: "name", Kind: fwresource.String, Required: true, Description: "The name of the interface template.", MaxLen: 64},
+			{Name: "parent_id", Kind: fwresource.Int, Key: "parent", Ref: true, Nullable: true, Optional: true, Description: "The ID of the parent interface associated with the interface template."},
 			{Name: "poe_mode", Kind: fwresource.String, Nullable: true, Optional: true, Description: "One of [pd, pse].", OneOf: []string{"pd", "pse"}},
 			{Name: "poe_type", Kind: fwresource.String, Nullable: true, Optional: true, Description: "One of [type1-ieee802.3af, type2-ieee802.3at, type3-ieee802.3bt, type4-ieee802.3bt, passive-24v-2pair, passive-24v-4pair, passive-48v-2pair, passive-48v-4pair].", OneOf: []string{"passive-24v-2pair", "passive-24v-4pair", "passive-48v-2pair", "passive-48v-4pair", "type1-ieee802.3af", "type2-ieee802.3at", "type3-ieee802.3bt", "type4-ieee802.3bt"}},
 			{Name: "rf_role", Kind: fwresource.String, Nullable: true, Optional: true, Description: "One of [ap, station].", OneOf: []string{"ap", "station"}},
@@ -1312,6 +1334,7 @@ var standardResources = []*fwresource.Spec{
 	{
 		TypeName:     "netbox_manufacturer",
 		Path:         "dcim/manufacturers/",
+		Tags:         true,
 		Description:  ":meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://docs.netbox.dev/en/stable/features/device-types/#manufacturers):\n\n> A manufacturer represents the \"make\" of a device; e.g. Cisco or Dell. Each device type must be assigned to a manufacturer. (Inventory items and platforms may also be associated with manufacturers.) Each manufacturer must have a unique name and may have a description assigned to it.",
 		CustomFields: true,
 		SlugFrom:     "name",
@@ -1353,6 +1376,7 @@ var standardResources = []*fwresource.Spec{
 			{Name: "enabled", Kind: fwresource.Bool, Optional: true, Computed: true, Description: "Whether the module bay template is enabled."},
 			{Name: "label", Kind: fwresource.String, Optional: true, Description: "The label of the module bay template.", MaxLen: 64},
 			{Name: "module_bay_type_ids", Kind: fwresource.IntSet, Optional: true, Description: "The IDs of the module bay type associated with the module bay template."},
+			{Name: "module_bay_types", Kind: fwresource.IntSet, Ref: true, Optional: true, Description: "The IDs of the module bay types of the module bay template. Needs NetBox 4.7 or later."},
 			{Name: "module_type_id", Kind: fwresource.Int, Key: "module_type", Ref: true, Nullable: true, Optional: true, Description: "The ID of the module type associated with the module bay template."},
 			{Name: "name", Kind: fwresource.String, Required: true, Description: "The name of the module bay template.", MaxLen: 64},
 			{Name: "position", Kind: fwresource.String, Optional: true, Description: "Identifier to reference when renaming installed components.", MaxLen: 30},
@@ -1384,6 +1408,7 @@ var standardResources = []*fwresource.Spec{
 		RequiredWith: [][]string{{"weight_unit", "weight"}},
 		Attrs: []fwresource.Attr{
 			{Name: "airflow", Kind: fwresource.String, Nullable: true, Optional: true, Description: "One of [front-to-rear, rear-to-front, left-to-right, right-to-left, side-to-rear, passive].", OneOf: []string{"front-to-rear", "left-to-right", "passive", "rear-to-front", "right-to-left", "side-to-rear"}},
+			{Name: "attributes", Kind: fwresource.JSON, Nullable: true, Optional: true, Description: "The attributes of the module type, defined by its profile. This is best managed through the use of `jsonencode`."},
 			{Name: "comments", Kind: fwresource.String, Optional: true, Description: "Free-form comments about the module type."},
 			{Name: "cooling_method", Kind: fwresource.String, Optional: true, Description: "One of [air, liquid, hybrid, immersion]."},
 			{Name: "description", Kind: fwresource.String, Optional: true, Description: "A description of the module type.", MaxLen: 200},
@@ -1391,6 +1416,7 @@ var standardResources = []*fwresource.Spec{
 			{Name: "manufacturer_id", Kind: fwresource.Int, Key: "manufacturer", Ref: true, Required: true, Description: "The ID of the manufacturer associated with the module type."},
 			{Name: "model", Kind: fwresource.String, Required: true, Description: "The model of the module type.", MaxLen: 100},
 			{Name: "module_bay_type_ids", Kind: fwresource.IntSet, Optional: true, Description: "The IDs of the module bay type associated with the module type."},
+			{Name: "module_bay_types", Kind: fwresource.IntSet, Ref: true, Optional: true, Description: "The IDs of the module bay types of the module type. Needs NetBox 4.7 or later."},
 			{Name: "owner_id", Kind: fwresource.Int, Key: "owner", Ref: true, Nullable: true, Optional: true, Description: "The ID of the owner associated with the module type."},
 			{Name: "part_number", Kind: fwresource.String, Optional: true, Description: "The part number of the module type.", MaxLen: 50},
 			{Name: "profile_id", Kind: fwresource.Int, Key: "profile", Ref: true, Nullable: true, Optional: true, Description: "The ID of the profile associated with the module type."},
@@ -1474,6 +1500,7 @@ var standardResources = []*fwresource.Spec{
 			{Name: "manufacturer_id", Kind: fwresource.Int, Key: "manufacturer", Ref: true, Nullable: true, Optional: true, Description: "The ID of the manufacturer associated with the platform."},
 			{Name: "name", Kind: fwresource.String, Required: true, Description: "The name of the platform.", MaxLen: 100},
 			{Name: "owner_id", Kind: fwresource.Int, Key: "owner", Ref: true, Nullable: true, Optional: true, Description: "The ID of the owner associated with the platform."},
+			{Name: "parent_id", Kind: fwresource.Int, Key: "parent", Ref: true, Nullable: true, Optional: true, Description: "The ID of the parent associated with the platform."},
 			{Name: "slug", Kind: fwresource.String, Optional: true, Computed: true, Description: "The URL-friendly slug of the platform.", MaxLen: 100},
 		},
 	},
@@ -1736,6 +1763,7 @@ var standardResources = []*fwresource.Spec{
 	{
 		TypeName:     "netbox_region",
 		Path:         "dcim/regions/",
+		Tags:         true,
 		Description:  ":meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://docs.netbox.dev/en/stable/features/sites-and-racks/#regions):\n\n> Sites can be arranged geographically using regions. A region might represent a continent, country, city, campus, or other area depending on your use case. Regions can be nested recursively to construct a hierarchy. For example, you might define several country regions, and within each of those several state or city regions to which sites are assigned.\n>\n> Each region must have a name that is unique within its parent region, if any.",
 		CustomFields: true,
 		SlugFrom:     "name",
@@ -1752,6 +1780,7 @@ var standardResources = []*fwresource.Spec{
 	{
 		TypeName:     "netbox_rir",
 		Path:         "ipam/rirs/",
+		Tags:         true,
 		Description:  ":meta:subcategory:IP Address Management (IPAM):From the [official documentation](https://docs.netbox.dev/en/stable/features/ipam/#regional-internet-registries-rirs):\n\n> Regional Internet registries are responsible for the allocation of globally-routable address space. The five RIRs are ARIN, RIPE, APNIC, LACNIC, and AFRINIC. However, some address space has been set aside for internal use, such as defined in RFCs 1918 and 6598. NetBox considers these RFCs as a sort of RIR as well; that is, an authority which \"owns\" certain address space. There also exist lower-tier registries which serve particular geographic areas.",
 		CustomFields: true,
 		SlugFrom:     "name",
@@ -1810,6 +1839,7 @@ var standardResources = []*fwresource.Spec{
 			{Name: "comments", Kind: fwresource.String, Optional: true, Description: "Free-form comments about the service."},
 			{Name: "description", Kind: fwresource.String, Optional: true, Description: "A description of the service.", MaxLen: 200},
 			{Name: "device_id", Kind: fwresource.Int, Key: "device", Ref: true, Optional: true, Description: "The ID of the device associated with the service. Exactly one of `virtual_machine_id` or `device_id` must be given."},
+			{Name: "ipaddresses", Kind: fwresource.IntSet, Ref: true, Optional: true, Description: "The IDs of the IP addresses the service is bound to."},
 			{Name: "name", Kind: fwresource.String, Required: true, Description: "The name of the service.", MaxLen: 100},
 			{Name: "owner_id", Kind: fwresource.Int, Key: "owner", Ref: true, Nullable: true, Optional: true, Description: "The ID of the owner associated with the service."},
 			{Name: "port", Kind: fwresource.Int, Key: "ports", Ref: true, Optional: true, Deprecated: "This field is deprecated. Please use the new \"ports\" attribute instead.", Description: "The port of the service. Exactly one of `port`, `ports` or `port_mappings` must be given."},
@@ -1866,6 +1896,7 @@ var standardResources = []*fwresource.Spec{
 	{
 		TypeName:     "netbox_site_group",
 		Path:         "dcim/site-groups/",
+		Tags:         true,
 		Description:  ":meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://docs.netbox.dev/en/stable/features/facilities/#site-groups):\n\n> Like regions, site groups can be arranged in a recursive hierarchy for grouping sites. However, whereas regions are intended for geographic organization, site groups may be used for functional grouping. For example, you might classify sites as corporate, branch, or customer sites in addition to where they are physically located.\n>\n> The use of both regions and site groups affords to independent but complementary dimensions across which sites can be organized.",
 		CustomFields: true,
 		SlugFrom:     "name",
@@ -1912,6 +1943,7 @@ var standardResources = []*fwresource.Spec{
 	{
 		TypeName:     "netbox_tenant_group",
 		Path:         "tenancy/tenant-groups/",
+		Tags:         true,
 		Description:  ":meta:subcategory:Tenancy:From the [official documentation](https://docs.netbox.dev/en/stable/features/tenancy/#tenant-groups):\n\n> Tenants can be organized by custom groups. For instance, you might create one group called \"Customers\" and one called \"Departments.\" The assignment of a tenant to a group is optional.\n>\n> Tenant groups may be nested recursively to achieve a multi-level hierarchy. For example, you might have a group called \"Customers\" containing subgroups of individual tenants grouped by product or account team.",
 		CustomFields: true,
 		SlugFrom:     "name",
@@ -1950,6 +1982,7 @@ var standardResources = []*fwresource.Spec{
 			{Name: "group_ids", Kind: fwresource.IntSet, Key: "groups", Ref: true, Optional: true, Description: "The IDs of the group associated with the user."},
 			{Name: "last_name", Kind: fwresource.String, Optional: true, Default: "", Description: "The last name of the user. Defaults to `\"\"`.", MaxLen: 150},
 			{Name: "password", Kind: fwresource.String, Required: true, Sensitive: true, Description: "The password of the user.", MaxLen: 128},
+			{Name: "permissions", Kind: fwresource.IntSet, Ref: true, Optional: true, Computed: true, Description: "The IDs of the object permissions granted to the user. A `netbox_permission` can also list its users, so set the relation on one side only."},
 			{Name: "staff", Kind: fwresource.Bool, Key: "is_staff", Optional: true, Deprecated: "The staff field has been removed in NetBox v4.5 (migration users.0013_user_remove_is_staff). This attribute is ignored by NetBox v4.5 and later.", Default: false, Description: "Whether staff is enabled for the user. Defaults to `false`."},
 			{Name: "username", Kind: fwresource.String, Required: true, Description: "The username of the user.", MaxLen: 150},
 		},
@@ -2124,6 +2157,7 @@ var standardResources = []*fwresource.Spec{
 	{
 		TypeName:     "netbox_vpn_tunnel_group",
 		Path:         "vpn/tunnel-groups/",
+		Tags:         true,
 		Description:  ":meta:subcategory:VPN Tunnels:From the [official documentation](https://docs.netbox.dev/en/stable/features/vpn-tunnels/):\n\n> NetBox can model private tunnels formed among virtual termination points across your network. Typical tunnel implementations include GRE, IP-in-IP, and IPSec. A tunnel may be terminated to two or more device or virtual machine interfaces. For convenient organization, tunnels may be assigned to user-defined groups.",
 		CustomFields: true,
 		SlugFrom:     "name",
@@ -2162,6 +2196,8 @@ var standardResources = []*fwresource.Spec{
 			{Name: "comments", Kind: fwresource.String, Optional: true, Description: "Free-form comments about the vrf."},
 			{Name: "description", Kind: fwresource.String, Optional: true, Description: "A description of the vrf.", MaxLen: 200},
 			{Name: "enforce_unique", Kind: fwresource.Bool, Optional: true, Default: true, Description: "Whether enforce unique is enabled for the vrf. Defaults to `true`."},
+			{Name: "export_targets", Kind: fwresource.IntSet, Ref: true, Optional: true, Description: "The IDs of the route targets the VRF exports."},
+			{Name: "import_targets", Kind: fwresource.IntSet, Ref: true, Optional: true, Description: "The IDs of the route targets the VRF imports."},
 			{Name: "name", Kind: fwresource.String, Required: true, Description: "The name of the vrf.", MaxLen: 100},
 			{Name: "owner_id", Kind: fwresource.Int, Key: "owner", Ref: true, Nullable: true, Optional: true, Description: "The ID of the owner associated with the vrf."},
 			{Name: "rd", Kind: fwresource.String, Nullable: true, Optional: true, Description: "The route distinguisher of the vrf.", MaxLen: 21},
@@ -2171,6 +2207,7 @@ var standardResources = []*fwresource.Spec{
 	{
 		TypeName:     "netbox_webhook",
 		Path:         "extras/webhooks/",
+		Tags:         true,
 		Description:  ":meta:subcategory:Extras:From the [official documentation](https://docs.netbox.dev/en/stable/integrations/webhooks/):\n\n> A webhook is a mechanism for conveying to some external system a change that took place in NetBox. For example, you may want to notify a monitoring system whenever the status of a device is updated in NetBox. This can be done by creating a webhook for the device model in NetBox and identifying the webhook receiver. When NetBox detects a change to a device, an HTTP request containing the details of the change and who made it be sent to the specified receiver.",
 		CustomFields: true,
 		Put:          true,
@@ -2184,6 +2221,7 @@ var standardResources = []*fwresource.Spec{
 			{Name: "name", Kind: fwresource.String, Required: true, Description: "The name of the webhook.", MaxLen: 150},
 			{Name: "owner_id", Kind: fwresource.Int, Key: "owner", Ref: true, Nullable: true, Optional: true, Description: "The ID of the owner associated with the webhook."},
 			{Name: "payload_url", Kind: fwresource.String, Required: true, Description: "The payload url of the webhook.", MaxLen: 500},
+			{Name: "secret", Kind: fwresource.String, Optional: true, Sensitive: true, WriteOnly: true, Description: "Secret used to sign the payload of the request in the X-Hook-Signature header.", MaxLen: 255},
 			{Name: "ssl_verification", Kind: fwresource.Bool, Optional: true, Computed: true, Description: "Enable SSL certificate verification. Disable with caution!."},
 			{Name: "timeout", Kind: fwresource.Int, Nullable: true, Optional: true, Description: "The maximum time (in seconds) to wait for a response before failing the request. Leave blank to use the system default (60 seconds)."},
 		},
