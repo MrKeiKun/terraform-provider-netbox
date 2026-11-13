@@ -8,6 +8,9 @@ on:
   pull_request:
     branches:
       - master
+  schedule:
+    # every night all NetBox versions are tested, pull requests only test the oldest and newest patch release of each minor release
+    - cron: "0 19 * * *" # 19:00 UTC is 03:00 in the Philippines
   workflow_dispatch:
 
 concurrency:
@@ -49,51 +52,36 @@ jobs:
           flags: unit
           fail_ci_if_error: false
 
+  netbox-versions:
+    name: NetBox versions
+    runs-on: ubuntu-24.04
+    outputs:
+      versions: ${{ steps.versions.outputs.versions }}
+    steps:
+      - name: Choose the NetBox versions
+        id: versions
+        env:
+          EVENT: ${{ github.event_name }}
+        run: |
+          all='["v4.4.0","v4.4.1","v4.4.2","v4.4.4","v4.4.5","v4.4.6","v4.4.7","v4.4.8","v4.4.9","v4.4.10","v4.5.1","v4.5.2","v4.5.3","v4.5.4","v4.5.5","v4.5.6","v4.5.7","v4.5.8","v4.5.9","v4.5.10","v4.6.0","v4.6.1","v4.6.2","v4.6.3","v4.6.4","v4.6.5","v4.6.10","v4.7.0","v4.7.1","v4.7.2","v4.7.3","v4.7.4","v4.7.5"]'
+          edges='["v4.4.0","v4.4.10","v4.5.1","v4.5.10","v4.6.0","v4.6.10","v4.7.0","v4.7.5"]'
+          # v4.4.3 cannot be spun up for testing due to TypeError: issubclass() arg 1 must be a class
+          # v4.5.0 cannot be spun up for testing due to startup stall at "Building search index"
+          case "$EVENT" in
+            schedule|workflow_dispatch) echo "versions=$all" >> "$GITHUB_OUTPUT" ;;
+            *) echo "versions=$edges" >> "$GITHUB_OUTPUT" ;;
+          esac
+
   acceptance-test:
     name: Acceptance tests (NetBox ${{ matrix.netbox-version }})
-    needs: unit-test
+    needs: [unit-test, netbox-versions]
     env:
       COVERAGE_NETBOX_VERSION: v4.7.5
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
-        netbox-version:
-          - v4.4.0
-          - v4.4.1
-          - v4.4.2
-          # - v4.4.3 # this version cannot be spun up for testing due to TypeError: issubclass() arg 1 must be a class
-          - v4.4.4
-          - v4.4.5
-          - v4.4.6
-          - v4.4.7
-          - v4.4.8
-          - v4.4.9
-          - v4.4.10
-          # - v4.5.0 # this version cannot be spun up for testing due to startup stall at "Building search index"
-          - v4.5.1
-          - v4.5.2
-          - v4.5.3
-          - v4.5.4
-          - v4.5.5
-          - v4.5.6
-          - v4.5.7
-          - v4.5.8
-          - v4.5.9
-          - v4.5.10
-          - v4.6.0
-          - v4.6.1
-          - v4.6.2
-          - v4.6.3
-          - v4.6.4
-          - v4.6.5
-          - v4.6.10
-          - v4.7.0
-          - v4.7.1
-          - v4.7.2
-          - v4.7.3
-          - v4.7.4
-          - v4.7.5
+        netbox-version: ${{ fromJSON(needs.netbox-versions.outputs.versions) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -132,3 +120,30 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.out
           fail_ci_if_error: false
+
+  drift:
+    name: API drift report
+    needs: unit-test
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - name: Compare the NetBox API schema with the provider
+        run: make -e drift
+        env:
+          NETBOX_VERSION: v4.7.5
+      - name: Check that the generated data sources are up to date
+        run: |
+          go run ./tools/gendatasources -url "$NETBOX_SERVER_URL"
+          # a changed file and a new file both mean that the generated files are out of date
+          if [ -n "$(git status --porcelain -- internal/fwprovider examples/data-sources tools/gendatasources)" ]; then
+            git status --short -- internal/fwprovider examples/data-sources tools/gendatasources
+            echo "::error::Run go run ./tools/gendatasources -url <netbox> and commit the result"
+            exit 1
+          fi
+        env:
+          NETBOX_SERVER_URL: http://localhost:8001
