@@ -173,5 +173,11 @@ func (p *Provider) DataSources(_ context.Context) []func() datasource.DataSource
 	for _, spec := range customDataSources {
 		out = append(out, fwresource.NewDataSource(spec))
 	}
+	for _, spec := range generatedDataSources {
+		out = append(out, fwresource.NewDataSource(spec))
+	}
+	for _, spec := range aliasedDataSources() {
+		out = append(out, fwresource.NewDataSource(spec))
+	}
 	return out
 }

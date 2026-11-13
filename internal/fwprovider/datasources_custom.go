@@ -30,6 +30,7 @@ var customDataSources = []*fwresource.DataSourceSpec{
 	},
 	{
 		TypeName:    "netbox_ip_address",
+		Path:        "ipam/ip-addresses/",
 		Description: ":meta:subcategory:IP Address Management (IPAM):Retrieves a single ip address from NetBox. The lookup fails if no match or more than one match is found.",
 		Noun:        "ip_address",
 		Attrs: []fwresource.Attr{
@@ -58,6 +59,7 @@ var customDataSources = []*fwresource.DataSourceSpec{
 	},
 	{
 		TypeName:    "netbox_notification_group",
+		Path:        "extras/notification-groups/",
 		Description: ":meta:subcategory:Extras:Retrieves a single notification group from NetBox. The lookup fails if no match or more than one match is found.",
 		Noun:        "notification_group",
 		Attrs: []fwresource.Attr{
@@ -69,6 +71,7 @@ var customDataSources = []*fwresource.DataSourceSpec{
 	},
 	{
 		TypeName:    "netbox_rack_type",
+		Path:        "dcim/rack-types/",
 		Description: ":meta:subcategory:Data Center Inventory Management (DCIM):Look up a rack type by `model` or `slug`.",
 		Noun:        "rack_type",
 		Attrs: []fwresource.Attr{
