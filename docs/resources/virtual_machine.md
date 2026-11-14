@@ -85,7 +85,7 @@ resource "netbox_virtual_machine" "full_vm" {
 - `serial` (String) The serial number of the virtual machine.
 - `site_id` (Number) The ID of the site associated with the virtual machine. NetBox takes it from the cluster when it is not set. At least one of `site_id` or `cluster_id` must be given.
 - `start_on_boot` (String) Whether the virtual machine starts on boot. One of [on, off, laststate]. Needs NetBox 4.5.0 or later.
-- `status` (String) Valid values are `offline`, `active`, `planned`, `staged`, `failed` and `decommissioning`. Defaults to `active`.
+- `status` (String) Valid values are `offline`, `active`, `planned`, `staged`, `failed`, `decommissioning` and `paused`. Defaults to `active`.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the virtual machine.
 - `vcpus` (Number) The vcpus of the virtual machine.

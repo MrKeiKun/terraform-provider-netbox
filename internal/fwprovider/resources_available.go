@@ -78,7 +78,6 @@ func availableIPAddress() *fwresource.Spec {
 		a.Required = false
 		a.Optional = true
 		a.Default = "active"
-		a.OneOf = nil
 	})
 	s.Attrs = append(s.Attrs,
 		fwresource.Attr{Name: "prefix_id", Kind: fwresource.Int, Optional: true, Local: true, ForceNew: true, Description: "The ID of the prefix associated with the available ip address."},
@@ -252,7 +251,7 @@ func availableVLAN() *fwresource.Spec {
 			{Name: "qinq_svlan", Kind: fwresource.Int, Nullable: true, Optional: true, Description: "The qinq svlan of the available vlan."},
 			{Name: "role_id", Kind: fwresource.Int, Key: "role", Ref: true, Nullable: true, Optional: true, Description: "The ID of the role associated with the available vlan."},
 			{Name: "site_id", Kind: fwresource.Int, Key: "site", Ref: true, Nullable: true, Optional: true, Description: "The ID of the site associated with the available vlan."},
-			{Name: "status", Kind: fwresource.String, Optional: true, Computed: true, Description: "The status of the available vlan."},
+			{Name: "status", Kind: fwresource.String, Optional: true, Computed: true, Description: "The status of the available vlan.", OneOf: []string{"active", "deprecated", "reserved"}},
 			{Name: "tenant_id", Kind: fwresource.Int, Key: "tenant", Ref: true, Nullable: true, Optional: true, Description: "The ID of the tenant associated with the available vlan."},
 			{Name: "vid", Kind: fwresource.Int, Computed: true, Description: "The VLAN ID (1-4094)."},
 		},
