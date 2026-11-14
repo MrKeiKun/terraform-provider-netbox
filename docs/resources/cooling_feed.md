@@ -49,7 +49,9 @@ resource "netbox_cooling_feed" "example" {
 
 ### Read-Only
 
+- `created` (String) When the cooling feed was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the cooling feed was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

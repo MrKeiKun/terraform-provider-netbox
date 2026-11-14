@@ -43,7 +43,10 @@ resource "netbox_inventory_item_template" "example" {
 
 ### Read-Only
 
+- `component` (String) The component of the inventory item template.
+- `created` (String) When the inventory item template was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the inventory item template was last changed.
 
 ## Import
 

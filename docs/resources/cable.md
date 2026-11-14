@@ -72,7 +72,9 @@ resource "netbox_cable" "test" {
 
 ### Read-Only
 
+- `created` (String) When the cable was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the cable was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 <a id="nestedblock--a_termination"></a>

@@ -96,8 +96,12 @@ resource "netbox_available_ip_address" "myvm-ip" {
 
 ### Read-Only
 
+- `assigned_object` (String) The assigned object of the available ip address.
+- `created` (String) When the available ip address was created.
+- `family` (String) The family of the available ip address.
 - `id` (String) The ID of this resource.
 - `ip_address` (String) The IP address of the available ip address, in CIDR notation.
+- `last_updated` (String) When the available ip address was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

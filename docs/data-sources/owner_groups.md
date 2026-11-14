@@ -55,5 +55,5 @@ Read-Only:
 
 - `description` (String) A description of the owner groups.
 - `id` (Number) The id of the owner groups.
-- `member_count` (Number) The number of member of the owner groups.
+- `member_count` (Number) The number of member objects that refer to the owner groups.
 - `name` (String) The name of the owner groups.

@@ -40,7 +40,10 @@ resource "netbox_circuit_type" "test" {
 
 ### Read-Only
 
+- `circuit_count` (Number) The number of circuit objects that refer to the circuit type.
+- `created` (String) When the circuit type was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the circuit type was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

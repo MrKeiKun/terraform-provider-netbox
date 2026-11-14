@@ -35,6 +35,6 @@ data "netbox_rack_role" "example" {
 - `id` (String) The ID of this resource.
 - `last_updated` (String) When the rack role was last changed.
 - `owner_id` (Number) The ID of the owner associated with the rack role.
-- `rack_count` (Number) The number of rack of the rack role.
+- `rack_count` (Number) The number of rack objects that refer to the rack role.
 - `slug` (String) The URL-friendly slug of the rack role.
 - `tags` (Set of String) Tags assigned to the object, by name.

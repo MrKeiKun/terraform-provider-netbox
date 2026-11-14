@@ -44,4 +44,4 @@ data "netbox_vpn_tunnel" "example" {
 - `last_updated` (String) When the vpn tunnel was last changed.
 - `owner_id` (Number) The ID of the owner associated with the vpn tunnel.
 - `tags` (Set of String) Tags assigned to the object, by name.
-- `terminations_count` (Number) The number of terminations of the vpn tunnel.
+- `terminations_count` (Number) The number of terminations objects that refer to the vpn tunnel.

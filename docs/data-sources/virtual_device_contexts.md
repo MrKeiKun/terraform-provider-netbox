@@ -60,7 +60,7 @@ Read-Only:
 - `device_id` (Number) The ID of the device associated with the virtual device contexts.
 - `id` (Number) The id of the virtual device contexts.
 - `identifier` (Number) The identifier of the virtual device contexts.
-- `interface_count` (Number) The number of interface of the virtual device contexts.
+- `interface_count` (Number) The number of interface objects that refer to the virtual device contexts.
 - `last_updated` (String) When the virtual device contexts was last changed.
 - `name` (String) The name of the virtual device contexts.
 - `owner_id` (Number) The ID of the owner associated with the virtual device contexts.

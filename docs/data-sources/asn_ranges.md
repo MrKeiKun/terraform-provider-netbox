@@ -53,7 +53,7 @@ Required:
 
 Read-Only:
 
-- `asn_count` (Number) The number of asn of the asn ranges.
+- `asn_count` (Number) The number of asn objects that refer to the asn ranges.
 - `comments` (String) Free-form comments about the asn ranges.
 - `created` (String) When the asn ranges was created.
 - `custom_fields` (Map of String) Custom field values of the asn ranges, as a map of field name to value.

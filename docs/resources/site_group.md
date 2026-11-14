@@ -50,7 +50,11 @@ resource "netbox_site_group" "child" {
 
 ### Read-Only
 
+- `created` (String) When the site group was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the site group was last changed.
+- `prefix_count` (Number) The number of prefix objects that refer to the site group.
+- `site_count` (Number) The number of site objects that refer to the site group.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

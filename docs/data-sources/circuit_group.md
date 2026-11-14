@@ -28,7 +28,7 @@ data "netbox_circuit_group" "example" {
 
 ### Read-Only
 
-- `circuit_count` (Number) The number of circuit of the circuit group.
+- `circuit_count` (Number) The number of circuit objects that refer to the circuit group.
 - `comments` (String) Free-form comments about the circuit group.
 - `created` (String) When the circuit group was created.
 - `custom_fields` (Map of String) Custom field values of the circuit group, as a map of field name to value.

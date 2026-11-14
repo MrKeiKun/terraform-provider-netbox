@@ -54,7 +54,11 @@ resource "netbox_device_module_bay" "test" {
 
 ### Read-Only
 
+- `created` (String) When the device module bay was created.
 - `id` (String) The ID of this resource.
+- `installed_module_id` (Number) The ID of the installed module associated with the device module bay.
+- `is_module_compatible` (Boolean) The is module compatible of the device module bay.
+- `last_updated` (String) When the device module bay was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

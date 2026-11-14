@@ -39,6 +39,7 @@ resource "netbox_owner_group" "example" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `member_count` (Number) The number of member objects that refer to the owner group.
 
 ## Import
 

@@ -42,7 +42,9 @@ resource "netbox_saved_filter" "example" {
 
 ### Read-Only
 
+- `created` (String) When the saved filter was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the saved filter was last changed.
 
 ## Import
 

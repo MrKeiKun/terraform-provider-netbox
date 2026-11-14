@@ -35,20 +35,20 @@ data "netbox_site" "get_by_slug" {
 ### Read-Only
 
 - `asn_ids` (Set of Number) The IDs of the asn associated with the site.
-- `circuit_count` (Number) The number of circuit of the site.
+- `circuit_count` (Number) The number of circuit objects that refer to the site.
 - `comments` (String) Free-form comments about the site.
 - `created` (String) When the site was created.
 - `custom_fields` (Map of String) Custom field values of the site, as a map of field name to value.
 - `description` (String) A description of the site.
-- `device_count` (Number) The number of device of the site.
+- `device_count` (Number) The number of device objects that refer to the site.
 - `group_id` (Number) The ID of the group associated with the site.
 - `last_updated` (String) When the site was last changed.
 - `latitude` (Number) The latitude of the site.
 - `longitude` (Number) The longitude of the site.
 - `owner_id` (Number) The ID of the owner associated with the site.
 - `physical_address` (String) The physical address of the site.
-- `prefix_count` (Number) The number of prefix of the site.
-- `rack_count` (Number) The number of rack of the site.
+- `prefix_count` (Number) The number of prefix objects that refer to the site.
+- `rack_count` (Number) The number of rack objects that refer to the site.
 - `region_id` (Number) The ID of the region associated with the site.
 - `shipping_address` (String) The shipping address of the site.
 - `site_id` (Number) The ID of the site associated with the site.
@@ -56,5 +56,5 @@ data "netbox_site" "get_by_slug" {
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the site.
 - `time_zone` (String) The time zone of the site.
-- `virtualmachine_count` (Number) The number of virtualmachine of the site.
-- `vlan_count` (Number) The number of vlan of the site.
+- `virtualmachine_count` (Number) The number of virtualmachine objects that refer to the site.
+- `vlan_count` (Number) The number of vlan objects that refer to the site.

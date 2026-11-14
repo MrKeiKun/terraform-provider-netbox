@@ -128,7 +128,11 @@ resource "netbox_ip_address" "this" {
 
 ### Read-Only
 
+- `assigned_object` (String) The assigned object of the ip address.
+- `created` (String) When the ip address was created.
+- `family` (String) The family of the ip address.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the ip address was last changed.
 - `nat_outside_addresses` (Attributes List) The nat outside addresses of the ip address. (see [below for nested schema](#nestedatt--nat_outside_addresses))
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 

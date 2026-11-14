@@ -27,7 +27,7 @@ data "netbox_cluster_group" "dc_west" {
 
 ### Read-Only
 
-- `cluster_count` (Number) The number of cluster of the cluster group.
+- `cluster_count` (Number) The number of cluster objects that refer to the cluster group.
 - `cluster_group_id` (Number) The ID of the cluster group associated with the cluster group.
 - `comments` (String) Free-form comments about the cluster group.
 - `created` (String) When the cluster group was created.

@@ -27,7 +27,7 @@ data "netbox_cluster_type" "example" {
 
 ### Read-Only
 
-- `cluster_count` (Number) The number of cluster of the cluster type.
+- `cluster_count` (Number) The number of cluster objects that refer to the cluster type.
 - `cluster_type_id` (Number) The ID of the cluster type associated with the cluster type.
 - `comments` (String) Free-form comments about the cluster type.
 - `created` (String) When the cluster type was created.

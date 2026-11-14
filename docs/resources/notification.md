@@ -37,7 +37,9 @@ resource "netbox_notification" "example" {
 
 ### Read-Only
 
+- `created` (String) When the notification was created.
 - `id` (String) The ID of this resource.
+- `object` (String) The object of the notification.
 
 ## Import
 

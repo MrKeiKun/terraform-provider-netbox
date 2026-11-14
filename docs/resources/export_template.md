@@ -44,7 +44,11 @@ resource "netbox_export_template" "example" {
 
 ### Read-Only
 
+- `created` (String) When the export template was created.
+- `data_path` (String) The data path of the export template.
+- `data_synced` (String) The data synced of the export template.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the export template was last changed.
 
 ## Import
 

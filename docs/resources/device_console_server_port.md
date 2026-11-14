@@ -56,7 +56,14 @@ resource "netbox_device_console_server_port" "test" {
 
 ### Read-Only
 
+- `cable_end` (String) The cable end of the device console server port.
+- `cable_id` (Number) The ID of the cable associated with the device console server port.
+- `connected_endpoints_reachable` (Boolean) The connected endpoints reachable of the device console server port.
+- `connected_endpoints_type` (String) The connected endpoints type of the device console server port.
+- `created` (String) When the device console server port was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the device console server port was last changed.
+- `link_peers_type` (String) The link peers type of the device console server port.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

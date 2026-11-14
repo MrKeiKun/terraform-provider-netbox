@@ -77,7 +77,7 @@ Read-Only:
 - `created` (String) When the clusters was created.
 - `custom_fields` (Map of String) Custom field values of the clusters, as a map of field name to value.
 - `description` (String) A description of the clusters.
-- `device_count` (Number) The number of device of the clusters.
+- `device_count` (Number) The number of device objects that refer to the clusters.
 - `last_updated` (String) When the clusters was last changed.
 - `location_id` (Number) The ID of the location associated with the clusters.
 - `name` (String) The name of the clusters.
@@ -91,4 +91,4 @@ Read-Only:
 - `status` (String) The status of the clusters.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the clusters.
-- `virtualmachine_count` (Number) The number of virtualmachine of the clusters.
+- `virtualmachine_count` (Number) The number of virtualmachine objects that refer to the clusters.

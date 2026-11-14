@@ -45,7 +45,9 @@ resource "netbox_l2vpn" "example" {
 
 ### Read-Only
 
+- `created` (String) When the l2vpn was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the l2vpn was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

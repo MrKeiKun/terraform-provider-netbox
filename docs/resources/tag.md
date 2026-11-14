@@ -41,7 +41,10 @@ resource "netbox_tag" "dmz" {
 
 ### Read-Only
 
+- `created` (String) When the tag was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the tag was last changed.
+- `tagged_items` (Number) The tagged items of the tag.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

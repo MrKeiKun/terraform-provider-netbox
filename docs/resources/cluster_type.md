@@ -39,7 +39,10 @@ resource "netbox_cluster_type" "vmw_vsphere" {
 
 ### Read-Only
 
+- `cluster_count` (Number) The number of cluster objects that refer to the cluster type.
+- `created` (String) When the cluster type was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the cluster type was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

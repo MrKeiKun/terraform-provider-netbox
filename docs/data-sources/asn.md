@@ -44,10 +44,10 @@ for more information on available lookup expressions.
 - `id` (Number) The numeric ID of the asn.
 - `last_updated` (String) When the asn was last changed.
 - `owner_id` (Number) The ID of the owner associated with the asn.
-- `provider_count` (Number) The number of provider of the asn.
+- `provider_count` (Number) The number of provider objects that refer to the asn.
 - `rir_id` (Number) The ID of the rir associated with the asn.
 - `role_id` (Number) The ID of the role associated with the asn.
-- `site_count` (Number) The number of site of the asn.
+- `site_count` (Number) The number of site objects that refer to the asn.
 - `sites` (List of Number) The IDs of the sites of the asn.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the asn.

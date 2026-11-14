@@ -29,6 +29,7 @@ var (
 	serverURL    = flag.String("url", "", "NetBox server to fetch /api/schema/ from")
 	outFile      = flag.String("out", "internal/fwprovider/datasources_generated.go", "file to write")
 	extrasOut    = flag.String("extras-out", "internal/fwprovider/datasources_fields_generated.go", "file to write the extra attributes of hand written data sources to")
+	resExtrasOut = flag.String("resource-extras-out", "internal/fwprovider/resources_fields_generated.go", "file to write the read-only attributes of the resources to")
 	filtersOut   = flag.String("filters-out", "internal/fwprovider/datasources_filters_generated.go", "file to write the extra filters of hand written plural data sources to")
 	examplesDir  = flag.String("examples", "examples/data-sources", "directory to write data source examples to, empty for none")
 	examplesList = flag.String("examples-list", "tools/gendatasources/generated-examples.txt", "list of the examples this command writes")
@@ -46,7 +47,7 @@ func main() {
 	if err := json.Unmarshal(data, &doc); err != nil {
 		fatal(err)
 	}
-	src, filters, extras, err := generate(doc)
+	src, filters, extras, resExtras, err := generate(doc)
 	if err != nil {
 		fatal(err)
 	}
@@ -57,6 +58,9 @@ func main() {
 		fatal(err)
 	}
 	if err := os.WriteFile(*extrasOut, extras, 0o644); err != nil {
+		fatal(err)
+	}
+	if err := os.WriteFile(*resExtrasOut, resExtras, 0o644); err != nil {
 		fatal(err)
 	}
 	if *examplesDir != "" {
@@ -156,7 +160,7 @@ type collection struct {
 	subcat   string
 }
 
-func generate(doc obj) ([]byte, []byte, []byte, error) {
+func generate(doc obj) ([]byte, []byte, []byte, []byte, error) {
 	paths, _ := doc["paths"].(obj)
 	hand := fwprovider.HandwrittenDataSources()
 	takenNames := map[string]bool{}
@@ -165,6 +169,12 @@ func generate(doc obj) ([]byte, []byte, []byte, error) {
 	handPlural := map[string][]*fwresource.DataSourceSpec{}
 	handByPath := map[string][]*fwresource.DataSourceSpec{}
 	extras := map[string][]attr{}
+	resExtras := map[string][]attr{}
+	resByPath := map[string][]*fwresource.Spec{}
+	resources, _ := fwprovider.Inventory()
+	for _, r := range resources {
+		resByPath[r.Path] = append(resByPath[r.Path], r)
+	}
 	subcats := map[string]string{}
 	for _, d := range hand {
 		takenNames[d.TypeName] = true
@@ -239,6 +249,9 @@ func generate(doc obj) ([]byte, []byte, []byte, error) {
 		for _, d := range handByPath[trimmed] {
 			extras[d.TypeName] = c.extraAttrs(doc, d, addedNames(d.TypeName))
 		}
+		for _, r := range resByPath[trimmed] {
+			resExtras[r.TypeName] = c.resourceExtraAttrs(doc, r, addedResourceNames(r.TypeName))
+		}
 		c.subcat = subcats[strings.SplitN(trimmed, "/", 2)[0]]
 		if c.subcat == "" {
 			c.subcat = "Extras"
@@ -259,14 +272,18 @@ func generate(doc obj) ([]byte, []byte, []byte, error) {
 	out.WriteString("}\n")
 	src, err := format.Source(out.Bytes())
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 	filters, err := format.Source(filtersSource(extraFilters))
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 	extrasSrc, err := extrasSource(extras)
-	return src, filters, extrasSrc, err
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+	resSrc, err := resourceExtrasSource(resExtras)
+	return src, filters, extrasSrc, resSrc, err
 }
 
 func skipped(path string) bool {
@@ -384,7 +401,7 @@ func classify(doc obj, name string, p obj, noun string) (attr, bool) {
 	case name == "last_updated":
 		return attr{name: name, kind: "String", zero: true, desc: "When the " + noun + " was last changed."}, true
 	case strings.HasSuffix(name, "_count") && typ == "integer":
-		return attr{name: name, kind: "Int", zero: true, desc: "The number of " + human(strings.TrimSuffix(name, "_count")) + " of the " + noun + "."}, true
+		return attr{name: name, kind: "Int", zero: true, desc: "The number of " + human(strings.TrimSuffix(name, "_count")) + " objects that refer to the " + noun + "."}, true
 	}
 	switch name {
 	case "tags":

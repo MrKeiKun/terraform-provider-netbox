@@ -58,7 +58,7 @@ Read-Only:
 - `custom_fields` (Map of String) Custom field values of the data sources, as a map of field name to value.
 - `description` (String) A description of the data sources.
 - `enabled` (Boolean) The enabled of the data sources.
-- `file_count` (Number) The number of file of the data sources.
+- `file_count` (Number) The number of file objects that refer to the data sources.
 - `id` (Number) The id of the data sources.
 - `ignore_rules` (String) The ignore rules of the data sources.
 - `last_synced` (String) The last synced of the data sources.

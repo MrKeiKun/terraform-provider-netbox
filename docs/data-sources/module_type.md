@@ -27,24 +27,24 @@ output "module_type_id" {
 
 ### Optional
 
-- `console_port_template_count` (Number) The number of console port template of the module type.
-- `console_server_port_template_count` (Number) The number of console server port template of the module type.
-- `cooling_intake_template_count` (Number) The number of cooling intake template of the module type.
-- `cooling_outflow_template_count` (Number) The number of cooling outflow template of the module type.
+- `console_port_template_count` (Number) The number of console port template objects that refer to the module type.
+- `console_server_port_template_count` (Number) The number of console server port template objects that refer to the module type.
+- `cooling_intake_template_count` (Number) The number of cooling intake template objects that refer to the module type.
+- `cooling_outflow_template_count` (Number) The number of cooling outflow template objects that refer to the module type.
 - `end_of_life` (String) The end of life of the module type.
-- `front_port_template_count` (Number) The number of front port template of the module type.
+- `front_port_template_count` (Number) The number of front port template objects that refer to the module type.
 - `id` (Number) The numeric ID of the module type.
-- `interface_template_count` (Number) The number of interface template of the module type.
+- `interface_template_count` (Number) The number of interface template objects that refer to the module type.
 - `manufacturer_id` (Number) The ID of the manufacturer associated with the module type.
 - `model` (String) The model of the module type.
-- `module_bay_template_count` (Number) The number of module bay template of the module type.
-- `module_count` (Number) The number of module of the module type.
+- `module_bay_template_count` (Number) The number of module bay template objects that refer to the module type.
+- `module_count` (Number) The number of module objects that refer to the module type.
 - `owner_id` (Number) The ID of the owner associated with the module type.
 - `part_number` (String) The part number of the module type.
-- `power_outlet_template_count` (Number) The number of power outlet template of the module type.
-- `power_port_template_count` (Number) The number of power port template of the module type.
+- `power_outlet_template_count` (Number) The number of power outlet template objects that refer to the module type.
+- `power_port_template_count` (Number) The number of power port template objects that refer to the module type.
 - `profile_id` (Number) The ID of the profile associated with the module type.
-- `rear_port_template_count` (Number) The number of rear port template of the module type.
+- `rear_port_template_count` (Number) The number of rear port template objects that refer to the module type.
 
 ### Read-Only
 

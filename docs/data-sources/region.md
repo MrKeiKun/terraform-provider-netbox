@@ -39,8 +39,8 @@ data "netbox_region" "example" {
 - `name` (String) The name of the region.
 - `owner_id` (Number) The ID of the owner associated with the region.
 - `parent_region_id` (Number) The ID of the parent region associated with the region.
-- `prefix_count` (Number) The number of prefix of the region.
-- `site_count` (Number) The number of site of the region.
+- `prefix_count` (Number) The number of prefix objects that refer to the region.
+- `site_count` (Number) The number of site objects that refer to the region.
 - `slug` (String) The URL-friendly slug of the region.
 - `tags` (Set of String) Tags assigned to the object, by name.
 

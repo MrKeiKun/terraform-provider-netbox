@@ -44,5 +44,5 @@ output "power_panel_id" {
 - `last_updated` (String) When the power panel was last changed.
 - `location_id` (Number) The ID of the location associated with the power panel.
 - `owner_id` (Number) The ID of the owner associated with the power panel.
-- `powerfeed_count` (Number) The number of powerfeed of the power panel.
+- `powerfeed_count` (Number) The number of powerfeed objects that refer to the power panel.
 - `tags` (Set of String) Tags assigned to the object, by name.

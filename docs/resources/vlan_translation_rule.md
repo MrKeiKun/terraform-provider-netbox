@@ -40,7 +40,9 @@ resource "netbox_vlan_translation_rule" "example" {
 
 ### Read-Only
 
+- `created` (String) When the vlan translation rule was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the vlan translation rule was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

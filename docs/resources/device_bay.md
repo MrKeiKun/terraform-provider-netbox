@@ -92,7 +92,9 @@ resource "netbox_device_bay" "example" {
 
 ### Read-Only
 
+- `created` (String) When the device bay was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the device bay was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

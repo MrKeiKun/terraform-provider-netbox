@@ -43,5 +43,5 @@ output "rack_reservation_id" {
 - `description` (String) A description of the rack reservation.
 - `last_updated` (String) When the rack reservation was last changed.
 - `tags` (Set of String) Tags assigned to the object, by name.
-- `unit_count` (Number) The number of unit of the rack reservation.
+- `unit_count` (Number) The number of unit objects that refer to the rack reservation.
 - `units` (List of Number) The units of the rack reservation.

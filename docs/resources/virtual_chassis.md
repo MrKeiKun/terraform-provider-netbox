@@ -41,8 +41,11 @@ resource "netbox_virtual_chassis" "example" {
 
 ### Read-Only
 
+- `created` (String) When the virtual chassis was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the virtual chassis was last changed.
 - `master_id` (Number) The ID of the device that is the master of the virtual chassis. Set `virtual_chassis_master` on the `netbox_device` to choose it.
+- `member_count` (Number) The number of member objects that refer to the virtual chassis.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

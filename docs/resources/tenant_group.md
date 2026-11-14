@@ -42,8 +42,11 @@ resource "netbox_tenant_group" "test" {
 
 ### Read-Only
 
+- `created` (String) When the tenant group was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the tenant group was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+- `tenant_count` (Number) The number of tenant objects that refer to the tenant group.
 
 ## Import
 

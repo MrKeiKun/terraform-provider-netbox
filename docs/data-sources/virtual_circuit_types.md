@@ -64,4 +64,4 @@ Read-Only:
 - `owner_id` (Number) The ID of the owner associated with the virtual circuit types.
 - `slug` (String) The slug of the virtual circuit types.
 - `tags` (Set of String) Tags assigned to the object, by name.
-- `virtual_circuit_count` (Number) The number of virtual circuit of the virtual circuit types.
+- `virtual_circuit_count` (Number) The number of virtual circuit objects that refer to the virtual circuit types.

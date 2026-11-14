@@ -52,7 +52,10 @@ resource "netbox_power_panel" "test" {
 
 ### Read-Only
 
+- `created` (String) When the power panel was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the power panel was last changed.
+- `powerfeed_count` (Number) The number of powerfeed objects that refer to the power panel.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

@@ -33,7 +33,7 @@ output "circuit_type_id" {
 
 ### Read-Only
 
-- `circuit_count` (Number) The number of circuit of the circuit type.
+- `circuit_count` (Number) The number of circuit objects that refer to the circuit type.
 - `color` (String) The color of the circuit type.
 - `comments` (String) Free-form comments about the circuit type.
 - `created` (String) When the circuit type was created.

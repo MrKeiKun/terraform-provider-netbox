@@ -81,7 +81,11 @@ resource "netbox_prefix" "testPrefix" {
 
 ### Read-Only
 
+- `created` (String) When the available vlan was created.
 - `id` (String) The ID of this resource.
+- `l2vpn_termination_id` (Number) The ID of the l2vpn termination associated with the available vlan.
+- `last_updated` (String) When the available vlan was last changed.
+- `prefix_count` (Number) The number of prefix objects that refer to the available vlan.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 - `vid` (Number) The VLAN ID (1-4094).
 

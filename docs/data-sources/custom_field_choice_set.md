@@ -33,7 +33,7 @@ output "custom_field_choice_set_id" {
 
 - `base_choices` (String) The base choices of the custom field choice set.
 - `choice_colors` (String) The choice colors of the custom field choice set.
-- `choices_count` (Number) The number of choices of the custom field choice set.
+- `choices_count` (Number) The number of choices objects that refer to the custom field choice set.
 - `created` (String) When the custom field choice set was created.
 - `description` (String) A description of the custom field choice set.
 - `id` (String) The ID of this resource.

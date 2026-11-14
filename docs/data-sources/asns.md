@@ -60,10 +60,10 @@ Read-Only:
 - `id` (Number) The numeric ID of the asns.
 - `last_updated` (String) When the ASNs was last changed.
 - `owner_id` (Number) The ID of the owner associated with the ASNs.
-- `provider_count` (Number) The number of provider of the ASNs.
+- `provider_count` (Number) The number of provider objects that refer to the ASNs.
 - `rir_id` (Number) The ID of the rir associated with the asns.
 - `role_id` (Number) The ID of the role associated with the ASNs.
-- `site_count` (Number) The number of site of the ASNs.
+- `site_count` (Number) The number of site objects that refer to the ASNs.
 - `sites` (List of Number) The IDs of the sites of the ASNs.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the ASNs.

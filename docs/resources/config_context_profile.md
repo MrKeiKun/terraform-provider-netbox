@@ -39,7 +39,11 @@ resource "netbox_config_context_profile" "example" {
 
 ### Read-Only
 
+- `created` (String) When the config context profile was created.
+- `data_path` (String) The data path of the config context profile.
+- `data_synced` (String) The data synced of the config context profile.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the config context profile was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

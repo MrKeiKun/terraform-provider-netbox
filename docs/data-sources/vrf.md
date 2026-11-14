@@ -39,9 +39,9 @@ data "netbox_vrf" "cust_a_prod" {
 - `export_targets` (List of Number) The IDs of the export targets of the vrf.
 - `id` (String) The ID of this resource.
 - `import_targets` (List of Number) The IDs of the import targets of the vrf.
-- `ipaddress_count` (Number) The number of ipaddress of the vrf.
+- `ipaddress_count` (Number) The number of ipaddress objects that refer to the vrf.
 - `last_updated` (String) When the vrf was last changed.
 - `owner_id` (Number) The ID of the owner associated with the vrf.
-- `prefix_count` (Number) The number of prefix of the vrf.
+- `prefix_count` (Number) The number of prefix objects that refer to the vrf.
 - `rd` (String) The rd of the vrf.
 - `tags` (Set of String) Tags assigned to the object, by name.

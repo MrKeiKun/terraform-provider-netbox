@@ -42,7 +42,10 @@ resource "netbox_cable_bundle" "example" {
 
 ### Read-Only
 
+- `cable_count` (Number) The number of cable objects that refer to the cable bundle.
+- `created` (String) When the cable bundle was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the cable bundle was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

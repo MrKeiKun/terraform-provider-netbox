@@ -59,7 +59,7 @@ Read-Only:
 - `custom_fields` (Map of String) Custom field values of the inventory item roles, as a map of field name to value.
 - `description` (String) A description of the inventory item roles.
 - `id` (Number) The id of the inventory item roles.
-- `inventoryitem_count` (Number) The number of inventoryitem of the inventory item roles.
+- `inventoryitem_count` (Number) The number of inventoryitem objects that refer to the inventory item roles.
 - `last_updated` (String) When the inventory item roles was last changed.
 - `name` (String) The name of the inventory item roles.
 - `owner_id` (Number) The ID of the owner associated with the inventory item roles.

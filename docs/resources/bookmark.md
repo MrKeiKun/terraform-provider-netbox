@@ -36,7 +36,9 @@ resource "netbox_bookmark" "example" {
 
 ### Read-Only
 
+- `created` (String) When the bookmark was created.
 - `id` (String) The ID of this resource.
+- `object` (String) The object of the bookmark.
 
 ## Import
 

@@ -55,7 +55,10 @@ resource "netbox_service" "ssh" {
 
 ### Read-Only
 
+- `created` (String) When the service was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the service was last changed.
+- `parent` (String) The parent of the service.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

@@ -53,7 +53,7 @@ Required:
 
 Read-Only:
 
-- `cable_count` (Number) The number of cable of the cable bundles.
+- `cable_count` (Number) The number of cable objects that refer to the cable bundles.
 - `comments` (String) Free-form comments about the cable bundles.
 - `created` (String) When the cable bundles was created.
 - `custom_fields` (Map of String) Custom field values of the cable bundles, as a map of field name to value.

@@ -55,8 +55,14 @@ resource "netbox_vlan_group" "example2" {
 
 ### Read-Only
 
+- `created` (String) When the vlan group was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the vlan group was last changed.
+- `scope` (String) The scope of the vlan group.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+- `total_vlan_ids` (Number) The total vlan ids of the vlan group.
+- `utilization` (String) The utilization of the vlan group.
+- `vlan_count` (Number) The number of vlan objects that refer to the vlan group.
 
 ## Import
 

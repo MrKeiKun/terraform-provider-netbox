@@ -46,7 +46,11 @@ resource "netbox_virtual_device_context" "example" {
 
 ### Read-Only
 
+- `created` (String) When the virtual device context was created.
 - `id` (String) The ID of this resource.
+- `interface_count` (Number) The number of interface objects that refer to the virtual device context.
+- `last_updated` (String) When the virtual device context was last changed.
+- `primary_ip_id` (Number) The ID of the primary ip associated with the virtual device context.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

@@ -64,4 +64,4 @@ Read-Only:
 - `parent_id` (Number) The ID of the parent associated with the tenant groups.
 - `slug` (String) The slug of the tenant groups.
 - `tags` (Set of String) Tags assigned to the object, by name.
-- `tenant_count` (Number) The number of tenant of the tenant groups.
+- `tenant_count` (Number) The number of tenant objects that refer to the tenant groups.

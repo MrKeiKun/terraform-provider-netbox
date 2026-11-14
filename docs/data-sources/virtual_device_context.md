@@ -34,7 +34,7 @@ data "netbox_virtual_device_context" "example" {
 - `description` (String) A description of the virtual device context.
 - `id` (String) The ID of this resource.
 - `identifier` (Number) The identifier of the virtual device context.
-- `interface_count` (Number) The number of interface of the virtual device context.
+- `interface_count` (Number) The number of interface objects that refer to the virtual device context.
 - `last_updated` (String) When the virtual device context was last changed.
 - `owner_id` (Number) The ID of the owner associated with the virtual device context.
 - `primary_ip4_id` (Number) The ID of the primary ip4 associated with the virtual device context.

@@ -28,7 +28,7 @@ data "netbox_contact_group" "example" {
 ### Read-Only
 
 - `comments` (String) Free-form comments about the contact group.
-- `contact_count` (Number) The number of contact of the contact group.
+- `contact_count` (Number) The number of contact objects that refer to the contact group.
 - `created` (String) When the contact group was created.
 - `custom_fields` (Map of String) Custom field values of the contact group, as a map of field name to value.
 - `description` (String) A description of the contact group.

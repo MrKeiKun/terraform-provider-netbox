@@ -49,7 +49,9 @@ resource "netbox_wireless_link" "example" {
 
 ### Read-Only
 
+- `created` (String) When the wireless link was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the wireless link was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

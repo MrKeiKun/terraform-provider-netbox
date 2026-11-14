@@ -54,7 +54,20 @@ resource "netbox_module_type" "test" {
 
 ### Read-Only
 
+- `console_port_template_count` (Number) The number of console port template objects that refer to the module type.
+- `console_server_port_template_count` (Number) The number of console server port template objects that refer to the module type.
+- `cooling_intake_template_count` (Number) The number of cooling intake template objects that refer to the module type.
+- `cooling_outflow_template_count` (Number) The number of cooling outflow template objects that refer to the module type.
+- `created` (String) When the module type was created.
+- `front_port_template_count` (Number) The number of front port template objects that refer to the module type.
 - `id` (String) The ID of this resource.
+- `interface_template_count` (Number) The number of interface template objects that refer to the module type.
+- `last_updated` (String) When the module type was last changed.
+- `module_bay_template_count` (Number) The number of module bay template objects that refer to the module type.
+- `module_count` (Number) The number of module objects that refer to the module type.
+- `power_outlet_template_count` (Number) The number of power outlet template objects that refer to the module type.
+- `power_port_template_count` (Number) The number of power port template objects that refer to the module type.
+- `rear_port_template_count` (Number) The number of rear port template objects that refer to the module type.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

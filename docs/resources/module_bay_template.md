@@ -55,7 +55,9 @@ resource "netbox_module_bay_template" "test" {
 
 ### Read-Only
 
+- `created` (String) When the module bay template was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the module bay template was last changed.
 
 ## Import
 

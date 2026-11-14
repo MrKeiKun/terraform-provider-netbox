@@ -71,11 +71,22 @@ resource "netbox_device_interface" "test" {
 
 ### Read-Only
 
+- `cable_end` (String) The cable end of the device interface.
+- `cable_id` (Number) The ID of the cable associated with the device interface.
+- `connected_endpoints_reachable` (Boolean) The connected endpoints reachable of the device interface.
+- `connected_endpoints_type` (String) The connected endpoints type of the device interface.
+- `count_fhrp_groups` (Number) The count fhrp groups of the device interface.
+- `count_ipaddresses` (Number) The count ipaddresses of the device interface.
+- `created` (String) When the device interface was created.
 - `id` (String) The ID of this resource.
+- `l2vpn_termination_id` (Number) The ID of the l2vpn termination associated with the device interface.
+- `last_updated` (String) When the device interface was last changed.
+- `link_peers_type` (String) The link peers type of the device interface.
 - `mac_address` (String) The MAC address as string from the first MAC address assigned to this interface, if any.
 - `mac_addresses` (Attributes Set) The mac addresses of the device interface. (see [below for nested schema](#nestedatt--mac_addresses))
 - `primary_mac_address_id` (Number) The primary MAC address id.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+- `wireless_link_id` (Number) The ID of the wireless link associated with the device interface.
 
 <a id="nestedatt--mac_addresses"></a>
 ### Nested Schema for `mac_addresses`

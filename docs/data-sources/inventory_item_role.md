@@ -38,7 +38,7 @@ output "inventory_item_role_id" {
 - `created` (String) When the inventory item role was created.
 - `custom_fields` (Map of String) Custom field values of the inventory item role, as a map of field name to value.
 - `description` (String) A description of the inventory item role.
-- `inventoryitem_count` (Number) The number of inventoryitem of the inventory item role.
+- `inventoryitem_count` (Number) The number of inventoryitem objects that refer to the inventory item role.
 - `last_updated` (String) When the inventory item role was last changed.
 - `owner_id` (Number) The ID of the owner associated with the inventory item role.
 - `tags` (Set of String) Tags assigned to the object, by name.

@@ -41,8 +41,11 @@ resource "netbox_vpn_tunnel_group" "test" {
 
 ### Read-Only
 
+- `created` (String) When the vpn tunnel group was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the vpn tunnel group was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+- `tunnel_count` (Number) The number of tunnel objects that refer to the vpn tunnel group.
 
 ## Import
 

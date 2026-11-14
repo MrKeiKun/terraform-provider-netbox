@@ -40,7 +40,9 @@ resource "netbox_ipsec_policy" "example" {
 
 ### Read-Only
 
+- `created` (String) When the ipsec policy was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the ipsec policy was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

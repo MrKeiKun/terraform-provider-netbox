@@ -73,8 +73,14 @@ resource "netbox_circuit_termination" "test" {
 
 ### Read-Only
 
+- `cable_end` (String) The cable end of the circuit termination.
+- `cable_id` (Number) The ID of the cable associated with the circuit termination.
+- `created` (String) When the circuit termination was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the circuit termination was last changed.
+- `link_peers_type` (String) The link peers type of the circuit termination.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+- `termination` (String) The termination of the circuit termination.
 
 ## Import
 

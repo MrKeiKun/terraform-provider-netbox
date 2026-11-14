@@ -40,8 +40,13 @@ resource "netbox_ipam_role" "test_basic" {
 
 ### Read-Only
 
+- `asn_count` (Number) The number of asn objects that refer to the ipam role.
+- `created` (String) When the ipam role was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the ipam role was last changed.
+- `prefix_count` (Number) The number of prefix objects that refer to the ipam role.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+- `vlan_count` (Number) The number of vlan objects that refer to the ipam role.
 
 ## Import
 

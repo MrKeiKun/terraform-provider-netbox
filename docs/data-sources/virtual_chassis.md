@@ -39,7 +39,7 @@ output "virtual_chassis_id" {
 - `id` (String) The ID of this resource.
 - `last_updated` (String) When the virtual chassis was last changed.
 - `master_id` (Number) The ID of the master associated with the virtual chassis.
-- `member_count` (Number) The number of member of the virtual chassis.
+- `member_count` (Number) The number of member objects that refer to the virtual chassis.
 - `members` (List of Number) The IDs of the members of the virtual chassis.
 - `owner_id` (Number) The ID of the owner associated with the virtual chassis.
 - `tags` (Set of String) Tags assigned to the object, by name.

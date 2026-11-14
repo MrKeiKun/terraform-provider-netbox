@@ -45,7 +45,9 @@ resource "netbox_cooling_outflow_template" "example" {
 
 ### Read-Only
 
+- `created` (String) When the cooling outflow template was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the cooling outflow template was last changed.
 
 ## Import
 

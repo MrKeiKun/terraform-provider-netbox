@@ -53,7 +53,7 @@ Required:
 
 Read-Only:
 
-- `cluster_count` (Number) The number of cluster of the cluster groups.
+- `cluster_count` (Number) The number of cluster objects that refer to the cluster groups.
 - `comments` (String) Free-form comments about the cluster groups.
 - `created` (String) When the cluster groups was created.
 - `custom_fields` (Map of String) Custom field values of the cluster groups, as a map of field name to value.

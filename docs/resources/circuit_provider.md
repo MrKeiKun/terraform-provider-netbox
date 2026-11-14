@@ -43,7 +43,10 @@ resource "netbox_circuit_provider" "test" {
 
 ### Read-Only
 
+- `circuit_count` (Number) The number of circuit objects that refer to the circuit provider.
+- `created` (String) When the circuit provider was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the circuit provider was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

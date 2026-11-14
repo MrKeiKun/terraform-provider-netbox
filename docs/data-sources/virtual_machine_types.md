@@ -66,4 +66,4 @@ Read-Only:
 - `owner_id` (Number) The ID of the owner associated with the virtual machine types.
 - `slug` (String) The slug of the virtual machine types.
 - `tags` (Set of String) Tags assigned to the object, by name.
-- `virtual_machine_count` (Number) The number of virtual machine of the virtual machine types.
+- `virtual_machine_count` (Number) The number of virtual machine objects that refer to the virtual machine types.

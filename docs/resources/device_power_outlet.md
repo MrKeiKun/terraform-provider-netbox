@@ -61,7 +61,14 @@ resource "netbox_device_power_outlet" "test" {
 
 ### Read-Only
 
+- `cable_end` (String) The cable end of the device power outlet.
+- `cable_id` (Number) The ID of the cable associated with the device power outlet.
+- `connected_endpoints_reachable` (Boolean) The connected endpoints reachable of the device power outlet.
+- `connected_endpoints_type` (String) The connected endpoints type of the device power outlet.
+- `created` (String) When the device power outlet was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the device power outlet was last changed.
+- `link_peers_type` (String) The link peers type of the device power outlet.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

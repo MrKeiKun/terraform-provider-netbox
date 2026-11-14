@@ -56,8 +56,16 @@ resource "netbox_cluster" "vmw_cluster_01" {
 
 ### Read-Only
 
+- `allocated_disk` (Number) The allocated disk of the cluster.
+- `allocated_memory` (Number) The allocated memory of the cluster.
+- `allocated_vcpus` (Number) The allocated vcpus of the cluster.
+- `created` (String) When the cluster was created.
+- `device_count` (Number) The number of device objects that refer to the cluster.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the cluster was last changed.
+- `scope` (String) The scope of the cluster.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+- `virtualmachine_count` (Number) The number of virtualmachine objects that refer to the cluster.
 
 ## Import
 

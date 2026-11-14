@@ -43,7 +43,10 @@ resource "netbox_asn_range" "example" {
 
 ### Read-Only
 
+- `asn_count` (Number) The number of asn objects that refer to the asn range.
+- `created` (String) When the asn range was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the asn range was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

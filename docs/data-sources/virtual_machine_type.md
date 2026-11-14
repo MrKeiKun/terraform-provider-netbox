@@ -39,4 +39,4 @@ data "netbox_virtual_machine_type" "example" {
 - `last_updated` (String) When the virtual machine type was last changed.
 - `owner_id` (Number) The ID of the owner associated with the virtual machine type.
 - `tags` (Set of String) Tags assigned to the object, by name.
-- `virtual_machine_count` (Number) The number of virtual machine of the virtual machine type.
+- `virtual_machine_count` (Number) The number of virtual machine objects that refer to the virtual machine type.

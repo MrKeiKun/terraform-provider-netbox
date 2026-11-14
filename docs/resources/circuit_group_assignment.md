@@ -40,7 +40,10 @@ resource "netbox_circuit_group_assignment" "example" {
 
 ### Read-Only
 
+- `created` (String) When the circuit group assignment was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the circuit group assignment was last changed.
+- `member` (String) The member of the circuit group assignment.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

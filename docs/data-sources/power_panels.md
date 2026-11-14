@@ -62,6 +62,6 @@ Read-Only:
 - `location_id` (Number) The ID of the location associated with the power panels.
 - `name` (String) The name of the power panels.
 - `owner_id` (Number) The ID of the owner associated with the power panels.
-- `powerfeed_count` (Number) The number of powerfeed of the power panels.
+- `powerfeed_count` (Number) The number of powerfeed objects that refer to the power panels.
 - `site_id` (Number) The ID of the site associated with the power panels.
 - `tags` (Set of String) Tags assigned to the object, by name.

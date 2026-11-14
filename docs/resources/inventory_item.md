@@ -77,7 +77,10 @@ resource "netbox_inventory_item" "test" {
 
 ### Read-Only
 
+- `component` (String) The component of the inventory item.
+- `created` (String) When the inventory item was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the inventory item was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

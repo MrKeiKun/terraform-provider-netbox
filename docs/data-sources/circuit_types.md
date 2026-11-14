@@ -53,7 +53,7 @@ Required:
 
 Read-Only:
 
-- `circuit_count` (Number) The number of circuit of the circuit types.
+- `circuit_count` (Number) The number of circuit objects that refer to the circuit types.
 - `color` (String) The color of the circuit types.
 - `comments` (String) Free-form comments about the circuit types.
 - `created` (String) When the circuit types was created.

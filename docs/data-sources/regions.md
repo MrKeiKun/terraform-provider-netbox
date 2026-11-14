@@ -62,7 +62,7 @@ Read-Only:
 - `name` (String) The name of the regions.
 - `owner_id` (Number) The ID of the owner associated with the regions.
 - `parent_id` (Number) The ID of the parent associated with the regions.
-- `prefix_count` (Number) The number of prefix of the regions.
-- `site_count` (Number) The number of site of the regions.
+- `prefix_count` (Number) The number of prefix objects that refer to the regions.
+- `site_count` (Number) The number of site objects that refer to the regions.
 - `slug` (String) The slug of the regions.
 - `tags` (Set of String) Tags assigned to the object, by name.

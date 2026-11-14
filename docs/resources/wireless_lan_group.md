@@ -45,8 +45,11 @@ resource "netbox_wireless_lan_group" "child" {
 
 ### Read-Only
 
+- `created` (String) When the wireless lan group was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the wireless lan group was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+- `wirelesslan_count` (Number) The number of wirelesslan objects that refer to the wireless lan group.
 
 ## Import
 
