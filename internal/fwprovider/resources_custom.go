@@ -39,6 +39,16 @@ var assignResources = []fwresource.AssignSpec{
 		Field:             "oob_ip",
 	},
 	{
+		TypeName:          "netbox_virtual_chassis_master",
+		Description:       ":meta:subcategory:Data Center Inventory Management (DCIM):This resource is used to define the master device of a virtual chassis. Modelled as a separate resource (like `netbox_device_primary_ip`) to avoid a dependency cycle between the virtual chassis and its member devices. The device has to be a member of the virtual chassis. Do not combine it with `virtual_chassis_master` on the same device, or add `ignore_changes = [virtual_chassis_master]` to the device.",
+		Path:              "dcim/virtual-chassis/",
+		Target:            "virtual_chassis_id",
+		TargetDescription: "The ID of the virtual chassis.",
+		Ref:               "master_id",
+		RefDescription:    "The ID of the device that is the master of the virtual chassis.",
+		Field:             "master",
+	},
+	{
 		TypeName:          "netbox_device_interface_primary_mac_address",
 		Description:       ":meta:subcategory:Data Center Inventory Management (DCIM):This resource is used to define the primary MAC for a given device interface. The primary MAC is reflected in the device interface Netbox UI.",
 		Path:              "dcim/interfaces/",
