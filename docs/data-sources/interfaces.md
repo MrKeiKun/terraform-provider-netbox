@@ -50,17 +50,32 @@ Required:
 
 Read-Only:
 
+- `bridge_id` (Number) The ID of the bridge associated with the interfaces.
+- `count_fhrp_groups` (Number) The count fhrp groups of the interfaces.
+- `count_ipaddresses` (Number) The count ipaddresses of the interfaces.
+- `created` (String) When the interfaces was created.
+- `custom_fields` (Map of String) Custom field values of the interfaces, as a map of field name to value.
 - `description` (String) A description of the interfaces.
 - `enabled` (Boolean) Whether the interfaces is enabled.
 - `id` (Number) The numeric ID of the interfaces.
+- `l2vpn_termination_id` (Number) The ID of the l2vpn termination associated with the interfaces.
+- `last_updated` (String) When the interfaces was last changed.
 - `mac_address` (String) The MAC address of the interfaces.
+- `mac_addresses` (List of Number) The IDs of the mac addresses of the interfaces.
 - `mode` (Map of String) The mode of the interfaces.
 - `mtu` (Number) The MTU of the interfaces.
 - `name` (String) The name of the interfaces.
+- `owner_id` (Number) The ID of the owner associated with the interfaces.
+- `parent_id` (Number) The ID of the parent associated with the interfaces.
+- `primary_mac_address_id` (Number) The ID of the primary mac address associated with the interfaces.
+- `qinq_svlan_id` (Number) The ID of the qinq svlan associated with the interfaces.
 - `tag_ids` (Set of Number) The IDs of the tag associated with the interfaces.
 - `tagged_vlans` (Attributes List) The tagged vlans of the interfaces. (see [below for nested schema](#nestedatt--interfaces--tagged_vlans))
+- `tags` (Set of String) Tags assigned to the object, by name.
 - `untagged_vlan` (Attributes List) The untagged vlan of the interfaces. (see [below for nested schema](#nestedatt--interfaces--untagged_vlan))
+- `vlan_translation_policy_id` (Number) The ID of the vlan translation policy associated with the interfaces.
 - `vm_id` (Number) The ID of the vm associated with the interfaces.
+- `vrf_id` (Number) The ID of the vrf associated with the interfaces.
 
 <a id="nestedatt--interfaces--tagged_vlans"></a>
 ### Nested Schema for `interfaces.tagged_vlans`

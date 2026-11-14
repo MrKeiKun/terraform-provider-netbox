@@ -54,8 +54,10 @@ Required:
 Read-Only:
 
 - `address_family` (String) The address family of the ip addresses.
+- `assigned_object` (String) The assigned object of the IP addresses.
 - `assigned_object_id` (Number) ID of the object the address is assigned to.
 - `assigned_object_type` (String) Content type of the object the address is assigned to, for example dcim.interface.
+- `comments` (String) Free-form comments about the IP addresses.
 - `created` (String) The created of the ip addresses.
 - `custom_fields` (Map of String) Custom field values of the ip addresses, as a map of field name to value.
 - `description` (String) A description of the ip addresses.
@@ -63,10 +65,14 @@ Read-Only:
 - `id` (Number) The numeric ID of the ip addresses.
 - `ip_address` (String) The IP address of the ip addresses, in CIDR notation.
 - `last_updated` (String) The last updated of the ip addresses.
+- `nat_inside_id` (Number) The ID of the nat inside associated with the IP addresses.
+- `nat_outside` (List of Number) The IDs of the nat outside of the IP addresses.
+- `owner_id` (Number) The ID of the owner associated with the IP addresses.
 - `role` (String) The role of the ip addresses.
 - `status` (String) The status of the ip addresses.
 - `tags` (Attributes List) Tags to assign to the ip addresses. (see [below for nested schema](#nestedatt--ip_addresses--tags))
 - `tenant` (Attributes List) The tenant of the ip addresses. (see [below for nested schema](#nestedatt--ip_addresses--tenant))
+- `vrf_id` (Number) The ID of the vrf associated with the IP addresses.
 
 <a id="nestedatt--ip_addresses--tags"></a>
 ### Nested Schema for `ip_addresses.tags`

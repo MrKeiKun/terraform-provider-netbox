@@ -53,7 +53,7 @@ Required:
 
 Read-Only:
 
-- `created` (String) The created of the bookmarks.
+- `created` (String) When the bookmarks was created.
 - `id` (Number) The id of the bookmarks.
 - `object` (String) The object of the bookmarks.
 - `object_id` (Number) The object id of the bookmarks.

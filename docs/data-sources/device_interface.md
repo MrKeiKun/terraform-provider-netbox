@@ -47,7 +47,7 @@ output "device_interface_id" {
 - `connected_endpoints_type` (String) The connected endpoints type of the device interface.
 - `count_fhrp_groups` (Number) The count fhrp groups of the device interface.
 - `count_ipaddresses` (Number) The count ipaddresses of the device interface.
-- `created` (String) The created of the device interface.
+- `created` (String) When the device interface was created.
 - `custom_fields` (Map of String) Custom field values of the device interface, as a map of field name to value.
 - `description` (String) A description of the device interface.
 - `duplex` (String) The duplex of the device interface.
@@ -56,7 +56,7 @@ output "device_interface_id" {
 - `l2vpn_termination_id` (Number) The ID of the l2vpn termination associated with the device interface.
 - `label` (String) The label of the device interface.
 - `lag_id` (Number) The ID of the lag associated with the device interface.
-- `last_updated` (String) The last updated of the device interface.
+- `last_updated` (String) When the device interface was last changed.
 - `link_peers_type` (String) The link peers type of the device interface.
 - `mac_address` (String) The mac address of the device interface.
 - `mac_addresses` (List of Number) The IDs of the mac addresses of the device interface.

@@ -35,9 +35,9 @@ output "device_bay_template_id" {
 
 ### Read-Only
 
-- `created` (String) The created of the device bay template.
+- `created` (String) When the device bay template was created.
 - `description` (String) A description of the device bay template.
 - `enabled` (Boolean) The enabled of the device bay template.
 - `id` (String) The ID of this resource.
 - `label` (String) The label of the device bay template.
-- `last_updated` (String) The last updated of the device bay template.
+- `last_updated` (String) When the device bay template was last changed.

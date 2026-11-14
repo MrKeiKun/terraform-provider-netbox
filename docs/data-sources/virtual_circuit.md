@@ -28,8 +28,11 @@ data "netbox_virtual_circuit" "example" {
 ### Read-Only
 
 - `comments` (String) Free-form comments about the virtual circuit.
+- `created` (String) When the virtual circuit was created.
+- `custom_fields` (Map of String) Custom field values of the virtual circuit, as a map of field name to value.
 - `description` (String) A description of the virtual circuit.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the virtual circuit was last changed.
 - `owner_id` (Number) The ID of the owner associated with the virtual circuit.
 - `provider_account_id` (Number) The ID of the provider account associated with the virtual circuit.
 - `provider_network_id` (Number) The ID of the provider network associated with the virtual circuit.

@@ -52,13 +52,25 @@ Required:
 
 Read-Only:
 
+- `comments` (String) Free-form comments about the VLAN groups.
+- `created` (String) When the VLAN groups was created.
+- `custom_fields` (Map of String) Custom field values of the VLAN groups, as a map of field name to value.
 - `description` (String) A description of the vlan groups.
 - `id` (Number) The numeric ID of the vlan groups.
+- `last_updated` (String) When the VLAN groups was last changed.
 - `name` (String) The name of the vlan groups.
+- `owner_id` (Number) The ID of the owner associated with the VLAN groups.
 - `ranges` (Attributes List) The ranges of the vlan groups. (see [below for nested schema](#nestedatt--vlan_groups--ranges))
+- `scope` (String) The scope of the VLAN groups.
+- `scope_id` (Number) The scope id of the VLAN groups.
+- `scope_type` (String) The scope type of the VLAN groups.
 - `slug` (String) The URL-friendly slug of the vlan groups.
 - `tag_ids` (Set of Number) The IDs of the tag associated with the vlan groups.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the VLAN groups.
+- `total_vlan_ids` (Number) The total vlan ids of the VLAN groups.
 - `used` (Number) The used of the vlan groups.
+- `utilization` (String) The utilization of the VLAN groups.
 
 <a id="nestedatt--vlan_groups--ranges"></a>
 ### Nested Schema for `vlan_groups.ranges`

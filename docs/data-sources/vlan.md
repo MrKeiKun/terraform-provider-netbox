@@ -45,7 +45,16 @@ data "netbox_vlan" "vlan3" {
 
 ### Read-Only
 
+- `comments` (String) Free-form comments about the vlan.
+- `created` (String) When the vlan was created.
 - `description` (String) A description of the vlan.
 - `id` (String) The ID of this resource.
+- `l2vpn_termination_id` (Number) The ID of the l2vpn termination associated with the vlan.
+- `last_updated` (String) When the vlan was last changed.
+- `owner_id` (Number) The ID of the owner associated with the vlan.
+- `prefix_count` (Number) The number of prefix of the vlan.
+- `qinq_role` (String) The qinq role of the vlan.
+- `qinq_svlan_id` (Number) The ID of the qinq svlan associated with the vlan.
 - `site` (Number) The site of the vlan.
 - `status` (String) The status of the vlan.
+- `tags` (Set of String) Tags assigned to the object, by name.

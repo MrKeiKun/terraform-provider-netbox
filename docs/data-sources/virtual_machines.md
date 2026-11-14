@@ -58,14 +58,19 @@ Read-Only:
 - `cluster_id` (Number) The ID of the cluster associated with the virtual machines.
 - `comments` (String) Free-form comments about the virtual machines.
 - `config_context` (String) The config context of the virtual machines.
+- `config_template_id` (Number) The ID of the config template associated with the virtual machines.
+- `created` (String) When the virtual machines was created.
 - `custom_fields` (Map of String) Custom field values of the virtual machines, as a map of field name to value.
 - `description` (String) A description of the virtual machines.
 - `device_id` (Number) The ID of the device associated with the virtual machines.
 - `device_name` (String) The device name of the virtual machines.
 - `disk_size_mb` (Number) The disk size mb of the virtual machines.
+- `interface_count` (Number) The number of interface of the virtual machines.
+- `last_updated` (String) When the virtual machines was last changed.
 - `local_context_data` (String) The local context data of the virtual machines.
 - `memory_mb` (Number) The memory mb of the virtual machines.
 - `name` (String) The name of the virtual machines.
+- `owner_id` (Number) The ID of the owner associated with the virtual machines.
 - `platform_id` (Number) The ID of the platform associated with the virtual machines.
 - `platform_name` (String) The platform name of the virtual machines.
 - `platform_slug` (String) The platform slug of the virtual machines.
@@ -73,9 +78,14 @@ Read-Only:
 - `primary_ip4` (String) The primary ip4 of the virtual machines.
 - `primary_ip6` (String) The primary ip6 of the virtual machines.
 - `role_id` (Number) The ID of the role associated with the virtual machines.
+- `serial` (String) The serial of the virtual machines.
 - `site_id` (Number) The ID of the site associated with the virtual machines.
+- `start_on_boot` (String) The start on boot of the virtual machines.
 - `status` (String) The status of the virtual machines.
 - `tag_ids` (Set of Number) The IDs of the tag associated with the virtual machines.
+- `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the virtual machines.
 - `vcpus` (Number) The vcpus of the virtual machines.
+- `virtual_disk_count` (Number) The number of virtual disk of the virtual machines.
+- `virtual_machine_type_id` (Number) The ID of the virtual machine type associated with the virtual machines.
 - `vm_id` (Number) The ID of the vm associated with the virtual machines.

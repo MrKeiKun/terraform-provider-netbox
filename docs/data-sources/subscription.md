@@ -31,7 +31,7 @@ output "subscription_id" {
 
 ### Read-Only
 
-- `created` (String) The created of the subscription.
+- `created` (String) When the subscription was created.
 - `object` (String) The object of the subscription.
 - `object_id` (Number) The object id of the subscription.
 - `object_type` (String) The object type of the subscription.

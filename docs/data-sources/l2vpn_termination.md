@@ -36,7 +36,7 @@ output "l2vpn_termination_id" {
 
 - `assigned_object` (String) The assigned object of the l2vpn termination.
 - `assigned_object_id` (Number) The assigned object id of the l2vpn termination.
-- `created` (String) The created of the l2vpn termination.
+- `created` (String) When the l2vpn termination was created.
 - `custom_fields` (Map of String) Custom field values of the l2vpn termination, as a map of field name to value.
-- `last_updated` (String) The last updated of the l2vpn termination.
+- `last_updated` (String) When the l2vpn termination was last changed.
 - `tags` (Set of String) Tags assigned to the object, by name.

@@ -32,14 +32,14 @@ output "virtual_chassis_id" {
 ### Read-Only
 
 - `comments` (String) Free-form comments about the virtual chassis.
-- `created` (String) The created of the virtual chassis.
+- `created` (String) When the virtual chassis was created.
 - `custom_fields` (Map of String) Custom field values of the virtual chassis, as a map of field name to value.
 - `description` (String) A description of the virtual chassis.
 - `domain` (String) The domain of the virtual chassis.
 - `id` (String) The ID of this resource.
-- `last_updated` (String) The last updated of the virtual chassis.
+- `last_updated` (String) When the virtual chassis was last changed.
 - `master_id` (Number) The ID of the master associated with the virtual chassis.
-- `member_count` (Number) The member count of the virtual chassis.
+- `member_count` (Number) The number of member of the virtual chassis.
 - `members` (List of Number) The IDs of the members of the virtual chassis.
 - `owner_id` (Number) The ID of the owner associated with the virtual chassis.
 - `tags` (Set of String) Tags assigned to the object, by name.

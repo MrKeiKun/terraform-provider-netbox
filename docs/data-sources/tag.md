@@ -31,5 +31,11 @@ data "netbox_tag" "dmz" {
 
 ### Read-Only
 
+- `color` (String) The color of the tag.
+- `created` (String) When the tag was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the tag was last changed.
+- `object_types` (List of String) The object types of the tag.
 - `slug` (String) The URL-friendly slug of the tag.
+- `tagged_items` (Number) The tagged items of the tag.
+- `weight` (Number) The weight of the tag.

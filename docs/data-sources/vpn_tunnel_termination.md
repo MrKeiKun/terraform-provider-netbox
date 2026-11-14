@@ -35,9 +35,9 @@ output "vpn_tunnel_termination_id" {
 
 ### Read-Only
 
-- `created` (String) The created of the vpn tunnel termination.
+- `created` (String) When the vpn tunnel termination was created.
 - `custom_fields` (Map of String) Custom field values of the vpn tunnel termination, as a map of field name to value.
-- `last_updated` (String) The last updated of the vpn tunnel termination.
+- `last_updated` (String) When the vpn tunnel termination was last changed.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `termination` (String) The termination of the vpn tunnel termination.
 - `termination_id` (Number) The termination id of the vpn tunnel termination.

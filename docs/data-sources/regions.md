@@ -54,15 +54,15 @@ Required:
 Read-Only:
 
 - `comments` (String) Free-form comments about the regions.
-- `created` (String) The created of the regions.
+- `created` (String) When the regions was created.
 - `custom_fields` (Map of String) Custom field values of the regions, as a map of field name to value.
 - `description` (String) A description of the regions.
 - `id` (Number) The id of the regions.
-- `last_updated` (String) The last updated of the regions.
+- `last_updated` (String) When the regions was last changed.
 - `name` (String) The name of the regions.
 - `owner_id` (Number) The ID of the owner associated with the regions.
 - `parent_id` (Number) The ID of the parent associated with the regions.
-- `prefix_count` (Number) The prefix count of the regions.
-- `site_count` (Number) The site count of the regions.
+- `prefix_count` (Number) The number of prefix of the regions.
+- `site_count` (Number) The number of site of the regions.
 - `slug` (String) The slug of the regions.
 - `tags` (Set of String) Tags assigned to the object, by name.

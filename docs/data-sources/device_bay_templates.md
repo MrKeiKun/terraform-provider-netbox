@@ -53,11 +53,11 @@ Required:
 
 Read-Only:
 
-- `created` (String) The created of the device bay templates.
+- `created` (String) When the device bay templates was created.
 - `description` (String) A description of the device bay templates.
 - `device_type_id` (Number) The ID of the device type associated with the device bay templates.
 - `enabled` (Boolean) The enabled of the device bay templates.
 - `id` (Number) The id of the device bay templates.
 - `label` (String) The label of the device bay templates.
-- `last_updated` (String) The last updated of the device bay templates.
+- `last_updated` (String) When the device bay templates was last changed.
 - `name` (String) The name of the device bay templates.

@@ -53,17 +53,23 @@ Required:
 Read-Only:
 
 - `address_family` (String) The address family of the ip ranges.
+- `comments` (String) Free-form comments about the IP ranges.
 - `created` (String) The created of the ip ranges.
 - `custom_fields` (Map of String) Custom field values of the ip ranges, as a map of field name to value.
 - `description` (String) A description of the ip ranges.
 - `end_address` (String) The end address of the ip ranges.
 - `id` (Number) The numeric ID of the ip ranges.
 - `last_updated` (String) The last updated of the ip ranges.
+- `mark_populated` (Boolean) The mark populated of the IP ranges.
+- `mark_utilized` (Boolean) The mark utilized of the IP ranges.
+- `owner_id` (Number) The ID of the owner associated with the IP ranges.
 - `role` (String) The role of the ip ranges.
+- `size` (Number) The size of the IP ranges.
 - `start_address` (String) The start address of the ip ranges.
 - `status` (String) The status of the ip ranges.
 - `tags` (Attributes List) Tags to assign to the ip ranges. (see [below for nested schema](#nestedatt--ip_ranges--tags))
 - `tenant` (Attributes List) The tenant of the ip ranges. (see [below for nested schema](#nestedatt--ip_ranges--tenant))
+- `vrf_id` (Number) The ID of the vrf associated with the IP ranges.
 
 <a id="nestedatt--ip_ranges--tags"></a>
 ### Nested Schema for `ip_ranges.tags`

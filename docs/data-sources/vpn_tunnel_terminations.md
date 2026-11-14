@@ -50,9 +50,14 @@ Required:
 
 Read-Only:
 
+- `created` (String) When the Tunnel Terminations was created.
+- `custom_fields` (Map of String) Custom field values of the Tunnel Terminations, as a map of field name to value.
 - `id` (Number) The numeric ID of the vpn tunnel terminations.
+- `last_updated` (String) When the Tunnel Terminations was last changed.
+- `outside_ip_id` (Number) The ID of the outside ip associated with the Tunnel Terminations.
 - `role` (String) Valid values are `peer`, `hub` and `spoke`.
 - `tags` (Set of String) Tags assigned to the object, by name.
+- `termination` (String) The termination of the Tunnel Terminations.
 - `termination_id` (Number) The ID of the termination associated with the vpn tunnel terminations.
 - `termination_type` (String) The termination type of the vpn tunnel terminations.
 - `tunnel_id` (Number) The ID of the tunnel associated with the vpn tunnel terminations.

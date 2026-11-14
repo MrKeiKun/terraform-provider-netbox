@@ -30,10 +30,13 @@ data "netbox_ike_proposal" "example" {
 - `authentication_algorithm` (String) The authentication algorithm of the ike proposal.
 - `authentication_method` (String) The authentication method of the ike proposal.
 - `comments` (String) Free-form comments about the ike proposal.
+- `created` (String) When the ike proposal was created.
+- `custom_fields` (Map of String) Custom field values of the ike proposal, as a map of field name to value.
 - `description` (String) A description of the ike proposal.
 - `encryption_algorithm` (String) The encryption algorithm of the ike proposal.
 - `group` (Number) The group of the ike proposal.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the ike proposal was last changed.
 - `owner_id` (Number) The ID of the owner associated with the ike proposal.
 - `sa_lifetime` (Number) The sa lifetime of the ike proposal.
 - `tags` (Set of String) Tags assigned to the object, by name.

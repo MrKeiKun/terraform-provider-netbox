@@ -53,21 +53,59 @@ Required:
 
 Read-Only:
 
+- `bridge_id` (Number) The ID of the bridge associated with the interfaces.
+- `bridge_interfaces` (List of Number) The IDs of the bridge interfaces of the interfaces.
+- `cable_end` (String) The cable end of the interfaces.
+- `cable_id` (Number) The ID of the cable associated with the interfaces.
+- `channel_id` (Number) The channel id of the interfaces.
+- `channels` (Number) The channels of the interfaces.
+- `connected_endpoints_reachable` (Boolean) The connected endpoints reachable of the interfaces.
+- `connected_endpoints_type` (String) The connected endpoints type of the interfaces.
+- `count_fhrp_groups` (Number) The count fhrp groups of the interfaces.
+- `count_ipaddresses` (Number) The count ipaddresses of the interfaces.
+- `created` (String) When the interfaces was created.
+- `custom_fields` (Map of String) Custom field values of the interfaces, as a map of field name to value.
 - `description` (String) A description of the device interfaces.
 - `device_id` (Number) The ID of the device associated with the device interfaces.
+- `duplex` (String) The duplex of the interfaces.
 - `enabled` (Boolean) Whether the device interfaces is enabled.
 - `id` (Number) The numeric ID of the device interfaces.
+- `l2vpn_termination_id` (Number) The ID of the l2vpn termination associated with the interfaces.
+- `label` (String) The label of the interfaces.
 - `lag_device_interface_id` (Number) The ID of the LAG interface this interface is a member of, if any.
+- `last_updated` (String) When the interfaces was last changed.
+- `link_peers_type` (String) The link peers type of the interfaces.
 - `mac_address` (String) The MAC address as string from the first MAC address assigned to this interface, if any.
 - `mac_addresses` (Attributes Set) The mac addresses of the device interfaces. (see [below for nested schema](#nestedatt--interfaces--mac_addresses))
+- `mark_connected` (Boolean) The mark connected of the interfaces.
 - `mgmt_only` (Boolean) Whether this interface is used only for out-of-band management.
 - `mode` (Map of String) The mode of the device interfaces.
+- `module_id` (Number) The ID of the module associated with the interfaces.
 - `mtu` (Number) The MTU of the device interfaces.
 - `name` (String) The name of the device interfaces.
+- `owner_id` (Number) The ID of the owner associated with the interfaces.
+- `parent_id` (Number) The ID of the parent associated with the interfaces.
+- `poe_mode` (String) The poe mode of the interfaces.
+- `poe_type` (String) The poe type of the interfaces.
+- `primary_mac_address_id` (Number) The ID of the primary mac address associated with the interfaces.
+- `qinq_svlan_id` (Number) The ID of the qinq svlan associated with the interfaces.
+- `rf_channel` (String) The rf channel of the interfaces.
+- `rf_channel_frequency` (Number) The rf channel frequency of the interfaces.
+- `rf_channel_width` (Number) The rf channel width of the interfaces.
+- `rf_role` (String) The rf role of the interfaces.
+- `speed` (Number) The speed of the interfaces.
 - `tag_ids` (Set of Number) The IDs of the tag associated with the device interfaces.
 - `tagged_vlans` (Attributes List) The tagged vlans of the device interfaces. (see [below for nested schema](#nestedatt--interfaces--tagged_vlans))
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tx_power` (Number) The tx power of the interfaces.
 - `type` (String) The type of the device interfaces.
 - `untagged_vlan` (Attributes List) The untagged vlan of the device interfaces. (see [below for nested schema](#nestedatt--interfaces--untagged_vlan))
+- `vdcs` (List of Number) The IDs of the vdcs of the interfaces.
+- `vlan_translation_policy_id` (Number) The ID of the vlan translation policy associated with the interfaces.
+- `vrf_id` (Number) The ID of the vrf associated with the interfaces.
+- `wireless_lans` (List of Number) The IDs of the wireless lans of the interfaces.
+- `wireless_link_id` (Number) The ID of the wireless link associated with the interfaces.
+- `wwn` (String) The wwn of the interfaces.
 
 <a id="nestedatt--interfaces--mac_addresses"></a>
 ### Nested Schema for `interfaces.mac_addresses`

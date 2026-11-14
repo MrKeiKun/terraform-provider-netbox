@@ -57,14 +57,14 @@ Read-Only:
 - `component` (String) The component of the inventory items.
 - `component_id` (Number) The component id of the inventory items.
 - `component_type` (String) The component type of the inventory items.
-- `created` (String) The created of the inventory items.
+- `created` (String) When the inventory items was created.
 - `custom_fields` (Map of String) Custom field values of the inventory items, as a map of field name to value.
 - `description` (String) A description of the inventory items.
 - `device_id` (Number) The ID of the device associated with the inventory items.
 - `discovered` (Boolean) The discovered of the inventory items.
 - `id` (Number) The id of the inventory items.
 - `label` (String) The label of the inventory items.
-- `last_updated` (String) The last updated of the inventory items.
+- `last_updated` (String) When the inventory items was last changed.
 - `manufacturer_id` (Number) The ID of the manufacturer associated with the inventory items.
 - `name` (String) The name of the inventory items.
 - `owner_id` (Number) The ID of the owner associated with the inventory items.

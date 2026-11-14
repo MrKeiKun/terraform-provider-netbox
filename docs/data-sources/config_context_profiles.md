@@ -54,14 +54,14 @@ Required:
 Read-Only:
 
 - `comments` (String) Free-form comments about the config context profiles.
-- `created` (String) The created of the config context profiles.
+- `created` (String) When the config context profiles was created.
 - `data_file_id` (Number) The ID of the data file associated with the config context profiles.
 - `data_path` (String) The data path of the config context profiles.
 - `data_source_id` (Number) The ID of the data source associated with the config context profiles.
 - `data_synced` (String) The data synced of the config context profiles.
 - `description` (String) A description of the config context profiles.
 - `id` (Number) The id of the config context profiles.
-- `last_updated` (String) The last updated of the config context profiles.
+- `last_updated` (String) When the config context profiles was last changed.
 - `name` (String) The name of the config context profiles.
 - `owner_id` (Number) The ID of the owner associated with the config context profiles.
 - `schema` (String) The schema of the config context profiles.

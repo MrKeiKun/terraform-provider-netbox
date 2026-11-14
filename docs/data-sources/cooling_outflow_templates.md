@@ -54,14 +54,14 @@ Required:
 Read-Only:
 
 - `cooling_intake_id` (Number) The ID of the cooling intake associated with the cooling outflow templates.
-- `created` (String) The created of the cooling outflow templates.
+- `created` (String) When the cooling outflow templates was created.
 - `description` (String) A description of the cooling outflow templates.
 - `device_type_id` (Number) The ID of the device type associated with the cooling outflow templates.
 - `diameter` (Number) The diameter of the cooling outflow templates.
 - `diameter_unit` (String) The diameter unit of the cooling outflow templates.
 - `id` (Number) The id of the cooling outflow templates.
 - `label` (String) The label of the cooling outflow templates.
-- `last_updated` (String) The last updated of the cooling outflow templates.
+- `last_updated` (String) When the cooling outflow templates was last changed.
 - `module_type_id` (Number) The ID of the module type associated with the cooling outflow templates.
 - `name` (String) The name of the cooling outflow templates.
 - `type` (String) The type of the cooling outflow templates.

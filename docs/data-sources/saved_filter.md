@@ -28,9 +28,11 @@ data "netbox_saved_filter" "example" {
 
 ### Read-Only
 
+- `created` (String) When the saved filter was created.
 - `description` (String) A description of the saved filter.
 - `enabled` (Boolean) Whether the saved filter is enabled.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the saved filter was last changed.
 - `object_types` (Set of String) The object types the saved filter applies to.
 - `owner_id` (Number) The ID of the owner associated with the saved filter.
 - `parameters` (String) The parameters of the saved filter.

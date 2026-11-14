@@ -27,7 +27,14 @@ data "netbox_contact_group" "example" {
 
 ### Read-Only
 
+- `comments` (String) Free-form comments about the contact group.
+- `contact_count` (Number) The number of contact of the contact group.
+- `created` (String) When the contact group was created.
+- `custom_fields` (Map of String) Custom field values of the contact group, as a map of field name to value.
 - `description` (String) A description of the contact group.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the contact group was last changed.
+- `owner_id` (Number) The ID of the owner associated with the contact group.
 - `parent_id` (Number) The ID of the parent associated with the contact group.
 - `slug` (String) The URL-friendly slug of the contact group.
+- `tags` (Set of String) Tags assigned to the object, by name.

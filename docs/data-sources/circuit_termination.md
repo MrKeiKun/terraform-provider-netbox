@@ -39,10 +39,10 @@ output "circuit_termination_id" {
 ### Read-Only
 
 - `cable_end` (String) The cable end of the circuit termination.
-- `created` (String) The created of the circuit termination.
+- `created` (String) When the circuit termination was created.
 - `custom_fields` (Map of String) Custom field values of the circuit termination, as a map of field name to value.
 - `description` (String) A description of the circuit termination.
-- `last_updated` (String) The last updated of the circuit termination.
+- `last_updated` (String) When the circuit termination was last changed.
 - `link_peers_type` (String) The link peers type of the circuit termination.
 - `mark_connected` (Boolean) The mark connected of the circuit termination.
 - `tags` (Set of String) Tags assigned to the object, by name.

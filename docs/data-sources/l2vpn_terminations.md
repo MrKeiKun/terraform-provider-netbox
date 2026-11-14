@@ -56,9 +56,9 @@ Read-Only:
 - `assigned_object` (String) The assigned object of the l2vpn terminations.
 - `assigned_object_id` (Number) The assigned object id of the l2vpn terminations.
 - `assigned_object_type` (String) The assigned object type of the l2vpn terminations.
-- `created` (String) The created of the l2vpn terminations.
+- `created` (String) When the l2vpn terminations was created.
 - `custom_fields` (Map of String) Custom field values of the l2vpn terminations, as a map of field name to value.
 - `id` (Number) The id of the l2vpn terminations.
 - `l2vpn_id` (Number) The ID of the l2vpn associated with the l2vpn terminations.
-- `last_updated` (String) The last updated of the l2vpn terminations.
+- `last_updated` (String) When the l2vpn terminations was last changed.
 - `tags` (Set of String) Tags assigned to the object, by name.

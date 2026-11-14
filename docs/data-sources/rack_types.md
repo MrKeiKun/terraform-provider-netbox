@@ -56,13 +56,13 @@ Read-Only:
 - `comments` (String) Free-form comments about the rack types.
 - `cooling_capability` (String) The cooling capability of the rack types.
 - `cooling_capacity` (Number) The cooling capacity of the rack types.
-- `created` (String) The created of the rack types.
+- `created` (String) When the rack types was created.
 - `custom_fields` (Map of String) Custom field values of the rack types, as a map of field name to value.
 - `desc_units` (Boolean) The desc units of the rack types.
 - `description` (String) A description of the rack types.
 - `form_factor` (String) The form factor of the rack types.
 - `id` (Number) The id of the rack types.
-- `last_updated` (String) The last updated of the rack types.
+- `last_updated` (String) When the rack types was last changed.
 - `manufacturer_id` (Number) The ID of the manufacturer associated with the rack types.
 - `max_weight` (Number) The max weight of the rack types.
 - `model` (String) The model of the rack types.
@@ -72,7 +72,7 @@ Read-Only:
 - `outer_unit` (String) The outer unit of the rack types.
 - `outer_width` (Number) The outer width of the rack types.
 - `owner_id` (Number) The ID of the owner associated with the rack types.
-- `rack_count` (Number) The rack count of the rack types.
+- `rack_count` (Number) The number of rack of the rack types.
 - `slug` (String) The slug of the rack types.
 - `starting_unit` (Number) The starting unit of the rack types.
 - `tags` (Set of String) Tags assigned to the object, by name.

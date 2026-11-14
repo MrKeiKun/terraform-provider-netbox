@@ -27,5 +27,14 @@ data "netbox_cluster_type" "example" {
 
 ### Read-Only
 
+- `cluster_count` (Number) The number of cluster of the cluster type.
 - `cluster_type_id` (Number) The ID of the cluster type associated with the cluster type.
+- `comments` (String) Free-form comments about the cluster type.
+- `created` (String) When the cluster type was created.
+- `custom_fields` (Map of String) Custom field values of the cluster type, as a map of field name to value.
+- `description` (String) A description of the cluster type.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the cluster type was last changed.
+- `owner_id` (Number) The ID of the owner associated with the cluster type.
+- `slug` (String) The slug of the cluster type.
+- `tags` (Set of String) Tags assigned to the object, by name.

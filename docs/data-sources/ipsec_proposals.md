@@ -55,12 +55,12 @@ Read-Only:
 
 - `authentication_algorithm` (String) The authentication algorithm of the ipsec proposals.
 - `comments` (String) Free-form comments about the ipsec proposals.
-- `created` (String) The created of the ipsec proposals.
+- `created` (String) When the ipsec proposals was created.
 - `custom_fields` (Map of String) Custom field values of the ipsec proposals, as a map of field name to value.
 - `description` (String) A description of the ipsec proposals.
 - `encryption_algorithm` (String) The encryption algorithm of the ipsec proposals.
 - `id` (Number) The id of the ipsec proposals.
-- `last_updated` (String) The last updated of the ipsec proposals.
+- `last_updated` (String) When the ipsec proposals was last changed.
 - `name` (String) The name of the ipsec proposals.
 - `owner_id` (Number) The ID of the owner associated with the ipsec proposals.
 - `sa_lifetime_data` (Number) The sa lifetime data of the ipsec proposals.

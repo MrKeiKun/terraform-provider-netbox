@@ -42,11 +42,11 @@ output "power_feed_id" {
 - `comments` (String) Free-form comments about the power feed.
 - `connected_endpoints_reachable` (Boolean) The connected endpoints reachable of the power feed.
 - `connected_endpoints_type` (String) The connected endpoints type of the power feed.
-- `created` (String) The created of the power feed.
+- `created` (String) When the power feed was created.
 - `custom_fields` (Map of String) Custom field values of the power feed, as a map of field name to value.
 - `description` (String) A description of the power feed.
 - `id` (String) The ID of this resource.
-- `last_updated` (String) The last updated of the power feed.
+- `last_updated` (String) When the power feed was last changed.
 - `link_peers_type` (String) The link peers type of the power feed.
 - `mark_connected` (Boolean) The mark connected of the power feed.
 - `max_utilization` (Number) The max utilization of the power feed.

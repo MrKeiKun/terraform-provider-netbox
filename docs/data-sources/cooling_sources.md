@@ -55,13 +55,13 @@ Read-Only:
 
 - `comments` (String) Free-form comments about the cooling sources.
 - `cooling_capacity` (Number) The cooling capacity of the cooling sources.
-- `coolingfeed_count` (Number) The coolingfeed count of the cooling sources.
-- `created` (String) The created of the cooling sources.
+- `coolingfeed_count` (Number) The number of coolingfeed of the cooling sources.
+- `created` (String) When the cooling sources was created.
 - `custom_fields` (Map of String) Custom field values of the cooling sources, as a map of field name to value.
 - `description` (String) A description of the cooling sources.
 - `fluid_type` (String) The fluid type of the cooling sources.
 - `id` (Number) The id of the cooling sources.
-- `last_updated` (String) The last updated of the cooling sources.
+- `last_updated` (String) When the cooling sources was last changed.
 - `location_id` (Number) The ID of the location associated with the cooling sources.
 - `name` (String) The name of the cooling sources.
 - `owner_id` (Number) The ID of the owner associated with the cooling sources.

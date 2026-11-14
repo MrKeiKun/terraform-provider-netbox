@@ -28,8 +28,11 @@ data "netbox_ike_policy" "example" {
 ### Read-Only
 
 - `comments` (String) Free-form comments about the ike policy.
+- `created` (String) When the ike policy was created.
+- `custom_fields` (Map of String) Custom field values of the ike policy, as a map of field name to value.
 - `description` (String) A description of the ike policy.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the ike policy was last changed.
 - `mode` (String) The mode of the ike policy.
 - `owner_id` (Number) The ID of the owner associated with the ike policy.
 - `preshared_key` (String) The preshared key of the ike policy.

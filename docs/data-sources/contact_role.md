@@ -28,4 +28,11 @@ data "netbox_contact_role" "example" {
 
 ### Read-Only
 
+- `comments` (String) Free-form comments about the contact role.
+- `created` (String) When the contact role was created.
+- `custom_fields` (Map of String) Custom field values of the contact role, as a map of field name to value.
+- `description` (String) A description of the contact role.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the contact role was last changed.
+- `owner_id` (Number) The ID of the owner associated with the contact role.
+- `tags` (Set of String) Tags assigned to the object, by name.

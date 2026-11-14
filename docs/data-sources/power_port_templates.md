@@ -54,12 +54,12 @@ Required:
 Read-Only:
 
 - `allocated_draw` (Number) The allocated draw of the power port templates.
-- `created` (String) The created of the power port templates.
+- `created` (String) When the power port templates was created.
 - `description` (String) A description of the power port templates.
 - `device_type_id` (Number) The ID of the device type associated with the power port templates.
 - `id` (Number) The id of the power port templates.
 - `label` (String) The label of the power port templates.
-- `last_updated` (String) The last updated of the power port templates.
+- `last_updated` (String) When the power port templates was last changed.
 - `maximum_draw` (Number) The maximum draw of the power port templates.
 - `module_type_id` (Number) The ID of the module type associated with the power port templates.
 - `name` (String) The name of the power port templates.

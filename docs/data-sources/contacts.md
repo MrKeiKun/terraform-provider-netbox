@@ -55,13 +55,13 @@ Read-Only:
 
 - `address` (String) The address of the contacts.
 - `comments` (String) Free-form comments about the contacts.
-- `created` (String) The created of the contacts.
+- `created` (String) When the contacts was created.
 - `custom_fields` (Map of String) Custom field values of the contacts, as a map of field name to value.
 - `description` (String) A description of the contacts.
 - `email` (String) The email of the contacts.
 - `groups` (List of Number) The IDs of the groups of the contacts.
 - `id` (Number) The id of the contacts.
-- `last_updated` (String) The last updated of the contacts.
+- `last_updated` (String) When the contacts was last changed.
 - `link` (String) The link of the contacts.
 - `name` (String) The name of the contacts.
 - `owner_id` (Number) The ID of the owner associated with the contacts.

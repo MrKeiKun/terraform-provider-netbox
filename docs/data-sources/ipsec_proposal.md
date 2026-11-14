@@ -29,9 +29,12 @@ data "netbox_ipsec_proposal" "example" {
 
 - `authentication_algorithm` (String) The authentication algorithm of the ipsec proposal.
 - `comments` (String) Free-form comments about the ipsec proposal.
+- `created` (String) When the ipsec proposal was created.
+- `custom_fields` (Map of String) Custom field values of the ipsec proposal, as a map of field name to value.
 - `description` (String) A description of the ipsec proposal.
 - `encryption_algorithm` (String) The encryption algorithm of the ipsec proposal.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the ipsec proposal was last changed.
 - `owner_id` (Number) The ID of the owner associated with the ipsec proposal.
 - `sa_lifetime_data` (Number) The sa lifetime data of the ipsec proposal.
 - `sa_lifetime_seconds` (Number) The sa lifetime seconds of the ipsec proposal.

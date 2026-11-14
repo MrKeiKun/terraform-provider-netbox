@@ -34,8 +34,8 @@ output "virtual_circuit_termination_id" {
 
 ### Read-Only
 
-- `created` (String) The created of the virtual circuit termination.
+- `created` (String) When the virtual circuit termination was created.
 - `custom_fields` (Map of String) Custom field values of the virtual circuit termination, as a map of field name to value.
 - `description` (String) A description of the virtual circuit termination.
-- `last_updated` (String) The last updated of the virtual circuit termination.
+- `last_updated` (String) When the virtual circuit termination was last changed.
 - `tags` (Set of String) Tags assigned to the object, by name.

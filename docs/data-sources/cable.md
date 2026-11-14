@@ -40,10 +40,10 @@ output "cable_id" {
 
 - `color` (String) The color of the cable.
 - `comments` (String) Free-form comments about the cable.
-- `created` (String) The created of the cable.
+- `created` (String) When the cable was created.
 - `custom_fields` (Map of String) Custom field values of the cable, as a map of field name to value.
 - `description` (String) A description of the cable.
-- `last_updated` (String) The last updated of the cable.
+- `last_updated` (String) When the cable was last changed.
 - `length` (Number) The length of the cable.
 - `length_unit` (String) The length unit of the cable.
 - `tags` (Set of String) Tags assigned to the object, by name.

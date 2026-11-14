@@ -28,6 +28,7 @@ var (
 	schemaFile   = flag.String("schema", "", "OpenAPI document to read")
 	serverURL    = flag.String("url", "", "NetBox server to fetch /api/schema/ from")
 	outFile      = flag.String("out", "internal/fwprovider/datasources_generated.go", "file to write")
+	extrasOut    = flag.String("extras-out", "internal/fwprovider/datasources_fields_generated.go", "file to write the extra attributes of hand written data sources to")
 	filtersOut   = flag.String("filters-out", "internal/fwprovider/datasources_filters_generated.go", "file to write the extra filters of hand written plural data sources to")
 	examplesDir  = flag.String("examples", "examples/data-sources", "directory to write data source examples to, empty for none")
 	examplesList = flag.String("examples-list", "tools/gendatasources/generated-examples.txt", "list of the examples this command writes")
@@ -45,7 +46,7 @@ func main() {
 	if err := json.Unmarshal(data, &doc); err != nil {
 		fatal(err)
 	}
-	src, filters, err := generate(doc)
+	src, filters, extras, err := generate(doc)
 	if err != nil {
 		fatal(err)
 	}
@@ -53,6 +54,9 @@ func main() {
 		fatal(err)
 	}
 	if err := os.WriteFile(*filtersOut, filters, 0o644); err != nil {
+		fatal(err)
+	}
+	if err := os.WriteFile(*extrasOut, extras, 0o644); err != nil {
 		fatal(err)
 	}
 	if *examplesDir != "" {
@@ -99,7 +103,7 @@ func load() ([]byte, error) {
 // skippedPrefixes are collections that are not objects a user manages.
 var skippedPrefixes = []string{"core/", "extras/scripts/", "extras/script-modules/", "plugins/"}
 
-// names that differ from the name made from the path. They follow the names of the other NetBox provider.
+// names that differ from the name made from the path. They are the names of the objects in the NetBox UI.
 var nameOverrides = map[string][2]string{
 	"dcim/console-ports/":            {"device_console_port", "device_console_ports"},
 	"dcim/console-server-ports/":     {"device_console_server_port", "device_console_server_ports"},
@@ -152,16 +156,19 @@ type collection struct {
 	subcat   string
 }
 
-func generate(doc obj) ([]byte, []byte, error) {
+func generate(doc obj) ([]byte, []byte, []byte, error) {
 	paths, _ := doc["paths"].(obj)
 	hand := fwprovider.HandwrittenDataSources()
 	takenNames := map[string]bool{}
 	extraFilters := map[string]map[string]string{}
 	byPath := map[string][]bool{}
 	handPlural := map[string][]*fwresource.DataSourceSpec{}
+	handByPath := map[string][]*fwresource.DataSourceSpec{}
+	extras := map[string][]attr{}
 	subcats := map[string]string{}
 	for _, d := range hand {
 		takenNames[d.TypeName] = true
+		handByPath[d.Path] = append(handByPath[d.Path], d)
 		if d.Plural != nil {
 			handPlural[d.Path] = append(handPlural[d.Path], d)
 		}
@@ -229,6 +236,9 @@ func generate(doc obj) ([]byte, []byte, error) {
 			extraFilters[d.TypeName] = missingFilters(d, c.params)
 		}
 		c.names()
+		for _, d := range handByPath[trimmed] {
+			extras[d.TypeName] = c.extraAttrs(doc, d, addedNames(d.TypeName))
+		}
 		c.subcat = subcats[strings.SplitN(trimmed, "/", 2)[0]]
 		if c.subcat == "" {
 			c.subcat = "Extras"
@@ -249,10 +259,14 @@ func generate(doc obj) ([]byte, []byte, error) {
 	out.WriteString("}\n")
 	src, err := format.Source(out.Bytes())
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	filters, err := format.Source(filtersSource(extraFilters))
-	return src, filters, err
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	extrasSrc, err := extrasSource(extras)
+	return src, filters, extrasSrc, err
 }
 
 func skipped(path string) bool {
@@ -364,6 +378,14 @@ func classify(doc obj, name string, p obj, noun string) (attr, bool) {
 	desc := fmt.Sprintf("The %s of the %s.", human(name), noun)
 	typ, _ := p["type"].(string)
 	props, _ := p["properties"].(obj)
+	switch {
+	case name == "created":
+		return attr{name: name, kind: "String", zero: true, desc: "When the " + noun + " was created."}, true
+	case name == "last_updated":
+		return attr{name: name, kind: "String", zero: true, desc: "When the " + noun + " was last changed."}, true
+	case strings.HasSuffix(name, "_count") && typ == "integer":
+		return attr{name: name, kind: "Int", zero: true, desc: "The number of " + human(strings.TrimSuffix(name, "_count")) + " of the " + noun + "."}, true
+	}
 	switch name {
 	case "tags":
 		return attr{name: "tags", kind: "StringSet", elemKey: "name", desc: "Tags assigned to the object, by name."}, true

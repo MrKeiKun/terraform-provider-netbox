@@ -56,13 +56,13 @@ Read-Only:
 - `bridge_id` (Number) The ID of the bridge associated with the interface templates.
 - `channel_id` (Number) The channel id of the interface templates.
 - `channels` (Number) The channels of the interface templates.
-- `created` (String) The created of the interface templates.
+- `created` (String) When the interface templates was created.
 - `description` (String) A description of the interface templates.
 - `device_type_id` (Number) The ID of the device type associated with the interface templates.
 - `enabled` (Boolean) The enabled of the interface templates.
 - `id` (Number) The id of the interface templates.
 - `label` (String) The label of the interface templates.
-- `last_updated` (String) The last updated of the interface templates.
+- `last_updated` (String) When the interface templates was last changed.
 - `mgmt_only` (Boolean) The mgmt only of the interface templates.
 - `module_type_id` (Number) The ID of the module type associated with the interface templates.
 - `name` (String) The name of the interface templates.

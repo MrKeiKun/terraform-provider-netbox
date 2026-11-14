@@ -29,6 +29,18 @@ data "netbox_contact" "example" {
 
 ### Read-Only
 
+- `address` (String) The address of the contact.
+- `comments` (String) Free-form comments about the contact.
+- `created` (String) When the contact was created.
+- `custom_fields` (Map of String) Custom field values of the contact, as a map of field name to value.
+- `email` (String) The email of the contact.
 - `group_id` (Number) The ID of the group associated with the contact.
 - `group_ids` (List of Number) The IDs of the group associated with the contact.
+- `groups` (List of Number) The IDs of the groups of the contact.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the contact was last changed.
+- `link` (String) The link of the contact.
+- `owner_id` (Number) The ID of the owner associated with the contact.
+- `phone` (String) The phone of the contact.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `title` (String) The title of the contact.

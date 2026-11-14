@@ -55,35 +55,35 @@ Read-Only:
 
 - `airflow` (String) The airflow of the device types.
 - `comments` (String) Free-form comments about the device types.
-- `console_port_template_count` (Number) The console port template count of the device types.
-- `console_server_port_template_count` (Number) The console server port template count of the device types.
-- `cooling_intake_template_count` (Number) The cooling intake template count of the device types.
+- `console_port_template_count` (Number) The number of console port template of the device types.
+- `console_server_port_template_count` (Number) The number of console server port template of the device types.
+- `cooling_intake_template_count` (Number) The number of cooling intake template of the device types.
 - `cooling_method` (String) The cooling method of the device types.
-- `cooling_outflow_template_count` (Number) The cooling outflow template count of the device types.
-- `created` (String) The created of the device types.
+- `cooling_outflow_template_count` (Number) The number of cooling outflow template of the device types.
+- `created` (String) When the device types was created.
 - `custom_fields` (Map of String) Custom field values of the device types, as a map of field name to value.
 - `default_platform_id` (Number) The ID of the default platform associated with the device types.
 - `description` (String) A description of the device types.
-- `device_bay_template_count` (Number) The device bay template count of the device types.
-- `device_count` (Number) The device count of the device types.
+- `device_bay_template_count` (Number) The number of device bay template of the device types.
+- `device_count` (Number) The number of device of the device types.
 - `end_of_life` (String) The end of life of the device types.
 - `exclude_from_utilization` (Boolean) The exclude from utilization of the device types.
 - `front_image` (String) The front image of the device types.
-- `front_port_template_count` (Number) The front port template count of the device types.
+- `front_port_template_count` (Number) The number of front port template of the device types.
 - `id` (Number) The id of the device types.
-- `interface_template_count` (Number) The interface template count of the device types.
-- `inventory_item_template_count` (Number) The inventory item template count of the device types.
+- `interface_template_count` (Number) The number of interface template of the device types.
+- `inventory_item_template_count` (Number) The number of inventory item template of the device types.
 - `is_full_depth` (Boolean) The is full depth of the device types.
-- `last_updated` (String) The last updated of the device types.
+- `last_updated` (String) When the device types was last changed.
 - `manufacturer_id` (Number) The ID of the manufacturer associated with the device types.
 - `model` (String) The model of the device types.
-- `module_bay_template_count` (Number) The module bay template count of the device types.
+- `module_bay_template_count` (Number) The number of module bay template of the device types.
 - `owner_id` (Number) The ID of the owner associated with the device types.
 - `part_number` (String) The part number of the device types.
-- `power_outlet_template_count` (Number) The power outlet template count of the device types.
-- `power_port_template_count` (Number) The power port template count of the device types.
+- `power_outlet_template_count` (Number) The number of power outlet template of the device types.
+- `power_port_template_count` (Number) The number of power port template of the device types.
 - `rear_image` (String) The rear image of the device types.
-- `rear_port_template_count` (Number) The rear port template count of the device types.
+- `rear_port_template_count` (Number) The number of rear port template of the device types.
 - `slug` (String) The slug of the device types.
 - `subdevice_role` (String) The subdevice role of the device types.
 - `tags` (Set of String) Tags assigned to the object, by name.

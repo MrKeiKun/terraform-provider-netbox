@@ -42,13 +42,13 @@ output "device_power_outlet_id" {
 - `color` (String) The color of the device power outlet.
 - `connected_endpoints_reachable` (Boolean) The connected endpoints reachable of the device power outlet.
 - `connected_endpoints_type` (String) The connected endpoints type of the device power outlet.
-- `created` (String) The created of the device power outlet.
+- `created` (String) When the device power outlet was created.
 - `custom_fields` (Map of String) Custom field values of the device power outlet, as a map of field name to value.
 - `description` (String) A description of the device power outlet.
 - `feed_leg` (String) The feed leg of the device power outlet.
 - `id` (String) The ID of this resource.
 - `label` (String) The label of the device power outlet.
-- `last_updated` (String) The last updated of the device power outlet.
+- `last_updated` (String) When the device power outlet was last changed.
 - `link_peers_type` (String) The link peers type of the device power outlet.
 - `mark_connected` (Boolean) The mark connected of the device power outlet.
 - `owner_id` (Number) The ID of the owner associated with the device power outlet.

@@ -35,8 +35,8 @@ output "cable_termination_id" {
 - `cable` (Number) The cable of the cable termination.
 - `cable_end` (String) The cable end of the cable termination.
 - `connector` (Number) The connector of the cable termination.
-- `created` (String) The created of the cable termination.
-- `last_updated` (String) The last updated of the cable termination.
+- `created` (String) When the cable termination was created.
+- `last_updated` (String) When the cable termination was last changed.
 - `positions` (List of Number) The positions of the cable termination.
 - `termination` (String) The termination of the cable termination.
 - `termination_id` (Number) The termination id of the cable termination.

@@ -56,30 +56,30 @@ Read-Only:
 - `airflow` (String) The airflow of the module types.
 - `attributes` (String) The attributes of the module types.
 - `comments` (String) Free-form comments about the module types.
-- `console_port_template_count` (Number) The console port template count of the module types.
-- `console_server_port_template_count` (Number) The console server port template count of the module types.
-- `cooling_intake_template_count` (Number) The cooling intake template count of the module types.
+- `console_port_template_count` (Number) The number of console port template of the module types.
+- `console_server_port_template_count` (Number) The number of console server port template of the module types.
+- `cooling_intake_template_count` (Number) The number of cooling intake template of the module types.
 - `cooling_method` (String) The cooling method of the module types.
-- `cooling_outflow_template_count` (Number) The cooling outflow template count of the module types.
-- `created` (String) The created of the module types.
+- `cooling_outflow_template_count` (Number) The number of cooling outflow template of the module types.
+- `created` (String) When the module types was created.
 - `custom_fields` (Map of String) Custom field values of the module types, as a map of field name to value.
 - `description` (String) A description of the module types.
 - `end_of_life` (String) The end of life of the module types.
-- `front_port_template_count` (Number) The front port template count of the module types.
+- `front_port_template_count` (Number) The number of front port template of the module types.
 - `id` (Number) The id of the module types.
-- `interface_template_count` (Number) The interface template count of the module types.
-- `last_updated` (String) The last updated of the module types.
+- `interface_template_count` (Number) The number of interface template of the module types.
+- `last_updated` (String) When the module types was last changed.
 - `manufacturer_id` (Number) The ID of the manufacturer associated with the module types.
 - `model` (String) The model of the module types.
-- `module_bay_template_count` (Number) The module bay template count of the module types.
+- `module_bay_template_count` (Number) The number of module bay template of the module types.
 - `module_bay_types` (List of Number) The IDs of the module bay types of the module types.
-- `module_count` (Number) The module count of the module types.
+- `module_count` (Number) The number of module of the module types.
 - `owner_id` (Number) The ID of the owner associated with the module types.
 - `part_number` (String) The part number of the module types.
-- `power_outlet_template_count` (Number) The power outlet template count of the module types.
-- `power_port_template_count` (Number) The power port template count of the module types.
+- `power_outlet_template_count` (Number) The number of power outlet template of the module types.
+- `power_port_template_count` (Number) The number of power port template of the module types.
 - `profile_id` (Number) The ID of the profile associated with the module types.
-- `rear_port_template_count` (Number) The rear port template count of the module types.
+- `rear_port_template_count` (Number) The number of rear port template of the module types.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `weight` (Number) The weight of the module types.
 - `weight_unit` (String) The weight unit of the module types.

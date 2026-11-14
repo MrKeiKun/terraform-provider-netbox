@@ -53,13 +53,13 @@ Required:
 
 Read-Only:
 
-- `created` (String) The created of the module bay templates.
+- `created` (String) When the module bay templates was created.
 - `description` (String) A description of the module bay templates.
 - `device_type_id` (Number) The ID of the device type associated with the module bay templates.
 - `enabled` (Boolean) The enabled of the module bay templates.
 - `id` (Number) The id of the module bay templates.
 - `label` (String) The label of the module bay templates.
-- `last_updated` (String) The last updated of the module bay templates.
+- `last_updated` (String) When the module bay templates was last changed.
 - `module_bay_types` (List of Number) The IDs of the module bay types of the module bay templates.
 - `module_type_id` (Number) The ID of the module type associated with the module bay templates.
 - `name` (String) The name of the module bay templates.

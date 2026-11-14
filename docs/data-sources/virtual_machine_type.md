@@ -29,10 +29,14 @@ data "netbox_virtual_machine_type" "example" {
 ### Read-Only
 
 - `comments` (String) Free-form comments about the virtual machine type.
+- `created` (String) When the virtual machine type was created.
+- `custom_fields` (Map of String) Custom field values of the virtual machine type, as a map of field name to value.
 - `default_memory` (Number) The default memory of the virtual machine type.
 - `default_platform_id` (Number) The ID of the default platform associated with the virtual machine type.
 - `default_vcpus` (Number) The default vcpus of the virtual machine type.
 - `description` (String) A description of the virtual machine type.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the virtual machine type was last changed.
 - `owner_id` (Number) The ID of the owner associated with the virtual machine type.
 - `tags` (Set of String) Tags assigned to the object, by name.
+- `virtual_machine_count` (Number) The number of virtual machine of the virtual machine type.

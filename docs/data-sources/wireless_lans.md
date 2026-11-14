@@ -57,12 +57,12 @@ Read-Only:
 - `auth_psk` (String) The auth psk of the wireless lans.
 - `auth_type` (String) The auth type of the wireless lans.
 - `comments` (String) Free-form comments about the wireless lans.
-- `created` (String) The created of the wireless lans.
+- `created` (String) When the wireless lans was created.
 - `custom_fields` (Map of String) Custom field values of the wireless lans, as a map of field name to value.
 - `description` (String) A description of the wireless lans.
 - `group_id` (Number) The ID of the group associated with the wireless lans.
 - `id` (Number) The id of the wireless lans.
-- `last_updated` (String) The last updated of the wireless lans.
+- `last_updated` (String) When the wireless lans was last changed.
 - `owner_id` (Number) The ID of the owner associated with the wireless lans.
 - `scope` (String) The scope of the wireless lans.
 - `scope_id` (Number) The scope id of the wireless lans.

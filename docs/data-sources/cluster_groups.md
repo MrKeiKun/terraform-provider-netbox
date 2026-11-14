@@ -53,13 +53,13 @@ Required:
 
 Read-Only:
 
-- `cluster_count` (Number) The cluster count of the cluster groups.
+- `cluster_count` (Number) The number of cluster of the cluster groups.
 - `comments` (String) Free-form comments about the cluster groups.
-- `created` (String) The created of the cluster groups.
+- `created` (String) When the cluster groups was created.
 - `custom_fields` (Map of String) Custom field values of the cluster groups, as a map of field name to value.
 - `description` (String) A description of the cluster groups.
 - `id` (Number) The id of the cluster groups.
-- `last_updated` (String) The last updated of the cluster groups.
+- `last_updated` (String) When the cluster groups was last changed.
 - `name` (String) The name of the cluster groups.
 - `owner_id` (Number) The ID of the owner associated with the cluster groups.
 - `slug` (String) The slug of the cluster groups.

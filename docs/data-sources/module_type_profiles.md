@@ -54,11 +54,11 @@ Required:
 Read-Only:
 
 - `comments` (String) Free-form comments about the module type profiles.
-- `created` (String) The created of the module type profiles.
+- `created` (String) When the module type profiles was created.
 - `custom_fields` (Map of String) Custom field values of the module type profiles, as a map of field name to value.
 - `description` (String) A description of the module type profiles.
 - `id` (Number) The id of the module type profiles.
-- `last_updated` (String) The last updated of the module type profiles.
+- `last_updated` (String) When the module type profiles was last changed.
 - `name` (String) The name of the module type profiles.
 - `owner_id` (Number) The ID of the owner associated with the module type profiles.
 - `schema` (String) The schema of the module type profiles.

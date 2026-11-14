@@ -53,7 +53,7 @@ Required:
 
 Read-Only:
 
-- `created` (String) The created of the subscriptions.
+- `created` (String) When the subscriptions was created.
 - `id` (Number) The id of the subscriptions.
 - `object` (String) The object of the subscriptions.
 - `object_id` (Number) The object id of the subscriptions.

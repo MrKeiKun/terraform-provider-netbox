@@ -54,7 +54,7 @@ Required:
 Read-Only:
 
 - `cooling_outflow_id` (Number) The ID of the cooling outflow associated with the cooling intakes.
-- `created` (String) The created of the cooling intakes.
+- `created` (String) When the cooling intakes was created.
 - `custom_fields` (Map of String) Custom field values of the cooling intakes, as a map of field name to value.
 - `description` (String) A description of the cooling intakes.
 - `device_id` (Number) The ID of the device associated with the cooling intakes.
@@ -62,7 +62,7 @@ Read-Only:
 - `diameter_unit` (String) The diameter unit of the cooling intakes.
 - `id` (Number) The id of the cooling intakes.
 - `label` (String) The label of the cooling intakes.
-- `last_updated` (String) The last updated of the cooling intakes.
+- `last_updated` (String) When the cooling intakes was last changed.
 - `max_flow` (Number) The max flow of the cooling intakes.
 - `max_flow_unit` (String) The max flow unit of the cooling intakes.
 - `module_id` (Number) The ID of the module associated with the cooling intakes.

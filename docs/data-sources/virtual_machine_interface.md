@@ -39,13 +39,13 @@ output "virtual_machine_interface_id" {
 - `bridge_id` (Number) The ID of the bridge associated with the virtual machine interface.
 - `count_fhrp_groups` (Number) The count fhrp groups of the virtual machine interface.
 - `count_ipaddresses` (Number) The count ipaddresses of the virtual machine interface.
-- `created` (String) The created of the virtual machine interface.
+- `created` (String) When the virtual machine interface was created.
 - `custom_fields` (Map of String) Custom field values of the virtual machine interface, as a map of field name to value.
 - `description` (String) A description of the virtual machine interface.
 - `enabled` (Boolean) The enabled of the virtual machine interface.
 - `id` (String) The ID of this resource.
 - `l2vpn_termination_id` (Number) The ID of the l2vpn termination associated with the virtual machine interface.
-- `last_updated` (String) The last updated of the virtual machine interface.
+- `last_updated` (String) When the virtual machine interface was last changed.
 - `mac_address` (String) The mac address of the virtual machine interface.
 - `mac_addresses` (List of Number) The IDs of the mac addresses of the virtual machine interface.
 - `mode` (String) The mode of the virtual machine interface.

@@ -36,9 +36,9 @@ output "console_server_port_template_id" {
 
 ### Read-Only
 
-- `created` (String) The created of the console server port template.
+- `created` (String) When the console server port template was created.
 - `description` (String) A description of the console server port template.
 - `id` (String) The ID of this resource.
 - `label` (String) The label of the console server port template.
-- `last_updated` (String) The last updated of the console server port template.
+- `last_updated` (String) When the console server port template was last changed.
 - `type` (String) The type of the console server port template.

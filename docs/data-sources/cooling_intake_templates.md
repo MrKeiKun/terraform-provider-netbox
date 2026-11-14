@@ -53,14 +53,14 @@ Required:
 
 Read-Only:
 
-- `created` (String) The created of the cooling intake templates.
+- `created` (String) When the cooling intake templates was created.
 - `description` (String) A description of the cooling intake templates.
 - `device_type_id` (Number) The ID of the device type associated with the cooling intake templates.
 - `diameter` (Number) The diameter of the cooling intake templates.
 - `diameter_unit` (String) The diameter unit of the cooling intake templates.
 - `id` (Number) The id of the cooling intake templates.
 - `label` (String) The label of the cooling intake templates.
-- `last_updated` (String) The last updated of the cooling intake templates.
+- `last_updated` (String) When the cooling intake templates was last changed.
 - `max_flow` (Number) The max flow of the cooling intake templates.
 - `max_flow_unit` (String) The max flow unit of the cooling intake templates.
 - `module_type_id` (Number) The ID of the module type associated with the cooling intake templates.

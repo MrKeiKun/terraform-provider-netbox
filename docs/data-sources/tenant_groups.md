@@ -54,14 +54,14 @@ Required:
 Read-Only:
 
 - `comments` (String) Free-form comments about the tenant groups.
-- `created` (String) The created of the tenant groups.
+- `created` (String) When the tenant groups was created.
 - `custom_fields` (Map of String) Custom field values of the tenant groups, as a map of field name to value.
 - `description` (String) A description of the tenant groups.
 - `id` (Number) The id of the tenant groups.
-- `last_updated` (String) The last updated of the tenant groups.
+- `last_updated` (String) When the tenant groups was last changed.
 - `name` (String) The name of the tenant groups.
 - `owner_id` (Number) The ID of the owner associated with the tenant groups.
 - `parent_id` (Number) The ID of the parent associated with the tenant groups.
 - `slug` (String) The slug of the tenant groups.
 - `tags` (Set of String) Tags assigned to the object, by name.
-- `tenant_count` (Number) The tenant count of the tenant groups.
+- `tenant_count` (Number) The number of tenant of the tenant groups.

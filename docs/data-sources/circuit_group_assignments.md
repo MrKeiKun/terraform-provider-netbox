@@ -53,11 +53,11 @@ Required:
 
 Read-Only:
 
-- `created` (String) The created of the circuit group assignments.
+- `created` (String) When the circuit group assignments was created.
 - `custom_fields` (Map of String) Custom field values of the circuit group assignments, as a map of field name to value.
 - `group_id` (Number) The ID of the group associated with the circuit group assignments.
 - `id` (Number) The id of the circuit group assignments.
-- `last_updated` (String) The last updated of the circuit group assignments.
+- `last_updated` (String) When the circuit group assignments was last changed.
 - `member` (String) The member of the circuit group assignments.
 - `member_id` (Number) The member id of the circuit group assignments.
 - `member_type` (String) The member type of the circuit group assignments.

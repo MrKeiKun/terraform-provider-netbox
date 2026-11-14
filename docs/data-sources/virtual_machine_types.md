@@ -54,16 +54,16 @@ Required:
 Read-Only:
 
 - `comments` (String) Free-form comments about the virtual machine types.
-- `created` (String) The created of the virtual machine types.
+- `created` (String) When the virtual machine types was created.
 - `custom_fields` (Map of String) Custom field values of the virtual machine types, as a map of field name to value.
 - `default_memory` (Number) The default memory of the virtual machine types.
 - `default_platform_id` (Number) The ID of the default platform associated with the virtual machine types.
 - `default_vcpus` (Number) The default vcpus of the virtual machine types.
 - `description` (String) A description of the virtual machine types.
 - `id` (Number) The id of the virtual machine types.
-- `last_updated` (String) The last updated of the virtual machine types.
+- `last_updated` (String) When the virtual machine types was last changed.
 - `name` (String) The name of the virtual machine types.
 - `owner_id` (Number) The ID of the owner associated with the virtual machine types.
 - `slug` (String) The slug of the virtual machine types.
 - `tags` (Set of String) Tags assigned to the object, by name.
-- `virtual_machine_count` (Number) The virtual machine count of the virtual machine types.
+- `virtual_machine_count` (Number) The number of virtual machine of the virtual machine types.

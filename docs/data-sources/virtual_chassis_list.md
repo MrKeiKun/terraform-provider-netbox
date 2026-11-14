@@ -54,14 +54,14 @@ Required:
 Read-Only:
 
 - `comments` (String) Free-form comments about the virtual chassis list.
-- `created` (String) The created of the virtual chassis list.
+- `created` (String) When the virtual chassis list was created.
 - `custom_fields` (Map of String) Custom field values of the virtual chassis list, as a map of field name to value.
 - `description` (String) A description of the virtual chassis list.
 - `domain` (String) The domain of the virtual chassis list.
 - `id` (Number) The id of the virtual chassis list.
-- `last_updated` (String) The last updated of the virtual chassis list.
+- `last_updated` (String) When the virtual chassis list was last changed.
 - `master_id` (Number) The ID of the master associated with the virtual chassis list.
-- `member_count` (Number) The member count of the virtual chassis list.
+- `member_count` (Number) The number of member of the virtual chassis list.
 - `members` (List of Number) The IDs of the members of the virtual chassis list.
 - `name` (String) The name of the virtual chassis list.
 - `owner_id` (Number) The ID of the owner associated with the virtual chassis list.

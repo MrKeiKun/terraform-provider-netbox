@@ -35,3 +35,10 @@ func GeneratedFilters() map[string]map[string]string {
 }
 
 func sortStrings(s []string) { sort.Strings(s) }
+
+// ExtraDataSourceAttrs returns the attributes that tools/gendatasources added to the data sources that
+// are written by hand, by type name. They are the fields of the NetBox object that the hand written
+// attributes do not cover.
+func ExtraDataSourceAttrs() map[string][]fwresource.Attr {
+	return dataSourceExtraAttrs
+}

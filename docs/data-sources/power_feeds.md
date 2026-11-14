@@ -59,11 +59,11 @@ Read-Only:
 - `comments` (String) Free-form comments about the power feeds.
 - `connected_endpoints_reachable` (Boolean) The connected endpoints reachable of the power feeds.
 - `connected_endpoints_type` (String) The connected endpoints type of the power feeds.
-- `created` (String) The created of the power feeds.
+- `created` (String) When the power feeds was created.
 - `custom_fields` (Map of String) Custom field values of the power feeds, as a map of field name to value.
 - `description` (String) A description of the power feeds.
 - `id` (Number) The id of the power feeds.
-- `last_updated` (String) The last updated of the power feeds.
+- `last_updated` (String) When the power feeds was last changed.
 - `link_peers_type` (String) The link peers type of the power feeds.
 - `mark_connected` (Boolean) The mark connected of the power feeds.
 - `max_utilization` (Number) The max utilization of the power feeds.

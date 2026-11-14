@@ -35,6 +35,13 @@ data "netbox_vpn_tunnel" "example" {
 
 ### Read-Only
 
+- `comments` (String) Free-form comments about the vpn tunnel.
+- `created` (String) When the vpn tunnel was created.
+- `custom_fields` (Map of String) Custom field values of the vpn tunnel, as a map of field name to value.
 - `description` (String) A description of the vpn tunnel.
 - `id` (Number) The numeric ID of the vpn tunnel.
+- `ipsec_profile_id` (Number) The ID of the ipsec profile associated with the vpn tunnel.
+- `last_updated` (String) When the vpn tunnel was last changed.
+- `owner_id` (Number) The ID of the owner associated with the vpn tunnel.
 - `tags` (Set of String) Tags assigned to the object, by name.
+- `terminations_count` (Number) The number of terminations of the vpn tunnel.

@@ -33,7 +33,7 @@ output "token_id" {
 
 ### Read-Only
 
-- `created` (String) The created of the token.
+- `created` (String) When the token was created.
 - `description` (String) A description of the token.
 - `enabled` (Boolean) The enabled of the token.
 - `expires` (String) The expires of the token.

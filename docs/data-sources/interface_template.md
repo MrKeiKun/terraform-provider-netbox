@@ -39,12 +39,12 @@ output "interface_template_id" {
 - `bridge_id` (Number) The ID of the bridge associated with the interface template.
 - `channel_id` (Number) The channel id of the interface template.
 - `channels` (Number) The channels of the interface template.
-- `created` (String) The created of the interface template.
+- `created` (String) When the interface template was created.
 - `description` (String) A description of the interface template.
 - `enabled` (Boolean) The enabled of the interface template.
 - `id` (String) The ID of this resource.
 - `label` (String) The label of the interface template.
-- `last_updated` (String) The last updated of the interface template.
+- `last_updated` (String) When the interface template was last changed.
 - `mgmt_only` (Boolean) The mgmt only of the interface template.
 - `parent_id` (Number) The ID of the parent associated with the interface template.
 - `poe_mode` (String) The poe mode of the interface template.

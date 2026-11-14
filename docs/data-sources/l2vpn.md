@@ -29,11 +29,14 @@ data "netbox_l2vpn" "example" {
 ### Read-Only
 
 - `comments` (String) Free-form comments about the l2vpn.
+- `created` (String) When the l2vpn was created.
+- `custom_fields` (Map of String) Custom field values of the l2vpn, as a map of field name to value.
 - `description` (String) A description of the l2vpn.
 - `export_target_ids` (Set of Number) The IDs of the export target associated with the l2vpn.
 - `id` (String) The ID of this resource.
 - `identifier` (Number) The identifier of the l2vpn.
 - `import_target_ids` (Set of Number) The IDs of the import target associated with the l2vpn.
+- `last_updated` (String) When the l2vpn was last changed.
 - `owner_id` (Number) The ID of the owner associated with the l2vpn.
 - `status` (String) The status of the l2vpn.
 - `tags` (Set of String) Tags assigned to the object, by name.

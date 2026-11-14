@@ -29,6 +29,21 @@ data "netbox_tenant" "customer_a" {
 
 ### Read-Only
 
+- `circuit_count` (Number) The number of circuit of the tenant.
+- `cluster_count` (Number) The number of cluster of the tenant.
+- `comments` (String) Free-form comments about the tenant.
+- `created` (String) When the tenant was created.
+- `custom_fields` (Map of String) Custom field values of the tenant, as a map of field name to value.
+- `device_count` (Number) The number of device of the tenant.
 - `group_id` (Number) The ID of the group associated with the tenant.
 - `id` (String) The ID of this resource.
+- `ipaddress_count` (Number) The number of ipaddress of the tenant.
+- `last_updated` (String) When the tenant was last changed.
+- `owner_id` (Number) The ID of the owner associated with the tenant.
+- `prefix_count` (Number) The number of prefix of the tenant.
+- `rack_count` (Number) The number of rack of the tenant.
+- `site_count` (Number) The number of site of the tenant.
 - `tags` (Set of String) Tags assigned to the object, by name.
+- `virtualmachine_count` (Number) The number of virtualmachine of the tenant.
+- `vlan_count` (Number) The number of vlan of the tenant.
+- `vrf_count` (Number) The number of vrf of the tenant.

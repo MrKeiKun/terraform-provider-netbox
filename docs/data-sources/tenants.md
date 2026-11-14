@@ -63,6 +63,7 @@ Read-Only:
 - `ip_address_count` (Number) The ip address count of the tenants.
 - `last_updated` (String) The last updated of the tenants.
 - `name` (String) The name of the tenants.
+- `owner_id` (Number) The ID of the owner associated with the tenants.
 - `prefix_count` (Number) The prefix count of the tenants.
 - `rack_count` (Number) The rack count of the tenants.
 - `site_count` (Number) The site count of the tenants.

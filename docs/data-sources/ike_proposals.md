@@ -56,13 +56,13 @@ Read-Only:
 - `authentication_algorithm` (String) The authentication algorithm of the ike proposals.
 - `authentication_method` (String) The authentication method of the ike proposals.
 - `comments` (String) Free-form comments about the ike proposals.
-- `created` (String) The created of the ike proposals.
+- `created` (String) When the ike proposals was created.
 - `custom_fields` (Map of String) Custom field values of the ike proposals, as a map of field name to value.
 - `description` (String) A description of the ike proposals.
 - `encryption_algorithm` (String) The encryption algorithm of the ike proposals.
 - `group` (String) The group of the ike proposals.
 - `id` (Number) The id of the ike proposals.
-- `last_updated` (String) The last updated of the ike proposals.
+- `last_updated` (String) When the ike proposals was last changed.
 - `name` (String) The name of the ike proposals.
 - `owner_id` (Number) The ID of the owner associated with the ike proposals.
 - `sa_lifetime` (Number) The sa lifetime of the ike proposals.

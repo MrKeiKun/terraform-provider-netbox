@@ -28,8 +28,11 @@ data "netbox_service_template" "example" {
 ### Read-Only
 
 - `comments` (String) Free-form comments about the service template.
+- `created` (String) When the service template was created.
+- `custom_fields` (Map of String) Custom field values of the service template, as a map of field name to value.
 - `description` (String) A description of the service template.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the service template was last changed.
 - `owner_id` (Number) The ID of the owner associated with the service template.
 - `port_mappings` (Set of String) The port mappings of the service template.
 - `ports` (Set of Number) The ports of the service template.

@@ -53,12 +53,12 @@ Required:
 
 Read-Only:
 
-- `created` (String) The created of the virtual circuit terminations.
+- `created` (String) When the virtual circuit terminations was created.
 - `custom_fields` (Map of String) Custom field values of the virtual circuit terminations, as a map of field name to value.
 - `description` (String) A description of the virtual circuit terminations.
 - `id` (Number) The id of the virtual circuit terminations.
 - `interface_id` (Number) The ID of the interface associated with the virtual circuit terminations.
-- `last_updated` (String) The last updated of the virtual circuit terminations.
+- `last_updated` (String) When the virtual circuit terminations was last changed.
 - `role` (String) The role of the virtual circuit terminations.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `virtual_circuit_id` (Number) The ID of the virtual circuit associated with the virtual circuit terminations.

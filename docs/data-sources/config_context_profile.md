@@ -28,9 +28,14 @@ data "netbox_config_context_profile" "example" {
 ### Read-Only
 
 - `comments` (String) Free-form comments about the config context profile.
+- `created` (String) When the config context profile was created.
+- `data_file_id` (Number) The ID of the data file associated with the config context profile.
+- `data_path` (String) The data path of the config context profile.
 - `data_source_id` (Number) The ID of the data source associated with the config context profile.
+- `data_synced` (String) The data synced of the config context profile.
 - `description` (String) A description of the config context profile.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the config context profile was last changed.
 - `owner_id` (Number) The ID of the owner associated with the config context profile.
 - `schema` (String) The schema of the config context profile.
 - `tags` (Set of String) Tags assigned to the object, by name.

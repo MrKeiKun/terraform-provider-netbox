@@ -37,12 +37,12 @@ output "power_panel_id" {
 ### Read-Only
 
 - `comments` (String) Free-form comments about the power panel.
-- `created` (String) The created of the power panel.
+- `created` (String) When the power panel was created.
 - `custom_fields` (Map of String) Custom field values of the power panel, as a map of field name to value.
 - `description` (String) A description of the power panel.
 - `id` (String) The ID of this resource.
-- `last_updated` (String) The last updated of the power panel.
+- `last_updated` (String) When the power panel was last changed.
 - `location_id` (Number) The ID of the location associated with the power panel.
 - `owner_id` (Number) The ID of the owner associated with the power panel.
-- `powerfeed_count` (Number) The powerfeed count of the power panel.
+- `powerfeed_count` (Number) The number of powerfeed of the power panel.
 - `tags` (Set of String) Tags assigned to the object, by name.

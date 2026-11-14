@@ -31,14 +31,14 @@ output "image_attachment_id" {
 
 ### Read-Only
 
-- `created` (String) The created of the image attachment.
+- `created` (String) When the image attachment was created.
 - `description` (String) A description of the image attachment.
 - `id` (String) The ID of this resource.
 - `image` (String) The image of the image attachment.
 - `image_height` (Number) The image height of the image attachment.
 - `image_size` (Number) The image size of the image attachment.
 - `image_width` (Number) The image width of the image attachment.
-- `last_updated` (String) The last updated of the image attachment.
+- `last_updated` (String) When the image attachment was last changed.
 - `object_id` (Number) The object id of the image attachment.
 - `object_type` (String) The object type of the image attachment.
 - `parent` (String) The parent of the image attachment.

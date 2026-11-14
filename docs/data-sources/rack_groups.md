@@ -54,13 +54,13 @@ Required:
 Read-Only:
 
 - `comments` (String) Free-form comments about the rack groups.
-- `created` (String) The created of the rack groups.
+- `created` (String) When the rack groups was created.
 - `custom_fields` (Map of String) Custom field values of the rack groups, as a map of field name to value.
 - `description` (String) A description of the rack groups.
 - `id` (Number) The id of the rack groups.
-- `last_updated` (String) The last updated of the rack groups.
+- `last_updated` (String) When the rack groups was last changed.
 - `name` (String) The name of the rack groups.
 - `owner_id` (Number) The ID of the owner associated with the rack groups.
-- `rack_count` (Number) The rack count of the rack groups.
+- `rack_count` (Number) The number of rack of the rack groups.
 - `slug` (String) The slug of the rack groups.
 - `tags` (Set of String) Tags assigned to the object, by name.

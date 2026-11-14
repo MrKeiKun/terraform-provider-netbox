@@ -54,11 +54,11 @@ Required:
 Read-Only:
 
 - `comments` (String) Free-form comments about the service templates.
-- `created` (String) The created of the service templates.
+- `created` (String) When the service templates was created.
 - `custom_fields` (Map of String) Custom field values of the service templates, as a map of field name to value.
 - `description` (String) A description of the service templates.
 - `id` (Number) The id of the service templates.
-- `last_updated` (String) The last updated of the service templates.
+- `last_updated` (String) When the service templates was last changed.
 - `name` (String) The name of the service templates.
 - `owner_id` (Number) The ID of the owner associated with the service templates.
 - `port_mappings` (List of String) The port mappings of the service templates.

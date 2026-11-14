@@ -55,13 +55,13 @@ Read-Only:
 
 - `asset_tag` (String) The asset tag of the modules.
 - `comments` (String) Free-form comments about the modules.
-- `created` (String) The created of the modules.
+- `created` (String) When the modules was created.
 - `custom_fields` (Map of String) Custom field values of the modules, as a map of field name to value.
 - `description` (String) A description of the modules.
 - `device_id` (Number) The ID of the device associated with the modules.
 - `id` (Number) The id of the modules.
 - `is_bay_compatible` (Boolean) The is bay compatible of the modules.
-- `last_updated` (String) The last updated of the modules.
+- `last_updated` (String) When the modules was last changed.
 - `module_bay_id` (Number) The ID of the module bay associated with the modules.
 - `module_type_id` (Number) The ID of the module type associated with the modules.
 - `owner_id` (Number) The ID of the owner associated with the modules.

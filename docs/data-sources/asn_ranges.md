@@ -53,14 +53,14 @@ Required:
 
 Read-Only:
 
-- `asn_count` (Number) The asn count of the asn ranges.
+- `asn_count` (Number) The number of asn of the asn ranges.
 - `comments` (String) Free-form comments about the asn ranges.
-- `created` (String) The created of the asn ranges.
+- `created` (String) When the asn ranges was created.
 - `custom_fields` (Map of String) Custom field values of the asn ranges, as a map of field name to value.
 - `description` (String) A description of the asn ranges.
 - `end` (Number) The end of the asn ranges.
 - `id` (Number) The id of the asn ranges.
-- `last_updated` (String) The last updated of the asn ranges.
+- `last_updated` (String) When the asn ranges was last changed.
 - `name` (String) The name of the asn ranges.
 - `owner_id` (Number) The ID of the owner associated with the asn ranges.
 - `rir_id` (Number) The ID of the rir associated with the asn ranges.

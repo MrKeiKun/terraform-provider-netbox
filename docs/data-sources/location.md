@@ -32,6 +32,16 @@ data "netbox_location" "example" {
 
 ### Read-Only
 
+- `comments` (String) Free-form comments about the location.
+- `created` (String) When the location was created.
+- `custom_fields` (Map of String) Custom field values of the location, as a map of field name to value.
 - `description` (String) A description of the location.
+- `device_count` (Number) The number of device of the location.
+- `facility` (String) The facility of the location.
+- `last_updated` (String) When the location was last changed.
+- `owner_id` (Number) The ID of the owner associated with the location.
+- `prefix_count` (Number) The number of prefix of the location.
+- `rack_count` (Number) The number of rack of the location.
 - `status` (String) The status of the location.
+- `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the location.

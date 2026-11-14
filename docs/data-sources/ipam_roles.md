@@ -53,17 +53,17 @@ Required:
 
 Read-Only:
 
-- `asn_count` (Number) The asn count of the ipam roles.
+- `asn_count` (Number) The number of asn of the ipam roles.
 - `comments` (String) Free-form comments about the ipam roles.
-- `created` (String) The created of the ipam roles.
+- `created` (String) When the ipam roles was created.
 - `custom_fields` (Map of String) Custom field values of the ipam roles, as a map of field name to value.
 - `description` (String) A description of the ipam roles.
 - `id` (Number) The id of the ipam roles.
-- `last_updated` (String) The last updated of the ipam roles.
+- `last_updated` (String) When the ipam roles was last changed.
 - `name` (String) The name of the ipam roles.
 - `owner_id` (Number) The ID of the owner associated with the ipam roles.
-- `prefix_count` (Number) The prefix count of the ipam roles.
+- `prefix_count` (Number) The number of prefix of the ipam roles.
 - `slug` (String) The slug of the ipam roles.
 - `tags` (Set of String) Tags assigned to the object, by name.
-- `vlan_count` (Number) The vlan count of the ipam roles.
+- `vlan_count` (Number) The number of vlan of the ipam roles.
 - `weight` (Number) The weight of the ipam roles.

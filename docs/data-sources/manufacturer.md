@@ -34,13 +34,13 @@ output "manufacturer_id" {
 ### Read-Only
 
 - `comments` (String) Free-form comments about the manufacturer.
-- `created` (String) The created of the manufacturer.
+- `created` (String) When the manufacturer was created.
 - `custom_fields` (Map of String) Custom field values of the manufacturer, as a map of field name to value.
 - `description` (String) A description of the manufacturer.
-- `devicetype_count` (Number) The devicetype count of the manufacturer.
-- `inventoryitem_count` (Number) The inventoryitem count of the manufacturer.
-- `last_updated` (String) The last updated of the manufacturer.
-- `moduletype_count` (Number) The moduletype count of the manufacturer.
+- `devicetype_count` (Number) The number of devicetype of the manufacturer.
+- `inventoryitem_count` (Number) The number of inventoryitem of the manufacturer.
+- `last_updated` (String) When the manufacturer was last changed.
+- `moduletype_count` (Number) The number of moduletype of the manufacturer.
 - `owner_id` (Number) The ID of the owner associated with the manufacturer.
-- `platform_count` (Number) The platform count of the manufacturer.
+- `platform_count` (Number) The number of platform of the manufacturer.
 - `tags` (Set of String) Tags assigned to the object, by name.

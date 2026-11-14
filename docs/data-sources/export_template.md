@@ -29,12 +29,17 @@ data "netbox_export_template" "example" {
 
 - `as_attachment` (Boolean) Whether as attachment is enabled for the export template.
 - `auto_sync_enabled` (Boolean) Whether auto sync enabled is enabled for the export template.
+- `created` (String) When the export template was created.
+- `data_file_id` (Number) The ID of the data file associated with the export template.
+- `data_path` (String) The data path of the export template.
 - `data_source_id` (Number) The ID of the data source associated with the export template.
+- `data_synced` (String) The data synced of the export template.
 - `description` (String) A description of the export template.
 - `environment_params` (String) The environment params of the export template.
 - `file_extension` (String) The file extension of the export template.
 - `file_name` (String) The file name of the export template.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the export template was last changed.
 - `mime_type` (String) The mime type of the export template.
 - `object_types` (Set of String) The object types the export template applies to.
 - `owner_id` (Number) The ID of the owner associated with the export template.

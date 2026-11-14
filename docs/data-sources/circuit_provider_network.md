@@ -56,7 +56,10 @@ data "netbox_circuit_provider_network" "tags" {
 ### Read-Only
 
 - `comments` (String) Free-form comments about the circuit provider network.
+- `created` (String) When the object was created.
 - `description` (String) A description of the circuit provider network.
+- `last_updated` (String) When the object was last changed.
+- `owner_id` (Number) The ID of the owner associated with the object.
 - `provider_id` (Number) The ID of the provider associated with the circuit provider network.
 - `service_id` (String) The ID of the service associated with the circuit provider network.
 - `tags` (Set of String) Tags assigned to the object, by name.

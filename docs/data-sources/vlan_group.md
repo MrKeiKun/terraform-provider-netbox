@@ -44,5 +44,15 @@ data "netbox_vlan_group" "example3" {
 
 ### Read-Only
 
+- `comments` (String) Free-form comments about the vlan group.
+- `created` (String) When the vlan group was created.
+- `custom_fields` (Map of String) Custom field values of the vlan group, as a map of field name to value.
 - `description` (String) A description of the vlan group.
+- `last_updated` (String) When the vlan group was last changed.
+- `owner_id` (Number) The ID of the owner associated with the vlan group.
+- `scope` (String) The scope of the vlan group.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the vlan group.
+- `total_vlan_ids` (Number) The total vlan ids of the vlan group.
+- `utilization` (String) The utilization of the vlan group.
 - `vlan_count` (Number) The vlan count of the vlan group.

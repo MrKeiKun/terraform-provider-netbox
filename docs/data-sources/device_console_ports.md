@@ -57,13 +57,13 @@ Read-Only:
 - `cable_id` (Number) The ID of the cable associated with the device console ports.
 - `connected_endpoints_reachable` (Boolean) The connected endpoints reachable of the device console ports.
 - `connected_endpoints_type` (String) The connected endpoints type of the device console ports.
-- `created` (String) The created of the device console ports.
+- `created` (String) When the device console ports was created.
 - `custom_fields` (Map of String) Custom field values of the device console ports, as a map of field name to value.
 - `description` (String) A description of the device console ports.
 - `device_id` (Number) The ID of the device associated with the device console ports.
 - `id` (Number) The id of the device console ports.
 - `label` (String) The label of the device console ports.
-- `last_updated` (String) The last updated of the device console ports.
+- `last_updated` (String) When the device console ports was last changed.
 - `link_peers_type` (String) The link peers type of the device console ports.
 - `mark_connected` (Boolean) The mark connected of the device console ports.
 - `module_id` (Number) The ID of the module associated with the device console ports.

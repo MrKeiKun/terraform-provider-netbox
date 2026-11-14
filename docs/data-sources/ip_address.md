@@ -28,16 +28,24 @@ data "netbox_ip_address" "ip_address" {
 ### Read-Only
 
 - `address_family` (String) The address family of the ip address.
+- `assigned_object` (String) The assigned object of the ip_address.
+- `assigned_object_id` (Number) The assigned object id of the ip_address.
+- `assigned_object_type` (String) The assigned object type of the ip_address.
+- `comments` (String) Free-form comments about the ip_address.
 - `created` (String) The created of the ip address.
 - `custom_fields` (Map of String) Custom field values of the ip address, as a map of field name to value.
 - `description` (String) A description of the ip address.
 - `dns_name` (String) The DNS name of the ip address.
 - `ip_address` (String) The IP address of the ip address, in CIDR notation.
 - `last_updated` (String) The last updated of the ip address.
+- `nat_inside_id` (Number) The ID of the nat inside associated with the ip_address.
+- `nat_outside` (List of Number) The IDs of the nat outside of the ip_address.
+- `owner_id` (Number) The ID of the owner associated with the ip_address.
 - `role` (String) The role of the ip address.
 - `status` (String) The status of the ip address.
 - `tags` (Attributes List) Tags to assign to the ip address. (see [below for nested schema](#nestedatt--tags))
 - `tenant` (Attributes List) The tenant of the ip address. (see [below for nested schema](#nestedatt--tenant))
+- `vrf_id` (Number) The ID of the vrf associated with the ip_address.
 
 <a id="nestedatt--tags"></a>
 ### Nested Schema for `tags`

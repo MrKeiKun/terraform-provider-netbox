@@ -53,11 +53,11 @@ Required:
 
 Read-Only:
 
-- `created` (String) The created of the vlan translation rules.
+- `created` (String) When the vlan translation rules was created.
 - `custom_fields` (Map of String) Custom field values of the vlan translation rules, as a map of field name to value.
 - `description` (String) A description of the vlan translation rules.
 - `id` (Number) The id of the vlan translation rules.
-- `last_updated` (String) The last updated of the vlan translation rules.
+- `last_updated` (String) When the vlan translation rules was last changed.
 - `local_vid` (Number) The local vid of the vlan translation rules.
 - `policy` (Number) The policy of the vlan translation rules.
 - `remote_vid` (Number) The remote vid of the vlan translation rules.

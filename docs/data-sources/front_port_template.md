@@ -37,10 +37,10 @@ output "front_port_template_id" {
 ### Read-Only
 
 - `color` (String) The color of the front port template.
-- `created` (String) The created of the front port template.
+- `created` (String) When the front port template was created.
 - `description` (String) A description of the front port template.
 - `id` (String) The ID of this resource.
 - `label` (String) The label of the front port template.
-- `last_updated` (String) The last updated of the front port template.
+- `last_updated` (String) When the front port template was last changed.
 - `positions` (Number) The positions of the front port template.
 - `type` (String) The type of the front port template.

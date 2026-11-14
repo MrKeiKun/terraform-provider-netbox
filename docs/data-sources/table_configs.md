@@ -54,11 +54,11 @@ Required:
 Read-Only:
 
 - `columns` (List of String) The columns of the table configs.
-- `created` (String) The created of the table configs.
+- `created` (String) When the table configs was created.
 - `description` (String) A description of the table configs.
 - `enabled` (Boolean) The enabled of the table configs.
 - `id` (Number) The id of the table configs.
-- `last_updated` (String) The last updated of the table configs.
+- `last_updated` (String) When the table configs was last changed.
 - `name` (String) The name of the table configs.
 - `object_type` (String) The object type of the table configs.
 - `ordering` (List of String) The ordering of the table configs.

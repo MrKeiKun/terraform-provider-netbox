@@ -54,15 +54,15 @@ Required:
 Read-Only:
 
 - `comments` (String) Free-form comments about the site groups.
-- `created` (String) The created of the site groups.
+- `created` (String) When the site groups was created.
 - `custom_fields` (Map of String) Custom field values of the site groups, as a map of field name to value.
 - `description` (String) A description of the site groups.
 - `id` (Number) The id of the site groups.
-- `last_updated` (String) The last updated of the site groups.
+- `last_updated` (String) When the site groups was last changed.
 - `name` (String) The name of the site groups.
 - `owner_id` (Number) The ID of the owner associated with the site groups.
 - `parent_id` (Number) The ID of the parent associated with the site groups.
-- `prefix_count` (Number) The prefix count of the site groups.
-- `site_count` (Number) The site count of the site groups.
+- `prefix_count` (Number) The number of prefix of the site groups.
+- `site_count` (Number) The number of site of the site groups.
 - `slug` (String) The slug of the site groups.
 - `tags` (Set of String) Tags assigned to the object, by name.

@@ -44,37 +44,37 @@ output "device_id" {
 - `comments` (String) Free-form comments about the device.
 - `config_context` (String) The config context of the device.
 - `config_template_id` (Number) The ID of the config template associated with the device.
-- `console_port_count` (Number) The console port count of the device.
-- `console_server_port_count` (Number) The console server port count of the device.
-- `cooling_intake_count` (Number) The cooling intake count of the device.
+- `console_port_count` (Number) The number of console port of the device.
+- `console_server_port_count` (Number) The number of console server port of the device.
+- `cooling_intake_count` (Number) The number of cooling intake of the device.
 - `cooling_method` (String) The cooling method of the device.
-- `cooling_outflow_count` (Number) The cooling outflow count of the device.
-- `created` (String) The created of the device.
+- `cooling_outflow_count` (Number) The number of cooling outflow of the device.
+- `created` (String) When the device was created.
 - `custom_fields` (Map of String) Custom field values of the device, as a map of field name to value.
 - `description` (String) A description of the device.
-- `device_bay_count` (Number) The device bay count of the device.
+- `device_bay_count` (Number) The number of device bay of the device.
 - `face` (String) The face of the device.
-- `front_port_count` (Number) The front port count of the device.
+- `front_port_count` (Number) The number of front port of the device.
 - `id` (String) The ID of this resource.
-- `interface_count` (Number) The interface count of the device.
-- `inventory_item_count` (Number) The inventory item count of the device.
-- `last_updated` (String) The last updated of the device.
+- `interface_count` (Number) The number of interface of the device.
+- `inventory_item_count` (Number) The number of inventory item of the device.
+- `last_updated` (String) When the device was last changed.
 - `latitude` (Number) The latitude of the device.
 - `local_context_data` (String) The local context data of the device.
 - `location_id` (Number) The ID of the location associated with the device.
 - `longitude` (Number) The longitude of the device.
-- `module_bay_count` (Number) The module bay count of the device.
+- `module_bay_count` (Number) The number of module bay of the device.
 - `oob_ip_id` (Number) The ID of the oob ip associated with the device.
 - `owner_id` (Number) The ID of the owner associated with the device.
 - `parent_device_id` (Number) The ID of the parent device associated with the device.
 - `platform_id` (Number) The ID of the platform associated with the device.
 - `position` (Number) The position of the device.
-- `power_outlet_count` (Number) The power outlet count of the device.
-- `power_port_count` (Number) The power port count of the device.
+- `power_outlet_count` (Number) The number of power outlet of the device.
+- `power_port_count` (Number) The number of power port of the device.
 - `primary_ip4_id` (Number) The ID of the primary ip4 associated with the device.
 - `primary_ip6_id` (Number) The ID of the primary ip6 associated with the device.
 - `primary_ip_id` (Number) The ID of the primary ip associated with the device.
-- `rear_port_count` (Number) The rear port count of the device.
+- `rear_port_count` (Number) The number of rear port of the device.
 - `role_id` (Number) The ID of the role associated with the device.
 - `serial` (String) The serial of the device.
 - `status` (String) The status of the device.

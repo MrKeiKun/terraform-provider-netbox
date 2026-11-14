@@ -33,7 +33,7 @@ output "config_template_id" {
 
 - `as_attachment` (Boolean) The as attachment of the config template.
 - `auto_sync_enabled` (Boolean) The auto sync enabled of the config template.
-- `created` (String) The created of the config template.
+- `created` (String) When the config template was created.
 - `data_file_id` (Number) The ID of the data file associated with the config template.
 - `data_path` (String) The data path of the config template.
 - `data_source_id` (Number) The ID of the data source associated with the config template.
@@ -44,7 +44,7 @@ output "config_template_id" {
 - `file_extension` (String) The file extension of the config template.
 - `file_name` (String) The file name of the config template.
 - `id` (String) The ID of this resource.
-- `last_updated` (String) The last updated of the config template.
+- `last_updated` (String) When the config template was last changed.
 - `mime_type` (String) The mime type of the config template.
 - `owner_id` (Number) The ID of the owner associated with the config template.
 - `tags` (Set of String) Tags assigned to the object, by name.

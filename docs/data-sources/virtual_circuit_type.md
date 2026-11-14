@@ -30,7 +30,11 @@ data "netbox_virtual_circuit_type" "example" {
 
 - `color_hex` (String) The color hex of the virtual circuit type.
 - `comments` (String) Free-form comments about the virtual circuit type.
+- `created` (String) When the virtual circuit type was created.
+- `custom_fields` (Map of String) Custom field values of the virtual circuit type, as a map of field name to value.
 - `description` (String) A description of the virtual circuit type.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the virtual circuit type was last changed.
 - `owner_id` (Number) The ID of the owner associated with the virtual circuit type.
 - `tags` (Set of String) Tags assigned to the object, by name.
+- `virtual_circuit_count` (Number) The number of virtual circuit of the virtual circuit type.

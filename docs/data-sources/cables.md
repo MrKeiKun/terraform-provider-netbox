@@ -54,12 +54,19 @@ Read-Only:
 
 - `a_terminations` (Attributes List) The a terminations of the cables. (see [below for nested schema](#nestedatt--cables--a_terminations))
 - `b_terminations` (Attributes List) The b terminations of the cables. (see [below for nested schema](#nestedatt--cables--b_terminations))
+- `bundle_id` (Number) The ID of the bundle associated with the cables.
 - `color` (String) The color of the cables as a hex string without the leading #.
+- `comments` (String) Free-form comments about the cables.
+- `created` (String) When the cables was created.
+- `custom_fields` (Map of String) Custom field values of the cables, as a map of field name to value.
 - `description` (String) A description of the cables.
 - `id` (Number) The numeric ID of the cables.
 - `label` (String) The label of the cables.
+- `last_updated` (String) When the cables was last changed.
 - `length` (Number) The length of the cables.
 - `length_unit` (String) The length unit of the cables.
+- `owner_id` (Number) The ID of the owner associated with the cables.
+- `profile` (String) The profile of the cables.
 - `status` (String) The status of the cables.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the cables.

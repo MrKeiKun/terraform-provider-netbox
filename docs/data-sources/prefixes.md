@@ -52,13 +52,24 @@ Required:
 
 Read-Only:
 
+- `children` (Number) The children of the prefixes.
+- `comments` (String) Free-form comments about the prefixes.
+- `created` (String) When the prefixes was created.
 - `custom_fields` (Map of String)
 - `description` (String) A description of the prefixes.
+- `family` (String) The family of the prefixes.
 - `id` (Number) The numeric ID of the prefixes.
+- `is_pool` (Boolean) The is pool of the prefixes.
+- `last_updated` (String) When the prefixes was last changed.
 - `location_id` (Number) The ID of the location associated with the prefixes.
+- `mark_utilized` (Boolean) The mark utilized of the prefixes.
+- `owner_id` (Number) The ID of the owner associated with the prefixes.
 - `prefix` (String) The prefix in CIDR notation.
 - `region_id` (Number) The ID of the region associated with the prefixes.
 - `role_id` (Number) The ID of the role associated with the prefixes.
+- `scope` (String) The scope of the prefixes.
+- `scope_id` (Number) The scope id of the prefixes.
+- `scope_type` (String) The scope type of the prefixes.
 - `site_group_id` (Number) The ID of the site group associated with the prefixes.
 - `site_id` (Number) The ID of the site associated with the prefixes.
 - `status` (String) The status of the prefixes.

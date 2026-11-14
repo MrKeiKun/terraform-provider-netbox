@@ -41,13 +41,13 @@ output "virtual_machine_id" {
 - `comments` (String) Free-form comments about the virtual machine.
 - `config_context` (String) The config context of the virtual machine.
 - `config_template_id` (Number) The ID of the config template associated with the virtual machine.
-- `created` (String) The created of the virtual machine.
+- `created` (String) When the virtual machine was created.
 - `custom_fields` (Map of String) Custom field values of the virtual machine, as a map of field name to value.
 - `description` (String) A description of the virtual machine.
 - `disk` (Number) The disk of the virtual machine.
 - `id` (String) The ID of this resource.
-- `interface_count` (Number) The interface count of the virtual machine.
-- `last_updated` (String) The last updated of the virtual machine.
+- `interface_count` (Number) The number of interface of the virtual machine.
+- `last_updated` (String) When the virtual machine was last changed.
 - `local_context_data` (String) The local context data of the virtual machine.
 - `memory` (Number) The memory of the virtual machine.
 - `owner_id` (Number) The ID of the owner associated with the virtual machine.
@@ -62,5 +62,5 @@ output "virtual_machine_id" {
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the virtual machine.
 - `vcpus` (Number) The vcpus of the virtual machine.
-- `virtual_disk_count` (Number) The virtual disk count of the virtual machine.
+- `virtual_disk_count` (Number) The number of virtual disk of the virtual machine.
 - `virtual_machine_type_id` (Number) The ID of the virtual machine type associated with the virtual machine.

@@ -57,12 +57,12 @@ Read-Only:
 - `assigned_object_id` (Number) The assigned object id of the mac addresses.
 - `assigned_object_type` (String) The assigned object type of the mac addresses.
 - `comments` (String) Free-form comments about the mac addresses.
-- `created` (String) The created of the mac addresses.
+- `created` (String) When the mac addresses was created.
 - `custom_fields` (Map of String) Custom field values of the mac addresses, as a map of field name to value.
 - `description` (String) A description of the mac addresses.
 - `id` (Number) The id of the mac addresses.
 - `is_primary` (Boolean) The is primary of the mac addresses.
-- `last_updated` (String) The last updated of the mac addresses.
+- `last_updated` (String) When the mac addresses was last changed.
 - `mac_address` (String) The mac address of the mac addresses.
 - `owner_id` (Number) The ID of the owner associated with the mac addresses.
 - `tags` (Set of String) Tags assigned to the object, by name.

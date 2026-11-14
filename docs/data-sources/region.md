@@ -30,11 +30,19 @@ data "netbox_region" "example" {
 
 ### Read-Only
 
+- `comments` (String) Free-form comments about the region.
+- `created` (String) When the region was created.
+- `custom_fields` (Map of String) Custom field values of the region, as a map of field name to value.
 - `description` (String) A description of the region.
 - `id` (Number) The numeric ID of the region.
+- `last_updated` (String) When the region was last changed.
 - `name` (String) The name of the region.
+- `owner_id` (Number) The ID of the owner associated with the region.
 - `parent_region_id` (Number) The ID of the parent region associated with the region.
+- `prefix_count` (Number) The number of prefix of the region.
+- `site_count` (Number) The number of site of the region.
 - `slug` (String) The URL-friendly slug of the region.
+- `tags` (Set of String) Tags assigned to the object, by name.
 
 <a id="nestedblock--filter"></a>
 ### Nested Schema for `filter`

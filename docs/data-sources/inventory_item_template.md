@@ -28,11 +28,14 @@ data "netbox_inventory_item_template" "example" {
 
 ### Read-Only
 
+- `component` (String) The component of the inventory item template.
 - `component_id` (Number) The ID of the component associated with the inventory item template.
 - `component_type` (String) The component type of the inventory item template.
+- `created` (String) When the inventory item template was created.
 - `description` (String) A description of the inventory item template.
 - `id` (String) The ID of this resource.
 - `label` (String) The label of the inventory item template.
+- `last_updated` (String) When the inventory item template was last changed.
 - `manufacturer_id` (Number) The ID of the manufacturer associated with the inventory item template.
 - `parent_id` (Number) The ID of the parent associated with the inventory item template.
 - `part_id` (String) The ID of the part associated with the inventory item template.

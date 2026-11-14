@@ -28,13 +28,19 @@ data "netbox_data_source" "example" {
 ### Read-Only
 
 - `comments` (String) Free-form comments about the data source.
+- `created` (String) When the data source was created.
+- `custom_fields` (Map of String) Custom field values of the data source, as a map of field name to value.
 - `description` (String) A description of the data source.
 - `enabled` (Boolean) Whether the data source is enabled.
+- `file_count` (Number) The number of file of the data source.
 - `id` (String) The ID of this resource.
 - `ignore_rules` (String) The ignore rules of the data source.
+- `last_synced` (String) The last synced of the data source.
+- `last_updated` (String) When the data source was last changed.
 - `owner_id` (Number) The ID of the owner associated with the data source.
 - `parameters` (String) The parameters of the data source.
 - `source_url` (String) The source url of the data source.
+- `status` (String) The status of the data source.
 - `sync_interval` (Number) The sync interval of the data source.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `type` (String) The type of the data source.

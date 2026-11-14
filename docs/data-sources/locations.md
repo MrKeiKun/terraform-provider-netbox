@@ -53,11 +53,19 @@ Required:
 
 Read-Only:
 
+- `comments` (String) Free-form comments about the locations.
+- `created` (String) When the locations was created.
+- `custom_fields` (Map of String) Custom field values of the locations, as a map of field name to value.
 - `description` (String) A description of the locations.
+- `device_count` (Number) The number of device of the locations.
 - `facility` (String) The facility of the locations.
 - `id` (String) The numeric ID of the locations.
+- `last_updated` (String) When the locations was last changed.
 - `name` (String) The name of the locations.
+- `owner_id` (Number) The ID of the owner associated with the locations.
 - `parent_id` (Number) The ID of the parent associated with the locations.
+- `prefix_count` (Number) The number of prefix of the locations.
+- `rack_count` (Number) The number of rack of the locations.
 - `site_id` (Number) The ID of the site associated with the locations.
 - `slug` (String) The URL-friendly slug of the locations.
 - `status` (String) The status of the locations.

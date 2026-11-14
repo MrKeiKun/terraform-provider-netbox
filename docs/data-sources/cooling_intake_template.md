@@ -29,11 +29,13 @@ data "netbox_cooling_intake_template" "example" {
 
 ### Read-Only
 
+- `created` (String) When the cooling intake template was created.
 - `description` (String) A description of the cooling intake template.
 - `diameter` (Number) The diameter of the cooling intake template.
 - `diameter_unit` (String) The diameter unit of the cooling intake template.
 - `id` (String) The ID of this resource.
 - `label` (String) The label of the cooling intake template.
+- `last_updated` (String) When the cooling intake template was last changed.
 - `max_flow` (Number) The max flow of the cooling intake template.
 - `max_flow_unit` (String) The max flow unit of the cooling intake template.
 - `module_type_id` (Number) The ID of the module type associated with the cooling intake template.

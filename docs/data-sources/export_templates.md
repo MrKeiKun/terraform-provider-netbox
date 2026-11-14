@@ -55,7 +55,7 @@ Read-Only:
 
 - `as_attachment` (Boolean) The as attachment of the export templates.
 - `auto_sync_enabled` (Boolean) The auto sync enabled of the export templates.
-- `created` (String) The created of the export templates.
+- `created` (String) When the export templates was created.
 - `data_file_id` (Number) The ID of the data file associated with the export templates.
 - `data_path` (String) The data path of the export templates.
 - `data_source_id` (Number) The ID of the data source associated with the export templates.
@@ -65,7 +65,7 @@ Read-Only:
 - `file_extension` (String) The file extension of the export templates.
 - `file_name` (String) The file name of the export templates.
 - `id` (Number) The id of the export templates.
-- `last_updated` (String) The last updated of the export templates.
+- `last_updated` (String) When the export templates was last changed.
 - `mime_type` (String) The mime type of the export templates.
 - `name` (String) The name of the export templates.
 - `object_types` (List of String) The object types of the export templates.

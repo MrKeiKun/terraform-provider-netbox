@@ -37,11 +37,11 @@ output "power_outlet_template_id" {
 ### Read-Only
 
 - `color` (String) The color of the power outlet template.
-- `created` (String) The created of the power outlet template.
+- `created` (String) When the power outlet template was created.
 - `description` (String) A description of the power outlet template.
 - `feed_leg` (String) The feed leg of the power outlet template.
 - `id` (String) The ID of this resource.
 - `label` (String) The label of the power outlet template.
-- `last_updated` (String) The last updated of the power outlet template.
+- `last_updated` (String) When the power outlet template was last changed.
 - `power_port_id` (Number) The ID of the power port associated with the power outlet template.
 - `type` (String) The type of the power outlet template.

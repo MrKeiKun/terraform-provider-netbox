@@ -53,6 +53,17 @@ Required:
 Read-Only:
 
 - `asn` (Number) The AS number.
+- `comments` (String) Free-form comments about the ASNs.
+- `created` (String) When the ASNs was created.
+- `custom_fields` (Map of String) Custom field values of the ASNs, as a map of field name to value.
+- `description` (String) A description of the ASNs.
 - `id` (Number) The numeric ID of the asns.
+- `last_updated` (String) When the ASNs was last changed.
+- `owner_id` (Number) The ID of the owner associated with the ASNs.
+- `provider_count` (Number) The number of provider of the ASNs.
 - `rir_id` (Number) The ID of the rir associated with the asns.
+- `role_id` (Number) The ID of the role associated with the ASNs.
+- `site_count` (Number) The number of site of the ASNs.
+- `sites` (List of Number) The IDs of the sites of the ASNs.
 - `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the ASNs.

@@ -36,13 +36,13 @@ output "device_bay_id" {
 
 ### Read-Only
 
-- `created` (String) The created of the device bay.
+- `created` (String) When the device bay was created.
 - `custom_fields` (Map of String) Custom field values of the device bay, as a map of field name to value.
 - `description` (String) A description of the device bay.
 - `enabled` (Boolean) The enabled of the device bay.
 - `id` (String) The ID of this resource.
 - `installed_device_id` (Number) The ID of the installed device associated with the device bay.
 - `label` (String) The label of the device bay.
-- `last_updated` (String) The last updated of the device bay.
+- `last_updated` (String) When the device bay was last changed.
 - `owner_id` (Number) The ID of the owner associated with the device bay.
 - `tags` (Set of String) Tags assigned to the object, by name.

@@ -54,12 +54,12 @@ Required:
 Read-Only:
 
 - `color` (String) The color of the front port templates.
-- `created` (String) The created of the front port templates.
+- `created` (String) When the front port templates was created.
 - `description` (String) A description of the front port templates.
 - `device_type_id` (Number) The ID of the device type associated with the front port templates.
 - `id` (Number) The id of the front port templates.
 - `label` (String) The label of the front port templates.
-- `last_updated` (String) The last updated of the front port templates.
+- `last_updated` (String) When the front port templates was last changed.
 - `module_type_id` (Number) The ID of the module type associated with the front port templates.
 - `name` (String) The name of the front port templates.
 - `positions` (Number) The positions of the front port templates.

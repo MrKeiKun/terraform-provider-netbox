@@ -31,6 +31,11 @@ data "netbox_route_target" "example" {
 
 ### Read-Only
 
+- `comments` (String) Free-form comments about the route target.
+- `created` (String) When the route target was created.
+- `custom_fields` (Map of String) Custom field values of the route target, as a map of field name to value.
 - `description` (String) A description of the route target.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the route target was last changed.
+- `owner_id` (Number) The ID of the owner associated with the route target.
 - `tenant_id` (Number) The ID of the tenant associated with the route target.

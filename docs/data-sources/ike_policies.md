@@ -54,11 +54,11 @@ Required:
 Read-Only:
 
 - `comments` (String) Free-form comments about the ike policies.
-- `created` (String) The created of the ike policies.
+- `created` (String) When the ike policies was created.
 - `custom_fields` (Map of String) Custom field values of the ike policies, as a map of field name to value.
 - `description` (String) A description of the ike policies.
 - `id` (Number) The id of the ike policies.
-- `last_updated` (String) The last updated of the ike policies.
+- `last_updated` (String) When the ike policies was last changed.
 - `mode` (String) The mode of the ike policies.
 - `name` (String) The name of the ike policies.
 - `owner_id` (Number) The ID of the owner associated with the ike policies.

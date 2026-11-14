@@ -37,7 +37,15 @@ for more information on available lookup expressions.
 
 ### Read-Only
 
+- `comments` (String) Free-form comments about the IP range.
+- `created` (String) When the IP range was created.
+- `custom_fields` (Map of String) Custom field values of the IP range, as a map of field name to value.
 - `end_address` (String) The end address of the ip range.
 - `id` (Number) The numeric ID of the ip range.
+- `last_updated` (String) When the IP range was last changed.
+- `mark_populated` (Boolean) The mark populated of the IP range.
+- `mark_utilized` (Boolean) The mark utilized of the IP range.
+- `owner_id` (Number) The ID of the owner associated with the IP range.
+- `size` (Number) The size of the IP range.
 - `start_address` (String) The start address of the ip range.
 - `tags` (Set of String) Tags assigned to the object, by name.

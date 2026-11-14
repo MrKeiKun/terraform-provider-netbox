@@ -53,14 +53,14 @@ Required:
 
 Read-Only:
 
-- `circuit_count` (Number) The circuit count of the circuit types.
+- `circuit_count` (Number) The number of circuit of the circuit types.
 - `color` (String) The color of the circuit types.
 - `comments` (String) Free-form comments about the circuit types.
-- `created` (String) The created of the circuit types.
+- `created` (String) When the circuit types was created.
 - `custom_fields` (Map of String) Custom field values of the circuit types, as a map of field name to value.
 - `description` (String) A description of the circuit types.
 - `id` (Number) The id of the circuit types.
-- `last_updated` (String) The last updated of the circuit types.
+- `last_updated` (String) When the circuit types was last changed.
 - `name` (String) The name of the circuit types.
 - `owner_id` (Number) The ID of the owner associated with the circuit types.
 - `slug` (String) The slug of the circuit types.

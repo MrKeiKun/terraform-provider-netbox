@@ -54,11 +54,11 @@ Required:
 Read-Only:
 
 - `comments` (String) Free-form comments about the route targets.
-- `created` (String) The created of the route targets.
+- `created` (String) When the route targets was created.
 - `custom_fields` (Map of String) Custom field values of the route targets, as a map of field name to value.
 - `description` (String) A description of the route targets.
 - `id` (Number) The id of the route targets.
-- `last_updated` (String) The last updated of the route targets.
+- `last_updated` (String) When the route targets was last changed.
 - `name` (String) The name of the route targets.
 - `owner_id` (Number) The ID of the owner associated with the route targets.
 - `tags` (Set of String) Tags assigned to the object, by name.

@@ -54,13 +54,13 @@ Required:
 Read-Only:
 
 - `comments` (String) Free-form comments about the ipsec profiles.
-- `created` (String) The created of the ipsec profiles.
+- `created` (String) When the ipsec profiles was created.
 - `custom_fields` (Map of String) Custom field values of the ipsec profiles, as a map of field name to value.
 - `description` (String) A description of the ipsec profiles.
 - `id` (Number) The id of the ipsec profiles.
 - `ike_policy_id` (Number) The ID of the ike policy associated with the ipsec profiles.
 - `ipsec_policy_id` (Number) The ID of the ipsec policy associated with the ipsec profiles.
-- `last_updated` (String) The last updated of the ipsec profiles.
+- `last_updated` (String) When the ipsec profiles was last changed.
 - `mode` (String) The mode of the ipsec profiles.
 - `name` (String) The name of the ipsec profiles.
 - `owner_id` (Number) The ID of the owner associated with the ipsec profiles.

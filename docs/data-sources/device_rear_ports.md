@@ -52,14 +52,21 @@ Required:
 
 Read-Only:
 
+- `cable_end` (String) The cable end of the rear ports.
+- `cable_id` (Number) The ID of the cable associated with the rear ports.
 - `color` (String) The color of the device rear ports as a hex string without the leading #.
+- `created` (String) When the rear ports was created.
+- `custom_fields` (Map of String) Custom field values of the rear ports, as a map of field name to value.
 - `description` (String) A description of the device rear ports.
 - `device_id` (Number) The ID of the device associated with the device rear ports.
 - `id` (Number) The numeric ID of the device rear ports.
 - `label` (String) The label of the device rear ports.
+- `last_updated` (String) When the rear ports was last changed.
+- `link_peers_type` (String) The link peers type of the rear ports.
 - `mark_connected` (Boolean) Whether the device rear ports is marked as connected even without a cable.
 - `module_id` (Number) The ID of the module associated with the device rear ports.
 - `name` (String) The name of the device rear ports.
+- `owner_id` (Number) The ID of the owner associated with the rear ports.
 - `positions` (Number) The positions of the device rear ports.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `type` (String) The type of the device rear ports.

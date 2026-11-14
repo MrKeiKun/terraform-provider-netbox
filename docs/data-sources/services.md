@@ -54,12 +54,12 @@ Required:
 Read-Only:
 
 - `comments` (String) Free-form comments about the services.
-- `created` (String) The created of the services.
+- `created` (String) When the services was created.
 - `custom_fields` (Map of String) Custom field values of the services, as a map of field name to value.
 - `description` (String) A description of the services.
 - `id` (Number) The id of the services.
 - `ipaddresses` (List of Number) The IDs of the ipaddresses of the services.
-- `last_updated` (String) The last updated of the services.
+- `last_updated` (String) When the services was last changed.
 - `name` (String) The name of the services.
 - `owner_id` (Number) The ID of the owner associated with the services.
 - `parent` (String) The parent of the services.

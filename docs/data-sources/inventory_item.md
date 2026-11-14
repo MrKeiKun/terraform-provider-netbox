@@ -40,13 +40,13 @@ output "inventory_item_id" {
 - `component` (String) The component of the inventory item.
 - `component_id` (Number) The component id of the inventory item.
 - `component_type` (String) The component type of the inventory item.
-- `created` (String) The created of the inventory item.
+- `created` (String) When the inventory item was created.
 - `custom_fields` (Map of String) Custom field values of the inventory item, as a map of field name to value.
 - `description` (String) A description of the inventory item.
 - `discovered` (Boolean) The discovered of the inventory item.
 - `id` (String) The ID of this resource.
 - `label` (String) The label of the inventory item.
-- `last_updated` (String) The last updated of the inventory item.
+- `last_updated` (String) When the inventory item was last changed.
 - `manufacturer_id` (Number) The ID of the manufacturer associated with the inventory item.
 - `owner_id` (Number) The ID of the owner associated with the inventory item.
 - `parent` (Number) The parent of the inventory item.

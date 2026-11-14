@@ -28,7 +28,11 @@ data "netbox_vlan_translation_policy" "example" {
 ### Read-Only
 
 - `comments` (String) Free-form comments about the vlan translation policy.
+- `created` (String) When the vlan translation policy was created.
+- `custom_fields` (Map of String) Custom field values of the vlan translation policy, as a map of field name to value.
 - `description` (String) A description of the vlan translation policy.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the vlan translation policy was last changed.
 - `owner_id` (Number) The ID of the owner associated with the vlan translation policy.
+- `rules` (List of Number) The IDs of the rules of the vlan translation policy.
 - `tags` (Set of String) Tags assigned to the object, by name.

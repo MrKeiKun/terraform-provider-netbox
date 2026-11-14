@@ -52,23 +52,36 @@ Required:
 
 Read-Only:
 
+- `airflow` (String) The airflow of the racks.
 - `asset_tag` (String) The asset tag of the racks.
 - `comments` (String) Free-form comments about the racks.
+- `cooling_capability` (String) The cooling capability of the racks.
+- `cooling_capacity` (Number) The cooling capacity of the racks.
+- `created` (String) When the racks was created.
 - `custom_fields` (Map of String) Custom field values of the racks, as a map of field name to value.
 - `desc_units` (Boolean) Whether desc units is enabled for the racks.
 - `description` (String) A description of the racks.
+- `device_count` (Number) The number of device of the racks.
 - `facility_id` (String) The ID of the facility associated with the racks.
+- `form_factor` (String) The form factor of the racks.
+- `group_id` (Number) The ID of the group associated with the racks.
 - `id` (Number) The numeric ID of the racks.
+- `last_updated` (String) When the racks was last changed.
 - `location_id` (Number) The ID of the location associated with the racks.
 - `max_weight` (Number) The max weight of the racks.
 - `mounting_depth` (Number) The mounting depth of the racks.
 - `name` (String) The name of the racks.
 - `outer_depth` (Number) The outer depth of the racks.
+- `outer_height` (Number) The outer height of the racks.
 - `outer_unit` (String) The outer unit of the racks.
 - `outer_width` (Number) The outer width of the racks.
+- `owner_id` (Number) The ID of the owner associated with the racks.
+- `powerfeed_count` (Number) The number of powerfeed of the racks.
+- `rack_type_id` (Number) The ID of the rack type associated with the racks.
 - `role_id` (Number) The ID of the role associated with the racks.
 - `serial` (String) The serial number of the racks.
 - `site_id` (Number) The ID of the site associated with the racks.
+- `starting_unit` (Number) The starting unit of the racks.
 - `status` (String) The status of the racks.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the racks.

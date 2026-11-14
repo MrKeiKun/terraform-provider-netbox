@@ -55,7 +55,7 @@ Read-Only:
 
 - `choice_set_id` (Number) The ID of the choice set associated with the custom fields.
 - `comments` (String) Free-form comments about the custom fields.
-- `created` (String) The created of the custom fields.
+- `created` (String) When the custom fields was created.
 - `data_type` (String) The data type of the custom fields.
 - `default` (String) The default of the custom fields.
 - `description` (String) A description of the custom fields.
@@ -64,7 +64,7 @@ Read-Only:
 - `id` (Number) The id of the custom fields.
 - `is_cloneable` (Boolean) The is cloneable of the custom fields.
 - `label` (String) The label of the custom fields.
-- `last_updated` (String) The last updated of the custom fields.
+- `last_updated` (String) When the custom fields was last changed.
 - `name` (String) The name of the custom fields.
 - `nulls_first` (Boolean) The nulls first of the custom fields.
 - `object_types` (List of String) The object types of the custom fields.

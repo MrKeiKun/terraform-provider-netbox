@@ -55,13 +55,13 @@ Read-Only:
 
 - `color` (String) The color of the virtual circuit types.
 - `comments` (String) Free-form comments about the virtual circuit types.
-- `created` (String) The created of the virtual circuit types.
+- `created` (String) When the virtual circuit types was created.
 - `custom_fields` (Map of String) Custom field values of the virtual circuit types, as a map of field name to value.
 - `description` (String) A description of the virtual circuit types.
 - `id` (Number) The id of the virtual circuit types.
-- `last_updated` (String) The last updated of the virtual circuit types.
+- `last_updated` (String) When the virtual circuit types was last changed.
 - `name` (String) The name of the virtual circuit types.
 - `owner_id` (Number) The ID of the owner associated with the virtual circuit types.
 - `slug` (String) The slug of the virtual circuit types.
 - `tags` (Set of String) Tags assigned to the object, by name.
-- `virtual_circuit_count` (Number) The virtual circuit count of the virtual circuit types.
+- `virtual_circuit_count` (Number) The number of virtual circuit of the virtual circuit types.

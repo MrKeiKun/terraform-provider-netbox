@@ -53,11 +53,11 @@ Required:
 
 Read-Only:
 
-- `created` (String) The created of the fhrp group assignments.
+- `created` (String) When the fhrp group assignments was created.
 - `group_id` (Number) The ID of the group associated with the fhrp group assignments.
 - `id` (Number) The id of the fhrp group assignments.
 - `interface` (String) The interface of the fhrp group assignments.
 - `interface_id` (Number) The interface id of the fhrp group assignments.
 - `interface_type` (String) The interface type of the fhrp group assignments.
-- `last_updated` (String) The last updated of the fhrp group assignments.
+- `last_updated` (String) When the fhrp group assignments was last changed.
 - `priority` (Number) The priority of the fhrp group assignments.

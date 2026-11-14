@@ -54,15 +54,15 @@ Required:
 Read-Only:
 
 - `comments` (String) Free-form comments about the data sources.
-- `created` (String) The created of the data sources.
+- `created` (String) When the data sources was created.
 - `custom_fields` (Map of String) Custom field values of the data sources, as a map of field name to value.
 - `description` (String) A description of the data sources.
 - `enabled` (Boolean) The enabled of the data sources.
-- `file_count` (Number) The file count of the data sources.
+- `file_count` (Number) The number of file of the data sources.
 - `id` (Number) The id of the data sources.
 - `ignore_rules` (String) The ignore rules of the data sources.
 - `last_synced` (String) The last synced of the data sources.
-- `last_updated` (String) The last updated of the data sources.
+- `last_updated` (String) When the data sources was last changed.
 - `name` (String) The name of the data sources.
 - `owner_id` (Number) The ID of the owner associated with the data sources.
 - `parameters` (String) The parameters of the data sources.

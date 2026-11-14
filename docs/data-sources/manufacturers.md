@@ -58,7 +58,17 @@ Required:
 
 Read-Only:
 
+- `comments` (String) Free-form comments about the manufacturers.
+- `created` (String) When the manufacturers was created.
+- `custom_fields` (Map of String) Custom field values of the manufacturers, as a map of field name to value.
 - `description` (String) A description of the manufacturer.
+- `devicetype_count` (Number) The number of devicetype of the manufacturers.
 - `id` (Number) The numeric ID of the manufacturer.
+- `inventoryitem_count` (Number) The number of inventoryitem of the manufacturers.
+- `last_updated` (String) When the manufacturers was last changed.
+- `moduletype_count` (Number) The number of moduletype of the manufacturers.
 - `name` (String) The name of the manufacturer.
+- `owner_id` (Number) The ID of the owner associated with the manufacturers.
+- `platform_count` (Number) The number of platform of the manufacturers.
 - `slug` (String) The URL-friendly slug of the manufacturer.
+- `tags` (Set of String) Tags assigned to the object, by name.

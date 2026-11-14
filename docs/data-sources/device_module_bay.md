@@ -37,7 +37,7 @@ output "device_module_bay_id" {
 
 ### Read-Only
 
-- `created` (String) The created of the device module bay.
+- `created` (String) When the device module bay was created.
 - `custom_fields` (Map of String) Custom field values of the device module bay, as a map of field name to value.
 - `description` (String) A description of the device module bay.
 - `enabled` (Boolean) The enabled of the device module bay.
@@ -45,7 +45,7 @@ output "device_module_bay_id" {
 - `installed_module_id` (Number) The ID of the installed module associated with the device module bay.
 - `is_module_compatible` (Boolean) The is module compatible of the device module bay.
 - `label` (String) The label of the device module bay.
-- `last_updated` (String) The last updated of the device module bay.
+- `last_updated` (String) When the device module bay was last changed.
 - `module_bay_types` (List of Number) The IDs of the module bay types of the device module bay.
 - `owner_id` (Number) The ID of the owner associated with the device module bay.
 - `position` (String) The position of the device module bay.

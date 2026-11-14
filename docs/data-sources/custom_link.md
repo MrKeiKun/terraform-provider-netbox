@@ -28,9 +28,11 @@ data "netbox_custom_link" "example" {
 ### Read-Only
 
 - `button_class` (String) The button class of the custom link.
+- `created` (String) When the custom link was created.
 - `enabled` (Boolean) Whether the custom link is enabled.
 - `group_name` (String) The group the custom link is shown in.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the custom link was last changed.
 - `link_text` (String) The link text of the custom link.
 - `link_url` (String) The link url of the custom link.
 - `new_window` (Boolean) Whether new window is enabled for the custom link.

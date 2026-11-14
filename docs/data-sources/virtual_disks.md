@@ -55,10 +55,13 @@ Required:
 
 Read-Only:
 
+- `created` (String) When the virtual_disks was created.
 - `custom_fields` (Map of String)
 - `description` (String) A description of the virtual disk.
 - `id` (Number) The numeric ID of the virtual disk.
+- `last_updated` (String) When the virtual_disks was last changed.
 - `name` (String) The name of the virtual disk.
+- `owner_id` (Number) The ID of the owner associated with the virtual_disks.
 - `size_mb` (Number) The size mb of the virtual disk.
 - `tags` (List of String)
 - `virtual_machine_id` (Number) The ID of the virtual machine associated with the virtual disk.

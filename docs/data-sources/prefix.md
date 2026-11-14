@@ -42,8 +42,17 @@ for more information on available lookup expressions.
 
 ### Read-Only
 
+- `children` (Number) The children of the prefix.
+- `comments` (String) Free-form comments about the prefix.
+- `created` (String) When the prefix was created.
 - `id` (Number) The numeric ID of the prefix.
+- `is_pool` (Boolean) The is pool of the prefix.
+- `last_updated` (String) When the prefix was last changed.
 - `location_id` (Number) The ID of the location associated with the prefix.
+- `mark_utilized` (Boolean) The mark utilized of the prefix.
+- `owner_id` (Number) The ID of the owner associated with the prefix.
 - `region_id` (Number) The ID of the region associated with the prefix.
+- `scope` (String) The scope of the prefix.
+- `scope_type` (String) The scope type of the prefix.
 - `site_group_id` (Number) The ID of the site group associated with the prefix.
 - `tags` (Set of String) Tags assigned to the object, by name.

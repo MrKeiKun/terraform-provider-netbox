@@ -52,11 +52,19 @@ Required:
 
 Read-Only:
 
+- `created` (String) When the module bays was created.
+- `custom_fields` (Map of String) Custom field values of the module bays, as a map of field name to value.
 - `description` (String) A description of the device module bays.
 - `device_id` (Number) The ID of the device associated with the device module bays.
+- `enabled` (Boolean) The enabled of the module bays.
 - `id` (Number) The numeric ID of the device module bays.
 - `installed_module_id` (Number) The ID of the installed module associated with the device module bays.
+- `is_module_compatible` (Boolean) The is module compatible of the module bays.
 - `label` (String) The label of the device module bays.
+- `last_updated` (String) When the module bays was last changed.
+- `module_bay_types` (List of Number) The IDs of the module bay types of the module bays.
+- `module_id` (Number) The ID of the module associated with the module bays.
 - `name` (String) The name of the device module bays.
+- `owner_id` (Number) The ID of the owner associated with the module bays.
 - `position` (String) The position of the device module bays.
 - `tags` (Set of String) Tags assigned to the object, by name.

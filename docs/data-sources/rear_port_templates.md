@@ -54,12 +54,12 @@ Required:
 Read-Only:
 
 - `color` (String) The color of the rear port templates.
-- `created` (String) The created of the rear port templates.
+- `created` (String) When the rear port templates was created.
 - `description` (String) A description of the rear port templates.
 - `device_type_id` (Number) The ID of the device type associated with the rear port templates.
 - `id` (Number) The id of the rear port templates.
 - `label` (String) The label of the rear port templates.
-- `last_updated` (String) The last updated of the rear port templates.
+- `last_updated` (String) When the rear port templates was last changed.
 - `module_type_id` (Number) The ID of the module type associated with the rear port templates.
 - `name` (String) The name of the rear port templates.
 - `positions` (Number) The positions of the rear port templates.

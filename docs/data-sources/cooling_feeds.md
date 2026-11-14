@@ -56,11 +56,11 @@ Read-Only:
 - `comments` (String) Free-form comments about the cooling feeds.
 - `cooling_capacity` (Number) The cooling capacity of the cooling feeds.
 - `cooling_source_id` (Number) The ID of the cooling source associated with the cooling feeds.
-- `created` (String) The created of the cooling feeds.
+- `created` (String) When the cooling feeds was created.
 - `custom_fields` (Map of String) Custom field values of the cooling feeds, as a map of field name to value.
 - `description` (String) A description of the cooling feeds.
 - `id` (Number) The id of the cooling feeds.
-- `last_updated` (String) The last updated of the cooling feeds.
+- `last_updated` (String) When the cooling feeds was last changed.
 - `max_flow` (Number) The max flow of the cooling feeds.
 - `max_flow_unit` (String) The max flow unit of the cooling feeds.
 - `name` (String) The name of the cooling feeds.

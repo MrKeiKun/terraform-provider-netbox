@@ -54,11 +54,11 @@ Required:
 Read-Only:
 
 - `comments` (String) Free-form comments about the contact roles.
-- `created` (String) The created of the contact roles.
+- `created` (String) When the contact roles was created.
 - `custom_fields` (Map of String) Custom field values of the contact roles, as a map of field name to value.
 - `description` (String) A description of the contact roles.
 - `id` (Number) The id of the contact roles.
-- `last_updated` (String) The last updated of the contact roles.
+- `last_updated` (String) When the contact roles was last changed.
 - `name` (String) The name of the contact roles.
 - `owner_id` (Number) The ID of the owner associated with the contact roles.
 - `slug` (String) The slug of the contact roles.

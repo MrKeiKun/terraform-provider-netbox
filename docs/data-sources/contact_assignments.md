@@ -54,10 +54,10 @@ Required:
 Read-Only:
 
 - `contact_id` (Number) The ID of the contact associated with the contact assignments.
-- `created` (String) The created of the contact assignments.
+- `created` (String) When the contact assignments was created.
 - `custom_fields` (Map of String) Custom field values of the contact assignments, as a map of field name to value.
 - `id` (Number) The id of the contact assignments.
-- `last_updated` (String) The last updated of the contact assignments.
+- `last_updated` (String) When the contact assignments was last changed.
 - `object` (String) The object of the contact assignments.
 - `object_id` (Number) The object id of the contact assignments.
 - `object_type` (String) The object type of the contact assignments.

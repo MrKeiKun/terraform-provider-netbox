@@ -54,23 +54,23 @@ Required:
 Read-Only:
 
 - `asns` (List of Number) The IDs of the asns of the sites.
-- `circuit_count` (Number) The circuit count of the sites.
+- `circuit_count` (Number) The number of circuit of the sites.
 - `comments` (String) Free-form comments about the sites.
-- `created` (String) The created of the sites.
+- `created` (String) When the sites was created.
 - `custom_fields` (Map of String) Custom field values of the sites, as a map of field name to value.
 - `description` (String) A description of the sites.
-- `device_count` (Number) The device count of the sites.
+- `device_count` (Number) The number of device of the sites.
 - `facility` (String) The facility of the sites.
 - `group_id` (Number) The ID of the group associated with the sites.
 - `id` (Number) The id of the sites.
-- `last_updated` (String) The last updated of the sites.
+- `last_updated` (String) When the sites was last changed.
 - `latitude` (Number) The latitude of the sites.
 - `longitude` (Number) The longitude of the sites.
 - `name` (String) The name of the sites.
 - `owner_id` (Number) The ID of the owner associated with the sites.
 - `physical_address` (String) The physical address of the sites.
-- `prefix_count` (Number) The prefix count of the sites.
-- `rack_count` (Number) The rack count of the sites.
+- `prefix_count` (Number) The number of prefix of the sites.
+- `rack_count` (Number) The number of rack of the sites.
 - `region_id` (Number) The ID of the region associated with the sites.
 - `shipping_address` (String) The shipping address of the sites.
 - `slug` (String) The slug of the sites.
@@ -78,5 +78,5 @@ Read-Only:
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the sites.
 - `time_zone` (String) The time zone of the sites.
-- `virtualmachine_count` (Number) The virtualmachine count of the sites.
-- `vlan_count` (Number) The vlan count of the sites.
+- `virtualmachine_count` (Number) The number of virtualmachine of the sites.
+- `vlan_count` (Number) The number of vlan of the sites.
