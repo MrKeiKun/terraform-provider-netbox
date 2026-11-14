@@ -41,7 +41,7 @@ func device() *fwresource.Spec {
 		Put:          true,
 		RequiredWith: [][]string{{"rack_face", "rack_position"}, {"virtual_chassis_id", "virtual_chassis_master"}, {"virtual_chassis_master", "virtual_chassis_id"}},
 		Attrs: []fwresource.Attr{
-			{Name: "airflow", Kind: fwresource.String, Nullable: true, Optional: true, Description: "Airflow direction of the device. One of [front-to-rear, rear-to-front, left-to-right, right-to-left, side-to-rear, rear-to-side, bottom-to-top, top-to-bottom, passive, mixed]"},
+			{Name: "airflow", Kind: fwresource.String, Nullable: true, Optional: true, Description: "Airflow direction of the device. One of [front-to-rear, rear-to-front, left-to-right, right-to-left, side-to-rear, rear-to-side, bottom-to-top, top-to-bottom, passive, mixed]", OneOf: []string{"bottom-to-top", "front-to-rear", "left-to-right", "mixed", "passive", "rear-to-front", "rear-to-side", "right-to-left", "side-to-rear", "top-to-bottom"}},
 			{Name: "asset_tag", Kind: fwresource.String, Nullable: true, Optional: true, Description: "The asset tag of the device."},
 			{Name: "cluster_id", Kind: fwresource.Int, Key: "cluster", Ref: true, Nullable: true, Optional: true, Description: "The ID of the cluster associated with the device."},
 			{Name: "comments", Kind: fwresource.String, Optional: true, Description: "Free-form comments about the device."},

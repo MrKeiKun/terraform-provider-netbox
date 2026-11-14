@@ -43,6 +43,10 @@ var notManaged = map[string]string{
 	"netbox_user last_login":         "set by NetBox at login",
 }
 
+// notChecked are string attributes that take a fixed set of choices in NetBox but are on purpose not
+// checked by the provider, with the reason.
+var notChecked = map[string]string{}
+
 // notProvided are API collections that have no resource or data source on purpose, with the reason.
 var notProvided = map[string]string{
 	"resource extras/image-attachments/":                "file upload, the API only takes multipart form data; netbox_image_attachment data sources exist",
@@ -61,7 +65,7 @@ func main() {
 		writeBase  = flag.Bool("write-baseline", false, "write the current drift to -baseline")
 		versions   = flag.String("versions", "", "with -write-versions: version=schema file pairs, for example 4.4.0=a.json,4.7.0=b.json")
 		writeVer   = flag.String("write-versions", "", "write the table of the first NetBox version of each resource and attribute to this file")
-		section    = flag.String("section", "", "only print this kind: resource, datasource, field, filter")
+		section    = flag.String("section", "", "only print this kind: resource, datasource, field, filter, enum")
 	)
 	flag.Parse()
 
@@ -150,7 +154,7 @@ func fatal(err error) {
 
 // item is one gap between NetBox and the provider.
 type item struct {
-	Kind string // resource, datasource, field, filter
+	Kind string // resource, datasource, field, filter, enum
 	Path string // API collection
 	Name string // field, filter, or data source flavour (singular, plural)
 	Spec string // type name of the resource or data source that lacks it
@@ -231,6 +235,7 @@ func compare(endpoints []*endpoint) []item {
 					out = append(out, item{Kind: "field", Path: path, Name: f, Spec: s.TypeName})
 				}
 			}
+			out = append(out, compareEnums(ep, s)...)
 		}
 	}
 
@@ -257,6 +262,40 @@ func compare(endpoints []*endpoint) []item {
 					continue
 				}
 				out = append(out, item{Kind: "filter", Path: path, Name: q, Spec: d.TypeName})
+			}
+		}
+	}
+	return out
+}
+
+// compareEnums finds the attributes whose NetBox field takes a fixed set of choices, but that the
+// provider does not check, or checks against a list that lacks a choice. Choices that only older
+// versions of NetBox have stay in the list, so only the missing ones are reported.
+func compareEnums(ep *endpoint, s *fwresource.Spec) []item {
+	var out []item
+	for _, a := range s.Attrs {
+		if a.Kind != fwresource.String || a.Local {
+			continue
+		}
+		field := a.Name
+		if a.Key != "" {
+			field = a.Key
+		}
+		choices := ep.Enums[field]
+		if len(choices) == 0 || notChecked[s.TypeName+" "+a.Name] != "" {
+			continue
+		}
+		if len(a.OneOf) == 0 {
+			out = append(out, item{Kind: "enum", Path: ep.Path, Name: a.Name + " unchecked", Spec: s.TypeName})
+			continue
+		}
+		have := map[string]bool{}
+		for _, v := range a.OneOf {
+			have[v] = true
+		}
+		for _, c := range choices {
+			if !have[c] {
+				out = append(out, item{Kind: "enum", Path: ep.Path, Name: a.Name + " lacks " + c, Spec: s.TypeName})
 			}
 		}
 	}

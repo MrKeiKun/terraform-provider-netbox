@@ -29,6 +29,10 @@ Netbox often makes breaking API changes even in non-major releases. Check the ta
 
 Additionally, each version of the provider has a built-in list of all Netbox versions it supports at release time. Upon initialization, the provider will probe your Netbox version and include a (non-blocking) warning if the used Netbox version is not supported.
 
+## Importing
+
+Every resource can be imported by its numeric NetBox ID. Most resources that have a slug or a name can also be imported by it, for example `terraform import netbox_site.example example-site`. The slug is used when the object has one, otherwise the name. The import stops with an error when no object, or more than one, has that slug or name. A slug or name that is only digits is read as the ID.
+
 ## Configuration
 You must configure the provider with proper credentials before you can use it. You can configure the provider via attributes in the provider block or via environment variables. See [Schema](#schema) for all configuration options
 

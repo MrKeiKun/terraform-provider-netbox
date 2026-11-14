@@ -155,3 +155,26 @@ func init() {
 		},
 	})
 }
+
+func TestAccNetboxSite_importBySlug(t *testing.T) {
+	testName := testAccGetTestName("site_import_slug")
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+resource "netbox_site" "test" {
+  name = "%[1]s"
+  slug = "%[1]s"
+}`, testName),
+			},
+			{
+				ResourceName:      "netbox_site.test",
+				ImportState:       true,
+				ImportStateId:     testName,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
