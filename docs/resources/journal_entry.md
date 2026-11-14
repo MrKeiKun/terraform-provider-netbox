@@ -34,6 +34,7 @@ resource "netbox_journal_entry" "example" {
 
 ### Optional
 
+- `created_by_id` (Number) The ID of the user that created the journal entry. NetBox sets it to the user of the API token when it is left out.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `kind` (String) One of [info, success, warning, danger].
 - `tags` (Set of String) Tags assigned to the object, by name.

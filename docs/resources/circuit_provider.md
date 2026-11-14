@@ -32,6 +32,7 @@ resource "netbox_circuit_provider" "test" {
 
 ### Optional
 
+- `account_ids` (Set of Number) The IDs of the provider accounts of the provider.
 - `asns` (Set of Number) The IDs of the AS numbers of the provider.
 - `comments` (String) Free-form comments about the circuit provider.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.

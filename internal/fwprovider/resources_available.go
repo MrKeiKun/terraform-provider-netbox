@@ -65,7 +65,7 @@ func stringValue(v fwresource.Values, name string) string {
 
 func availableIPAddress() *fwresource.Spec {
 	s := derive("netbox_ip_address")
-	dropAttrs(s, "comments", "owner_id", "nat_outside_addresses")
+	dropAttrs(s, "nat_outside_addresses")
 	s.TypeName = "netbox_available_ip_address"
 	s.Description = ":meta:subcategory:IP Address Management (IPAM):Per [the docs](https://netbox.readthedocs.io/en/stable/models/ipam/ipaddress/):\n\n> An IP address comprises a single host address (either IPv4 or IPv6) and its subnet mask. Its mask should match exactly how the IP address is configured on an interface in the real world.\n> Like a prefix, an IP address can optionally be assigned to a VRF (otherwise, it will appear in the \"global\" table). IP addresses are automatically arranged under parent prefixes within their respective VRFs according to the IP hierarchya.\n>\n> Each IP address can also be assigned an operational status and a functional role. Statuses are hard-coded in NetBox and include the following:\n> * Active\n> * Reserved\n> * Deprecated\n> * DHCP\n> * SLAAC (IPv6 Stateless Address Autoconfiguration)\n\nThis resource will retrieve the next available IP address from a given prefix or IP range (specified by ID)"
 	rename(s, "the ip address", "the available ip address")
@@ -236,16 +236,20 @@ func availablePrefix() *fwresource.Spec {
 
 func availableVLAN() *fwresource.Spec {
 	return &fwresource.Spec{
-		TypeName:    "netbox_available_vlan",
-		Path:        "ipam/vlans/",
-		Description: ":meta:subcategory:IP Address Management (IPAM):Per [the docs](https://netbox.readthedocs.io/en/stable/models/ipam/vlan/):\n\n> A VLAN represents an isolated Layer 2 domain identified by a numeric ID (1–4094). VLANs may be assigned to specific sites or marked as global.\n> Optionally, they can be organized within VLAN groups to define scope and enforce uniqueness.\n>\n> Each VLAN can also be assigned an operational status and a functional role. Statuses are hard-coded in NetBox and include the following:\n> * Active\n> * Reserved\n> * Deprecated\n\nThis resource will retrieve the next available VLAN ID from a given VLAN group (specified by ID).",
-		Tags:        true,
-		Put:         true,
+		TypeName:     "netbox_available_vlan",
+		Path:         "ipam/vlans/",
+		Description:  ":meta:subcategory:IP Address Management (IPAM):Per [the docs](https://netbox.readthedocs.io/en/stable/models/ipam/vlan/):\n\n> A VLAN represents an isolated Layer 2 domain identified by a numeric ID (1–4094). VLANs may be assigned to specific sites or marked as global.\n> Optionally, they can be organized within VLAN groups to define scope and enforce uniqueness.\n>\n> Each VLAN can also be assigned an operational status and a functional role. Statuses are hard-coded in NetBox and include the following:\n> * Active\n> * Reserved\n> * Deprecated\n\nThis resource will retrieve the next available VLAN ID from a given VLAN group (specified by ID).",
+		Tags:         true,
+		CustomFields: true,
+		Put:          true,
 		Attrs: []fwresource.Attr{
-			{Name: "comments", Kind: fwresource.String, Computed: true, Description: "Free-form comments about the available vlan."},
+			{Name: "comments", Kind: fwresource.String, Optional: true, Description: "Free-form comments about the available vlan."},
 			{Name: "description", Kind: fwresource.String, Optional: true, Description: "A description of the available vlan."},
 			{Name: "group_id", Kind: fwresource.Int, Key: "group", Ref: true, Nullable: true, Optional: true, Description: "The ID of the group associated with the available vlan."},
 			{Name: "name", Kind: fwresource.String, Required: true, Description: "The name of the available vlan."},
+			{Name: "owner_id", Kind: fwresource.Int, Key: "owner", Ref: true, Nullable: true, Optional: true, Description: "The ID of the owner associated with the available vlan."},
+			{Name: "qinq_role", Kind: fwresource.String, Nullable: true, Optional: true, Description: "One of [svlan, cvlan].", OneOf: []string{"cvlan", "svlan"}},
+			{Name: "qinq_svlan", Kind: fwresource.Int, Nullable: true, Optional: true, Description: "The qinq svlan of the available vlan."},
 			{Name: "role_id", Kind: fwresource.Int, Key: "role", Ref: true, Nullable: true, Optional: true, Description: "The ID of the role associated with the available vlan."},
 			{Name: "site_id", Kind: fwresource.Int, Key: "site", Ref: true, Nullable: true, Optional: true, Description: "The ID of the site associated with the available vlan."},
 			{Name: "status", Kind: fwresource.String, Optional: true, Computed: true, Description: "The status of the available vlan."},

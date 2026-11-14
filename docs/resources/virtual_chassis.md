@@ -42,6 +42,7 @@ resource "netbox_virtual_chassis" "example" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `master_id` (Number) The ID of the device that is the master of the virtual chassis. Set `virtual_chassis_master` on the `netbox_device` to choose it.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

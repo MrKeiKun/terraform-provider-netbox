@@ -66,8 +66,13 @@ resource "netbox_prefix" "testPrefix" {
 
 ### Optional
 
+- `comments` (String) Free-form comments about the available vlan.
+- `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the available vlan.
 - `group_id` (Number) The ID of the group associated with the available vlan.
+- `owner_id` (Number) The ID of the owner associated with the available vlan. Needs NetBox 4.5.0 or later.
+- `qinq_role` (String) One of [svlan, cvlan].
+- `qinq_svlan` (Number) The qinq svlan of the available vlan.
 - `role_id` (Number) The ID of the role associated with the available vlan.
 - `site_id` (Number) The ID of the site associated with the available vlan.
 - `status` (String) The status of the available vlan.
@@ -76,7 +81,6 @@ resource "netbox_prefix" "testPrefix" {
 
 ### Read-Only
 
-- `comments` (String) Free-form comments about the available vlan.
 - `id` (String) The ID of this resource.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 - `vid` (Number) The VLAN ID (1-4094).

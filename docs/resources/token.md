@@ -41,6 +41,7 @@ resource "netbox_token" "test_basic" {
 
 - `allowed_ips` (List of String) The allowed ips of the token.
 - `description` (String) A description of the token.
+- `enabled` (Boolean) Whether the token is enabled. A disabled token is revoked but not deleted. Needs NetBox 4.5 or later.
 - `expires` (String) The expires of the token.
 - `key` (String, Sensitive) The key of the token.
 - `write_enabled` (Boolean) Whether write enabled is enabled for the token.

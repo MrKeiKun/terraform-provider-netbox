@@ -33,6 +33,22 @@ var ignoredQuery = map[string]bool{
 	"updated_by_request": true, "modified_by_request": true, "q": true, "config_template_id": false,
 }
 
+// notManaged are writable API fields that are on purpose not attributes, with the reason.
+var notManaged = map[string]string{
+	"netbox_device_type front_image": "file upload, the API only takes multipart form data",
+	"netbox_device_type rear_image":  "file upload, the API only takes multipart form data",
+	"netbox_token pepper_id":         "internal, NetBox picks the pepper",
+	"netbox_token version":           "internal, NetBox sets the token version",
+	"netbox_user date_joined":        "set by NetBox when the account is created",
+	"netbox_user last_login":         "set by NetBox at login",
+}
+
+// notProvided are API collections that have no resource or data source on purpose, with the reason.
+var notProvided = map[string]string{
+	"resource extras/image-attachments/":                "file upload, the API only takes multipart form data; netbox_image_attachment data sources exist",
+	"datasource virtualization/virtual-disks/ singular": "netbox_virtual_disk has always been the list data source, its name stays for compatibility",
+}
+
 // skippedCollections are API collections that are not objects a user manages.
 var skippedPrefixes = []string{"core/", "extras/scripts/", "extras/script-modules/", "plugins/"}
 
@@ -184,7 +200,7 @@ func compare(endpoints []*endpoint) []item {
 		if !ep.HasDetail || skipped(ep.Path) {
 			continue
 		}
-		if ep.CanCreate && len(resByPath[ep.Path]) == 0 {
+		if ep.CanCreate && len(resByPath[ep.Path]) == 0 && notProvided["resource "+ep.Path] == "" {
 			out = append(out, item{Kind: "resource", Path: ep.Path})
 		}
 		var singular, plural bool
@@ -195,7 +211,7 @@ func compare(endpoints []*endpoint) []item {
 				singular = true
 			}
 		}
-		if !singular {
+		if !singular && notProvided["datasource "+ep.Path+" singular"] == "" {
 			out = append(out, item{Kind: "datasource", Path: ep.Path, Name: "singular"})
 		}
 		if !plural {
@@ -211,7 +227,7 @@ func compare(endpoints []*endpoint) []item {
 		for _, s := range specs {
 			covered := resourceKeys(s)
 			for f := range ep.Fields {
-				if !covered[f] && !ignoredFields[f] {
+				if !covered[f] && !ignoredFields[f] && notManaged[s.TypeName+" "+f] == "" {
 					out = append(out, item{Kind: "field", Path: path, Name: f, Spec: s.TypeName})
 				}
 			}

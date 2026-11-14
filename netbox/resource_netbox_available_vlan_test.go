@@ -401,3 +401,39 @@ resource "netbox_available_vlan" "vlan" {
 		},
 	})
 }
+
+func TestAccNetboxAvailableVLAN_qinq(t *testing.T) {
+	testName := testAccGetTestName("avlanqinq")
+	config := func(role string) string {
+		return fmt.Sprintf(`
+resource "netbox_vlan_group" "test" {
+  name       = "%[1]s"
+  slug       = "%[1]s"
+  vid_ranges = [[1, 50]]
+}
+
+resource "netbox_available_vlan" "test" {
+  name       = "%[1]s"
+  group_id   = netbox_vlan_group.test.id
+  comments   = "a comment"
+  qinq_role  = %[2]s
+}
+`, testName, role)
+	}
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		Steps: []resource.TestStep{
+			{
+				Config: config(`"svlan"`),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_available_vlan.test", "comments", "a comment"),
+					resource.TestCheckResourceAttr("netbox_available_vlan.test", "qinq_role", "svlan"),
+				),
+			},
+			{
+				Config: config(`null`),
+			},
+		},
+	})
+}

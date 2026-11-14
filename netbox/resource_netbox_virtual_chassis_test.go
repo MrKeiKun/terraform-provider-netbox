@@ -59,3 +59,53 @@ resource "netbox_virtual_chassis" "test" {
 func testAccCheckVirtualChassisDestroy(s *terraform.State) error {
 	return testAccCheckObjectsDestroyed(s, "netbox_virtual_chassis", "dcim/virtual-chassis/")
 }
+
+func TestAccNetboxVirtualChassis_master(t *testing.T) {
+	testName := testAccGetTestName("vcmaster")
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckVirtualChassisDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+resource "netbox_site" "test" {
+  name = "%[1]s"
+}
+
+resource "netbox_manufacturer" "test" {
+  name = "%[1]s"
+}
+
+resource "netbox_device_role" "test" {
+  name      = "%[1]s"
+  color_hex = "123456"
+}
+
+resource "netbox_device_type" "test" {
+  model           = "%[1]s"
+  manufacturer_id = netbox_manufacturer.test.id
+}
+
+resource "netbox_virtual_chassis" "test" {
+  name = "%[1]s"
+}
+
+resource "netbox_device" "member" {
+  name                     = "%[1]s"
+  site_id                  = netbox_site.test.id
+  role_id                  = netbox_device_role.test.id
+  device_type_id           = netbox_device_type.test.id
+  virtual_chassis_id       = netbox_virtual_chassis.test.id
+  virtual_chassis_position = 1
+  virtual_chassis_master   = true
+}
+`, testName),
+			},
+			{
+				RefreshState: true,
+				Check:        resource.TestCheckResourceAttrPair("netbox_virtual_chassis.test", "master_id", "netbox_device.member", "id"),
+			},
+		},
+	})
+}
