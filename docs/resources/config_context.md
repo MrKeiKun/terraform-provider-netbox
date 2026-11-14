@@ -35,6 +35,7 @@ resource "netbox_config_context" "test" {
 - `cluster_groups` (Set of Number) The cluster groups of the config context.
 - `cluster_types` (Set of Number) The cluster types of the config context.
 - `clusters` (Set of Number) The clusters of the config context.
+- `data_source_id` (Number) The ID of the data source associated with the config context.
 - `description` (String) A description of the config context.
 - `device_types` (Set of Number) The device types of the config context.
 - `is_active` (Boolean) Whether the config context is active.

@@ -39,6 +39,7 @@ resource "netbox_config_template" "test" {
 
 - `as_attachment` (Boolean) Download file as attachment.
 - `auto_sync_enabled` (Boolean) Enable automatic synchronization of data when the data file is updated.
+- `data_source_id` (Number) The ID of the data source associated with the config template.
 - `debug` (Boolean) Enable verbose error output when rendering this template. Not recommended for production use. Needs NetBox 4.6.0 or later.
 - `description` (String) A description of the config template.
 - `environment_params` (String) The environment params of the config template. Defaults to `{}`.

@@ -76,6 +76,7 @@ resource "netbox_available_ip_address" "myvm-ip" {
 
 ### Optional
 
+- `comments` (String) Free-form comments about the available ip address.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the available ip address.
 - `device_interface_id` (Number) The ID of the device interface associated with the available ip address. Conflicts with `interface_id` and `virtual_machine_interface_id`.
@@ -84,6 +85,7 @@ resource "netbox_available_ip_address" "myvm-ip" {
 - `ip_range_id` (Number) The ID of the ip range associated with the available ip address.
 - `nat_inside_address_id` (Number) The ID of the nat inside address associated with the available ip address.
 - `object_type` (String) Valid values are `virtualization.vminterface`, `dcim.interface` and `ipam.fhrpgroup`. Required when `interface_id` is set.
+- `owner_id` (Number) The ID of the owner associated with the available ip address. Needs NetBox 4.5.0 or later.
 - `prefix_id` (Number) The ID of the prefix associated with the available ip address.
 - `role` (String) Valid values are `loopback`, `secondary`, `anycast`, `vip`, `vrrp`, `hsrp`, `glbp` and `carp`.
 - `status` (String) Valid values are `active`, `reserved`, `deprecated`, `dhcp` and `slaac`.

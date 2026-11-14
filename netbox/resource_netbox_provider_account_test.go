@@ -100,3 +100,32 @@ func init() {
 		},
 	})
 }
+
+func TestAccNetboxCircuitProvider_accountIDs(t *testing.T) {
+	testName := testAccGetTestName("provideraccids")
+	config := fmt.Sprintf(`
+resource "netbox_circuit_provider" "test" {
+  name = "%[1]s"
+}
+
+resource "netbox_provider_account" "test" {
+  provider_id = netbox_circuit_provider.test.id
+  account     = "%[1]s"
+  name        = "%[1]s"
+}
+`, testName)
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		Steps: []resource.TestStep{
+			{Config: config},
+			{
+				Config: config,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_circuit_provider.test", "account_ids.#", "1"),
+					resource.TestCheckTypeSetElemAttrPair("netbox_circuit_provider.test", "account_ids.*", "netbox_provider_account.test", "id"),
+				),
+			},
+		},
+	})
+}
