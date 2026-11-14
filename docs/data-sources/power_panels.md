@@ -54,14 +54,14 @@ Required:
 Read-Only:
 
 - `comments` (String) Free-form comments about the power panels.
-- `created` (String) The created of the power panels.
+- `created` (String) When the power panels was created.
 - `custom_fields` (Map of String) Custom field values of the power panels, as a map of field name to value.
 - `description` (String) A description of the power panels.
 - `id` (Number) The id of the power panels.
-- `last_updated` (String) The last updated of the power panels.
+- `last_updated` (String) When the power panels was last changed.
 - `location_id` (Number) The ID of the location associated with the power panels.
 - `name` (String) The name of the power panels.
 - `owner_id` (Number) The ID of the owner associated with the power panels.
-- `powerfeed_count` (Number) The powerfeed count of the power panels.
+- `powerfeed_count` (Number) The number of powerfeed of the power panels.
 - `site_id` (Number) The ID of the site associated with the power panels.
 - `tags` (Set of String) Tags assigned to the object, by name.

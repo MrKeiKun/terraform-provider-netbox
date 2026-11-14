@@ -53,7 +53,7 @@ Required:
 
 Read-Only:
 
-- `created` (String) The created of the notifications.
+- `created` (String) When the notifications was created.
 - `event_type` (String) The event type of the notifications.
 - `id` (Number) The id of the notifications.
 - `object` (String) The object of the notifications.

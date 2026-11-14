@@ -59,13 +59,13 @@ Read-Only:
 - `action_object_type` (String) The action object type of the event rules.
 - `action_type` (String) The action type of the event rules.
 - `conditions` (String) The conditions of the event rules.
-- `created` (String) The created of the event rules.
+- `created` (String) When the event rules was created.
 - `custom_fields` (Map of String) Custom field values of the event rules, as a map of field name to value.
 - `description` (String) A description of the event rules.
 - `enabled` (Boolean) The enabled of the event rules.
 - `event_types` (List of String) The event types of the event rules.
 - `id` (Number) The id of the event rules.
-- `last_updated` (String) The last updated of the event rules.
+- `last_updated` (String) When the event rules was last changed.
 - `name` (String) The name of the event rules.
 - `object_types` (List of String) The object types of the event rules.
 - `owner_id` (Number) The ID of the owner associated with the event rules.

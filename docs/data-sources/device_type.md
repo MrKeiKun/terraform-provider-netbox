@@ -43,7 +43,36 @@ data "netbox_device_type" "ex3" {
 
 ### Read-Only
 
+- `airflow` (String) The airflow of the device type.
+- `comments` (String) Free-form comments about the device type.
+- `console_port_template_count` (Number) The number of console port template of the device type.
+- `console_server_port_template_count` (Number) The number of console server port template of the device type.
+- `cooling_intake_template_count` (Number) The number of cooling intake template of the device type.
+- `cooling_method` (String) The cooling method of the device type.
+- `cooling_outflow_template_count` (Number) The number of cooling outflow template of the device type.
+- `created` (String) When the device type was created.
+- `custom_fields` (Map of String) Custom field values of the device type, as a map of field name to value.
+- `default_platform_id` (Number) The ID of the default platform associated with the device type.
+- `description` (String) A description of the device type.
+- `device_bay_template_count` (Number) The number of device bay template of the device type.
+- `device_count` (Number) The number of device of the device type.
+- `end_of_life` (String) The end of life of the device type.
+- `exclude_from_utilization` (Boolean) The exclude from utilization of the device type.
+- `front_image` (String) The front image of the device type.
+- `front_port_template_count` (Number) The number of front port template of the device type.
 - `id` (String) The ID of this resource.
+- `interface_template_count` (Number) The number of interface template of the device type.
+- `inventory_item_template_count` (Number) The number of inventory item template of the device type.
 - `is_full_depth` (Boolean) Whether the device type is full depth.
+- `last_updated` (String) When the device type was last changed.
 - `manufacturer_id` (Number) The ID of the manufacturer associated with the device type.
+- `module_bay_template_count` (Number) The number of module bay template of the device type.
+- `owner_id` (Number) The ID of the owner associated with the device type.
+- `power_outlet_template_count` (Number) The number of power outlet template of the device type.
+- `power_port_template_count` (Number) The number of power port template of the device type.
+- `rear_image` (String) The rear image of the device type.
+- `rear_port_template_count` (Number) The number of rear port template of the device type.
+- `tags` (Set of String) Tags assigned to the object, by name.
 - `u_height` (Number) The height of the device type in rack units.
+- `weight` (Number) The weight of the device type.
+- `weight_unit` (String) The weight unit of the device type.

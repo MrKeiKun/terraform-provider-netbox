@@ -55,13 +55,13 @@ Read-Only:
 
 - `color` (String) The color of the rack roles.
 - `comments` (String) Free-form comments about the rack roles.
-- `created` (String) The created of the rack roles.
+- `created` (String) When the rack roles was created.
 - `custom_fields` (Map of String) Custom field values of the rack roles, as a map of field name to value.
 - `description` (String) A description of the rack roles.
 - `id` (Number) The id of the rack roles.
-- `last_updated` (String) The last updated of the rack roles.
+- `last_updated` (String) When the rack roles was last changed.
 - `name` (String) The name of the rack roles.
 - `owner_id` (Number) The ID of the owner associated with the rack roles.
-- `rack_count` (Number) The rack count of the rack roles.
+- `rack_count` (Number) The number of rack of the rack roles.
 - `slug` (String) The slug of the rack roles.
 - `tags` (Set of String) Tags assigned to the object, by name.

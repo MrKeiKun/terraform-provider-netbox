@@ -28,10 +28,14 @@ data "netbox_asn_range" "example" {
 
 ### Read-Only
 
+- `asn_count` (Number) The number of asn of the asn range.
 - `comments` (String) Free-form comments about the asn range.
+- `created` (String) When the asn range was created.
+- `custom_fields` (Map of String) Custom field values of the asn range, as a map of field name to value.
 - `description` (String) A description of the asn range.
 - `end` (Number) The end of the asn range.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the asn range was last changed.
 - `owner_id` (Number) The ID of the owner associated with the asn range.
 - `rir_id` (Number) The ID of the rir associated with the asn range.
 - `start` (Number) The start of the asn range.

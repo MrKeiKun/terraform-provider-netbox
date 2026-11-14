@@ -53,13 +53,13 @@ Required:
 
 Read-Only:
 
-- `cable_count` (Number) The cable count of the cable bundles.
+- `cable_count` (Number) The number of cable of the cable bundles.
 - `comments` (String) Free-form comments about the cable bundles.
-- `created` (String) The created of the cable bundles.
+- `created` (String) When the cable bundles was created.
 - `custom_fields` (Map of String) Custom field values of the cable bundles, as a map of field name to value.
 - `description` (String) A description of the cable bundles.
 - `id` (Number) The id of the cable bundles.
-- `last_updated` (String) The last updated of the cable bundles.
+- `last_updated` (String) When the cable bundles was last changed.
 - `name` (String) The name of the cable bundles.
 - `owner_id` (Number) The ID of the owner associated with the cable bundles.
 - `tags` (Set of String) Tags assigned to the object, by name.

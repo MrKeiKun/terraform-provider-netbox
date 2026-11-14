@@ -52,9 +52,15 @@ Required:
 
 Read-Only:
 
+- `comments` (String) Free-form comments about the aggregates.
+- `created` (String) When the aggregates was created.
+- `custom_fields` (Map of String) Custom field values of the aggregates, as a map of field name to value.
 - `date_added` (String) The date added of the aggregates.
 - `description` (String) A description of the aggregates.
+- `family` (String) The family of the aggregates.
 - `id` (Number) The numeric ID of the aggregates.
+- `last_updated` (String) When the aggregates was last changed.
+- `owner_id` (Number) The ID of the owner associated with the aggregates.
 - `prefix` (String) The prefix in CIDR notation.
 - `rir_id` (Number) The ID of the rir associated with the aggregates.
 - `tags` (Set of String) Tags assigned to the object, by name.

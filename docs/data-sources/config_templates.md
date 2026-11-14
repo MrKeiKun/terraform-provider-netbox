@@ -55,7 +55,7 @@ Read-Only:
 
 - `as_attachment` (Boolean) The as attachment of the config templates.
 - `auto_sync_enabled` (Boolean) The auto sync enabled of the config templates.
-- `created` (String) The created of the config templates.
+- `created` (String) When the config templates was created.
 - `data_file_id` (Number) The ID of the data file associated with the config templates.
 - `data_path` (String) The data path of the config templates.
 - `data_source_id` (Number) The ID of the data source associated with the config templates.
@@ -66,7 +66,7 @@ Read-Only:
 - `file_extension` (String) The file extension of the config templates.
 - `file_name` (String) The file name of the config templates.
 - `id` (Number) The id of the config templates.
-- `last_updated` (String) The last updated of the config templates.
+- `last_updated` (String) When the config templates was last changed.
 - `mime_type` (String) The mime type of the config templates.
 - `name` (String) The name of the config templates.
 - `owner_id` (Number) The ID of the owner associated with the config templates.

@@ -57,7 +57,7 @@ Read-Only:
 - `auth_psk` (String) The auth psk of the wireless links.
 - `auth_type` (String) The auth type of the wireless links.
 - `comments` (String) Free-form comments about the wireless links.
-- `created` (String) The created of the wireless links.
+- `created` (String) When the wireless links was created.
 - `custom_fields` (Map of String) Custom field values of the wireless links, as a map of field name to value.
 - `description` (String) A description of the wireless links.
 - `distance` (Number) The distance of the wireless links.
@@ -65,7 +65,7 @@ Read-Only:
 - `id` (Number) The id of the wireless links.
 - `interface_a_id` (Number) The ID of the interface a associated with the wireless links.
 - `interface_b_id` (Number) The ID of the interface b associated with the wireless links.
-- `last_updated` (String) The last updated of the wireless links.
+- `last_updated` (String) When the wireless links was last changed.
 - `owner_id` (Number) The ID of the owner associated with the wireless links.
 - `ssid` (String) The ssid of the wireless links.
 - `status` (String) The status of the wireless links.

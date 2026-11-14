@@ -35,7 +35,7 @@ output "fhrp_group_assignment_id" {
 
 ### Read-Only
 
-- `created` (String) The created of the fhrp group assignment.
+- `created` (String) When the fhrp group assignment was created.
 - `interface` (String) The interface of the fhrp group assignment.
 - `interface_id` (Number) The interface id of the fhrp group assignment.
-- `last_updated` (String) The last updated of the fhrp group assignment.
+- `last_updated` (String) When the fhrp group assignment was last changed.

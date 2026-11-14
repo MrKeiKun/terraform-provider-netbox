@@ -31,7 +31,7 @@ output "notification_id" {
 
 ### Read-Only
 
-- `created` (String) The created of the notification.
+- `created` (String) When the notification was created.
 - `event_type` (String) The event type of the notification.
 - `object` (String) The object of the notification.
 - `object_id` (Number) The object id of the notification.

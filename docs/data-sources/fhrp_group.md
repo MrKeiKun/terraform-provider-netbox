@@ -35,7 +35,12 @@ data "netbox_fhrp_group" "test" {
 - `auth_key` (String) The auth key of the fhrp group.
 - `auth_type` (String) The auth type of the fhrp group.
 - `comments` (String) Free-form comments about the fhrp group.
+- `created` (String) When the group was created.
+- `custom_fields` (Map of String) Custom field values of the group, as a map of field name to value.
 - `description` (String) A description of the fhrp group.
 - `id` (Number) The numeric ID of the fhrp group.
+- `ip_addresses` (List of Number) The IDs of the ip addresses of the group.
+- `last_updated` (String) When the group was last changed.
 - `name` (String) The name of the fhrp group.
+- `owner_id` (Number) The ID of the owner associated with the group.
 - `tags` (Set of String) Tags assigned to the object, by name.

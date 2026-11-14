@@ -41,12 +41,12 @@ output "device_console_port_id" {
 - `cable_end` (String) The cable end of the device console port.
 - `connected_endpoints_reachable` (Boolean) The connected endpoints reachable of the device console port.
 - `connected_endpoints_type` (String) The connected endpoints type of the device console port.
-- `created` (String) The created of the device console port.
+- `created` (String) When the device console port was created.
 - `custom_fields` (Map of String) Custom field values of the device console port, as a map of field name to value.
 - `description` (String) A description of the device console port.
 - `id` (String) The ID of this resource.
 - `label` (String) The label of the device console port.
-- `last_updated` (String) The last updated of the device console port.
+- `last_updated` (String) When the device console port was last changed.
 - `link_peers_type` (String) The link peers type of the device console port.
 - `mark_connected` (Boolean) The mark connected of the device console port.
 - `owner_id` (Number) The ID of the owner associated with the device console port.

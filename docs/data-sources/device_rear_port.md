@@ -40,12 +40,12 @@ output "device_rear_port_id" {
 
 - `cable_end` (String) The cable end of the device rear port.
 - `color` (String) The color of the device rear port.
-- `created` (String) The created of the device rear port.
+- `created` (String) When the device rear port was created.
 - `custom_fields` (Map of String) Custom field values of the device rear port, as a map of field name to value.
 - `description` (String) A description of the device rear port.
 - `id` (String) The ID of this resource.
 - `label` (String) The label of the device rear port.
-- `last_updated` (String) The last updated of the device rear port.
+- `last_updated` (String) When the device rear port was last changed.
 - `link_peers_type` (String) The link peers type of the device rear port.
 - `mark_connected` (Boolean) The mark connected of the device rear port.
 - `owner_id` (Number) The ID of the owner associated with the device rear port.

@@ -37,9 +37,9 @@ output "mac_address_id" {
 - `assigned_object` (String) The assigned object of the mac address.
 - `assigned_object_id` (Number) The assigned object id of the mac address.
 - `comments` (String) Free-form comments about the mac address.
-- `created` (String) The created of the mac address.
+- `created` (String) When the mac address was created.
 - `custom_fields` (Map of String) Custom field values of the mac address, as a map of field name to value.
 - `description` (String) A description of the mac address.
 - `is_primary` (Boolean) The is primary of the mac address.
-- `last_updated` (String) The last updated of the mac address.
+- `last_updated` (String) When the mac address was last changed.
 - `tags` (Set of String) Tags assigned to the object, by name.

@@ -53,7 +53,7 @@ Required:
 
 Read-Only:
 
-- `created` (String) The created of the device bays.
+- `created` (String) When the device bays was created.
 - `custom_fields` (Map of String) Custom field values of the device bays, as a map of field name to value.
 - `description` (String) A description of the device bays.
 - `device_id` (Number) The ID of the device associated with the device bays.
@@ -61,7 +61,7 @@ Read-Only:
 - `id` (Number) The id of the device bays.
 - `installed_device_id` (Number) The ID of the installed device associated with the device bays.
 - `label` (String) The label of the device bays.
-- `last_updated` (String) The last updated of the device bays.
+- `last_updated` (String) When the device bays was last changed.
 - `name` (String) The name of the device bays.
 - `owner_id` (Number) The ID of the owner associated with the device bays.
 - `tags` (Set of String) Tags assigned to the object, by name.

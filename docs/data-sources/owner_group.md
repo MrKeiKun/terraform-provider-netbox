@@ -29,3 +29,4 @@ data "netbox_owner_group" "example" {
 
 - `description` (String) A description of the owner group.
 - `id` (String) The ID of this resource.
+- `member_count` (Number) The number of member of the owner group.

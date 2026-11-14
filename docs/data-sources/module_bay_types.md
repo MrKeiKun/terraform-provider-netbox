@@ -55,11 +55,11 @@ Read-Only:
 
 - `color` (String) The color of the module bay types.
 - `comments` (String) Free-form comments about the module bay types.
-- `created` (String) The created of the module bay types.
+- `created` (String) When the module bay types was created.
 - `custom_fields` (Map of String) Custom field values of the module bay types, as a map of field name to value.
 - `description` (String) A description of the module bay types.
 - `id` (Number) The id of the module bay types.
-- `last_updated` (String) The last updated of the module bay types.
+- `last_updated` (String) When the module bay types was last changed.
 - `manufacturer_id` (Number) The ID of the manufacturer associated with the module bay types.
 - `name` (String) The name of the module bay types.
 - `owner_id` (Number) The ID of the owner associated with the module bay types.

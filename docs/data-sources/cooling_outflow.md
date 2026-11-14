@@ -30,11 +30,14 @@ data "netbox_cooling_outflow" "example" {
 ### Read-Only
 
 - `cooling_intake_id` (Number) The ID of the cooling intake associated with the cooling outflow.
+- `created` (String) When the cooling outflow was created.
+- `custom_fields` (Map of String) Custom field values of the cooling outflow, as a map of field name to value.
 - `description` (String) A description of the cooling outflow.
 - `diameter` (Number) The diameter of the cooling outflow.
 - `diameter_unit` (String) The diameter unit of the cooling outflow.
 - `id` (String) The ID of this resource.
 - `label` (String) The label of the cooling outflow.
+- `last_updated` (String) When the cooling outflow was last changed.
 - `module_id` (Number) The ID of the module associated with the cooling outflow.
 - `owner_id` (Number) The ID of the owner associated with the cooling outflow.
 - `tags` (Set of String) Tags assigned to the object, by name.

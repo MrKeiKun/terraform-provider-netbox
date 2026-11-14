@@ -55,11 +55,11 @@ Read-Only:
 
 - `base_choices` (String) The base choices of the custom field choice sets.
 - `choice_colors` (String) The choice colors of the custom field choice sets.
-- `choices_count` (Number) The choices count of the custom field choice sets.
-- `created` (String) The created of the custom field choice sets.
+- `choices_count` (Number) The number of choices of the custom field choice sets.
+- `created` (String) When the custom field choice sets was created.
 - `description` (String) A description of the custom field choice sets.
 - `id` (Number) The id of the custom field choice sets.
-- `last_updated` (String) The last updated of the custom field choice sets.
+- `last_updated` (String) When the custom field choice sets was last changed.
 - `name` (String) The name of the custom field choice sets.
 - `order_alphabetically` (Boolean) The order alphabetically of the custom field choice sets.
 - `owner_id` (Number) The ID of the owner associated with the custom field choice sets.

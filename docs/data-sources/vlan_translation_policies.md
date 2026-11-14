@@ -54,11 +54,11 @@ Required:
 Read-Only:
 
 - `comments` (String) Free-form comments about the vlan translation policies.
-- `created` (String) The created of the vlan translation policies.
+- `created` (String) When the vlan translation policies was created.
 - `custom_fields` (Map of String) Custom field values of the vlan translation policies, as a map of field name to value.
 - `description` (String) A description of the vlan translation policies.
 - `id` (Number) The id of the vlan translation policies.
-- `last_updated` (String) The last updated of the vlan translation policies.
+- `last_updated` (String) When the vlan translation policies was last changed.
 - `name` (String) The name of the vlan translation policies.
 - `owner_id` (Number) The ID of the owner associated with the vlan translation policies.
 - `rules` (List of Number) The IDs of the rules of the vlan translation policies.

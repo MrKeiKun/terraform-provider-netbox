@@ -28,7 +28,13 @@ data "netbox_rack_role" "example" {
 ### Read-Only
 
 - `color_hex` (String) The color hex of the rack role.
+- `comments` (String) Free-form comments about the rack role.
+- `created` (String) When the rack role was created.
+- `custom_fields` (Map of String) Custom field values of the rack role, as a map of field name to value.
 - `description` (String) A description of the rack role.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the rack role was last changed.
+- `owner_id` (Number) The ID of the owner associated with the rack role.
+- `rack_count` (Number) The number of rack of the rack role.
 - `slug` (String) The URL-friendly slug of the rack role.
 - `tags` (Set of String) Tags assigned to the object, by name.

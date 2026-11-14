@@ -40,12 +40,12 @@ output "device_front_port_id" {
 
 - `cable_end` (String) The cable end of the device front port.
 - `color` (String) The color of the device front port.
-- `created` (String) The created of the device front port.
+- `created` (String) When the device front port was created.
 - `custom_fields` (Map of String) Custom field values of the device front port, as a map of field name to value.
 - `description` (String) A description of the device front port.
 - `id` (String) The ID of this resource.
 - `label` (String) The label of the device front port.
-- `last_updated` (String) The last updated of the device front port.
+- `last_updated` (String) When the device front port was last changed.
 - `link_peers_type` (String) The link peers type of the device front port.
 - `mark_connected` (Boolean) The mark connected of the device front port.
 - `owner_id` (Number) The ID of the owner associated with the device front port.

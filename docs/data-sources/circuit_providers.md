@@ -55,13 +55,13 @@ Read-Only:
 
 - `accounts` (List of Number) The IDs of the accounts of the circuit providers.
 - `asns` (List of Number) The IDs of the asns of the circuit providers.
-- `circuit_count` (Number) The circuit count of the circuit providers.
+- `circuit_count` (Number) The number of circuit of the circuit providers.
 - `comments` (String) Free-form comments about the circuit providers.
-- `created` (String) The created of the circuit providers.
+- `created` (String) When the circuit providers was created.
 - `custom_fields` (Map of String) Custom field values of the circuit providers, as a map of field name to value.
 - `description` (String) A description of the circuit providers.
 - `id` (Number) The id of the circuit providers.
-- `last_updated` (String) The last updated of the circuit providers.
+- `last_updated` (String) When the circuit providers was last changed.
 - `name` (String) The name of the circuit providers.
 - `owner_id` (Number) The ID of the owner associated with the circuit providers.
 - `slug` (String) The slug of the circuit providers.

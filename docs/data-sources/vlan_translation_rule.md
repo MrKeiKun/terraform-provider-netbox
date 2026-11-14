@@ -34,8 +34,8 @@ output "vlan_translation_rule_id" {
 
 ### Read-Only
 
-- `created` (String) The created of the vlan translation rule.
+- `created` (String) When the vlan translation rule was created.
 - `custom_fields` (Map of String) Custom field values of the vlan translation rule, as a map of field name to value.
 - `description` (String) A description of the vlan translation rule.
-- `last_updated` (String) The last updated of the vlan translation rule.
+- `last_updated` (String) When the vlan translation rule was last changed.
 - `tags` (Set of String) Tags assigned to the object, by name.

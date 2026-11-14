@@ -38,10 +38,10 @@ output "rack_reservation_id" {
 ### Read-Only
 
 - `comments` (String) Free-form comments about the rack reservation.
-- `created` (String) The created of the rack reservation.
+- `created` (String) When the rack reservation was created.
 - `custom_fields` (Map of String) Custom field values of the rack reservation, as a map of field name to value.
 - `description` (String) A description of the rack reservation.
-- `last_updated` (String) The last updated of the rack reservation.
+- `last_updated` (String) When the rack reservation was last changed.
 - `tags` (Set of String) Tags assigned to the object, by name.
-- `unit_count` (Number) The unit count of the rack reservation.
+- `unit_count` (Number) The number of unit of the rack reservation.
 - `units` (List of Number) The units of the rack reservation.

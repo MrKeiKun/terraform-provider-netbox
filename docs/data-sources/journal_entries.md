@@ -57,10 +57,10 @@ Read-Only:
 - `assigned_object_id` (Number) The assigned object id of the journal entries.
 - `assigned_object_type` (String) The assigned object type of the journal entries.
 - `comments` (String) Free-form comments about the journal entries.
-- `created` (String) The created of the journal entries.
+- `created` (String) When the journal entries was created.
 - `created_by` (Number) The created by of the journal entries.
 - `custom_fields` (Map of String) Custom field values of the journal entries, as a map of field name to value.
 - `id` (Number) The id of the journal entries.
 - `kind` (String) The kind of the journal entries.
-- `last_updated` (String) The last updated of the journal entries.
+- `last_updated` (String) When the journal entries was last changed.
 - `tags` (Set of String) Tags assigned to the object, by name.

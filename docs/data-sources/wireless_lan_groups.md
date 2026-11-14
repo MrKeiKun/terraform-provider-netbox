@@ -54,14 +54,14 @@ Required:
 Read-Only:
 
 - `comments` (String) Free-form comments about the wireless lan groups.
-- `created` (String) The created of the wireless lan groups.
+- `created` (String) When the wireless lan groups was created.
 - `custom_fields` (Map of String) Custom field values of the wireless lan groups, as a map of field name to value.
 - `description` (String) A description of the wireless lan groups.
 - `id` (Number) The id of the wireless lan groups.
-- `last_updated` (String) The last updated of the wireless lan groups.
+- `last_updated` (String) When the wireless lan groups was last changed.
 - `name` (String) The name of the wireless lan groups.
 - `owner_id` (Number) The ID of the owner associated with the wireless lan groups.
 - `parent_id` (Number) The ID of the parent associated with the wireless lan groups.
 - `slug` (String) The slug of the wireless lan groups.
 - `tags` (Set of String) Tags assigned to the object, by name.
-- `wirelesslan_count` (Number) The wirelesslan count of the wireless lan groups.
+- `wirelesslan_count` (Number) The number of wirelesslan of the wireless lan groups.

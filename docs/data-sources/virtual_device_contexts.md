@@ -54,14 +54,14 @@ Required:
 Read-Only:
 
 - `comments` (String) Free-form comments about the virtual device contexts.
-- `created` (String) The created of the virtual device contexts.
+- `created` (String) When the virtual device contexts was created.
 - `custom_fields` (Map of String) Custom field values of the virtual device contexts, as a map of field name to value.
 - `description` (String) A description of the virtual device contexts.
 - `device_id` (Number) The ID of the device associated with the virtual device contexts.
 - `id` (Number) The id of the virtual device contexts.
 - `identifier` (Number) The identifier of the virtual device contexts.
-- `interface_count` (Number) The interface count of the virtual device contexts.
-- `last_updated` (String) The last updated of the virtual device contexts.
+- `interface_count` (Number) The number of interface of the virtual device contexts.
+- `last_updated` (String) When the virtual device contexts was last changed.
 - `name` (String) The name of the virtual device contexts.
 - `owner_id` (Number) The ID of the owner associated with the virtual device contexts.
 - `primary_ip4_id` (Number) The ID of the primary ip4 associated with the virtual device contexts.

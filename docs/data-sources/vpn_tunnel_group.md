@@ -32,5 +32,11 @@ data "netbox_vpn_tunnel_group" "example" {
 
 ### Read-Only
 
+- `comments` (String) Free-form comments about the tunnel group.
+- `created` (String) When the tunnel group was created.
+- `custom_fields` (Map of String) Custom field values of the tunnel group, as a map of field name to value.
 - `id` (Number) The numeric ID of the vpn tunnel group.
+- `last_updated` (String) When the tunnel group was last changed.
+- `owner_id` (Number) The ID of the owner associated with the tunnel group.
 - `tags` (Set of String) Tags assigned to the object, by name.
+- `tunnel_count` (Number) The number of tunnel of the tunnel group.

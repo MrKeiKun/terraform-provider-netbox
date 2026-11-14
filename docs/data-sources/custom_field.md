@@ -33,7 +33,7 @@ output "custom_field_id" {
 
 - `choice_set_id` (Number) The ID of the choice set associated with the custom field.
 - `comments` (String) Free-form comments about the custom field.
-- `created` (String) The created of the custom field.
+- `created` (String) When the custom field was created.
 - `data_type` (String) The data type of the custom field.
 - `default` (String) The default of the custom field.
 - `description` (String) A description of the custom field.
@@ -42,7 +42,7 @@ output "custom_field_id" {
 - `id` (String) The ID of this resource.
 - `is_cloneable` (Boolean) The is cloneable of the custom field.
 - `label` (String) The label of the custom field.
-- `last_updated` (String) The last updated of the custom field.
+- `last_updated` (String) When the custom field was last changed.
 - `nulls_first` (Boolean) The nulls first of the custom field.
 - `object_types` (List of String) The object types of the custom field.
 - `owner_id` (Number) The ID of the owner associated with the custom field.

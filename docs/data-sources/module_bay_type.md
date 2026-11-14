@@ -30,8 +30,11 @@ data "netbox_module_bay_type" "example" {
 
 - `color_hex` (String) The color hex of the module bay type.
 - `comments` (String) Free-form comments about the module bay type.
+- `created` (String) When the module bay type was created.
+- `custom_fields` (Map of String) Custom field values of the module bay type, as a map of field name to value.
 - `description` (String) A description of the module bay type.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the module bay type was last changed.
 - `manufacturer_id` (Number) The ID of the manufacturer associated with the module bay type.
 - `owner_id` (Number) The ID of the owner associated with the module bay type.
 - `tags` (Set of String) Tags assigned to the object, by name.

@@ -54,13 +54,13 @@ Required:
 Read-Only:
 
 - `color` (String) The color of the power outlet templates.
-- `created` (String) The created of the power outlet templates.
+- `created` (String) When the power outlet templates was created.
 - `description` (String) A description of the power outlet templates.
 - `device_type_id` (Number) The ID of the device type associated with the power outlet templates.
 - `feed_leg` (String) The feed leg of the power outlet templates.
 - `id` (Number) The id of the power outlet templates.
 - `label` (String) The label of the power outlet templates.
-- `last_updated` (String) The last updated of the power outlet templates.
+- `last_updated` (String) When the power outlet templates was last changed.
 - `module_type_id` (Number) The ID of the module type associated with the power outlet templates.
 - `name` (String) The name of the power outlet templates.
 - `power_port_id` (Number) The ID of the power port associated with the power outlet templates.

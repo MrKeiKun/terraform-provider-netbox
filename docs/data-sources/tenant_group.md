@@ -27,7 +27,14 @@ data "netbox_tenant_group" "example" {
 
 ### Read-Only
 
+- `comments` (String) Free-form comments about the tenant group.
+- `created` (String) When the tenant group was created.
+- `custom_fields` (Map of String) Custom field values of the tenant group, as a map of field name to value.
 - `description` (String) A description of the tenant group.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the tenant group was last changed.
+- `owner_id` (Number) The ID of the owner associated with the tenant group.
 - `parent_id` (Number) The ID of the parent associated with the tenant group.
 - `slug` (String) The URL-friendly slug of the tenant group.
+- `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_count` (Number) The number of tenant of the tenant group.

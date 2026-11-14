@@ -56,13 +56,13 @@ Read-Only:
 - `auth_key` (String) The auth key of the fhrp groups.
 - `auth_type` (String) The auth type of the fhrp groups.
 - `comments` (String) Free-form comments about the fhrp groups.
-- `created` (String) The created of the fhrp groups.
+- `created` (String) When the fhrp groups was created.
 - `custom_fields` (Map of String) Custom field values of the fhrp groups, as a map of field name to value.
 - `description` (String) A description of the fhrp groups.
 - `group_id` (Number) The group id of the fhrp groups.
 - `id` (Number) The id of the fhrp groups.
 - `ip_addresses` (List of Number) The IDs of the ip addresses of the fhrp groups.
-- `last_updated` (String) The last updated of the fhrp groups.
+- `last_updated` (String) When the fhrp groups was last changed.
 - `name` (String) The name of the fhrp groups.
 - `owner_id` (Number) The ID of the owner associated with the fhrp groups.
 - `protocol` (String) The protocol of the fhrp groups.

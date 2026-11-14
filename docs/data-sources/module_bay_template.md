@@ -36,11 +36,11 @@ output "module_bay_template_id" {
 
 ### Read-Only
 
-- `created` (String) The created of the module bay template.
+- `created` (String) When the module bay template was created.
 - `description` (String) A description of the module bay template.
 - `enabled` (Boolean) The enabled of the module bay template.
 - `id` (String) The ID of this resource.
 - `label` (String) The label of the module bay template.
-- `last_updated` (String) The last updated of the module bay template.
+- `last_updated` (String) When the module bay template was last changed.
 - `module_bay_types` (List of Number) The IDs of the module bay types of the module bay template.
 - `position` (String) The position of the module bay template.

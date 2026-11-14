@@ -28,6 +28,17 @@ data "netbox_device_role" "core_sw" {
 ### Read-Only
 
 - `color_hex` (String) The color hex of the device role.
+- `comments` (String) Free-form comments about the device role.
+- `config_template_id` (Number) The ID of the config template associated with the device role.
+- `created` (String) When the device role was created.
+- `custom_fields` (Map of String) Custom field values of the device role, as a map of field name to value.
+- `description` (String) A description of the device role.
+- `device_count` (Number) The number of device of the device role.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the device role was last changed.
+- `owner_id` (Number) The ID of the owner associated with the device role.
+- `parent_id` (Number) The ID of the parent associated with the device role.
 - `slug` (String) The URL-friendly slug of the device role.
 - `tags` (Set of String) Tags assigned to the object, by name.
+- `virtualmachine_count` (Number) The number of virtualmachine of the device role.
+- `vm_role` (Boolean) The vm role of the device role.

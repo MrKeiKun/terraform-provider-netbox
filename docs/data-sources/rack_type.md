@@ -35,16 +35,26 @@ data "netbox_rack_type" "ex2" {
 ### Read-Only
 
 - `comments` (String) Free-form comments about the rack type.
+- `cooling_capability` (String) The cooling capability of the rack type.
+- `cooling_capacity` (Number) The cooling capacity of the rack type.
+- `created` (String) When the rack type was created.
+- `custom_fields` (Map of String) Custom field values of the rack type, as a map of field name to value.
+- `desc_units` (Boolean) The desc units of the rack type.
 - `description` (String) A description of the rack type.
 - `form_factor` (String) The form factor of the rack type.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the rack type was last changed.
 - `manufacturer_id` (Number) The ID of the manufacturer associated with the rack type.
 - `max_weight` (Number) The max weight of the rack type.
 - `mounting_depth_mm` (Number) The mounting depth mm of the rack type.
 - `outer_depth` (Number) The outer depth of the rack type.
+- `outer_height` (Number) The outer height of the rack type.
 - `outer_unit` (String) The outer unit of the rack type.
 - `outer_width` (Number) The outer width of the rack type.
+- `owner_id` (Number) The ID of the owner associated with the rack type.
+- `rack_count` (Number) The number of rack of the rack type.
 - `starting_unit` (Number) The starting unit of the rack type.
+- `tags` (Set of String) Tags assigned to the object, by name.
 - `u_height` (Number) The height of the rack type in rack units.
 - `weight` (Number) The weight of the rack type.
 - `weight_unit` (String) The unit of the weight.

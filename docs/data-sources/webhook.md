@@ -34,13 +34,13 @@ output "webhook_id" {
 - `additional_headers` (String) The additional headers of the webhook.
 - `body_template` (String) The body template of the webhook.
 - `ca_file_path` (String) The ca file path of the webhook.
-- `created` (String) The created of the webhook.
+- `created` (String) When the webhook was created.
 - `custom_fields` (Map of String) Custom field values of the webhook, as a map of field name to value.
 - `description` (String) A description of the webhook.
 - `http_content_type` (String) The http content type of the webhook.
 - `http_method` (String) The http method of the webhook.
 - `id` (String) The ID of this resource.
-- `last_updated` (String) The last updated of the webhook.
+- `last_updated` (String) When the webhook was last changed.
 - `owner_id` (Number) The ID of the owner associated with the webhook.
 - `payload_url` (String) The payload url of the webhook.
 - `secret` (String, Sensitive) The secret of the webhook.

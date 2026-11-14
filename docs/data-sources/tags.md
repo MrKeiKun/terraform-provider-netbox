@@ -59,7 +59,12 @@ Required:
 Read-Only:
 
 - `color` (String) The color of the tags as a hex string without the leading #.
+- `created` (String) When the tags was created.
 - `description` (String) A description of the tags.
+- `last_updated` (String) When the tags was last changed.
 - `name` (String) The name of the tags.
+- `object_types` (List of String) The object types of the tags.
 - `slug` (String) The URL-friendly slug of the tags.
 - `tag_id` (Number) The ID of the tag associated with the tags.
+- `tagged_items` (Number) The tagged items of the tags.
+- `weight` (Number) The weight of the tags.

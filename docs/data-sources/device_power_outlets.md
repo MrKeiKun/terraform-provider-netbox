@@ -53,12 +53,26 @@ Required:
 
 Read-Only:
 
+- `cable_end` (String) The cable end of the power outlets.
+- `cable_id` (Number) The ID of the cable associated with the power outlets.
+- `color` (String) The color of the power outlets.
+- `connected_endpoints_reachable` (Boolean) The connected endpoints reachable of the power outlets.
+- `connected_endpoints_type` (String) The connected endpoints type of the power outlets.
+- `created` (String) When the power outlets was created.
+- `custom_fields` (Map of String) Custom field values of the power outlets, as a map of field name to value.
 - `description` (String) A description of the device power outlets.
 - `device_id` (Number) The ID of the device associated with the device power outlets.
 - `feed_leg` (String) The feed leg of the device power outlets.
 - `id` (Number) The numeric ID of the device power outlets.
+- `label` (String) The label of the power outlets.
+- `last_updated` (String) When the power outlets was last changed.
+- `link_peers_type` (String) The link peers type of the power outlets.
+- `mark_connected` (Boolean) The mark connected of the power outlets.
 - `module_id` (Number) The ID of the module associated with the device power outlets.
 - `name` (String) The name of the device power outlets.
+- `owner_id` (Number) The ID of the owner associated with the power outlets.
 - `power_port_id` (Number) The ID of the power port associated with the device power outlets.
+- `status` (String) The status of the power outlets.
 - `tag_ids` (Set of Number) The IDs of the tag associated with the device power outlets.
+- `tags` (Set of String) Tags assigned to the object, by name.
 - `type` (String) The type of the device power outlets.

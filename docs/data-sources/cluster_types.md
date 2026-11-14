@@ -53,13 +53,13 @@ Required:
 
 Read-Only:
 
-- `cluster_count` (Number) The cluster count of the cluster types.
+- `cluster_count` (Number) The number of cluster of the cluster types.
 - `comments` (String) Free-form comments about the cluster types.
-- `created` (String) The created of the cluster types.
+- `created` (String) When the cluster types was created.
 - `custom_fields` (Map of String) Custom field values of the cluster types, as a map of field name to value.
 - `description` (String) A description of the cluster types.
 - `id` (Number) The id of the cluster types.
-- `last_updated` (String) The last updated of the cluster types.
+- `last_updated` (String) When the cluster types was last changed.
 - `name` (String) The name of the cluster types.
 - `owner_id` (Number) The ID of the owner associated with the cluster types.
 - `slug` (String) The slug of the cluster types.

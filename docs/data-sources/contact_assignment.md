@@ -34,9 +34,9 @@ output "contact_assignment_id" {
 
 ### Read-Only
 
-- `created` (String) The created of the contact assignment.
+- `created` (String) When the contact assignment was created.
 - `custom_fields` (Map of String) Custom field values of the contact assignment, as a map of field name to value.
-- `last_updated` (String) The last updated of the contact assignment.
+- `last_updated` (String) When the contact assignment was last changed.
 - `object` (String) The object of the contact assignment.
 - `object_id` (Number) The object id of the contact assignment.
 - `priority` (String) The priority of the contact assignment.

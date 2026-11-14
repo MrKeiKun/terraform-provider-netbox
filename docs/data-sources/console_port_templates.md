@@ -53,12 +53,12 @@ Required:
 
 Read-Only:
 
-- `created` (String) The created of the console port templates.
+- `created` (String) When the console port templates was created.
 - `description` (String) A description of the console port templates.
 - `device_type_id` (Number) The ID of the device type associated with the console port templates.
 - `id` (Number) The id of the console port templates.
 - `label` (String) The label of the console port templates.
-- `last_updated` (String) The last updated of the console port templates.
+- `last_updated` (String) When the console port templates was last changed.
 - `module_type_id` (Number) The ID of the module type associated with the console port templates.
 - `name` (String) The name of the console port templates.
 - `type` (String) The type of the console port templates.

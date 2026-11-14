@@ -54,11 +54,11 @@ Required:
 Read-Only:
 
 - `button_class` (String) The button class of the custom links.
-- `created` (String) The created of the custom links.
+- `created` (String) When the custom links was created.
 - `enabled` (Boolean) The enabled of the custom links.
 - `group_name` (String) The group name of the custom links.
 - `id` (Number) The id of the custom links.
-- `last_updated` (String) The last updated of the custom links.
+- `last_updated` (String) When the custom links was last changed.
 - `link_text` (String) The link text of the custom links.
 - `link_url` (String) The link url of the custom links.
 - `name` (String) The name of the custom links.

@@ -55,16 +55,16 @@ Read-Only:
 
 - `comments` (String) Free-form comments about the platforms.
 - `config_template_id` (Number) The ID of the config template associated with the platforms.
-- `created` (String) The created of the platforms.
+- `created` (String) When the platforms was created.
 - `custom_fields` (Map of String) Custom field values of the platforms, as a map of field name to value.
 - `description` (String) A description of the platforms.
-- `device_count` (Number) The device count of the platforms.
+- `device_count` (Number) The number of device of the platforms.
 - `id` (Number) The id of the platforms.
-- `last_updated` (String) The last updated of the platforms.
+- `last_updated` (String) When the platforms was last changed.
 - `manufacturer_id` (Number) The ID of the manufacturer associated with the platforms.
 - `name` (String) The name of the platforms.
 - `owner_id` (Number) The ID of the owner associated with the platforms.
 - `parent_id` (Number) The ID of the parent associated with the platforms.
 - `slug` (String) The slug of the platforms.
 - `tags` (Set of String) Tags assigned to the object, by name.
-- `virtualmachine_count` (Number) The virtualmachine count of the platforms.
+- `virtualmachine_count` (Number) The number of virtualmachine of the platforms.

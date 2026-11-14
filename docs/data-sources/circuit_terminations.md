@@ -56,11 +56,11 @@ Read-Only:
 - `cable_end` (String) The cable end of the circuit terminations.
 - `cable_id` (Number) The ID of the cable associated with the circuit terminations.
 - `circuit_id` (Number) The ID of the circuit associated with the circuit terminations.
-- `created` (String) The created of the circuit terminations.
+- `created` (String) When the circuit terminations was created.
 - `custom_fields` (Map of String) Custom field values of the circuit terminations, as a map of field name to value.
 - `description` (String) A description of the circuit terminations.
 - `id` (Number) The id of the circuit terminations.
-- `last_updated` (String) The last updated of the circuit terminations.
+- `last_updated` (String) When the circuit terminations was last changed.
 - `link_peers_type` (String) The link peers type of the circuit terminations.
 - `mark_connected` (Boolean) The mark connected of the circuit terminations.
 - `port_speed` (Number) The port speed of the circuit terminations.

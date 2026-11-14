@@ -54,11 +54,11 @@ Required:
 Read-Only:
 
 - `comments` (String) Free-form comments about the ipsec policies.
-- `created` (String) The created of the ipsec policies.
+- `created` (String) When the ipsec policies was created.
 - `custom_fields` (Map of String) Custom field values of the ipsec policies, as a map of field name to value.
 - `description` (String) A description of the ipsec policies.
 - `id` (Number) The id of the ipsec policies.
-- `last_updated` (String) The last updated of the ipsec policies.
+- `last_updated` (String) When the ipsec policies was last changed.
 - `name` (String) The name of the ipsec policies.
 - `owner_id` (Number) The ID of the owner associated with the ipsec policies.
 - `pfs_group` (String) The pfs group of the ipsec policies.

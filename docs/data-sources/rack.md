@@ -42,15 +42,15 @@ output "rack_id" {
 - `comments` (String) Free-form comments about the rack.
 - `cooling_capability` (String) The cooling capability of the rack.
 - `cooling_capacity` (Number) The cooling capacity of the rack.
-- `created` (String) The created of the rack.
+- `created` (String) When the rack was created.
 - `custom_fields` (Map of String) Custom field values of the rack, as a map of field name to value.
 - `desc_units` (Boolean) The desc units of the rack.
 - `description` (String) A description of the rack.
-- `device_count` (Number) The device count of the rack.
+- `device_count` (Number) The number of device of the rack.
 - `facility_id` (String) The facility id of the rack.
 - `form_factor` (String) The form factor of the rack.
 - `id` (String) The ID of this resource.
-- `last_updated` (String) The last updated of the rack.
+- `last_updated` (String) When the rack was last changed.
 - `location_id` (Number) The ID of the location associated with the rack.
 - `max_weight` (Number) The max weight of the rack.
 - `mounting_depth` (Number) The mounting depth of the rack.
@@ -59,7 +59,7 @@ output "rack_id" {
 - `outer_unit` (String) The outer unit of the rack.
 - `outer_width` (Number) The outer width of the rack.
 - `owner_id` (Number) The ID of the owner associated with the rack.
-- `powerfeed_count` (Number) The powerfeed count of the rack.
+- `powerfeed_count` (Number) The number of powerfeed of the rack.
 - `rack_type_id` (Number) The ID of the rack type associated with the rack.
 - `role_id` (Number) The ID of the role associated with the rack.
 - `serial` (String) The serial of the rack.

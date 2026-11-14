@@ -53,11 +53,11 @@ Required:
 
 Read-Only:
 
-- `created` (String) The created of the saved filters.
+- `created` (String) When the saved filters was created.
 - `description` (String) A description of the saved filters.
 - `enabled` (Boolean) The enabled of the saved filters.
 - `id` (Number) The id of the saved filters.
-- `last_updated` (String) The last updated of the saved filters.
+- `last_updated` (String) When the saved filters was last changed.
 - `name` (String) The name of the saved filters.
 - `object_types` (List of String) The object types of the saved filters.
 - `owner_id` (Number) The ID of the owner associated with the saved filters.

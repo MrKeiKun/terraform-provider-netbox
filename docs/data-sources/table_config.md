@@ -32,11 +32,11 @@ output "table_config_id" {
 ### Read-Only
 
 - `columns` (List of String) The columns of the table config.
-- `created` (String) The created of the table config.
+- `created` (String) When the table config was created.
 - `description` (String) A description of the table config.
 - `enabled` (Boolean) The enabled of the table config.
 - `id` (String) The ID of this resource.
-- `last_updated` (String) The last updated of the table config.
+- `last_updated` (String) When the table config was last changed.
 - `object_type` (String) The object type of the table config.
 - `ordering` (List of String) The ordering of the table config.
 - `shared` (Boolean) The shared of the table config.

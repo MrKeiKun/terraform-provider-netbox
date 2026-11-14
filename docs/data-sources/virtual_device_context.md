@@ -29,12 +29,17 @@ data "netbox_virtual_device_context" "example" {
 ### Read-Only
 
 - `comments` (String) Free-form comments about the virtual device context.
+- `created` (String) When the virtual device context was created.
+- `custom_fields` (Map of String) Custom field values of the virtual device context, as a map of field name to value.
 - `description` (String) A description of the virtual device context.
 - `id` (String) The ID of this resource.
 - `identifier` (Number) The identifier of the virtual device context.
+- `interface_count` (Number) The number of interface of the virtual device context.
+- `last_updated` (String) When the virtual device context was last changed.
 - `owner_id` (Number) The ID of the owner associated with the virtual device context.
 - `primary_ip4_id` (Number) The ID of the primary ip4 associated with the virtual device context.
 - `primary_ip6_id` (Number) The ID of the primary ip6 associated with the virtual device context.
+- `primary_ip_id` (Number) The ID of the primary ip associated with the virtual device context.
 - `status` (String) The status of the virtual device context.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the virtual device context.

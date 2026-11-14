@@ -36,10 +36,10 @@ output "aggregate_id" {
 ### Read-Only
 
 - `comments` (String) Free-form comments about the aggregate.
-- `created` (String) The created of the aggregate.
+- `created` (String) When the aggregate was created.
 - `custom_fields` (Map of String) Custom field values of the aggregate, as a map of field name to value.
 - `description` (String) A description of the aggregate.
 - `family` (String) The family of the aggregate.
-- `last_updated` (String) The last updated of the aggregate.
+- `last_updated` (String) When the aggregate was last changed.
 - `prefix` (String) The prefix of the aggregate.
 - `tags` (Set of String) Tags assigned to the object, by name.

@@ -33,6 +33,6 @@ output "bookmark_id" {
 
 ### Read-Only
 
-- `created` (String) The created of the bookmark.
+- `created` (String) When the bookmark was created.
 - `object` (String) The object of the bookmark.
 - `object_id` (Number) The object id of the bookmark.

@@ -28,9 +28,13 @@ data "netbox_circuit_group" "example" {
 
 ### Read-Only
 
+- `circuit_count` (Number) The number of circuit of the circuit group.
 - `comments` (String) Free-form comments about the circuit group.
+- `created` (String) When the circuit group was created.
+- `custom_fields` (Map of String) Custom field values of the circuit group, as a map of field name to value.
 - `description` (String) A description of the circuit group.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the circuit group was last changed.
 - `owner_id` (Number) The ID of the owner associated with the circuit group.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the circuit group.

@@ -52,14 +52,21 @@ Required:
 
 Read-Only:
 
+- `cable_end` (String) The cable end of the front ports.
+- `cable_id` (Number) The ID of the cable associated with the front ports.
 - `color` (String) The color of the device front ports as a hex string without the leading #.
+- `created` (String) When the front ports was created.
+- `custom_fields` (Map of String) Custom field values of the front ports, as a map of field name to value.
 - `description` (String) A description of the device front ports.
 - `device_id` (Number) The ID of the device associated with the device front ports.
 - `id` (Number) The numeric ID of the device front ports.
 - `label` (String) The label of the device front ports.
+- `last_updated` (String) When the front ports was last changed.
+- `link_peers_type` (String) The link peers type of the front ports.
 - `mark_connected` (Boolean) Whether the device front ports is marked as connected even without a cable.
 - `module_id` (Number) The ID of the module associated with the device front ports.
 - `name` (String) The name of the device front ports.
+- `owner_id` (Number) The ID of the owner associated with the front ports.
 - `positions` (Number) The positions of the device front ports.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `type` (String) The type of the device front ports.

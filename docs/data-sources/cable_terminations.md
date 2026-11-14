@@ -56,9 +56,9 @@ Read-Only:
 - `cable` (Number) The cable of the cable terminations.
 - `cable_end` (String) The cable end of the cable terminations.
 - `connector` (Number) The connector of the cable terminations.
-- `created` (String) The created of the cable terminations.
+- `created` (String) When the cable terminations was created.
 - `id` (Number) The id of the cable terminations.
-- `last_updated` (String) The last updated of the cable terminations.
+- `last_updated` (String) When the cable terminations was last changed.
 - `positions` (List of Number) The positions of the cable terminations.
 - `termination` (String) The termination of the cable terminations.
 - `termination_id` (Number) The termination id of the cable terminations.

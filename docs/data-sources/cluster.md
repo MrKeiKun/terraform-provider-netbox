@@ -31,13 +31,24 @@ data "netbox_cluster" "vmw_cluster_01" {
 
 ### Read-Only
 
+- `allocated_disk` (Number) The allocated disk of the object.
+- `allocated_memory` (Number) The allocated memory of the object.
+- `allocated_vcpus` (Number) The allocated vcpus of the object.
 - `cluster_id` (Number) The ID of the cluster associated with the cluster.
 - `cluster_type_id` (Number) The ID of the cluster type associated with the cluster.
 - `comments` (String) Free-form comments about the cluster.
+- `created` (String) When the object was created.
 - `description` (String) A description of the cluster.
+- `device_count` (Number) The number of device of the object.
+- `last_updated` (String) When the object was last changed.
 - `location_id` (Number) The ID of the location associated with the cluster.
+- `owner_id` (Number) The ID of the owner associated with the object.
 - `region_id` (Number) The ID of the region associated with the cluster.
+- `scope` (String) The scope of the object.
 - `scope_id` (Number) The ID of the scope associated with the cluster.
 - `scope_type` (String) The scope type of the cluster.
 - `site_group_id` (Number) The ID of the site group associated with the cluster.
+- `status` (String) The status of the object.
 - `tags` (Set of String) Tags assigned to the object, by name.
+- `tenant_id` (Number) The ID of the tenant associated with the object.
+- `virtualmachine_count` (Number) The number of virtualmachine of the object.

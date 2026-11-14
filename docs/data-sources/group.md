@@ -34,4 +34,4 @@ output "group_id" {
 - `description` (String) A description of the group.
 - `id` (String) The ID of this resource.
 - `permissions` (List of Number) The IDs of the permissions of the group.
-- `user_count` (Number) The user count of the group.
+- `user_count` (Number) The number of user of the group.

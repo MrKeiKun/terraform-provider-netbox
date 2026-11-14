@@ -56,7 +56,7 @@ Read-Only:
 - `cluster_groups` (List of Number) The IDs of the cluster groups of the config contexts.
 - `cluster_types` (List of Number) The IDs of the cluster types of the config contexts.
 - `clusters` (List of Number) The IDs of the clusters of the config contexts.
-- `created` (String) The created of the config contexts.
+- `created` (String) When the config contexts was created.
 - `data` (String) The data of the config contexts.
 - `data_file_id` (Number) The ID of the data file associated with the config contexts.
 - `data_path` (String) The data path of the config contexts.
@@ -66,7 +66,7 @@ Read-Only:
 - `device_types` (List of Number) The IDs of the device types of the config contexts.
 - `id` (Number) The id of the config contexts.
 - `is_active` (Boolean) The is active of the config contexts.
-- `last_updated` (String) The last updated of the config contexts.
+- `last_updated` (String) When the config contexts was last changed.
 - `locations` (List of Number) The IDs of the locations of the config contexts.
 - `name` (String) The name of the config contexts.
 - `owner_id` (Number) The ID of the owner associated with the config contexts.

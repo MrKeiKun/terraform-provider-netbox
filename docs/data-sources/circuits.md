@@ -57,14 +57,14 @@ Read-Only:
 - `cid` (String) The cid of the circuits.
 - `comments` (String) Free-form comments about the circuits.
 - `commit_rate` (Number) The commit rate of the circuits.
-- `created` (String) The created of the circuits.
+- `created` (String) When the circuits was created.
 - `custom_fields` (Map of String) Custom field values of the circuits, as a map of field name to value.
 - `description` (String) A description of the circuits.
 - `distance` (Number) The distance of the circuits.
 - `distance_unit` (String) The distance unit of the circuits.
 - `id` (Number) The id of the circuits.
 - `install_date` (String) The install date of the circuits.
-- `last_updated` (String) The last updated of the circuits.
+- `last_updated` (String) When the circuits was last changed.
 - `owner_id` (Number) The ID of the owner associated with the circuits.
 - `provider_account_id` (Number) The ID of the provider account associated with the circuits.
 - `provider_id` (Number) The ID of the provider associated with the circuits.

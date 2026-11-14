@@ -37,7 +37,7 @@ output "journal_entry_id" {
 - `assigned_object` (String) The assigned object of the journal entry.
 - `assigned_object_id` (Number) The assigned object id of the journal entry.
 - `comments` (String) Free-form comments about the journal entry.
-- `created` (String) The created of the journal entry.
+- `created` (String) When the journal entry was created.
 - `custom_fields` (Map of String) Custom field values of the journal entry, as a map of field name to value.
-- `last_updated` (String) The last updated of the journal entry.
+- `last_updated` (String) When the journal entry was last changed.
 - `tags` (Set of String) Tags assigned to the object, by name.

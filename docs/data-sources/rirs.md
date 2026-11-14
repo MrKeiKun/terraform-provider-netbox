@@ -53,14 +53,14 @@ Required:
 
 Read-Only:
 
-- `aggregate_count` (Number) The aggregate count of the rirs.
+- `aggregate_count` (Number) The number of aggregate of the rirs.
 - `comments` (String) Free-form comments about the rirs.
-- `created` (String) The created of the rirs.
+- `created` (String) When the rirs was created.
 - `custom_fields` (Map of String) Custom field values of the rirs, as a map of field name to value.
 - `description` (String) A description of the rirs.
 - `id` (Number) The id of the rirs.
 - `is_private` (Boolean) The is private of the rirs.
-- `last_updated` (String) The last updated of the rirs.
+- `last_updated` (String) When the rirs was last changed.
 - `name` (String) The name of the rirs.
 - `owner_id` (Number) The ID of the owner associated with the rirs.
 - `slug` (String) The slug of the rirs.

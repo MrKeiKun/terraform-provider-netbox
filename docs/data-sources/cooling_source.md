@@ -29,9 +29,13 @@ data "netbox_cooling_source" "example" {
 
 - `comments` (String) Free-form comments about the cooling source.
 - `cooling_capacity` (Number) The cooling capacity of the cooling source.
+- `coolingfeed_count` (Number) The number of coolingfeed of the cooling source.
+- `created` (String) When the cooling source was created.
+- `custom_fields` (Map of String) Custom field values of the cooling source, as a map of field name to value.
 - `description` (String) A description of the cooling source.
 - `fluid_type` (String) The fluid type of the cooling source.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the cooling source was last changed.
 - `location_id` (Number) The ID of the location associated with the cooling source.
 - `owner_id` (Number) The ID of the owner associated with the cooling source.
 - `site_id` (Number) The ID of the site associated with the cooling source.

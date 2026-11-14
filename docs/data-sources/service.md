@@ -32,12 +32,12 @@ output "service_id" {
 ### Read-Only
 
 - `comments` (String) Free-form comments about the service.
-- `created` (String) The created of the service.
+- `created` (String) When the service was created.
 - `custom_fields` (Map of String) Custom field values of the service, as a map of field name to value.
 - `description` (String) A description of the service.
 - `id` (String) The ID of this resource.
 - `ipaddresses` (List of Number) The IDs of the ipaddresses of the service.
-- `last_updated` (String) The last updated of the service.
+- `last_updated` (String) When the service was last changed.
 - `owner_id` (Number) The ID of the owner associated with the service.
 - `parent` (String) The parent of the service.
 - `parent_object_id` (Number) The parent object id of the service.

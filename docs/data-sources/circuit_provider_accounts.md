@@ -55,11 +55,11 @@ Read-Only:
 
 - `account` (String) The account of the circuit provider accounts.
 - `comments` (String) Free-form comments about the circuit provider accounts.
-- `created` (String) The created of the circuit provider accounts.
+- `created` (String) When the circuit provider accounts was created.
 - `custom_fields` (Map of String) Custom field values of the circuit provider accounts, as a map of field name to value.
 - `description` (String) A description of the circuit provider accounts.
 - `id` (Number) The id of the circuit provider accounts.
-- `last_updated` (String) The last updated of the circuit provider accounts.
+- `last_updated` (String) When the circuit provider accounts was last changed.
 - `name` (String) The name of the circuit provider accounts.
 - `owner_id` (Number) The ID of the owner associated with the circuit provider accounts.
 - `provider_id` (Number) The ID of the provider associated with the circuit provider accounts.

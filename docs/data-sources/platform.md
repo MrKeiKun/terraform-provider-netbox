@@ -31,7 +31,16 @@ data "netbox_platform" "PANOS" {
 
 ### Read-Only
 
+- `comments` (String) Free-form comments about the platform.
+- `config_template_id` (Number) The ID of the config template associated with the platform.
+- `created` (String) When the platform was created.
+- `custom_fields` (Map of String) Custom field values of the platform, as a map of field name to value.
 - `description` (String) A description of the platform.
+- `device_count` (Number) The number of device of the platform.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the platform was last changed.
+- `owner_id` (Number) The ID of the owner associated with the platform.
+- `parent_id` (Number) The ID of the parent associated with the platform.
 - `slug` (String) The URL-friendly slug of the platform.
 - `tags` (Set of String) Tags assigned to the object, by name.
+- `virtualmachine_count` (Number) The number of virtualmachine of the platform.

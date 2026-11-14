@@ -56,12 +56,12 @@ Read-Only:
 - `component` (String) The component of the inventory item templates.
 - `component_id` (Number) The component id of the inventory item templates.
 - `component_type` (String) The component type of the inventory item templates.
-- `created` (String) The created of the inventory item templates.
+- `created` (String) When the inventory item templates was created.
 - `description` (String) A description of the inventory item templates.
 - `device_type_id` (Number) The ID of the device type associated with the inventory item templates.
 - `id` (Number) The id of the inventory item templates.
 - `label` (String) The label of the inventory item templates.
-- `last_updated` (String) The last updated of the inventory item templates.
+- `last_updated` (String) When the inventory item templates was last changed.
 - `manufacturer_id` (Number) The ID of the manufacturer associated with the inventory item templates.
 - `name` (String) The name of the inventory item templates.
 - `parent` (Number) The parent of the inventory item templates.

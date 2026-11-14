@@ -37,10 +37,10 @@ output "power_port_template_id" {
 ### Read-Only
 
 - `allocated_draw` (Number) The allocated draw of the power port template.
-- `created` (String) The created of the power port template.
+- `created` (String) When the power port template was created.
 - `description` (String) A description of the power port template.
 - `id` (String) The ID of this resource.
 - `label` (String) The label of the power port template.
-- `last_updated` (String) The last updated of the power port template.
+- `last_updated` (String) When the power port template was last changed.
 - `maximum_draw` (Number) The maximum draw of the power port template.
 - `type` (String) The type of the power port template.

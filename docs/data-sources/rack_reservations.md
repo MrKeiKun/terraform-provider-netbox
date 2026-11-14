@@ -54,16 +54,16 @@ Required:
 Read-Only:
 
 - `comments` (String) Free-form comments about the rack reservations.
-- `created` (String) The created of the rack reservations.
+- `created` (String) When the rack reservations was created.
 - `custom_fields` (Map of String) Custom field values of the rack reservations, as a map of field name to value.
 - `description` (String) A description of the rack reservations.
 - `id` (Number) The id of the rack reservations.
-- `last_updated` (String) The last updated of the rack reservations.
+- `last_updated` (String) When the rack reservations was last changed.
 - `owner_id` (Number) The ID of the owner associated with the rack reservations.
 - `rack_id` (Number) The ID of the rack associated with the rack reservations.
 - `status` (String) The status of the rack reservations.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the rack reservations.
-- `unit_count` (Number) The unit count of the rack reservations.
+- `unit_count` (Number) The number of unit of the rack reservations.
 - `units` (List of Number) The units of the rack reservations.
 - `user_id` (Number) The ID of the user associated with the rack reservations.

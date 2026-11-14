@@ -67,18 +67,28 @@ Required:
 
 Read-Only:
 
+- `allocated_disk` (Number) The allocated disk of the clusters.
+- `allocated_memory` (Number) The allocated memory of the clusters.
+- `allocated_vcpus` (Number) The allocated vcpus of the clusters.
 - `cluster_group_id` (Number) The ID of the cluster group associated with the clusters.
 - `cluster_id` (Number) The ID of the cluster associated with the clusters.
 - `cluster_type_id` (Number) The ID of the cluster type associated with the clusters.
 - `comments` (String) Free-form comments about the clusters.
+- `created` (String) When the clusters was created.
 - `custom_fields` (Map of String) Custom field values of the clusters, as a map of field name to value.
 - `description` (String) A description of the clusters.
+- `device_count` (Number) The number of device of the clusters.
+- `last_updated` (String) When the clusters was last changed.
 - `location_id` (Number) The ID of the location associated with the clusters.
 - `name` (String) The name of the clusters.
+- `owner_id` (Number) The ID of the owner associated with the clusters.
 - `region_id` (Number) The ID of the region associated with the clusters.
+- `scope` (String) The scope of the clusters.
 - `scope_id` (Number) The ID of the scope associated with the clusters.
 - `scope_type` (String) The scope type of the clusters.
 - `site_group_id` (Number) The ID of the site group associated with the clusters.
 - `site_id` (Number) The ID of the site associated with the clusters.
+- `status` (String) The status of the clusters.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the clusters.
+- `virtualmachine_count` (Number) The number of virtualmachine of the clusters.

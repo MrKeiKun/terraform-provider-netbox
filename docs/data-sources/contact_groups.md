@@ -54,12 +54,12 @@ Required:
 Read-Only:
 
 - `comments` (String) Free-form comments about the contact groups.
-- `contact_count` (Number) The contact count of the contact groups.
-- `created` (String) The created of the contact groups.
+- `contact_count` (Number) The number of contact of the contact groups.
+- `created` (String) When the contact groups was created.
 - `custom_fields` (Map of String) Custom field values of the contact groups, as a map of field name to value.
 - `description` (String) A description of the contact groups.
 - `id` (Number) The id of the contact groups.
-- `last_updated` (String) The last updated of the contact groups.
+- `last_updated` (String) When the contact groups was last changed.
 - `name` (String) The name of the contact groups.
 - `owner_id` (Number) The ID of the owner associated with the contact groups.
 - `parent_id` (Number) The ID of the parent associated with the contact groups.

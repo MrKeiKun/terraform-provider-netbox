@@ -53,14 +53,14 @@ Required:
 
 Read-Only:
 
-- `created` (String) The created of the image attachments.
+- `created` (String) When the image attachments was created.
 - `description` (String) A description of the image attachments.
 - `id` (Number) The id of the image attachments.
 - `image` (String) The image of the image attachments.
 - `image_height` (Number) The image height of the image attachments.
 - `image_size` (Number) The image size of the image attachments.
 - `image_width` (Number) The image width of the image attachments.
-- `last_updated` (String) The last updated of the image attachments.
+- `last_updated` (String) When the image attachments was last changed.
 - `name` (String) The name of the image attachments.
 - `object_id` (Number) The object id of the image attachments.
 - `object_type` (String) The object type of the image attachments.

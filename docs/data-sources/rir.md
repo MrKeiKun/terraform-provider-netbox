@@ -35,6 +35,13 @@ data "netbox_rir" "rir_2" {
 
 ### Read-Only
 
+- `aggregate_count` (Number) The number of aggregate of the rir.
+- `comments` (String) Free-form comments about the rir.
+- `created` (String) When the rir was created.
+- `custom_fields` (Map of String) Custom field values of the rir, as a map of field name to value.
 - `description` (String) A description of the rir.
 - `id` (Number) The numeric ID of the rir.
 - `is_private` (Boolean) Whether the rir is private.
+- `last_updated` (String) When the rir was last changed.
+- `owner_id` (Number) The ID of the owner associated with the rir.
+- `tags` (Set of String) Tags assigned to the object, by name.

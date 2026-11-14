@@ -28,8 +28,11 @@ data "netbox_provider_account" "example" {
 ### Read-Only
 
 - `comments` (String) Free-form comments about the provider account.
+- `created` (String) When the provider account was created.
+- `custom_fields` (Map of String) Custom field values of the provider account, as a map of field name to value.
 - `description` (String) A description of the provider account.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the provider account was last changed.
 - `name` (String) The name of the provider account.
 - `owner_id` (Number) The ID of the owner associated with the provider account.
 - `provider_id` (Number) The ID of the provider associated with the provider account.

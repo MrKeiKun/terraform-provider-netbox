@@ -40,9 +40,9 @@ output "module_id" {
 ### Read-Only
 
 - `comments` (String) Free-form comments about the module.
-- `created` (String) The created of the module.
+- `created` (String) When the module was created.
 - `custom_fields` (Map of String) Custom field values of the module, as a map of field name to value.
 - `description` (String) A description of the module.
 - `is_bay_compatible` (Boolean) The is bay compatible of the module.
-- `last_updated` (String) The last updated of the module.
+- `last_updated` (String) When the module was last changed.
 - `tags` (Set of String) Tags assigned to the object, by name.

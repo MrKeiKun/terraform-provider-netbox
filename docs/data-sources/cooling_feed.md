@@ -30,8 +30,11 @@ data "netbox_cooling_feed" "example" {
 - `comments` (String) Free-form comments about the cooling feed.
 - `cooling_capacity` (Number) The cooling capacity of the cooling feed.
 - `cooling_source_id` (Number) The ID of the cooling source associated with the cooling feed.
+- `created` (String) When the cooling feed was created.
+- `custom_fields` (Map of String) Custom field values of the cooling feed, as a map of field name to value.
 - `description` (String) A description of the cooling feed.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the cooling feed was last changed.
 - `max_flow` (Number) The max flow of the cooling feed.
 - `max_flow_unit` (String) The max flow unit of the cooling feed.
 - `owner_id` (Number) The ID of the owner associated with the cooling feed.

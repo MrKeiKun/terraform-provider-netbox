@@ -54,14 +54,14 @@ Required:
 Read-Only:
 
 - `comments` (String) Free-form comments about the l2vpns.
-- `created` (String) The created of the l2vpns.
+- `created` (String) When the l2vpns was created.
 - `custom_fields` (Map of String) Custom field values of the l2vpns, as a map of field name to value.
 - `description` (String) A description of the l2vpns.
 - `export_targets` (List of Number) The IDs of the export targets of the l2vpns.
 - `id` (Number) The id of the l2vpns.
 - `identifier` (Number) The identifier of the l2vpns.
 - `import_targets` (List of Number) The IDs of the import targets of the l2vpns.
-- `last_updated` (String) The last updated of the l2vpns.
+- `last_updated` (String) When the l2vpns was last changed.
 - `name` (String) The name of the l2vpns.
 - `owner_id` (Number) The ID of the owner associated with the l2vpns.
 - `slug` (String) The slug of the l2vpns.

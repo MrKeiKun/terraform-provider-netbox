@@ -56,13 +56,13 @@ Read-Only:
 - `additional_headers` (String) The additional headers of the webhooks.
 - `body_template` (String) The body template of the webhooks.
 - `ca_file_path` (String) The ca file path of the webhooks.
-- `created` (String) The created of the webhooks.
+- `created` (String) When the webhooks was created.
 - `custom_fields` (Map of String) Custom field values of the webhooks, as a map of field name to value.
 - `description` (String) A description of the webhooks.
 - `http_content_type` (String) The http content type of the webhooks.
 - `http_method` (String) The http method of the webhooks.
 - `id` (Number) The id of the webhooks.
-- `last_updated` (String) The last updated of the webhooks.
+- `last_updated` (String) When the webhooks was last changed.
 - `name` (String) The name of the webhooks.
 - `owner_id` (Number) The ID of the owner associated with the webhooks.
 - `payload_url` (String) The payload url of the webhooks.

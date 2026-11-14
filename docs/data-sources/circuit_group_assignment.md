@@ -34,9 +34,9 @@ output "circuit_group_assignment_id" {
 
 ### Read-Only
 
-- `created` (String) The created of the circuit group assignment.
+- `created` (String) When the circuit group assignment was created.
 - `custom_fields` (Map of String) Custom field values of the circuit group assignment, as a map of field name to value.
-- `last_updated` (String) The last updated of the circuit group assignment.
+- `last_updated` (String) When the circuit group assignment was last changed.
 - `member` (String) The member of the circuit group assignment.
 - `member_id` (Number) The member id of the circuit group assignment.
 - `priority` (String) The priority of the circuit group assignment.

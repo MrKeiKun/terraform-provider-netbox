@@ -54,11 +54,23 @@ Required:
 Read-Only:
 
 - `allocated_draw` (Number) The allocated draw of the device power ports.
+- `cable_end` (String) The cable end of the power ports.
+- `cable_id` (Number) The ID of the cable associated with the power ports.
+- `connected_endpoints_reachable` (Boolean) The connected endpoints reachable of the power ports.
+- `connected_endpoints_type` (String) The connected endpoints type of the power ports.
+- `created` (String) When the power ports was created.
+- `custom_fields` (Map of String) Custom field values of the power ports, as a map of field name to value.
 - `description` (String) A description of the device power ports.
 - `device_id` (Number) The ID of the device associated with the device power ports.
 - `id` (Number) The numeric ID of the device power ports.
+- `label` (String) The label of the power ports.
+- `last_updated` (String) When the power ports was last changed.
+- `link_peers_type` (String) The link peers type of the power ports.
+- `mark_connected` (Boolean) The mark connected of the power ports.
 - `maximum_draw` (Number) The maximum draw of the device power ports.
 - `module_id` (Number) The ID of the module associated with the device power ports.
 - `name` (String) The name of the device power ports.
+- `owner_id` (Number) The ID of the owner associated with the power ports.
 - `tag_ids` (Set of Number) The IDs of the tag associated with the device power ports.
+- `tags` (Set of String) Tags assigned to the object, by name.
 - `type` (String) The type of the device power ports.

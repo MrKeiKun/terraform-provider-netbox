@@ -37,13 +37,13 @@ output "event_rule_id" {
 - `action_object_type` (String) The action object type of the event rule.
 - `action_type` (String) The action type of the event rule.
 - `conditions` (String) The conditions of the event rule.
-- `created` (String) The created of the event rule.
+- `created` (String) When the event rule was created.
 - `custom_fields` (Map of String) Custom field values of the event rule, as a map of field name to value.
 - `description` (String) A description of the event rule.
 - `enabled` (Boolean) The enabled of the event rule.
 - `event_types` (List of String) The event types of the event rule.
 - `id` (String) The ID of this resource.
-- `last_updated` (String) The last updated of the event rule.
+- `last_updated` (String) When the event rule was last changed.
 - `object_types` (List of String) The object types of the event rule.
 - `owner_id` (Number) The ID of the owner associated with the event rule.
 - `tags` (Set of String) Tags assigned to the object, by name.

@@ -43,10 +43,10 @@ output "wireless_lan_id" {
 ### Read-Only
 
 - `comments` (String) Free-form comments about the wireless lan.
-- `created` (String) The created of the wireless lan.
+- `created` (String) When the wireless lan was created.
 - `custom_fields` (Map of String) Custom field values of the wireless lan, as a map of field name to value.
 - `description` (String) A description of the wireless lan.
-- `last_updated` (String) The last updated of the wireless lan.
+- `last_updated` (String) When the wireless lan was last changed.
 - `scope` (String) The scope of the wireless lan.
 - `scope_id` (Number) The scope id of the wireless lan.
 - `tags` (Set of String) Tags assigned to the object, by name.

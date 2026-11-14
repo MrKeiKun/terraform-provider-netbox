@@ -53,14 +53,23 @@ Required:
 
 Read-Only:
 
+- `comments` (String) Free-form comments about the VLANs.
+- `created` (String) When the VLANs was created.
 - `custom_fields` (Map of String)
 - `description` (String) A description of the vlans.
 - `group_id` (Number) The ID of the group associated with the vlans.
 - `id` (Number) The numeric ID of the vlans.
+- `l2vpn_termination_id` (Number) The ID of the l2vpn termination associated with the VLANs.
+- `last_updated` (String) When the VLANs was last changed.
 - `name` (String) The name of the vlans.
+- `owner_id` (Number) The ID of the owner associated with the VLANs.
+- `prefix_count` (Number) The number of prefix of the VLANs.
+- `qinq_role` (String) The qinq role of the VLANs.
+- `qinq_svlan_id` (Number) The ID of the qinq svlan associated with the VLANs.
 - `role` (Number) The role of the vlans.
 - `site` (Number) The site of the vlans.
 - `status` (String) The status of the vlans.
 - `tag_ids` (Set of Number) The IDs of the tag associated with the vlans.
+- `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant` (Number) The tenant of the vlans.
 - `vid` (Number) The VLAN ID (1-4094).

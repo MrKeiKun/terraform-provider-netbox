@@ -42,12 +42,12 @@ output "device_power_port_id" {
 - `cable_end` (String) The cable end of the device power port.
 - `connected_endpoints_reachable` (Boolean) The connected endpoints reachable of the device power port.
 - `connected_endpoints_type` (String) The connected endpoints type of the device power port.
-- `created` (String) The created of the device power port.
+- `created` (String) When the device power port was created.
 - `custom_fields` (Map of String) Custom field values of the device power port, as a map of field name to value.
 - `description` (String) A description of the device power port.
 - `id` (String) The ID of this resource.
 - `label` (String) The label of the device power port.
-- `last_updated` (String) The last updated of the device power port.
+- `last_updated` (String) When the device power port was last changed.
 - `link_peers_type` (String) The link peers type of the device power port.
 - `mark_connected` (Boolean) The mark connected of the device power port.
 - `maximum_draw` (Number) The maximum draw of the device power port.

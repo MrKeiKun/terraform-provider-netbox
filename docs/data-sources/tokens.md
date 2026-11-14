@@ -53,7 +53,7 @@ Required:
 
 Read-Only:
 
-- `created` (String) The created of the tokens.
+- `created` (String) When the tokens was created.
 - `description` (String) A description of the tokens.
 - `enabled` (Boolean) The enabled of the tokens.
 - `expires` (String) The expires of the tokens.

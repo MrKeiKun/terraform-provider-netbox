@@ -30,12 +30,21 @@ data "netbox_config_context" "example" {
 - `cluster_groups` (List of Number) The cluster groups of the config context.
 - `cluster_types` (List of Number) The cluster types of the config context.
 - `clusters` (List of Number) The clusters of the config context.
+- `created` (String) When the object was created.
 - `data` (String) The data of the config context.
+- `data_file_id` (Number) The ID of the data file associated with the object.
+- `data_path` (String) The data path of the object.
+- `data_source_id` (Number) The ID of the data source associated with the object.
+- `data_synced` (String) The data synced of the object.
 - `description` (String) A description of the config context.
 - `device_types` (List of Number) The device types of the config context.
 - `id` (String) The ID of this resource.
+- `is_active` (Boolean) The is active of the object.
+- `last_updated` (String) When the object was last changed.
 - `locations` (List of Number) The locations of the config context.
+- `owner_id` (Number) The ID of the owner associated with the object.
 - `platforms` (List of Number) The platforms of the config context.
+- `profile_id` (Number) The ID of the profile associated with the object.
 - `regions` (List of Number) The regions of the config context.
 - `roles` (List of Number) The roles of the config context.
 - `site_groups` (List of Number) The site groups of the config context.

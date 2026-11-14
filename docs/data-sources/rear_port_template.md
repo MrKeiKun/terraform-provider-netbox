@@ -37,10 +37,10 @@ output "rear_port_template_id" {
 ### Read-Only
 
 - `color` (String) The color of the rear port template.
-- `created` (String) The created of the rear port template.
+- `created` (String) When the rear port template was created.
 - `description` (String) A description of the rear port template.
 - `id` (String) The ID of this resource.
 - `label` (String) The label of the rear port template.
-- `last_updated` (String) The last updated of the rear port template.
+- `last_updated` (String) When the rear port template was last changed.
 - `positions` (Number) The positions of the rear port template.
 - `type` (String) The type of the rear port template.
