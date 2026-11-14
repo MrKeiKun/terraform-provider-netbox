@@ -67,5 +67,5 @@ Read-Only:
 - `status` (String) The status of the tunnels.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the tunnels.
-- `terminations_count` (Number) The number of terminations of the tunnels.
+- `terminations_count` (Number) The number of terminations objects that refer to the tunnels.
 - `tunnel_id` (Number) The ID of the tunnel associated with the tunnels.

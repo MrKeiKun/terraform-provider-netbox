@@ -41,7 +41,10 @@ resource "netbox_rir" "test" {
 
 ### Read-Only
 
+- `aggregate_count` (Number) The number of aggregate objects that refer to the rir.
+- `created` (String) When the rir was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the rir was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

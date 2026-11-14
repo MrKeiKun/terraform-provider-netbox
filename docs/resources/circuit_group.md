@@ -40,7 +40,10 @@ resource "netbox_circuit_group" "example" {
 
 ### Read-Only
 
+- `circuit_count` (Number) The number of circuit objects that refer to the circuit group.
+- `created` (String) When the circuit group was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the circuit group was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

@@ -54,7 +54,11 @@ resource "netbox_config_context" "test" {
 
 ### Read-Only
 
+- `created` (String) When the config context was created.
+- `data_path` (String) The data path of the config context.
+- `data_synced` (String) The data synced of the config context.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the config context was last changed.
 
 ## Import
 

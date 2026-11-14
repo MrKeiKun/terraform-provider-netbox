@@ -58,7 +58,10 @@ resource "netbox_inventory_item" "parent" {
 
 ### Read-Only
 
+- `created` (String) When the inventory item role was created.
 - `id` (String) The ID of this resource.
+- `inventoryitem_count` (Number) The number of inventoryitem objects that refer to the inventory item role.
+- `last_updated` (String) When the inventory item role was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

@@ -57,7 +57,22 @@ resource "netbox_device_type" "test" {
 
 ### Read-Only
 
+- `console_port_template_count` (Number) The number of console port template objects that refer to the device type.
+- `console_server_port_template_count` (Number) The number of console server port template objects that refer to the device type.
+- `cooling_intake_template_count` (Number) The number of cooling intake template objects that refer to the device type.
+- `cooling_outflow_template_count` (Number) The number of cooling outflow template objects that refer to the device type.
+- `created` (String) When the device type was created.
+- `device_bay_template_count` (Number) The number of device bay template objects that refer to the device type.
+- `device_count` (Number) The number of device objects that refer to the device type.
+- `front_port_template_count` (Number) The number of front port template objects that refer to the device type.
 - `id` (String) The ID of this resource.
+- `interface_template_count` (Number) The number of interface template objects that refer to the device type.
+- `inventory_item_template_count` (Number) The number of inventory item template objects that refer to the device type.
+- `last_updated` (String) When the device type was last changed.
+- `module_bay_template_count` (Number) The number of module bay template objects that refer to the device type.
+- `power_outlet_template_count` (Number) The number of power outlet template objects that refer to the device type.
+- `power_port_template_count` (Number) The number of power port template objects that refer to the device type.
+- `rear_port_template_count` (Number) The number of rear port template objects that refer to the device type.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

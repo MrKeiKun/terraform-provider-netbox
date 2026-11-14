@@ -67,7 +67,12 @@ resource "netbox_virtual_machine_interface" "myvm_eth1" {
 
 ### Read-Only
 
+- `count_fhrp_groups` (Number) The count fhrp groups of the virtual machine interface.
+- `count_ipaddresses` (Number) The count ipaddresses of the virtual machine interface.
+- `created` (String) When the virtual machine interface was created.
 - `id` (String) The ID of this resource.
+- `l2vpn_termination_id` (Number) The ID of the l2vpn termination associated with the virtual machine interface.
+- `last_updated` (String) When the virtual machine interface was last changed.
 - `mac_address` (String) The MAC address of the interface.
 - `primary_mac_address_id` (Number) The primary MAC address id.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.

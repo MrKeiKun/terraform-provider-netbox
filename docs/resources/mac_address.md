@@ -109,7 +109,11 @@ resource "netbox_mac_address" "this" {
 
 ### Read-Only
 
+- `assigned_object` (String) The assigned object of the mac address.
+- `created` (String) When the mac address was created.
 - `id` (String) The ID of this resource.
+- `is_primary` (Boolean) The is primary of the mac address.
+- `last_updated` (String) When the mac address was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

@@ -62,6 +62,6 @@ Read-Only:
 - `last_updated` (String) When the rack roles was last changed.
 - `name` (String) The name of the rack roles.
 - `owner_id` (Number) The ID of the owner associated with the rack roles.
-- `rack_count` (Number) The number of rack of the rack roles.
+- `rack_count` (Number) The number of rack objects that refer to the rack roles.
 - `slug` (String) The slug of the rack roles.
 - `tags` (Set of String) Tags assigned to the object, by name.

@@ -53,7 +53,7 @@ Required:
 
 Read-Only:
 
-- `circuit_count` (Number) The number of circuit of the circuit groups.
+- `circuit_count` (Number) The number of circuit objects that refer to the circuit groups.
 - `comments` (String) Free-form comments about the circuit groups.
 - `created` (String) When the circuit groups was created.
 - `custom_fields` (Map of String) Custom field values of the circuit groups, as a map of field name to value.

@@ -31,7 +31,9 @@ resource "netbox_subscription" "example" {
 
 ### Read-Only
 
+- `created` (String) When the subscription was created.
 - `id` (String) The ID of this resource.
+- `object` (String) The object of the subscription.
 
 ## Import
 

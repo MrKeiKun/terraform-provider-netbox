@@ -72,7 +72,7 @@ Read-Only:
 - `outer_unit` (String) The outer unit of the rack types.
 - `outer_width` (Number) The outer width of the rack types.
 - `owner_id` (Number) The ID of the owner associated with the rack types.
-- `rack_count` (Number) The number of rack of the rack types.
+- `rack_count` (Number) The number of rack objects that refer to the rack types.
 - `slug` (String) The slug of the rack types.
 - `starting_unit` (Number) The starting unit of the rack types.
 - `tags` (Set of String) Tags assigned to the object, by name.

@@ -46,7 +46,10 @@ resource "netbox_aggregate" "test" {
 
 ### Read-Only
 
+- `created` (String) When the aggregate was created.
+- `family` (String) The family of the aggregate.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the aggregate was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

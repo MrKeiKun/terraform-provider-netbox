@@ -53,7 +53,7 @@ Required:
 
 Read-Only:
 
-- `aggregate_count` (Number) The number of aggregate of the rirs.
+- `aggregate_count` (Number) The number of aggregate objects that refer to the rirs.
 - `comments` (String) Free-form comments about the rirs.
 - `created` (String) When the rirs was created.
 - `custom_fields` (Map of String) Custom field values of the rirs, as a map of field name to value.

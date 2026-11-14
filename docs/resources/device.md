@@ -86,9 +86,26 @@ resource "netbox_device" "test" {
 
 ### Read-Only
 
+- `config_context` (String) The config context of the device.
+- `console_port_count` (Number) The number of console port objects that refer to the device.
+- `console_server_port_count` (Number) The number of console server port objects that refer to the device.
+- `cooling_intake_count` (Number) The number of cooling intake objects that refer to the device.
+- `cooling_outflow_count` (Number) The number of cooling outflow objects that refer to the device.
+- `created` (String) When the device was created.
+- `device_bay_count` (Number) The number of device bay objects that refer to the device.
+- `front_port_count` (Number) The number of front port objects that refer to the device.
 - `id` (String) The ID of this resource.
+- `interface_count` (Number) The number of interface objects that refer to the device.
+- `inventory_item_count` (Number) The number of inventory item objects that refer to the device.
+- `last_updated` (String) When the device was last changed.
+- `module_bay_count` (Number) The number of module bay objects that refer to the device.
+- `parent_device_id` (Number) The ID of the parent device associated with the device.
+- `power_outlet_count` (Number) The number of power outlet objects that refer to the device.
+- `power_port_count` (Number) The number of power port objects that refer to the device.
+- `primary_ip_id` (Number) The ID of the primary ip associated with the device.
 - `primary_ipv4` (Number) The primary ipv4 of the device.
 - `primary_ipv6` (Number) The primary ipv6 of the device.
+- `rear_port_count` (Number) The number of rear port objects that refer to the device.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

@@ -62,7 +62,7 @@ Read-Only:
 - `name` (String) The name of the site groups.
 - `owner_id` (Number) The ID of the owner associated with the site groups.
 - `parent_id` (Number) The ID of the parent associated with the site groups.
-- `prefix_count` (Number) The number of prefix of the site groups.
-- `site_count` (Number) The number of site of the site groups.
+- `prefix_count` (Number) The number of prefix objects that refer to the site groups.
+- `site_count` (Number) The number of site objects that refer to the site groups.
 - `slug` (String) The slug of the site groups.
 - `tags` (Set of String) Tags assigned to the object, by name.

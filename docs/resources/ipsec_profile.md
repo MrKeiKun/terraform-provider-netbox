@@ -44,7 +44,9 @@ resource "netbox_ipsec_profile" "example" {
 
 ### Read-Only
 
+- `created` (String) When the ipsec profile was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the ipsec profile was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

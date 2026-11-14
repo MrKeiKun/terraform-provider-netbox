@@ -59,20 +59,20 @@ Read-Only:
 - `comments` (String) Free-form comments about the devices.
 - `config_context` (String) The config context of the devices.
 - `config_template_id` (Number) The ID of the config template associated with the devices.
-- `console_port_count` (Number) The number of console port of the devices.
-- `console_server_port_count` (Number) The number of console server port of the devices.
-- `cooling_intake_count` (Number) The number of cooling intake of the devices.
+- `console_port_count` (Number) The number of console port objects that refer to the devices.
+- `console_server_port_count` (Number) The number of console server port objects that refer to the devices.
+- `cooling_intake_count` (Number) The number of cooling intake objects that refer to the devices.
 - `cooling_method` (String) The cooling method of the devices.
-- `cooling_outflow_count` (Number) The number of cooling outflow of the devices.
+- `cooling_outflow_count` (Number) The number of cooling outflow objects that refer to the devices.
 - `created` (String) When the devices was created.
 - `custom_fields` (Map of String) Custom field values of the devices, as a map of field name to value.
 - `description` (String) A description of the devices.
-- `device_bay_count` (Number) The number of device bay of the devices.
+- `device_bay_count` (Number) The number of device bay objects that refer to the devices.
 - `device_id` (Number) The ID of the device associated with the devices.
 - `device_type_id` (Number) The ID of the device type associated with the devices.
-- `front_port_count` (Number) The number of front port of the devices.
-- `interface_count` (Number) The number of interface of the devices.
-- `inventory_item_count` (Number) The number of inventory item of the devices.
+- `front_port_count` (Number) The number of front port objects that refer to the devices.
+- `interface_count` (Number) The number of interface objects that refer to the devices.
+- `inventory_item_count` (Number) The number of inventory item objects that refer to the devices.
 - `last_updated` (String) When the devices was last changed.
 - `latitude` (Number) The latitude of the devices.
 - `local_context_data` (String) The local context data of the devices.
@@ -80,21 +80,21 @@ Read-Only:
 - `longitude` (Number) The longitude of the devices.
 - `manufacturer_id` (Number) The ID of the manufacturer associated with the devices.
 - `model` (String) The model of the devices.
-- `module_bay_count` (Number) The number of module bay of the devices.
+- `module_bay_count` (Number) The number of module bay objects that refer to the devices.
 - `name` (String) The name of the devices.
 - `oob_ip` (String) The oob ip of the devices.
 - `owner_id` (Number) The ID of the owner associated with the devices.
 - `parent_device_id` (Number) The ID of the parent device associated with the devices.
 - `platform_id` (Number) The ID of the platform associated with the devices.
-- `power_outlet_count` (Number) The number of power outlet of the devices.
-- `power_port_count` (Number) The number of power port of the devices.
+- `power_outlet_count` (Number) The number of power outlet objects that refer to the devices.
+- `power_port_count` (Number) The number of power port objects that refer to the devices.
 - `primary_ip_id` (Number) The ID of the primary ip associated with the devices.
 - `primary_ipv4` (String) The primary ipv4 of the devices.
 - `primary_ipv6` (String) The primary ipv6 of the devices.
 - `rack_face` (String) The rack face of the devices.
 - `rack_id` (Number) The ID of the rack associated with the devices.
 - `rack_position` (Number) The rack position of the devices.
-- `rear_port_count` (Number) The number of rear port of the devices.
+- `rear_port_count` (Number) The number of rear port objects that refer to the devices.
 - `role_id` (Number) The ID of the role associated with the devices.
 - `serial` (String) The serial number of the devices.
 - `site_id` (Number) The ID of the site associated with the devices.

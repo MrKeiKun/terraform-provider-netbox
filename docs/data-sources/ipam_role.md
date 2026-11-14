@@ -27,7 +27,7 @@ data "netbox_ipam_role" "example" {
 
 ### Read-Only
 
-- `asn_count` (Number) The number of asn of the ipam role.
+- `asn_count` (Number) The number of asn objects that refer to the ipam role.
 - `comments` (String) Free-form comments about the ipam role.
 - `created` (String) When the ipam role was created.
 - `custom_fields` (Map of String) Custom field values of the ipam role, as a map of field name to value.
@@ -35,8 +35,8 @@ data "netbox_ipam_role" "example" {
 - `id` (String) The ID of this resource.
 - `last_updated` (String) When the ipam role was last changed.
 - `owner_id` (Number) The ID of the owner associated with the ipam role.
-- `prefix_count` (Number) The number of prefix of the ipam role.
+- `prefix_count` (Number) The number of prefix objects that refer to the ipam role.
 - `slug` (String) The URL-friendly slug of the ipam role.
 - `tags` (Set of String) Tags assigned to the object, by name.
-- `vlan_count` (Number) The number of vlan of the ipam role.
+- `vlan_count` (Number) The number of vlan objects that refer to the ipam role.
 - `weight` (Number) The weight of the ipam role.

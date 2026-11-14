@@ -44,7 +44,9 @@ resource "netbox_fhrp_group" "test" {
 
 ### Read-Only
 
+- `created` (String) When the fhrp group was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the fhrp group was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

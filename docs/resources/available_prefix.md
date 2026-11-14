@@ -53,8 +53,13 @@ resource "netbox_available_prefix" "test" {
 
 ### Read-Only
 
+- `children` (Number) The children of the available prefix.
+- `created` (String) When the available prefix was created.
+- `family` (String) The family of the available prefix.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the available prefix was last changed.
 - `prefix` (String) The prefix in CIDR notation.
+- `scope` (String) The scope of the available prefix.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

@@ -45,7 +45,9 @@ resource "netbox_module_bay_type" "example" {
 
 ### Read-Only
 
+- `created` (String) When the module bay type was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the module bay type was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

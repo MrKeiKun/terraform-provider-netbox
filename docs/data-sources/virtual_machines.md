@@ -65,7 +65,7 @@ Read-Only:
 - `device_id` (Number) The ID of the device associated with the virtual machines.
 - `device_name` (String) The device name of the virtual machines.
 - `disk_size_mb` (Number) The disk size mb of the virtual machines.
-- `interface_count` (Number) The number of interface of the virtual machines.
+- `interface_count` (Number) The number of interface objects that refer to the virtual machines.
 - `last_updated` (String) When the virtual machines was last changed.
 - `local_context_data` (String) The local context data of the virtual machines.
 - `memory_mb` (Number) The memory mb of the virtual machines.
@@ -86,6 +86,6 @@ Read-Only:
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the virtual machines.
 - `vcpus` (Number) The vcpus of the virtual machines.
-- `virtual_disk_count` (Number) The number of virtual disk of the virtual machines.
+- `virtual_disk_count` (Number) The number of virtual disk objects that refer to the virtual machines.
 - `virtual_machine_type_id` (Number) The ID of the virtual machine type associated with the virtual machines.
 - `vm_id` (Number) The ID of the vm associated with the virtual machines.

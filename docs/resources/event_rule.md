@@ -71,7 +71,11 @@ resource "netbox_event_rule" "script" {
 
 ### Read-Only
 
+- `action_is_available` (Boolean) The action is available of the event rule.
+- `action_object` (String) The action object of the event rule.
+- `created` (String) When the event rule was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the event rule was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

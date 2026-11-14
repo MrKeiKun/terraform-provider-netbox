@@ -47,7 +47,10 @@ resource "netbox_ip_range" "cust_a_prod" {
 
 ### Read-Only
 
+- `created` (String) When the ip range was created.
+- `family` (String) The family of the ip range.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the ip range was last changed.
 - `size` (Number) The total member count of the IP range.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 

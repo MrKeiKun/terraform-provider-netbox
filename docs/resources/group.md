@@ -33,6 +33,7 @@ resource "netbox_group" "test" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `user_count` (Number) The number of user objects that refer to the group.
 
 ## Import
 

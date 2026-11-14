@@ -59,7 +59,7 @@ Read-Only:
 - `created` (String) When the device roles was created.
 - `custom_fields` (Map of String) Custom field values of the device roles, as a map of field name to value.
 - `description` (String) A description of the device roles.
-- `device_count` (Number) The number of device of the device roles.
+- `device_count` (Number) The number of device objects that refer to the device roles.
 - `id` (Number) The id of the device roles.
 - `last_updated` (String) When the device roles was last changed.
 - `name` (String) The name of the device roles.
@@ -67,5 +67,5 @@ Read-Only:
 - `parent_id` (Number) The ID of the parent associated with the device roles.
 - `slug` (String) The slug of the device roles.
 - `tags` (Set of String) Tags assigned to the object, by name.
-- `virtualmachine_count` (Number) The number of virtualmachine of the device roles.
+- `virtualmachine_count` (Number) The number of virtualmachine objects that refer to the device roles.
 - `vm_role` (Boolean) The vm role of the device roles.

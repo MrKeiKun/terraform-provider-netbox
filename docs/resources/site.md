@@ -58,8 +58,16 @@ resource "netbox_site" "example1" {
 
 ### Read-Only
 
+- `circuit_count` (Number) The number of circuit objects that refer to the site.
+- `created` (String) When the site was created.
+- `device_count` (Number) The number of device objects that refer to the site.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the site was last changed.
+- `prefix_count` (Number) The number of prefix objects that refer to the site.
+- `rack_count` (Number) The number of rack objects that refer to the site.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+- `virtualmachine_count` (Number) The number of virtualmachine objects that refer to the site.
+- `vlan_count` (Number) The number of vlan objects that refer to the site.
 
 ## Import
 

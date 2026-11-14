@@ -42,3 +42,9 @@ func sortStrings(s []string) { sort.Strings(s) }
 func ExtraDataSourceAttrs() map[string][]fwresource.Attr {
 	return dataSourceExtraAttrs
 }
+
+// ExtraResourceAttrs returns the read-only attributes that tools/gendatasources added to the resources,
+// by type name.
+func ExtraResourceAttrs() map[string][]fwresource.Attr {
+	return resourceExtraAttrs
+}

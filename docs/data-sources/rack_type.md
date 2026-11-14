@@ -52,7 +52,7 @@ data "netbox_rack_type" "ex2" {
 - `outer_unit` (String) The outer unit of the rack type.
 - `outer_width` (Number) The outer width of the rack type.
 - `owner_id` (Number) The ID of the owner associated with the rack type.
-- `rack_count` (Number) The number of rack of the rack type.
+- `rack_count` (Number) The number of rack objects that refer to the rack type.
 - `starting_unit` (Number) The starting unit of the rack type.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `u_height` (Number) The height of the rack type in rack units.

@@ -40,8 +40,11 @@ resource "netbox_virtual_circuit_type" "example" {
 
 ### Read-Only
 
+- `created` (String) When the virtual circuit type was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the virtual circuit type was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+- `virtual_circuit_count` (Number) The number of virtual circuit objects that refer to the virtual circuit type.
 
 ## Import
 

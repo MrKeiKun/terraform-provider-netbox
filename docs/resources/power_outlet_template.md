@@ -63,7 +63,9 @@ resource "netbox_power_outlet_template" "test" {
 
 ### Read-Only
 
+- `created` (String) When the power outlet template was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the power outlet template was last changed.
 
 ## Import
 

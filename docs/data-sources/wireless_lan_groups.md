@@ -64,4 +64,4 @@ Read-Only:
 - `parent_id` (Number) The ID of the parent associated with the wireless lan groups.
 - `slug` (String) The slug of the wireless lan groups.
 - `tags` (Set of String) Tags assigned to the object, by name.
-- `wirelesslan_count` (Number) The number of wirelesslan of the wireless lan groups.
+- `wirelesslan_count` (Number) The number of wirelesslan objects that refer to the wireless lan groups.

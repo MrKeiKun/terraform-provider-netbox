@@ -28,7 +28,7 @@ data "netbox_asn_range" "example" {
 
 ### Read-Only
 
-- `asn_count` (Number) The number of asn of the asn range.
+- `asn_count` (Number) The number of asn objects that refer to the asn range.
 - `comments` (String) Free-form comments about the asn range.
 - `created` (String) When the asn range was created.
 - `custom_fields` (Map of String) Custom field values of the asn range, as a map of field name to value.

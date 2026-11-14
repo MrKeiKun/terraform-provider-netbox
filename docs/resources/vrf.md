@@ -44,7 +44,11 @@ resource "netbox_vrf" "cust_a_prod" {
 
 ### Read-Only
 
+- `created` (String) When the vrf was created.
 - `id` (String) The ID of this resource.
+- `ipaddress_count` (Number) The number of ipaddress objects that refer to the vrf.
+- `last_updated` (String) When the vrf was last changed.
+- `prefix_count` (Number) The number of prefix objects that refer to the vrf.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

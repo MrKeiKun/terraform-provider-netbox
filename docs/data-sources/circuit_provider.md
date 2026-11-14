@@ -35,7 +35,7 @@ output "circuit_provider_id" {
 
 - `accounts` (List of Number) The IDs of the accounts of the circuit provider.
 - `asns` (List of Number) The IDs of the asns of the circuit provider.
-- `circuit_count` (Number) The number of circuit of the circuit provider.
+- `circuit_count` (Number) The number of circuit objects that refer to the circuit provider.
 - `comments` (String) Free-form comments about the circuit provider.
 - `created` (String) When the circuit provider was created.
 - `custom_fields` (Map of String) Custom field values of the circuit provider, as a map of field name to value.

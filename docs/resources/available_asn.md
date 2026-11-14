@@ -54,8 +54,12 @@ resource "netbox_available_asn" "example" {
 ### Read-Only
 
 - `asn` (Number) The AS number that NetBox picked.
+- `created` (String) When the available asn was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the available asn was last changed.
+- `provider_count` (Number) The number of provider objects that refer to the available asn.
 - `rir_id` (Number) The ID of the RIR of the ASN range.
+- `site_count` (Number) The number of site objects that refer to the available asn.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

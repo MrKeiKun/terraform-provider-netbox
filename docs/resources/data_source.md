@@ -44,7 +44,12 @@ resource "netbox_data_source" "example" {
 
 ### Read-Only
 
+- `created` (String) When the data source was created.
+- `file_count` (Number) The number of file objects that refer to the data source.
 - `id` (String) The ID of this resource.
+- `last_synced` (String) The last synced of the data source.
+- `last_updated` (String) When the data source was last changed.
+- `status` (String) The status of the data source.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

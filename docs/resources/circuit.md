@@ -65,8 +65,12 @@ resource "netbox_circuit" "test" {
 
 ### Read-Only
 
+- `created` (String) When the circuit was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the circuit was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+- `termination_a_id` (Number) The ID of the termination a associated with the circuit.
+- `termination_z_id` (Number) The ID of the termination z associated with the circuit.
 
 ## Import
 

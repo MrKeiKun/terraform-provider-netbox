@@ -57,4 +57,4 @@ Read-Only:
 - `id` (Number) The id of the groups.
 - `name` (String) The name of the groups.
 - `permissions` (List of Number) The IDs of the permissions of the groups.
-- `user_count` (Number) The number of user of the groups.
+- `user_count` (Number) The number of user objects that refer to the groups.

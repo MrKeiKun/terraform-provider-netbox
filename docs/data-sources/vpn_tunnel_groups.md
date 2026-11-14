@@ -63,4 +63,4 @@ Read-Only:
 - `owner_id` (Number) The ID of the owner associated with the vpn tunnel groups.
 - `slug` (String) The slug of the vpn tunnel groups.
 - `tags` (Set of String) Tags assigned to the object, by name.
-- `tunnel_count` (Number) The number of tunnel of the vpn tunnel groups.
+- `tunnel_count` (Number) The number of tunnel objects that refer to the vpn tunnel groups.

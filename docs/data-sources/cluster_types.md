@@ -53,7 +53,7 @@ Required:
 
 Read-Only:
 
-- `cluster_count` (Number) The number of cluster of the cluster types.
+- `cluster_count` (Number) The number of cluster objects that refer to the cluster types.
 - `comments` (String) Free-form comments about the cluster types.
 - `created` (String) When the cluster types was created.
 - `custom_fields` (Map of String) Custom field values of the cluster types, as a map of field name to value.

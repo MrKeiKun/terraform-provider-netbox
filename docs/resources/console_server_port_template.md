@@ -53,7 +53,9 @@ resource "netbox_console_server_port_template" "test" {
 
 ### Read-Only
 
+- `created` (String) When the console server port template was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the console server port template was last changed.
 
 ## Import
 

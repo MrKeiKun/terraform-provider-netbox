@@ -48,8 +48,10 @@ resource "netbox_token" "test_basic" {
 
 ### Read-Only
 
+- `created` (String) When the token was created.
 - `id` (String) The ID of this resource.
 - `last_used` (String) The last used of the token.
+- `token` (String, Sensitive) The token of the token.
 
 ## Import
 

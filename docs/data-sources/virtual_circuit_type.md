@@ -37,4 +37,4 @@ data "netbox_virtual_circuit_type" "example" {
 - `last_updated` (String) When the virtual circuit type was last changed.
 - `owner_id` (Number) The ID of the owner associated with the virtual circuit type.
 - `tags` (Set of String) Tags assigned to the object, by name.
-- `virtual_circuit_count` (Number) The number of virtual circuit of the virtual circuit type.
+- `virtual_circuit_count` (Number) The number of virtual circuit objects that refer to the virtual circuit type.

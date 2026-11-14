@@ -79,7 +79,11 @@ resource "netbox_rack" "test" {
 
 ### Read-Only
 
+- `created` (String) When the rack was created.
+- `device_count` (Number) The number of device objects that refer to the rack.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the rack was last changed.
+- `powerfeed_count` (Number) The number of powerfeed objects that refer to the rack.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

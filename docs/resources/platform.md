@@ -43,8 +43,12 @@ resource "netbox_platform" "PANOS" {
 
 ### Read-Only
 
+- `created` (String) When the platform was created.
+- `device_count` (Number) The number of device objects that refer to the platform.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the platform was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+- `virtualmachine_count` (Number) The number of virtualmachine objects that refer to the platform.
 
 ## Import
 

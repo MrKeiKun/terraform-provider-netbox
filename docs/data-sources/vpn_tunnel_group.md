@@ -39,4 +39,4 @@ data "netbox_vpn_tunnel_group" "example" {
 - `last_updated` (String) When the tunnel group was last changed.
 - `owner_id` (Number) The ID of the owner associated with the tunnel group.
 - `tags` (Set of String) Tags assigned to the object, by name.
-- `tunnel_count` (Number) The number of tunnel of the tunnel group.
+- `tunnel_count` (Number) The number of tunnel objects that refer to the tunnel group.

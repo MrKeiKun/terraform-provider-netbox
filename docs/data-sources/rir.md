@@ -35,7 +35,7 @@ data "netbox_rir" "rir_2" {
 
 ### Read-Only
 
-- `aggregate_count` (Number) The number of aggregate of the rir.
+- `aggregate_count` (Number) The number of aggregate objects that refer to the rir.
 - `comments` (String) Free-form comments about the rir.
 - `created` (String) When the rir was created.
 - `custom_fields` (Map of String) Custom field values of the rir, as a map of field name to value.

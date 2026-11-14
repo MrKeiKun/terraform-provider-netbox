@@ -45,7 +45,9 @@ resource "netbox_virtual_circuit" "example" {
 
 ### Read-Only
 
+- `created` (String) When the virtual circuit was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the virtual circuit was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

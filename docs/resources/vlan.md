@@ -60,7 +60,11 @@ resource "netbox_vlan" "example2" {
 
 ### Read-Only
 
+- `created` (String) When the vlan was created.
 - `id` (String) The ID of this resource.
+- `l2vpn_termination_id` (Number) The ID of the l2vpn termination associated with the vlan.
+- `last_updated` (String) When the vlan was last changed.
+- `prefix_count` (Number) The number of prefix objects that refer to the vlan.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

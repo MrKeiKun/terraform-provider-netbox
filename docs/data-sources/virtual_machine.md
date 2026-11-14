@@ -46,7 +46,7 @@ output "virtual_machine_id" {
 - `description` (String) A description of the virtual machine.
 - `disk` (Number) The disk of the virtual machine.
 - `id` (String) The ID of this resource.
-- `interface_count` (Number) The number of interface of the virtual machine.
+- `interface_count` (Number) The number of interface objects that refer to the virtual machine.
 - `last_updated` (String) When the virtual machine was last changed.
 - `local_context_data` (String) The local context data of the virtual machine.
 - `memory` (Number) The memory of the virtual machine.
@@ -62,5 +62,5 @@ output "virtual_machine_id" {
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the virtual machine.
 - `vcpus` (Number) The vcpus of the virtual machine.
-- `virtual_disk_count` (Number) The number of virtual disk of the virtual machine.
+- `virtual_disk_count` (Number) The number of virtual disk objects that refer to the virtual machine.
 - `virtual_machine_type_id` (Number) The ID of the virtual machine type associated with the virtual machine.

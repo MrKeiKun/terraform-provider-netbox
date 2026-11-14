@@ -54,7 +54,9 @@ resource "netbox_power_port_template" "test" {
 
 ### Read-Only
 
+- `created` (String) When the power port template was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the power port template was last changed.
 
 ## Import
 

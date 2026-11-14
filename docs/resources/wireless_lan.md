@@ -48,7 +48,10 @@ resource "netbox_wireless_lan" "guest" {
 
 ### Read-Only
 
+- `created` (String) When the wireless lan was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the wireless lan was last changed.
+- `scope` (String) The scope of the wireless lan.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

@@ -37,4 +37,4 @@ data "netbox_tenant_group" "example" {
 - `parent_id` (Number) The ID of the parent associated with the tenant group.
 - `slug` (String) The URL-friendly slug of the tenant group.
 - `tags` (Set of String) Tags assigned to the object, by name.
-- `tenant_count` (Number) The number of tenant of the tenant group.
+- `tenant_count` (Number) The number of tenant objects that refer to the tenant group.

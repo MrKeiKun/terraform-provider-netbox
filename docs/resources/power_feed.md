@@ -73,7 +73,14 @@ resource "netbox_power_feed" "test" {
 
 ### Read-Only
 
+- `cable_end` (String) The cable end of the power feed.
+- `cable_id` (Number) The ID of the cable associated with the power feed.
+- `connected_endpoints_reachable` (Boolean) The connected endpoints reachable of the power feed.
+- `connected_endpoints_type` (String) The connected endpoints type of the power feed.
+- `created` (String) When the power feed was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the power feed was last changed.
+- `link_peers_type` (String) The link peers type of the power feed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

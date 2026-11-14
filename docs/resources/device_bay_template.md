@@ -50,7 +50,9 @@ resource "netbox_device_bay_template" "example" {
 
 ### Read-Only
 
+- `created` (String) When the device bay template was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the device bay template was last changed.
 
 ## Import
 

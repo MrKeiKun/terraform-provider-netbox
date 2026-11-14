@@ -61,7 +61,7 @@ Read-Only:
 - `custom_fields` (Map of String) Custom field values of the racks, as a map of field name to value.
 - `desc_units` (Boolean) Whether desc units is enabled for the racks.
 - `description` (String) A description of the racks.
-- `device_count` (Number) The number of device of the racks.
+- `device_count` (Number) The number of device objects that refer to the racks.
 - `facility_id` (String) The ID of the facility associated with the racks.
 - `form_factor` (String) The form factor of the racks.
 - `group_id` (Number) The ID of the group associated with the racks.
@@ -76,7 +76,7 @@ Read-Only:
 - `outer_unit` (String) The outer unit of the racks.
 - `outer_width` (Number) The outer width of the racks.
 - `owner_id` (Number) The ID of the owner associated with the racks.
-- `powerfeed_count` (Number) The number of powerfeed of the racks.
+- `powerfeed_count` (Number) The number of powerfeed objects that refer to the racks.
 - `rack_type_id` (Number) The ID of the rack type associated with the racks.
 - `role_id` (Number) The ID of the role associated with the racks.
 - `serial` (String) The serial number of the racks.

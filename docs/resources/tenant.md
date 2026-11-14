@@ -42,8 +42,20 @@ resource "netbox_tenant" "customer_a" {
 
 ### Read-Only
 
+- `circuit_count` (Number) The number of circuit objects that refer to the tenant.
+- `cluster_count` (Number) The number of cluster objects that refer to the tenant.
+- `created` (String) When the tenant was created.
+- `device_count` (Number) The number of device objects that refer to the tenant.
 - `id` (String) The ID of this resource.
+- `ipaddress_count` (Number) The number of ipaddress objects that refer to the tenant.
+- `last_updated` (String) When the tenant was last changed.
+- `prefix_count` (Number) The number of prefix objects that refer to the tenant.
+- `rack_count` (Number) The number of rack objects that refer to the tenant.
+- `site_count` (Number) The number of site objects that refer to the tenant.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+- `virtualmachine_count` (Number) The number of virtualmachine objects that refer to the tenant.
+- `vlan_count` (Number) The number of vlan objects that refer to the tenant.
+- `vrf_count` (Number) The number of vrf objects that refer to the tenant.
 
 ## Import
 

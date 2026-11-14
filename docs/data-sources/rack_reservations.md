@@ -64,6 +64,6 @@ Read-Only:
 - `status` (String) The status of the rack reservations.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the rack reservations.
-- `unit_count` (Number) The number of unit of the rack reservations.
+- `unit_count` (Number) The number of unit objects that refer to the rack reservations.
 - `units` (List of Number) The units of the rack reservations.
 - `user_id` (Number) The ID of the user associated with the rack reservations.

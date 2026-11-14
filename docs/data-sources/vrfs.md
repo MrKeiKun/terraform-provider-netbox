@@ -60,11 +60,11 @@ Read-Only:
 - `export_targets` (List of Number) The IDs of the export targets of the VRFs.
 - `id` (Number) The numeric ID of the vrfs.
 - `import_targets` (List of Number) The IDs of the import targets of the VRFs.
-- `ipaddress_count` (Number) The number of ipaddress of the VRFs.
+- `ipaddress_count` (Number) The number of ipaddress objects that refer to the VRFs.
 - `last_updated` (String) When the VRFs was last changed.
 - `name` (String) The name of the vrfs.
 - `owner_id` (Number) The ID of the owner associated with the VRFs.
-- `prefix_count` (Number) The number of prefix of the VRFs.
+- `prefix_count` (Number) The number of prefix objects that refer to the VRFs.
 - `rd` (String) The route distinguisher of the vrfs.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant` (Number) The tenant of the vrfs.

@@ -46,7 +46,7 @@ output "rack_id" {
 - `custom_fields` (Map of String) Custom field values of the rack, as a map of field name to value.
 - `desc_units` (Boolean) The desc units of the rack.
 - `description` (String) A description of the rack.
-- `device_count` (Number) The number of device of the rack.
+- `device_count` (Number) The number of device objects that refer to the rack.
 - `facility_id` (String) The facility id of the rack.
 - `form_factor` (String) The form factor of the rack.
 - `id` (String) The ID of this resource.
@@ -59,7 +59,7 @@ output "rack_id" {
 - `outer_unit` (String) The outer unit of the rack.
 - `outer_width` (Number) The outer width of the rack.
 - `owner_id` (Number) The ID of the owner associated with the rack.
-- `powerfeed_count` (Number) The number of powerfeed of the rack.
+- `powerfeed_count` (Number) The number of powerfeed objects that refer to the rack.
 - `rack_type_id` (Number) The ID of the rack type associated with the rack.
 - `role_id` (Number) The ID of the role associated with the rack.
 - `serial` (String) The serial of the rack.

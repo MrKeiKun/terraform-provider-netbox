@@ -50,7 +50,11 @@ resource "netbox_asn" "test" {
 
 ### Read-Only
 
+- `created` (String) When the asn was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the asn was last changed.
+- `provider_count` (Number) The number of provider objects that refer to the asn.
+- `site_count` (Number) The number of site objects that refer to the asn.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

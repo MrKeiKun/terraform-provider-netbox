@@ -63,7 +63,9 @@ resource "netbox_interface_template" "test" {
 
 ### Read-Only
 
+- `created` (String) When the interface template was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the interface template was last changed.
 
 ## Import
 

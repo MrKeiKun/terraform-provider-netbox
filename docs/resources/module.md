@@ -76,7 +76,10 @@ resource "netbox_module" "test" {
 
 ### Read-Only
 
+- `created` (String) When the module was created.
 - `id` (String) The ID of this resource.
+- `is_bay_compatible` (Boolean) The is bay compatible of the module.
+- `last_updated` (String) When the module was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

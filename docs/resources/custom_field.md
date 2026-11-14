@@ -63,7 +63,11 @@ resource "netbox_custom_field" "test" {
 
 ### Read-Only
 
+- `created` (String) When the custom field was created.
+- `data_type` (String) The data type of the custom field.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the custom field was last changed.
+- `status` (String) The status of the custom field.
 
 ## Import
 

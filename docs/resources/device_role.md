@@ -54,8 +54,12 @@ resource "netbox_device_role" "web_server" {
 
 ### Read-Only
 
+- `created` (String) When the device role was created.
+- `device_count` (Number) The number of device objects that refer to the device role.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the device role was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+- `virtualmachine_count` (Number) The number of virtualmachine objects that refer to the device role.
 
 ## Import
 

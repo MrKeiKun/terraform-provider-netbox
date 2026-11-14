@@ -55,8 +55,11 @@ resource "netbox_vpn_tunnel" "test" {
 
 ### Read-Only
 
+- `created` (String) When the vpn tunnel was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the vpn tunnel was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+- `terminations_count` (Number) The number of terminations objects that refer to the vpn tunnel.
 
 ## Import
 

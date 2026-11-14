@@ -40,7 +40,10 @@ resource "netbox_contact_group" "test" {
 
 ### Read-Only
 
+- `contact_count` (Number) The number of contact objects that refer to the contact group.
+- `created` (String) When the contact group was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the contact group was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

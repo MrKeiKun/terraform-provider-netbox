@@ -53,7 +53,12 @@ resource "netbox_prefix" "my_prefix" {
 
 ### Read-Only
 
+- `children` (Number) The children of the prefix.
+- `created` (String) When the prefix was created.
+- `family` (String) The family of the prefix.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the prefix was last changed.
+- `scope` (String) The scope of the prefix.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

@@ -73,7 +73,10 @@ resource "netbox_rack_type" "test" {
 
 ### Read-Only
 
+- `created` (String) When the rack type was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the rack type was last changed.
+- `rack_count` (Number) The number of rack objects that refer to the rack type.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

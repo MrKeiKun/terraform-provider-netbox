@@ -39,7 +39,13 @@ resource "netbox_manufacturer" "test" {
 
 ### Read-Only
 
+- `created` (String) When the manufacturer was created.
+- `devicetype_count` (Number) The number of devicetype objects that refer to the manufacturer.
 - `id` (String) The ID of this resource.
+- `inventoryitem_count` (Number) The number of inventoryitem objects that refer to the manufacturer.
+- `last_updated` (String) When the manufacturer was last changed.
+- `moduletype_count` (Number) The number of moduletype objects that refer to the manufacturer.
+- `platform_count` (Number) The number of platform objects that refer to the manufacturer.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

@@ -47,8 +47,11 @@ resource "netbox_virtual_machine_type" "example" {
 
 ### Read-Only
 
+- `created` (String) When the virtual machine type was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the virtual machine type was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
+- `virtual_machine_count` (Number) The number of virtual machine objects that refer to the virtual machine type.
 
 ## Import
 

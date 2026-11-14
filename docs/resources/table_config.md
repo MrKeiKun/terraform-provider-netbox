@@ -44,7 +44,9 @@ resource "netbox_table_config" "example" {
 
 ### Read-Only
 
+- `created` (String) When the table config was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the table config was last changed.
 
 ## Import
 

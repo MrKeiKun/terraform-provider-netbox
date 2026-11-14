@@ -42,7 +42,9 @@ resource "netbox_custom_link" "example" {
 
 ### Read-Only
 
+- `created` (String) When the custom link was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the custom link was last changed.
 
 ## Import
 

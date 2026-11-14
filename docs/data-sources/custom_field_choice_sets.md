@@ -55,7 +55,7 @@ Read-Only:
 
 - `base_choices` (String) The base choices of the custom field choice sets.
 - `choice_colors` (String) The choice colors of the custom field choice sets.
-- `choices_count` (Number) The number of choices of the custom field choice sets.
+- `choices_count` (Number) The number of choices objects that refer to the custom field choice sets.
 - `created` (String) When the custom field choice sets was created.
 - `description` (String) A description of the custom field choice sets.
 - `id` (Number) The id of the custom field choice sets.

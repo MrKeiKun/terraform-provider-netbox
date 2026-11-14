@@ -32,7 +32,7 @@ data "netbox_data_source" "example" {
 - `custom_fields` (Map of String) Custom field values of the data source, as a map of field name to value.
 - `description` (String) A description of the data source.
 - `enabled` (Boolean) Whether the data source is enabled.
-- `file_count` (Number) The number of file of the data source.
+- `file_count` (Number) The number of file objects that refer to the data source.
 - `id` (String) The ID of this resource.
 - `ignore_rules` (String) The ignore rules of the data source.
 - `last_synced` (String) The last synced of the data source.

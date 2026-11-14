@@ -52,7 +52,7 @@ data "netbox_vlan" "vlan3" {
 - `l2vpn_termination_id` (Number) The ID of the l2vpn termination associated with the vlan.
 - `last_updated` (String) When the vlan was last changed.
 - `owner_id` (Number) The ID of the owner associated with the vlan.
-- `prefix_count` (Number) The number of prefix of the vlan.
+- `prefix_count` (Number) The number of prefix objects that refer to the vlan.
 - `qinq_role` (String) The qinq role of the vlan.
 - `qinq_svlan_id` (Number) The ID of the qinq svlan associated with the vlan.
 - `site` (Number) The site of the vlan.

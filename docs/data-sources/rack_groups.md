@@ -61,6 +61,6 @@ Read-Only:
 - `last_updated` (String) When the rack groups was last changed.
 - `name` (String) The name of the rack groups.
 - `owner_id` (Number) The ID of the owner associated with the rack groups.
-- `rack_count` (Number) The number of rack of the rack groups.
+- `rack_count` (Number) The number of rack objects that refer to the rack groups.
 - `slug` (String) The slug of the rack groups.
 - `tags` (Set of String) Tags assigned to the object, by name.

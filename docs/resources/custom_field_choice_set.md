@@ -46,7 +46,10 @@ resource "netbox_custom_field_choice_set" "test" {
 
 ### Read-Only
 
+- `choices_count` (Number) The number of choices objects that refer to the custom field choice set.
+- `created` (String) When the custom field choice set was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the custom field choice set was last changed.
 
 ## Import
 

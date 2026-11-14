@@ -55,7 +55,7 @@ Read-Only:
 
 - `accounts` (List of Number) The IDs of the accounts of the circuit providers.
 - `asns` (List of Number) The IDs of the asns of the circuit providers.
-- `circuit_count` (Number) The number of circuit of the circuit providers.
+- `circuit_count` (Number) The number of circuit objects that refer to the circuit providers.
 - `comments` (String) Free-form comments about the circuit providers.
 - `created` (String) When the circuit providers was created.
 - `custom_fields` (Map of String) Custom field values of the circuit providers, as a map of field name to value.

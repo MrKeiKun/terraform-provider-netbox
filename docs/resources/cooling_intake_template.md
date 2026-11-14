@@ -46,7 +46,9 @@ resource "netbox_cooling_intake_template" "example" {
 
 ### Read-Only
 
+- `created` (String) When the cooling intake template was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the cooling intake template was last changed.
 
 ## Import
 

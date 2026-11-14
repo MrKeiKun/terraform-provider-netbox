@@ -39,7 +39,10 @@ resource "netbox_l2vpn_termination" "example" {
 
 ### Read-Only
 
+- `assigned_object` (String) The assigned object of the l2vpn termination.
+- `created` (String) When the l2vpn termination was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the l2vpn termination was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

@@ -47,7 +47,10 @@ resource "netbox_fhrp_group_assignment" "test" {
 
 ### Read-Only
 
+- `created` (String) When the fhrp group assignment was created.
 - `id` (String) The ID of this resource.
+- `interface` (String) The interface of the fhrp group assignment.
+- `last_updated` (String) When the fhrp group assignment was last changed.
 
 ## Import
 

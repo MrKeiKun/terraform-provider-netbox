@@ -41,7 +41,10 @@ resource "netbox_journal_entry" "example" {
 
 ### Read-Only
 
+- `assigned_object` (String) The assigned object of the journal entry.
+- `created` (String) When the journal entry was created.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the journal entry was last changed.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import

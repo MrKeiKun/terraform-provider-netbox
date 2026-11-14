@@ -27,7 +27,7 @@ data "netbox_cable_bundle" "example" {
 
 ### Read-Only
 
-- `cable_count` (Number) The number of cable of the cable bundle.
+- `cable_count` (Number) The number of cable objects that refer to the cable bundle.
 - `comments` (String) Free-form comments about the cable bundle.
 - `created` (String) When the cable bundle was created.
 - `custom_fields` (Map of String) Custom field values of the cable bundle, as a map of field name to value.

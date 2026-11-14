@@ -58,7 +58,12 @@ resource "netbox_location" "test" {
 
 ### Read-Only
 
+- `created` (String) When the location was created.
+- `device_count` (Number) The number of device objects that refer to the location.
 - `id` (String) The ID of this resource.
+- `last_updated` (String) When the location was last changed.
+- `prefix_count` (Number) The number of prefix objects that refer to the location.
+- `rack_count` (Number) The number of rack objects that refer to the location.
 - `tags_all` (Set of String) All tags assigned to the object, including those not managed by Terraform.
 
 ## Import
