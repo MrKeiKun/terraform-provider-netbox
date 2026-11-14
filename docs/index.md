@@ -13,6 +13,13 @@ Use the navigation to the left to read about the available resources.
 
 Upgrading from a version built on the plugin SDK? See the [upgrade guide](guides/upgrading-to-plugin-framework).
 
+Guides:
+
+- [Filtering data sources](guides/filtering-data-sources)
+- [Custom fields](guides/custom-fields)
+- [Tags and `default_tags`](guides/tags)
+- [NetBox versions](guides/netbox-versions)
+
 ## Supported Netbox versions
 Netbox often makes breaking API changes even in non-major releases. Check the table below to see which version this provider is compatible with your Netbox version. It is generally recommended to use the provider version matching your Netbox version. The oldest supported release is Netbox 4.4.0, Netbox 4.3 and older are no longer supported.
 
