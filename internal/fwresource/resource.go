@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -733,10 +734,56 @@ func (r *Resource) ImportState(ctx context.Context, req resource.ImportStateRequ
 		return
 	}
 	if _, err := strconv.ParseInt(req.ID, 10, 64); err != nil {
-		resp.Diagnostics.AddError("Invalid import ID", fmt.Sprintf("%q is not a number", req.ID))
+		id, err := r.importByName(ctx, req.ID)
+		if err != nil {
+			resp.Diagnostics.AddError("Invalid import ID", err.Error())
+			return
+		}
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
+}
+
+// lookupField returns the API field that an import ID that is not a number is matched with: the
+// slug when the object has one, otherwise the name.
+func (s *Spec) lookupField() string {
+	for _, want := range []string{"slug", "name"} {
+		for _, a := range s.Attrs {
+			if a.Name == want && a.Kind == String {
+				if a.Key != "" {
+					return a.Key
+				}
+				return a.Name
+			}
+		}
+	}
+	return ""
+}
+
+// importByName finds the numeric ID of the object whose slug or name is the import ID.
+func (r *Resource) importByName(ctx context.Context, name string) (string, error) {
+	field := r.spec.lookupField()
+	if field == "" || r.state == nil {
+		return "", fmt.Errorf("%q is not a number", name)
+	}
+	// Two results are enough to know that the name is not unique.
+	found, err := netboxapi.List[map[string]any](ctx, r.state.Rest, r.spec.Path, url.Values{field: {name}, "limit": {"2"}})
+	if err != nil {
+		return "", fmt.Errorf("could not look up %s %q: %w", field, name, err)
+	}
+	switch len(found) {
+	case 0:
+		return "", fmt.Errorf("no %s found with %s %q", r.spec.TypeName, field, name)
+	case 1:
+		id, ok := intFromJSON(found[0]["id"])
+		if !ok {
+			return "", fmt.Errorf("the %s with %s %q has no ID", r.spec.TypeName, field, name)
+		}
+		return strconv.FormatInt(id, 10), nil
+	default:
+		return "", fmt.Errorf("more than one %s has %s %q, import it by its numeric ID", r.spec.TypeName, field, name)
+	}
 }
 
 // requiredWith is the validator for an attribute that needs another one: when attr is set in the

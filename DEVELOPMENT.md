@@ -92,7 +92,7 @@ go run ./tools/gendatasources -url http://localhost:8001
 
 ### Drift report
 
-`make drift` lists what the API has and the provider does not: collections without a resource or data source, writable fields without an attribute, and list filters without a filter. Known gaps are in `tools/netboxdrift/baseline.txt`, and CI only fails for a gap that is not in the file. After you close a gap, or decide to leave one, write the file again:
+`make drift` lists what the API has and the provider does not: collections without a resource or data source, writable fields without an attribute, list filters without a filter, and string attributes whose NetBox field takes a fixed set of choices but that the provider does not check or checks against a list that lacks one of them (`enum`). Known gaps are in `tools/netboxdrift/baseline.txt`, and CI only fails for a gap that is not in the file. After you close a gap, or decide to leave one, write the file again:
 
 ```shell
 go run ./tools/netboxdrift -url http://localhost:8001 -baseline tools/netboxdrift/baseline.txt -write-baseline

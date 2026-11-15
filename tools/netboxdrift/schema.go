@@ -16,6 +16,8 @@ type endpoint struct {
 	Path string // without the /api/ prefix, with a trailing slash
 	// Fields are the writable fields of the POST body.
 	Fields map[string]bool
+	// Enums are the choices of the writable fields that only take a fixed set of strings.
+	Enums map[string][]string
 	// Query are the query parameters of the list operation.
 	Query map[string]bool
 	// CanCreate tells whether the collection accepts POST.
@@ -40,6 +42,7 @@ type schemaObj struct {
 	OneOf      []*schemaObj          `json:"oneOf"`
 	AnyOf      []*schemaObj          `json:"anyOf"`
 	ReadOnly   bool                  `json:"readOnly"`
+	Enum       []any                 `json:"enum"`
 }
 
 type operation struct {
@@ -99,7 +102,7 @@ func parseEndpoints(data []byte) ([]*endpoint, error) {
 		if trimmed == p || strings.Contains(trimmed, "{") || !strings.HasSuffix(trimmed, "/") {
 			continue
 		}
-		ep := &endpoint{Path: trimmed, Fields: map[string]bool{}, Query: map[string]bool{}}
+		ep := &endpoint{Path: trimmed, Fields: map[string]bool{}, Enums: map[string][]string{}, Query: map[string]bool{}}
 		_, ep.HasDetail = doc.Paths[p+"{id}/"]
 		if raw, ok := methods["get"]; ok {
 			var op operation
@@ -121,7 +124,7 @@ func parseEndpoints(data []byte) ([]*endpoint, error) {
 			}
 			ep.CanCreate = true
 			for _, c := range op.RequestBody.Content {
-				collectFields(&doc, c.Schema, ep.Fields, 0)
+				collectFields(&doc, c.Schema, ep.Fields, ep.Enums, 0)
 			}
 		}
 		out = append(out, ep)
@@ -140,7 +143,7 @@ func resolve(doc *openAPI, s *schemaObj) *schemaObj {
 
 // collectFields adds the writable properties of a request body schema. POST bodies can be a single
 // object or a list of them, for bulk creation.
-func collectFields(doc *openAPI, s *schemaObj, out map[string]bool, depth int) {
+func collectFields(doc *openAPI, s *schemaObj, out map[string]bool, enums map[string][]string, depth int) {
 	s = resolve(doc, s)
 	if s == nil || depth > 6 {
 		return
@@ -150,11 +153,36 @@ func collectFields(doc *openAPI, s *schemaObj, out map[string]bool, depth int) {
 			continue
 		}
 		out[name] = true
-	}
-	collectFields(doc, s.Items, out, depth+1)
-	for _, list := range [][]*schemaObj{s.AllOf, s.OneOf, s.AnyOf} {
-		for _, sub := range list {
-			collectFields(doc, sub, out, depth+1)
+		if choices := enumChoices(doc, prop, 0); len(choices) > 0 {
+			enums[name] = choices
 		}
 	}
+	collectFields(doc, s.Items, out, enums, depth+1)
+	for _, list := range [][]*schemaObj{s.AllOf, s.OneOf, s.AnyOf} {
+		for _, sub := range list {
+			collectFields(doc, sub, out, enums, depth+1)
+		}
+	}
+}
+
+// enumChoices returns the strings that a property accepts, when it is limited to a fixed set. The
+// empty string and null are left out, they only say that the field may be blank.
+func enumChoices(doc *openAPI, s *schemaObj, depth int) []string {
+	s = resolve(doc, s)
+	if s == nil || depth > 4 {
+		return nil
+	}
+	var out []string
+	for _, v := range s.Enum {
+		if str, ok := v.(string); ok && str != "" {
+			out = append(out, str)
+		}
+	}
+	for _, list := range [][]*schemaObj{s.AllOf, s.OneOf, s.AnyOf} {
+		for _, sub := range list {
+			out = append(out, enumChoices(doc, sub, depth+1)...)
+		}
+	}
+	sort.Strings(out)
+	return out
 }
