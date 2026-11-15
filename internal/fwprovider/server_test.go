@@ -149,7 +149,8 @@ func (f *fakeNetBox) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	switch {
 	case r.Method == http.MethodPost:
-		obj := map[string]any{"id": float64(f.next)}
+		// NetBox returns the dates of an object in the response to the write as well
+		obj := map[string]any{"id": float64(f.next), "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z"}
 		for k, v := range body {
 			obj[k] = v
 		}

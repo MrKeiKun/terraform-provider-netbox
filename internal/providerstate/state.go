@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"sync"
 
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 )
@@ -22,7 +23,15 @@ type Settings struct {
 	Config
 	SkipVersionCheck bool
 	DefaultTags      []string
+	// PageSize is the number of objects a plural data source asks NetBox for with each request. Zero
+	// means DefaultPageSize.
+	PageSize int
 }
+
+// DefaultPageSize is the page size of the plural data sources. It is the most NetBox returns for a
+// page unless its administrator changed MAX_PAGE_SIZE, in which case NetBox returns less and the
+// data source reads the next page.
+const DefaultPageSize = 1000
 
 // Diag is a warning or an error found while connecting.
 type Diag struct {
@@ -38,9 +47,22 @@ type State struct {
 	// does not check the version.
 	Version     string
 	DefaultTags map[string]bool
+	// PageSize is the number of objects a plural data source asks NetBox for with each request.
+	PageSize int
 
 	// concurrent access ok, only populated on provider start
 	tagCache map[string]netboxapi.TagRef
+
+	// the lookups of the other tags, made while the provider runs
+	tagMu      sync.Mutex
+	tagLookups map[string]*tagLookup
+}
+
+func pageSize(n int) int {
+	if n <= 0 {
+		return DefaultPageSize
+	}
+	return n
 }
 
 var versionRe = regexp.MustCompile(`^v?(\d+\.\d+\.\d+)`)
@@ -100,6 +122,7 @@ func Connect(ctx context.Context, s Settings) (*State, []Diag) {
 		Rest:        rest,
 		Version:     serverVersion,
 		DefaultTags: make(map[string]bool, len(s.DefaultTags)),
+		PageSize:    pageSize(s.PageSize),
 		tagCache:    make(map[string]netboxapi.TagRef, len(s.DefaultTags)),
 	}
 	for _, name := range s.DefaultTags {
@@ -167,10 +190,49 @@ func FindTagRef(ctx context.Context, c *netboxapi.Client, name string) (netboxap
 	}
 }
 
-// TagRef returns the tag with the given name, using the cache of default tags when possible.
+// tagLookup is the lookup of one tag by name. Resources that run at the same time and use the same
+// tag share it, so NetBox is asked once.
+type tagLookup struct {
+	mu  sync.Mutex
+	ref netboxapi.TagRef
+	ok  bool
+}
+
+// TagRef returns the tag with the given name. A tag is looked up once and then kept for as long as the
+// provider runs, because a configuration usually uses a few tags on many objects. A lookup that fails is
+// not kept. ForgetTag drops a tag that changed.
 func (s *State) TagRef(ctx context.Context, name string) (netboxapi.TagRef, error) {
 	if ref, ok := s.tagCache[name]; ok {
 		return ref, nil
 	}
-	return FindTagRef(ctx, s.Rest, name)
+	s.tagMu.Lock()
+	if s.tagLookups == nil {
+		s.tagLookups = map[string]*tagLookup{}
+	}
+	l := s.tagLookups[name]
+	if l == nil {
+		l = &tagLookup{}
+		s.tagLookups[name] = l
+	}
+	s.tagMu.Unlock()
+
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	if l.ok {
+		return l.ref, nil
+	}
+	ref, err := FindTagRef(ctx, s.Rest, name)
+	if err != nil {
+		return netboxapi.TagRef{}, err
+	}
+	l.ref, l.ok = ref, true
+	return ref, nil
+}
+
+// ForgetTag drops the kept lookup of a tag. Call it when the tag was created, changed or deleted, so the
+// next use asks NetBox again. Default tags are looked up when the provider starts and stay.
+func (s *State) ForgetTag(name string) {
+	s.tagMu.Lock()
+	delete(s.tagLookups, name)
+	s.tagMu.Unlock()
 }

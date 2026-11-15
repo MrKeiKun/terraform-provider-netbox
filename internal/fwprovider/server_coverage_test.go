@@ -228,27 +228,27 @@ func TestResourceWriteErrors(t *testing.T) {
 	fake, srv := newFakeNetBox()
 	defer srv.Close()
 	h := newHarness(t, srv.URL)
-	const name = "netbox_tenant"
+	const name = "netbox_contact_role"
 	set := func(desc string) map[string]tftypes.Value {
 		return map[string]tftypes.Value{"name": str("t"), "slug": str("t"), "description": str(desc)}
 	}
 
-	// the object is written, but NetBox fails when it is read back
-	fake.failOn("GET", "tenancy/tenants", 500)
+	// the response to the write is the state, so a failing read does not matter
+	fake.failOn("GET", "tenancy/contact-roles", 500)
 	diags, _ := h.tryApply(name, nullObject(), set("a"))
-	h.wantError("a create that cannot read the object back", diags)
+	h.noErrors("a create does not read the object back", diags)
 	fake.clearFailures()
 
 	state := h.apply(name, nullObject(), set("a"))
 
-	fake.failOn("PATCH", "tenancy/tenants", 500)
+	fake.failOn("PATCH", "tenancy/contact-roles", 500)
 	diags, _ = h.tryApply(name, state, set("b"))
 	h.wantError("an update that NetBox rejects", diags)
 	fake.clearFailures()
 
-	fake.failOn("GET", "tenancy/tenants", 500)
+	fake.failOn("GET", "tenancy/contact-roles", 500)
 	diags, _ = h.tryApply(name, state, set("c"))
-	h.wantError("an update that cannot read the object back", diags)
+	h.noErrors("an update does not read the object back", diags)
 	h.wantError("a read that NetBox rejects", h.read(name, state).Diagnostics)
 	fake.clearFailures()
 }
@@ -326,4 +326,50 @@ func TestCustomFieldChoiceSetNeedsPairs(t *testing.T) {
 	bad := tftypes.NewValue(listT, []tftypes.Value{pair("only one")})
 	diags, _ := h.tryApply(name, nullObject(), map[string]tftypes.Value{"name": str("d"), "extra_choices": bad})
 	h.wantError("a choice that is not a pair", diags)
+}
+
+// A tag is looked up once, whatever the number of objects that use it.
+func TestTagLookupsAreKept(t *testing.T) {
+	fake, srv := newFakeNetBox()
+	defer srv.Close()
+	h := newHarness(t, srv.URL)
+	const name = "netbox_tenant"
+	fake.put("extras/tags", map[string]any{"id": float64(1), "name": "blue", "slug": "blue"})
+	tags := setOf(tftypes.String, str("blue"))
+
+	lookups := func() int {
+		n := 0
+		for _, c := range fake.calls {
+			if c == "GET /api/extras/tags/" {
+				n++
+			}
+		}
+		return n
+	}
+	for i, slug := range []string{"a", "b", "c"} {
+		h.apply(name, nullObject(), map[string]tftypes.Value{"name": str(slug), "slug": str(slug), "tags": tags})
+		if got := lookups(); got != 1 {
+			t.Fatalf("after %d objects with the tag NetBox was asked %d times, want 1", i+1, got)
+		}
+	}
+
+	// a tag that is created is looked up when it is first used
+	red := setOf(tftypes.String, str("red"))
+	state := h.apply("netbox_tag", nullObject(), map[string]tftypes.Value{"name": str("red"), "slug": str("red")})
+	before := lookups()
+	h.apply(name, nullObject(), map[string]tftypes.Value{"name": str("d"), "slug": str("d"), "tags": red})
+	if got := lookups(); got != before+1 {
+		t.Errorf("a tag that was created was not looked up: %d lookups, want %d", got, before+1)
+	}
+
+	// the tag is renamed, so the new name is looked up
+	state = h.apply("netbox_tag", state, map[string]tftypes.Value{"name": str("green"), "slug": str("red")})
+	green := setOf(tftypes.String, str("green"))
+	before = lookups()
+	h.apply(name, nullObject(), map[string]tftypes.Value{"name": str("e"), "slug": str("e"), "tags": green})
+	if got := lookups(); got != before+1 {
+		t.Errorf("a tag that was renamed was not looked up again: %d lookups, want %d", got, before+1)
+	}
+
+	h.noErrors("destroy of the tag", h.destroy("netbox_tag", state))
 }
