@@ -19,6 +19,7 @@ Guides:
 - [Custom fields](guides/custom-fields)
 - [Tags and `default_tags`](guides/tags)
 - [NetBox versions](guides/netbox-versions)
+- [Performance and connection settings](guides/performance)
 - [Changing the provider source](guides/changing-the-provider-source)
 
 ## Supported Netbox versions
@@ -62,10 +63,11 @@ provider "netbox" {
 ### Optional
 
 - `allow_insecure_https` (Boolean) Flag to set whether to allow https with invalid certificates. Can be set via the `NETBOX_ALLOW_INSECURE_HTTPS` environment variable. Defaults to `false`.
-- `api_token` (String) Netbox API authentication token. Supports both v1 tokens (`Authorization: Token <key>`) and v2 tokens (`Authorization: Bearer nbt_<key>.<token>`). V2 tokens are auto-detected by their `nbt_` prefix. Can be set via the `NETBOX_API_TOKEN` environment variable.
+- `api_token` (String, Sensitive) Netbox API authentication token. Supports both v1 tokens (`Authorization: Token <key>`) and v2 tokens (`Authorization: Bearer nbt_<key>.<token>`). V2 tokens are auto-detected by their `nbt_` prefix. Can be set via the `NETBOX_API_TOKEN` environment variable.
+- `batch_reads` (Boolean) If true, objects of the same kind that Terraform reads at the same time are read with one request to Netbox in place of one request for each object. That makes `terraform plan` faster and puts less load on Netbox. Set it to `false` when a proxy in front of Netbox does not allow list requests. Can be set via the `NETBOX_BATCH_READS` environment variable. Defaults to `true`.
 - `ca_cert_file` (String) Path to a PEM-encoded CA certificate for verifying the Netbox server certificate. Can be set via the `NETBOX_CA_CERT_FILE` environment variable.
 - `default_tags` (Set of String) Tags to add to every resource managed by this provider.
-- `headers` (Map of String) Set these header on all requests to Netbox. Can be set via the `NETBOX_HEADERS` environment variable.
+- `headers` (Map of String, Sensitive) Set these header on all requests to Netbox. Can be set via the `NETBOX_HEADERS` environment variable.
 - `max_retries` (Number) How many times a failed GET, PUT or DELETE request is sent again after a connection error, or a 502, 503 or 504 response. A request that fails because of a database deadlock in Netbox is sent again whatever its method, since nothing was changed. Other requests that create objects are never repeated. Set to `0` to turn retries off. Can be set via the `NETBOX_MAX_RETRIES` environment variable. Defaults to `3`.
 - `page_size` (Number) How many objects a data source that lists objects asks Netbox for with each request. Netbox returns at most its `MAX_PAGE_SIZE` (1000 unless the administrator changed it) and the data source reads the next page until it has all objects. Lower it when Netbox is slow to answer a large page and requests time out. Can be set via the `NETBOX_PAGE_SIZE` environment variable. Defaults to `1000`.
 - `request_timeout` (Number) Netbox API HTTP request timeout in seconds. Can be set via the `NETBOX_REQUEST_TIMEOUT` environment variable. Defaults to `10`.

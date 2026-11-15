@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -67,7 +68,7 @@ func loadSchema(file, serverURL, token string) ([]byte, error) {
 	if serverURL == "" {
 		return nil, fmt.Errorf("give -schema or -url")
 	}
-	req, err := http.NewRequest(http.MethodGet, strings.TrimRight(serverURL, "/")+"/api/schema/?format=json", nil)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, strings.TrimRight(serverURL, "/")+"/api/schema/?format=json", nil)
 	if err != nil {
 		return nil, err
 	}

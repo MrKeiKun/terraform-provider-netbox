@@ -21,7 +21,7 @@ func TestMain(m *testing.M) {
 func sweepByName(region, path, nameField string) error {
 	client, err := testAccClient()
 	if err != nil {
-		return fmt.Errorf("Error getting client: %s", err)
+		return fmt.Errorf("Error getting client: %w", err)
 	}
 
 	objects, err := netboxapi.List[map[string]interface{}](context.Background(), client, path, nil)
@@ -75,7 +75,7 @@ func testAccCheckObjectsDestroyed(s *terraform.State, resourceType, path string)
 func sweepAll(region, path string) error {
 	client, err := testAccClient()
 	if err != nil {
-		return fmt.Errorf("Error getting client: %s", err)
+		return fmt.Errorf("Error getting client: %w", err)
 	}
 
 	objects, err := netboxapi.List[map[string]interface{}](context.Background(), client, path, nil)

@@ -29,6 +29,7 @@ type providerModel struct {
 	RequestTimeout              types.Int64  `tfsdk:"request_timeout"`
 	MaxRetries                  types.Int64  `tfsdk:"max_retries"`
 	PageSize                    types.Int64  `tfsdk:"page_size"`
+	BatchReads                  types.Bool   `tfsdk:"batch_reads"`
 	DefaultTags                 types.Set    `tfsdk:"default_tags"`
 	CACertFile                  types.String `tfsdk:"ca_cert_file"`
 }
@@ -88,7 +89,7 @@ func (p *Provider) Configure(ctx context.Context, req provider.ConfigureRequest,
 	// Values that are not known yet (for example computed by another resource) cannot be used.
 	if cfg.ServerURL.IsUnknown() || cfg.APIToken.IsUnknown() || cfg.AllowInsecureHTTPS.IsUnknown() ||
 		cfg.Headers.IsUnknown() || cfg.StripTrailingSlashesFromURL.IsUnknown() || cfg.SkipVersionCheck.IsUnknown() ||
-		cfg.RequestTimeout.IsUnknown() || cfg.MaxRetries.IsUnknown() || cfg.PageSize.IsUnknown() || cfg.DefaultTags.IsUnknown() || cfg.CACertFile.IsUnknown() {
+		cfg.RequestTimeout.IsUnknown() || cfg.MaxRetries.IsUnknown() || cfg.PageSize.IsUnknown() || cfg.BatchReads.IsUnknown() || cfg.DefaultTags.IsUnknown() || cfg.CACertFile.IsUnknown() {
 		return
 	}
 
@@ -101,7 +102,9 @@ func (p *Provider) Configure(ctx context.Context, req provider.ConfigureRequest,
 	settings.RequestTimeout = envInt(cfg.RequestTimeout, "NETBOX_REQUEST_TIMEOUT", 10, &resp.Diagnostics)
 	settings.MaxRetries = envInt(cfg.MaxRetries, "NETBOX_MAX_RETRIES", netboxapi.DefaultMaxRetries, &resp.Diagnostics)
 	settings.PageSize = envInt(cfg.PageSize, "NETBOX_PAGE_SIZE", providerstate.DefaultPageSize, &resp.Diagnostics)
+	settings.BatchReads = envBool(cfg.BatchReads, "NETBOX_BATCH_READS", true, &resp.Diagnostics)
 	settings.CACertFile = envString(cfg.CACertFile, "NETBOX_CA_CERT_FILE")
+	settings.UserAgent = fmt.Sprintf("Terraform/%s terraform-provider-netbox/%s", req.TerraformVersion, p.version)
 
 	if settings.ServerURL == "" {
 		resp.Diagnostics.AddAttributeError(path.Root("server_url"), "Missing server_url", "Set `server_url` in the provider configuration or the `NETBOX_SERVER_URL` environment variable.")

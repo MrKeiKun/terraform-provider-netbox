@@ -54,7 +54,7 @@ Required:
 Read-Only:
 
 - `auth_cipher` (String) The auth cipher of the wireless lans.
-- `auth_psk` (String) The auth psk of the wireless lans.
+- `auth_psk` (String, Sensitive) The auth psk of the wireless lans.
 - `auth_type` (String) The auth type of the wireless lans.
 - `comments` (String) Free-form comments about the wireless lans.
 - `created` (String) When the wireless lans was created.

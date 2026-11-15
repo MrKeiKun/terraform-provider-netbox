@@ -24,6 +24,18 @@ The specs in `internal/fwprovider` are plain source files that you edit by hand:
 - `datasources_generated.go`, `datasources_filters_generated.go` and `versions_generated.go` are written by the tools in `tools/`. Do not edit them, see the next section.
 - `resources_aliases.go` and `datasources_aliases.go` hold the resources and data sources that are known by a second name.
 
+## How requests are sent
+
+All requests go through `internal/netboxapi`. A few things there are easy to break without noticing, so they have tests of their own:
+
+- **Reads are batched.** Terraform reads every resource on its own, ten at a time. `Get` sends the first read of a collection at once. The reads of the same collection that arrive while it is under way go out together as one list request filtered by `id` (`batch.go`). An object that is missing from the list, or a list that fails, is read with a plain request for the object, so a batch never decides that an object is gone. The `batch_reads` provider setting turns it off. Deletes are not batched: a bulk delete is slower in NetBox than the same deletes side by side.
+- **Heavy fields are left out.** NetBox builds the config context of a device or virtual machine for every read. A resource that has no attribute for it asks NetBox to leave it out (`omit.go` in `internal/fwresource`). When you add an attribute that reads such a field, the parameter goes away on its own.
+- **Retries.** GET, PUT and DELETE are sent again after a connection error or a 502, 503 or 504. Any request is sent again after a database deadlock or a 429, because NetBox did not carry it out. The wait doubles with every attempt, is spread out at random, and follows `Retry-After`.
+- **Connections are kept open.** The HTTP client in `internal/providerstate` keeps up to 32 idle connections to NetBox. The default of Go is 2, which makes most requests open a new one.
+- **Redirects** to another host or from https to http are refused, see `SECURITY.md`.
+
+To see what a change does to the number of requests, put a counting proxy in front of a test NetBox and compare `terraform apply`, `terraform plan` and `terraform destroy` before and after.
+
 ## Describing a resource
 
 ```go
@@ -65,7 +77,7 @@ State upgrades live in `Upgraders`, keyed by the schema version, and work on the
 
 ## Testing
 
-Unit tests for the engine and the provider run with `make test`. Acceptance tests run against a real NetBox in docker, see the README.
+Unit tests for the engine and the provider run with `make test`. CI runs them with the race detector, run `go test -race ./internal/...` yourself after touching code that several resources use at once. Acceptance tests run against a real NetBox in docker, see the README.
 
 - Tests use `terraform-plugin-testing` with `ProtoV6ProviderFactories`, as in `netbox/provider_test.go`.
 - `NETBOX_VERSION` must be the version of the NetBox that is actually running. The tests use it to skip what an older NetBox does not have. If it names a newer version than the container, those tests fail with 404 errors, and if it names an older one they skip and hide real failures. Check the container with `/api/status/`.

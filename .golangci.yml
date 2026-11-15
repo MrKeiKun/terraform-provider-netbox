@@ -2,10 +2,16 @@
 version: "2"
 linters:
   enable:
-    - staticcheck
-    - whitespace
-  disable:
+    - bodyclose
+    - copyloopvar
     - errcheck
+    - errorlint
+    - gosec
+    - misspell
+    - noctx
+    - staticcheck
+    - unconvert
+    - whitespace
   exclusions:
     generated: lax
     presets:
@@ -17,6 +23,17 @@ linters:
       - third_party$
       - builtin$
       - examples$
+    rules:
+      # The tests use made-up tokens and local test servers.
+      - path: _test\.go
+        linters:
+          - gosec
+      # The tools write generated source files and docs, which are meant to be readable by everyone,
+      # to paths given on the command line by the developer who runs them.
+      - path: ^(tools|scripts)/
+        linters:
+          - gosec
+        text: "G122|G306|G703"
 formatters:
   exclusions:
     generated: lax

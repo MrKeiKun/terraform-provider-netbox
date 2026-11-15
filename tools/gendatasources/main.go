@@ -8,6 +8,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -82,7 +83,7 @@ func load() ([]byte, error) {
 	if *serverURL == "" {
 		return nil, fmt.Errorf("give -schema or -url")
 	}
-	req, err := http.NewRequest(http.MethodGet, strings.TrimRight(*serverURL, "/")+"/api/schema/?format=json", nil)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, strings.TrimRight(*serverURL, "/")+"/api/schema/?format=json", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -146,7 +147,23 @@ var ignoredQuery = map[string]bool{
 }
 
 // secretNames are properties that can hold a secret. Their data source attributes are sensitive.
-var secretNames = map[string]bool{"key": true, "token": true, "secret": true, "password": true}
+var secretNames = map[string]bool{
+	"key": true, "token": true, "secret": true, "password": true,
+	"auth_key": true, "auth_psk": true, "preshared_key": true,
+}
+
+// secretProperties are properties that hold a secret in one collection only, by API path.
+var secretProperties = map[string]map[string]bool{
+	// the URL, user name and password of a remote data source
+	"core/data-sources/": {"parameters": true},
+	// usually an Authorization header
+	"extras/webhooks/": {"additional_headers": true},
+}
+
+// secret reports whether the property of the collection can hold a secret.
+func (c *collection) secret(name string) bool {
+	return secretNames[name] || secretProperties[c.path][name]
+}
 
 var validName = regexp.MustCompile(`^[a-z][a-z0-9_]*$`)
 
@@ -380,7 +397,7 @@ func (c *collection) attrs(doc obj, noun string, plural bool) []attr {
 		}
 		seen[a.name] = true
 		a.computed = !plural
-		a.sensitive = secretNames[a.name]
+		a.sensitive = c.secret(a.name)
 		a.zero = a.zero && true
 		out = append(out, a)
 	}

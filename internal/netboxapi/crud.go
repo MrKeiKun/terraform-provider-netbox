@@ -2,44 +2,60 @@ package netboxapi
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
 )
 
+// oneQuery returns the query parameters of a request that takes them as an optional last argument.
+func oneQuery(query []url.Values) url.Values {
+	if len(query) == 0 {
+		return nil
+	}
+	return query[0]
+}
+
 // Get reads one object. path is the collection path, for example
-// "extras/tags/".
-func Get[T any](ctx context.Context, c *Client, path string, id int64) (*T, error) {
-	var out T
-	if err := c.Do(ctx, http.MethodGet, c.endpoint(objectPath(path, id), nil), nil, &out); err != nil {
+// "extras/tags/". The functions that read or write one object take query
+// parameters as an optional last argument, for example to leave a field out
+// of the response. Reads that wait at the same time can go out as one list
+// request, see SetBatchReads.
+func Get[T any](ctx context.Context, c *Client, path string, id int64, query ...url.Values) (*T, error) {
+	raw, err := c.getRaw(ctx, path, id, oneQuery(query))
+	if err != nil {
 		return nil, err
+	}
+	var out T
+	if err := json.Unmarshal(raw, &out); err != nil {
+		return nil, fmt.Errorf("decoding %s %d: %w", path, id, err)
 	}
 	return &out, nil
 }
 
 // Create sends a POST and returns the created object.
-func Create[T any](ctx context.Context, c *Client, path string, in any) (*T, error) {
+func Create[T any](ctx context.Context, c *Client, path string, in any, query ...url.Values) (*T, error) {
 	var out T
-	if err := c.Do(ctx, http.MethodPost, c.endpoint(path, nil), in, &out); err != nil {
+	if err := c.Do(ctx, http.MethodPost, c.endpoint(path, oneQuery(query)), in, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
 }
 
 // Update sends a PUT and returns the updated object.
-func Update[T any](ctx context.Context, c *Client, path string, id int64, in any) (*T, error) {
+func Update[T any](ctx context.Context, c *Client, path string, id int64, in any, query ...url.Values) (*T, error) {
 	var out T
-	if err := c.Do(ctx, http.MethodPut, c.endpoint(objectPath(path, id), nil), in, &out); err != nil {
+	if err := c.Do(ctx, http.MethodPut, c.endpoint(objectPath(path, id), oneQuery(query)), in, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
 }
 
 // Patch sends a PATCH and returns the updated object.
-func Patch[T any](ctx context.Context, c *Client, path string, id int64, in any) (*T, error) {
+func Patch[T any](ctx context.Context, c *Client, path string, id int64, in any, query ...url.Values) (*T, error) {
 	var out T
-	if err := c.Do(ctx, http.MethodPatch, c.endpoint(objectPath(path, id), nil), in, &out); err != nil {
+	if err := c.Do(ctx, http.MethodPatch, c.endpoint(objectPath(path, id), oneQuery(query)), in, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil

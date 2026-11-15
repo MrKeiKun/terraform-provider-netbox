@@ -35,7 +35,7 @@ data "netbox_ike_policy" "example" {
 - `last_updated` (String) When the ike policy was last changed.
 - `mode` (String) The mode of the ike policy.
 - `owner_id` (Number) The ID of the owner associated with the ike policy.
-- `preshared_key` (String) The preshared key of the ike policy.
+- `preshared_key` (String, Sensitive) The preshared key of the ike policy.
 - `proposal_ids` (Set of Number) The IDs of the proposal associated with the ike policy.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `version` (Number) The version of the ike policy.

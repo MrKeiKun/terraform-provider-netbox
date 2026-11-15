@@ -138,7 +138,7 @@ func (r *assignResource) patch(ctx context.Context, target int64, version int64,
 		body[r.field(version)] = *ref
 	}
 	if r.spec.KeepVLANs {
-		cur, err := netboxapi.Get[map[string]any](ctx, r.state.Rest, r.spec.Path, target)
+		cur, err := netboxapi.Get[map[string]any](ctx, r.state.Rest, r.spec.Path, target, omitQuery(r.spec.Path, nil))
 		if err != nil {
 			return err
 		}
@@ -155,7 +155,7 @@ func (r *assignResource) patch(ctx context.Context, target int64, version int64,
 			body["untagged_vlan"] = id
 		}
 	}
-	_, err := netboxapi.Request[map[string]any](ctx, r.state.Rest, http.MethodPatch, fmt.Sprintf("%s%d/", r.spec.Path, target), nil, body)
+	_, err := netboxapi.Request[map[string]any](ctx, r.state.Rest, http.MethodPatch, fmt.Sprintf("%s%d/", r.spec.Path, target), omitQuery(r.spec.Path, nil), body)
 	return err
 }
 
@@ -224,7 +224,7 @@ func (r *assignResource) Read(ctx context.Context, req resource.ReadRequest, res
 		resp.Diagnostics.AddError("Invalid state", err.Error())
 		return
 	}
-	obj, err := netboxapi.Get[map[string]any](ctx, r.state.Rest, r.spec.Path, target)
+	obj, err := netboxapi.Get[map[string]any](ctx, r.state.Rest, r.spec.Path, target, omitQuery(r.spec.Path, nil))
 	if err != nil {
 		if netboxapi.IsNotFound(err) {
 			resp.State.RemoveResource(ctx)
@@ -264,7 +264,7 @@ func (r *assignResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 	// Leave the field alone when it was changed elsewhere since the last refresh.
-	cur, err := netboxapi.Get[map[string]any](ctx, r.state.Rest, r.spec.Path, target)
+	cur, err := netboxapi.Get[map[string]any](ctx, r.state.Rest, r.spec.Path, target, omitQuery(r.spec.Path, nil))
 	if err != nil {
 		if netboxapi.IsNotFound(err) {
 			return

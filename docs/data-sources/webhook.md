@@ -31,7 +31,7 @@ output "webhook_id" {
 
 ### Read-Only
 
-- `additional_headers` (String) The additional headers of the webhook.
+- `additional_headers` (String, Sensitive) The additional headers of the webhook.
 - `body_template` (String) The body template of the webhook.
 - `ca_file_path` (String) The ca file path of the webhook.
 - `created` (String) When the webhook was created.

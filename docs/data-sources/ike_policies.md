@@ -62,7 +62,7 @@ Read-Only:
 - `mode` (String) The mode of the ike policies.
 - `name` (String) The name of the ike policies.
 - `owner_id` (Number) The ID of the owner associated with the ike policies.
-- `preshared_key` (String) The preshared key of the ike policies.
+- `preshared_key` (String, Sensitive) The preshared key of the ike policies.
 - `proposals` (List of Number) The IDs of the proposals of the ike policies.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `version` (String) The version of the ike policies.

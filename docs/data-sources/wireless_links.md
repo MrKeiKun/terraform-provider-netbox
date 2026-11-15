@@ -54,7 +54,7 @@ Required:
 Read-Only:
 
 - `auth_cipher` (String) The auth cipher of the wireless links.
-- `auth_psk` (String) The auth psk of the wireless links.
+- `auth_psk` (String, Sensitive) The auth psk of the wireless links.
 - `auth_type` (String) The auth type of the wireless links.
 - `comments` (String) Free-form comments about the wireless links.
 - `created` (String) When the wireless links was created.

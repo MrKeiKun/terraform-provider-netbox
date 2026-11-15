@@ -5,14 +5,17 @@ package providerstate
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/http"
 	"net/url"
 	"regexp"
 	"slices"
+	"sort"
 	"strings"
 	"sync"
 
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // SupportedVersions are the NetBox versions the provider is tested against.
@@ -105,6 +108,17 @@ func Connect(ctx context.Context, s Settings) (*State, []Diag) {
 		return nil, append(diags, Diag{Error: true, Summary: err.Error()})
 	}
 
+	names := make([]string, 0, len(s.Headers))
+	for name := range s.Headers {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	// Only the names of the headers are logged, the values may be secrets.
+	tflog.Debug(ctx, "Connecting to NetBox", map[string]any{"server_url": serverURL, "custom_headers": names})
+	if u, err := parseServerURL(serverURL); err == nil && u.Scheme == "http" && !isLoopback(u.Hostname()) {
+		tflog.Warn(ctx, "server_url uses http, so the API token is sent to NetBox without encryption", map[string]any{"server_url": serverURL})
+	}
+
 	serverVersion := ""
 	if !s.SkipVersionCheck {
 		var d []Diag
@@ -135,6 +149,15 @@ func Connect(ctx context.Context, s Settings) (*State, []Diag) {
 		state.tagCache[name] = ref
 	}
 	return state, diags
+}
+
+// isLoopback reports whether host is this machine, where a request never leaves it.
+func isLoopback(host string) bool {
+	if strings.EqualFold(host, "localhost") {
+		return true
+	}
+	ip := net.ParseIP(host)
+	return ip != nil && ip.IsLoopback()
 }
 
 func checkVersion(ctx context.Context, rest *netboxapi.Client, serverURL string) (string, []Diag) {

@@ -53,7 +53,7 @@ Required:
 
 Read-Only:
 
-- `additional_headers` (String) The additional headers of the webhooks.
+- `additional_headers` (String, Sensitive) The additional headers of the webhooks.
 - `body_template` (String) The body template of the webhooks.
 - `ca_file_path` (String) The ca file path of the webhooks.
 - `created` (String) When the webhooks was created.

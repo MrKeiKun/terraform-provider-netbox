@@ -65,7 +65,7 @@ Read-Only:
 - `last_updated` (String) When the data sources was last changed.
 - `name` (String) The name of the data sources.
 - `owner_id` (Number) The ID of the owner associated with the data sources.
-- `parameters` (String) The parameters of the data sources.
+- `parameters` (String, Sensitive) The parameters of the data sources.
 - `source_url` (String) The source url of the data sources.
 - `status` (String) The status of the data sources.
 - `sync_interval` (Number) The sync interval of the data sources.

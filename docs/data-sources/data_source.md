@@ -38,7 +38,7 @@ data "netbox_data_source" "example" {
 - `last_synced` (String) The last synced of the data source.
 - `last_updated` (String) When the data source was last changed.
 - `owner_id` (Number) The ID of the owner associated with the data source.
-- `parameters` (String) The parameters of the data source.
+- `parameters` (String, Sensitive) The parameters of the data source.
 - `source_url` (String) The source url of the data source.
 - `status` (String) The status of the data source.
 - `sync_interval` (Number) The sync interval of the data source.

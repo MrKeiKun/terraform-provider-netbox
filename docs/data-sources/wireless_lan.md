@@ -29,7 +29,7 @@ output "wireless_lan_id" {
 ### Optional
 
 - `auth_cipher` (String) The auth cipher of the wireless lan.
-- `auth_psk` (String) The auth psk of the wireless lan.
+- `auth_psk` (String, Sensitive) The auth psk of the wireless lan.
 - `auth_type` (String) The auth type of the wireless lan.
 - `group_id` (Number) The ID of the group associated with the wireless lan.
 - `id` (Number) The numeric ID of the wireless lan.

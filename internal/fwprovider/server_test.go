@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -164,7 +165,14 @@ func (f *fakeNetBox) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			match := true
 			for k, v := range r.URL.Query() {
 				switch k {
-				case "limit", "offset", "brief", "ordering", "q", "contains", "vrf_id":
+				case "limit", "offset", "brief", "ordering", "q", "contains", "vrf_id", "omit", "exclude":
+					continue
+				case "id":
+					// NetBox returns the objects with any of the IDs
+					num, _ := o["id"].(float64)
+					if !slices.Contains(v, strconv.Itoa(int(num))) {
+						match = false
+					}
 					continue
 				}
 				if s, ok := o[k].(string); !ok || s != v[0] {

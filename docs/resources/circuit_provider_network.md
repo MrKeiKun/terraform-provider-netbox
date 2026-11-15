@@ -3,13 +3,13 @@
 page_title: "netbox_circuit_provider_network Resource - terraform-provider-netbox"
 subcategory: "Circuits"
 description: |-
-  From the offical documentation https://netboxlabs.com/docs/netbox/models/circuits/providernetwork/:
+  From the official documentation https://netboxlabs.com/docs/netbox/models/circuits/providernetwork/:
   This model can be used to represent the boundary of a provider network, the details of which are unknown or unimportant to the NetBox user. For example, it might represent a provider's regional MPLS network to which multiple circuits provide connectivity.
 ---
 
 # netbox_circuit_provider_network (Resource)
 
-From the [offical documentation](https://netboxlabs.com/docs/netbox/models/circuits/providernetwork/):
+From the [official documentation](https://netboxlabs.com/docs/netbox/models/circuits/providernetwork/):
 
 > This model can be used to represent the boundary of a provider network, the details of which are unknown or unimportant to the NetBox user. For example, it might represent a provider's regional MPLS network to which multiple circuits provide connectivity.
 

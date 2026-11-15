@@ -32,7 +32,7 @@ data "netbox_fhrp_group" "test" {
 
 ### Read-Only
 
-- `auth_key` (String) The auth key of the fhrp group.
+- `auth_key` (String, Sensitive) The auth key of the fhrp group.
 - `auth_type` (String) The auth type of the fhrp group.
 - `comments` (String) Free-form comments about the fhrp group.
 - `created` (String) When the group was created.

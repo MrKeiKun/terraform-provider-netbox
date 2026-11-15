@@ -53,7 +53,7 @@ Required:
 
 Read-Only:
 
-- `auth_key` (String) The auth key of the fhrp groups.
+- `auth_key` (String, Sensitive) The auth key of the fhrp groups.
 - `auth_type` (String) The auth type of the fhrp groups.
 - `comments` (String) Free-form comments about the fhrp groups.
 - `created` (String) When the fhrp groups was created.

@@ -11,8 +11,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math/rand/v2"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -25,9 +27,15 @@ type Client struct {
 	httpClient *http.Client
 
 	maxRetries int
+	userAgent  string
 
 	cfMu    sync.Mutex
 	cfTypes map[string]string
+
+	// see batch.go
+	batchReads bool
+	batchMu    sync.Mutex
+	batches    map[string]*batchGroup
 }
 
 // SetMaxRetries sets how often a failed idempotent request is sent again.
@@ -37,6 +45,12 @@ func (c *Client) SetMaxRetries(n int) {
 		n = 0
 	}
 	c.maxRetries = n
+}
+
+// SetUserAgent sets the User-Agent header of every request, so that the administrator of NetBox can
+// tell the requests of the provider apart in the logs.
+func (c *Client) SetUserAgent(ua string) {
+	c.userAgent = ua
 }
 
 // New creates a client. baseURL is the NetBox root URL (for example
@@ -82,8 +96,47 @@ func (c *Client) endpoint(path string, query url.Values) string {
 // server or the connection fails temporarily.
 const DefaultMaxRetries = 3
 
-// retryDelay is the base wait between attempts. It grows with every attempt.
+// retryDelay is the wait before the second attempt. It doubles with every further attempt.
 var retryDelay = time.Second
+
+// maxRetryDelay is the longest wait between two attempts, also when NetBox asks for more with a
+// Retry-After header.
+const maxRetryDelay = 30 * time.Second
+
+// backoff returns how long to wait after the given failed attempt (1 is the first). The wait doubles
+// with every attempt and is spread by up to a quarter in both directions, so that the requests
+// Terraform runs side by side do not all come back at the same moment. A wait the server asked for
+// with Retry-After is used as it is.
+func backoff(attempt int, err error) time.Duration {
+	var apiErr *APIError
+	if errors.As(err, &apiErr) && apiErr.RetryAfter > 0 {
+		return min(apiErr.RetryAfter, maxRetryDelay)
+	}
+	d := retryDelay
+	for i := 1; i < attempt && d < maxRetryDelay; i++ {
+		d *= 2
+	}
+	d = min(d, maxRetryDelay)
+	if quarter := int64(d / 4); quarter > 0 {
+		d += time.Duration(rand.Int64N(2*quarter+1) - quarter) //nolint:gosec // spreading out retries needs no secure random numbers
+	}
+	return d
+}
+
+// retryAfter reads the Retry-After header, which holds a number of seconds or a date.
+func retryAfter(h http.Header) time.Duration {
+	v := h.Get("Retry-After")
+	if v == "" {
+		return 0
+	}
+	if secs, err := strconv.Atoi(v); err == nil {
+		return max(time.Duration(secs)*time.Second, 0)
+	}
+	if at, err := http.ParseTime(v); err == nil {
+		return max(time.Until(at), 0)
+	}
+	return 0
+}
 
 // idempotent reports whether a request can safely be sent again after a
 // temporary failure. POST and PATCH are left out, since a lost response could
@@ -104,17 +157,22 @@ func isDeadlock(status int, body []byte) bool {
 		bytes.Contains(bytes.ToLower(body), []byte("deadlock detected"))
 }
 
-// isDeadlockError reports whether err is the deadlock answer from NetBox.
-func isDeadlockError(err error) bool {
+// notProcessed reports whether err is an answer that tells NetBox did not carry out the request, so
+// that it is safe to send again whatever its method: a database deadlock, or 429 Too Many Requests
+// from NetBox or a proxy in front of it.
+func notProcessed(err error) bool {
 	var apiErr *APIError
-	return errors.As(err, &apiErr) && isDeadlock(apiErr.StatusCode, []byte(apiErr.Body))
+	if !errors.As(err, &apiErr) {
+		return false
+	}
+	return apiErr.StatusCode == http.StatusTooManyRequests || isDeadlock(apiErr.StatusCode, []byte(apiErr.Body))
 }
 
 // Do sends a request to rawURL. body is JSON encoded when not nil. When out
 // is not nil the JSON response is decoded into it. Idempotent requests are
 // sent again (see SetMaxRetries) when the connection fails or NetBox (or a proxy
 // in front of it) answers 502, 503 or 504. Any request is sent again when the
-// NetBox database reports a deadlock.
+// NetBox database reports a deadlock or the answer is 429 Too Many Requests.
 func (c *Client) Do(ctx context.Context, method, rawURL string, body, out any) error {
 	var buf []byte
 	if body != nil {
@@ -133,13 +191,15 @@ func (c *Client) Do(ctx context.Context, method, rawURL string, body, out any) e
 		if err == nil || !retry || attempt == attempts {
 			return err
 		}
-		if !idempotent(method) && !isDeadlockError(err) {
+		if !idempotent(method) && !notProcessed(err) {
 			return err
 		}
+		timer := time.NewTimer(backoff(attempt, err))
 		select {
 		case <-ctx.Done():
+			timer.Stop()
 			return err
-		case <-time.After(time.Duration(attempt) * retryDelay):
+		case <-timer.C:
 		}
 	}
 	return err
@@ -159,6 +219,9 @@ func (c *Client) doOnce(ctx context.Context, method, rawURL string, buf []byte, 
 	}
 	req.Header.Set("Authorization", c.authHeader())
 	req.Header.Set("Accept", "application/json")
+	if c.userAgent != "" {
+		req.Header.Set("User-Agent", c.userAgent)
+	}
 	if buf != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
@@ -177,8 +240,13 @@ func (c *Client) doOnce(ctx context.Context, method, rawURL string, buf []byte, 
 		temporary := resp.StatusCode == http.StatusBadGateway ||
 			resp.StatusCode == http.StatusServiceUnavailable ||
 			resp.StatusCode == http.StatusGatewayTimeout ||
+			resp.StatusCode == http.StatusTooManyRequests ||
 			isDeadlock(resp.StatusCode, data)
-		return temporary, &APIError{Method: method, URL: rawURL, StatusCode: resp.StatusCode, Body: string(data)}
+		apiErr := &APIError{Method: method, URL: rawURL, StatusCode: resp.StatusCode, Body: string(data)}
+		if temporary {
+			apiErr.RetryAfter = retryAfter(resp.Header)
+		}
+		return temporary, apiErr
 	}
 	if out == nil || len(data) == 0 {
 		return false, nil

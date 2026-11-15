@@ -24,8 +24,9 @@ import (
 // New returns the constructor of a resource described by spec.
 func New(spec *Spec) func() resource.Resource {
 	spec = spec.withZeroDefaults()
+	query := spec.readQuery()
 	return func() resource.Resource {
-		return &Resource{spec: spec}
+		return &Resource{spec: spec, query: query}
 	}
 }
 
@@ -33,6 +34,8 @@ func New(spec *Spec) func() resource.Resource {
 type Resource struct {
 	spec  *Spec
 	state *providerstate.State
+	// query is sent with every request for the object, see readQuery.
+	query url.Values
 }
 
 var (
@@ -79,7 +82,6 @@ func notConfigured(diags *diag.Diagnostics, s *providerstate.State) bool {
 func (r *Resource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
 	out := map[int64]resource.StateUpgrader{}
 	for version, fn := range r.spec.Upgraders {
-		fn := fn
 		out[version] = resource.StateUpgrader{
 			StateUpgrader: func(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
 				if req.RawState == nil || req.RawState.JSON == nil {
@@ -523,7 +525,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	if r.spec.Allocate != nil {
 		obj, err = r.allocate(ctx, req.Config, plan, body, remember)
 	} else {
-		obj, err = netboxapi.Create[map[string]any](ctx, r.state.Rest, r.spec.Path, body)
+		obj, err = netboxapi.Create[map[string]any](ctx, r.state.Rest, r.spec.Path, body, r.query)
 		if err == nil {
 			if id, ok := intFromJSON((*obj)["id"]); ok {
 				remember(id)
@@ -565,7 +567,7 @@ func (r *Resource) afterWrite(ctx context.Context, obj *map[string]any, plan, pr
 	if err != nil || !changed {
 		return obj, err
 	}
-	return netboxapi.Get[map[string]any](ctx, r.state.Rest, r.spec.Path, id)
+	return netboxapi.Get[map[string]any](ctx, r.state.Rest, r.spec.Path, id, r.query)
 }
 
 // reload reads the object again after it was written, when the spec asks for it. The response to a
@@ -577,7 +579,7 @@ func (r *Resource) reload(ctx context.Context, obj *map[string]any) (*map[string
 	if !ok || (!r.spec.Reload && !r.missingReadOnly(*obj)) {
 		return obj, nil
 	}
-	return netboxapi.Get[map[string]any](ctx, r.state.Rest, r.spec.Path, id)
+	return netboxapi.Get[map[string]any](ctx, r.state.Rest, r.spec.Path, id, r.query)
 }
 
 // missingReadOnly reports whether the response to a write leaves out a read-only attribute. NetBox
@@ -618,9 +620,9 @@ func (r *Resource) allocate(ctx context.Context, cfg getter, plan Values, body m
 		return nil, err
 	}
 	if r.spec.Put {
-		return netboxapi.Update[map[string]any](ctx, r.state.Rest, r.spec.Path, id, update)
+		return netboxapi.Update[map[string]any](ctx, r.state.Rest, r.spec.Path, id, update, r.query)
 	}
-	return netboxapi.Patch[map[string]any](ctx, r.state.Rest, r.spec.Path, id, update)
+	return netboxapi.Patch[map[string]any](ctx, r.state.Rest, r.spec.Path, id, update, r.query)
 }
 
 func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -639,7 +641,7 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 		return
 	}
 
-	obj, err := netboxapi.Get[map[string]any](ctx, r.state.Rest, r.spec.Path, id)
+	obj, err := netboxapi.Get[map[string]any](ctx, r.state.Rest, r.spec.Path, id, r.query)
 	if err != nil {
 		if netboxapi.IsNotFound(err) {
 			resp.State.RemoveResource(ctx)
@@ -683,9 +685,9 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 
 	var obj *map[string]any
 	if r.spec.Put {
-		obj, err = netboxapi.Update[map[string]any](ctx, r.state.Rest, r.spec.Path, id, body)
+		obj, err = netboxapi.Update[map[string]any](ctx, r.state.Rest, r.spec.Path, id, body, r.query)
 	} else {
-		obj, err = netboxapi.Patch[map[string]any](ctx, r.state.Rest, r.spec.Path, id, body)
+		obj, err = netboxapi.Patch[map[string]any](ctx, r.state.Rest, r.spec.Path, id, body, r.query)
 	}
 	if err != nil {
 		resp.Diagnostics.AddError("Could not update "+r.spec.TypeName, err.Error())
