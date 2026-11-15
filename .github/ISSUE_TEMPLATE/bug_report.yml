@@ -1,0 +1,75 @@
+---
+name: Bug report
+description: Something does not work as the documentation says.
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for opening an issue. Before you do, check that it is not reported yet and that you use the latest provider version.
+  - type: input
+    id: terraform-version
+    attributes:
+      label: Terraform version
+      description: The output of `terraform -v`.
+    validations:
+      required: true
+  - type: input
+    id: provider-version
+    attributes:
+      label: Provider version
+    validations:
+      required: true
+  - type: input
+    id: netbox-version
+    attributes:
+      label: NetBox version
+    validations:
+      required: true
+  - type: input
+    id: affected
+    attributes:
+      label: Affected resources or data sources
+      placeholder: netbox_site, netbox_prefix
+    validations:
+      required: true
+  - type: textarea
+    id: configuration
+    attributes:
+      label: Terraform configuration
+      description: The smallest configuration that shows the problem. Remove tokens and other secrets first.
+      render: hcl
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What happened instead? Include the error message.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. terraform apply
+    validations:
+      required: true
+  - type: textarea
+    id: debug
+    attributes:
+      label: Debug output
+      description: Run with `TF_LOG=DEBUG` and share the output as a link to a GitHub Gist. Please do not paste it here. Remove tokens and other secrets first. For a crash, link the `crash.log`.
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Anything unusual about your NetBox setup, such as plugins, custom fields or a proxy in front of it.

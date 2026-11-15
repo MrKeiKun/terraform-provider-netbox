@@ -1,0 +1,26 @@
+---
+name: Feature request
+description: A resource, data source, attribute or setting that is missing.
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What is missing
+      description: Name the NetBox object or field, and the NetBox version that has it.
+    validations:
+      required: true
+  - type: textarea
+    id: use-case
+    attributes:
+      label: What you want to do with it
+      description: Describe the problem, not only the solution.
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Example configuration
+      description: How you would like to write it.
+      render: hcl

@@ -1,0 +1,9 @@
+---
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security problem
+    url: https://github.com/MrKeiKun/terraform-provider-netbox/security/advisories/new
+    about: Please do not open a public issue for a security problem. Report it privately.
+  - name: Terraform usage questions
+    url: https://discuss.hashicorp.com/c/terraform-core/27
+    about: Questions about how Terraform works are best asked on the Terraform forum.
