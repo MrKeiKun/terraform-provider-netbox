@@ -57,6 +57,7 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       versions: ${{ steps.versions.outputs.versions }}
+      edges: ${{ steps.versions.outputs.edges }}
     steps:
       - name: Choose the NetBox versions
         id: versions
@@ -67,6 +68,7 @@ jobs:
           edges='["v4.4.0","v4.4.10","v4.5.1","v4.5.10","v4.6.0","v4.6.10","v4.7.0","v4.7.5"]'
           # v4.4.3 cannot be spun up for testing due to TypeError: issubclass() arg 1 must be a class
           # v4.5.0 cannot be spun up for testing due to startup stall at "Building search index"
+          echo "edges=$edges" >> "$GITHUB_OUTPUT"
           case "$EVENT" in
             schedule|workflow_dispatch) echo "versions=$all" >> "$GITHUB_OUTPUT" ;;
             *) echo "versions=$edges" >> "$GITHUB_OUTPUT" ;;
@@ -124,10 +126,19 @@ jobs:
           files: coverage.out
           fail_ci_if_error: false
 
+  # The API schema can differ between NetBox versions: an older version has fields and filters that a
+  # newer one dropped. Patch releases hardly change it, so the oldest and newest patch of each minor
+  # release are enough.
   drift:
-    name: API drift report
-    needs: unit-test
+    name: API drift report (NetBox ${{ matrix.netbox-version }})
+    needs: [unit-test, netbox-versions]
+    env:
+      GENERATED_NETBOX_VERSION: v4.7.5
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        netbox-version: ${{ fromJSON(needs.netbox-versions.outputs.edges) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -138,8 +149,10 @@ jobs:
       - name: Compare the NetBox API schema with the provider
         run: make -e drift
         env:
-          NETBOX_VERSION: v4.7.5
+          NETBOX_VERSION: ${{ matrix.netbox-version }}
+      # The generated files describe the newest API, so they are only compared with the newest version.
       - name: Check that the generated data sources are up to date
+        if: matrix.netbox-version == env.GENERATED_NETBOX_VERSION
         run: |
           go run ./tools/gendatasources -url "$NETBOX_SERVER_URL"
           # a changed file and a new file both mean that the generated files are out of date

@@ -41,6 +41,14 @@ var notManaged = map[string]string{
 	"netbox_token version":           "internal, NetBox sets the token version",
 	"netbox_user date_joined":        "set by NetBox when the account is created",
 	"netbox_user last_login":         "set by NetBox at login",
+	"netbox_circuit assignments":     "NetBox 4.4 to 4.6 only; the assignments are managed with netbox_circuit_group_assignment",
+}
+
+// notFiltered are list filters that are on purpose not filters of a data source, with the reason.
+var notFiltered = map[string]string{
+	"netbox_device_front_ports rear_port_position":   "NetBox 4.4 only; later versions have port mappings in place of one rear port position",
+	"netbox_front_port_templates rear_port_position": "NetBox 4.4 only; later versions have port mappings in place of one rear port position",
+	"netbox_users is_staff":                          "NetBox 4.4 only; later versions no longer have the filter",
 }
 
 // notChecked are string attributes that take a fixed set of choices in NetBox but are on purpose not
@@ -49,12 +57,13 @@ var notChecked = map[string]string{}
 
 // notProvided are API collections that have no resource or data source on purpose, with the reason.
 var notProvided = map[string]string{
+	"resource dcim/cable-terminations/":                 "NetBox 4.4 only, later versions have no write access; netbox_cable manages its terminations",
 	"resource extras/image-attachments/":                "file upload, the API only takes multipart form data; netbox_image_attachment data sources exist",
 	"datasource virtualization/virtual-disks/ singular": "netbox_virtual_disk has always been the list data source, its name stays for compatibility",
 }
 
 // skippedCollections are API collections that are not objects a user manages.
-var skippedPrefixes = []string{"core/", "extras/scripts/", "extras/script-modules/", "plugins/"}
+var skippedPrefixes = []string{"core/", "extras/object-types/", "extras/scripts/", "extras/script-modules/", "plugins/"}
 
 func main() {
 	var (
@@ -139,8 +148,8 @@ func main() {
 		}
 		fmt.Printf("%s %s\n", mark, it.Key())
 	}
-	fmt.Printf("\nmissing resources: %d, data sources: %d, fields: %d, filters: %d\n",
-		counts["resource"], counts["datasource"], counts["field"], counts["filter"])
+	fmt.Printf("\nmissing resources: %d, data sources: %d, fields: %d, filters: %d, enums: %d\n",
+		counts["resource"], counts["datasource"], counts["field"], counts["filter"], counts["enum"])
 	if len(fresh) > 0 {
 		fmt.Fprintf(os.Stderr, "%d new drift entries that are not in %s\n", len(fresh), *baseline)
 		os.Exit(1)
@@ -254,7 +263,7 @@ func compare(endpoints []*endpoint) []item {
 				if i := strings.Index(q, "__"); i >= 0 {
 					continue // lookup modifiers such as __n or __ic are covered by their base filter
 				}
-				if ignoredQuery[base] || covered[base] || covered[strings.TrimSuffix(base, "_id")] {
+				if ignoredQuery[base] || notFiltered[d.TypeName+" "+base] != "" || covered[base] || covered[strings.TrimSuffix(base, "_id")] {
 					continue
 				}
 				// NetBox names a foreign key filter foo or foo_id; either one covers the other.
