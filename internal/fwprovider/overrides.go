@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/fwresource"
+	"github.com/MrKeiKun/terraform-provider-netbox/internal/providerstate"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -144,6 +145,19 @@ var overrides = map[string]func(s *fwresource.Spec){
 	},
 	"netbox_tag": func(s *fwresource.Spec) {
 		s.NoDefaultTags = true
+		// The tag lookups are kept while the provider runs. A tag that is created, renamed or deleted in
+		// the same run has to be looked up again.
+		s.AfterWrite = func(_ context.Context, st *providerstate.State, _ int64, plan, prior fwresource.Values) (bool, error) {
+			st.ForgetTag(stringValue(plan, "name"))
+			if prior != nil {
+				st.ForgetTag(stringValue(prior, "name"))
+			}
+			return false, nil
+		}
+		s.BeforeDelete = func(_ context.Context, st *providerstate.State, _ int64, state fwresource.Values) error {
+			st.ForgetTag(stringValue(state, "name"))
+			return nil
+		}
 	},
 	"netbox_ip_address": func(s *fwresource.Spec) {
 		setAttr(s, "ip_address", func(a *fwresource.Attr) { a.Key = "address" })
@@ -184,8 +198,8 @@ var overrides = map[string]func(s *fwresource.Spec){
 	"netbox_token": func(s *fwresource.Spec) {
 		setAttr(s, "expires", func(a *fwresource.Attr) { a.Time = true; a.NoZero = true })
 		// NetBox shows the key of a token once, in the response to its creation. Later responses
-		// have none, or on NetBox 4.4 none at all, and then the key we already know is kept.
-		s.NoReload = true
+		// have none, or on NetBox 4.4 none at all, and then the key we already know is kept. The object
+		// is not read again after a write, because that read would not have the key.
 		s.ModifyState = func(_ context.Context, obj map[string]any, prior fwresource.Values, out fwresource.Values) error {
 			if key, _ := obj["key"].(string); key != "" {
 				return nil

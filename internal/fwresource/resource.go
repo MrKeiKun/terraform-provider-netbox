@@ -568,12 +568,13 @@ func (r *Resource) afterWrite(ctx context.Context, obj *map[string]any, plan, pr
 	return netboxapi.Get[map[string]any](ctx, r.state.Rest, r.spec.Path, id)
 }
 
-// reload reads the object again after it was written. The response to a write is not always the
-// same as what a read returns: NetBox 4.4 for example reports the end of every range of a VLAN group
-// one too low. The state must hold what a read returns, or the next refresh shows a change.
+// reload reads the object again after it was written, when the spec asks for it. The response to a
+// write is not always the same as what a read returns: NetBox 4.4 for example reports the end of every
+// range of a VLAN group one too low. The state must hold what a read returns, or the next refresh
+// shows a change.
 func (r *Resource) reload(ctx context.Context, obj *map[string]any) (*map[string]any, error) {
 	id, ok := intFromJSON((*obj)["id"])
-	if !ok || r.spec.NoReload {
+	if !ok || !r.spec.Reload {
 		return obj, nil
 	}
 	return netboxapi.Get[map[string]any](ctx, r.state.Rest, r.spec.Path, id)

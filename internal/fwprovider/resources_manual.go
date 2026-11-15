@@ -17,6 +17,8 @@ var manualResources = []*fwresource.Spec{
 		Tags:         true,
 		CustomFields: true,
 		Put:          true,
+		// NetBox 4.4 reports the end of every VLAN ID range one too low in the response to a write.
+		Reload:       true,
 		RequiredWith: [][]string{{"scope_id", "scope_type"}},
 		Attrs: []fwresource.Attr{
 			{Name: "comments", Kind: fwresource.String, Optional: true, Description: "Free-form comments about the vlan group."},

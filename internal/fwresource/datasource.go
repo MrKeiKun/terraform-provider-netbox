@@ -93,8 +93,19 @@ type Plural struct {
 	NameRegex string
 }
 
-// DefaultPageSize is the number of objects fetched with each request of a plural data source.
-const DefaultPageSize = 100
+// pageSize returns the number of objects to ask for with each request of a plural data source. It is
+// the page size of the provider, but never more than the user wants when nothing is filtered on the
+// client side, so that a data source with a small limit does not read a whole page.
+func (d *DataSource) pageSize(userLimit int64, clientFilter bool) int {
+	size := providerstate.DefaultPageSize
+	if d.state != nil && d.state.PageSize > 0 {
+		size = d.state.PageSize
+	}
+	if !clientFilter && userLimit > 0 && userLimit < int64(size) {
+		return int(userLimit)
+	}
+	return size
+}
 
 // NewDataSource returns the constructor of a data source described by spec.
 func NewDataSource(spec *DataSourceSpec) func() datasource.DataSource {
@@ -576,7 +587,7 @@ func (d *DataSource) readPlural(ctx context.Context, req datasource.ReadRequest,
 		all = objs
 	}
 	for d.spec.Custom == nil {
-		query.Set("limit", strconv.Itoa(DefaultPageSize))
+		query.Set("limit", strconv.Itoa(d.pageSize(userLimit, d.spec.Keep != nil || keepRegex != nil)))
 		query.Set("offset", strconv.Itoa(len(all)))
 		page, err := netboxapi.ListPage[map[string]any](ctx, d.state.Rest, d.spec.Path, query)
 		if err != nil {

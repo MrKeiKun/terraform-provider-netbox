@@ -65,6 +65,10 @@ func (p *Provider) Schema(_ context.Context, _ provider.SchemaRequest, resp *pro
 				Optional:            true,
 				MarkdownDescription: "How many times a failed GET, PUT or DELETE request is sent again after a connection error, or a 502, 503 or 504 response. A request that fails because of a database deadlock in Netbox is sent again whatever its method, since nothing was changed. Other requests that create objects are never repeated. Set to `0` to turn retries off. Can be set via the `NETBOX_MAX_RETRIES` environment variable. Defaults to `3`.",
 			},
+			"page_size": schema.Int64Attribute{
+				Optional:            true,
+				MarkdownDescription: "How many objects a data source that lists objects asks Netbox for with each request. Netbox returns at most its `MAX_PAGE_SIZE` (1000 unless the administrator changed it) and the data source reads the next page until it has all objects. Lower it when Netbox is slow to answer a large page and requests time out. Can be set via the `NETBOX_PAGE_SIZE` environment variable. Defaults to `1000`.",
+			},
 			"default_tags": schema.SetAttribute{
 				Optional:            true,
 				ElementType:         types.StringType,

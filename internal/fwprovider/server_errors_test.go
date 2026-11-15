@@ -65,10 +65,10 @@ func TestResourceAPIErrors(t *testing.T) {
 	h.wantError("a create that NetBox rejects", diags)
 	fake.clearFailures()
 
-	// the object is created, but cannot be read back
+	// the response to the create is the state, the object is not read again
 	fake.failOn("GET", "tenancy/tenants/", 500)
 	diags, _ = h.tryApply(name, nullObject(), cfg)
-	h.wantError("a create whose read back fails", diags)
+	h.noErrors("a create does not read the object back", diags)
 	fake.clearFailures()
 
 	state := h.apply(name, nullObject(), cfg)
@@ -77,9 +77,9 @@ func TestResourceAPIErrors(t *testing.T) {
 	fake.failOn("GET", "tenancy/tenants/", 500)
 	h.wantError("a read that NetBox rejects", h.read(name, state).Diagnostics)
 
-	// update, with the read back failing
+	// update, with reads failing: the response to the update is the state
 	diags, _ = h.tryApply(name, state, map[string]tftypes.Value{"name": str("y")})
-	h.wantError("an update whose read back fails", diags)
+	h.noErrors("an update does not read the object back", diags)
 	fake.clearFailures()
 
 	// update
@@ -467,4 +467,34 @@ func TestVirtualDiskDataSourceOptions(t *testing.T) {
 		t.Fatal(err)
 	}
 	h.noErrors("read", resp.Diagnostics)
+}
+
+// A resource that asks for it reads the object again after a write.
+func TestReloadAfterWrite(t *testing.T) {
+	fake, srv := newFakeNetBox()
+	defer srv.Close()
+	h := newHarness(t, srv.URL)
+	const name = "netbox_vlan_group"
+	typ := h.schemas.ResourceSchemas[name].ValueType().(tftypes.Object)
+	ranges := tftypes.NewValue(typ.AttributeTypes["vid_ranges"], []tftypes.Value{
+		tftypes.NewValue(typ.AttributeTypes["vid_ranges"].(tftypes.List).ElementType, []tftypes.Value{num(1), num(10)}),
+	})
+	cfg := map[string]tftypes.Value{"name": str("g"), "slug": str("g"), "vid_ranges": ranges}
+
+	fake.failOn("GET", "ipam/vlan-groups/", 500)
+	diags, _ := h.tryApply(name, nullObject(), cfg)
+	h.wantError("a create whose read back fails", diags)
+	fake.clearFailures()
+
+	before := len(fake.calls)
+	h.apply(name, nullObject(), cfg)
+	var gets int
+	for _, c := range fake.calls[before:] {
+		if strings.HasPrefix(c, "GET ") && strings.Contains(c, "vlan-groups") {
+			gets++
+		}
+	}
+	if gets == 0 {
+		t.Error("the VLAN group was not read again after the create")
+	}
 }
