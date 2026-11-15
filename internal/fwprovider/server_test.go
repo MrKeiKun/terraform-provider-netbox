@@ -102,6 +102,27 @@ func (f *fakeNetBox) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		_ = json.NewEncoder(w).Encode(obj)
 		return
 	}
+	if r.Method == http.MethodPost && strings.HasSuffix(collection, "/available-asns") {
+		// allocate the next free AS number of the range
+		var entries []map[string]any
+		_ = json.NewDecoder(r.Body).Decode(&entries)
+		if f.objects["ipam/asns"] == nil {
+			f.objects["ipam/asns"] = map[int]map[string]any{}
+		}
+		var created []any
+		for _, in := range entries {
+			obj := map[string]any{"id": float64(f.next), "asn": float64(64500 + f.next), "rir": float64(1)}
+			for k, v := range in {
+				obj[k] = v
+			}
+			f.objects["ipam/asns"][f.next] = obj
+			f.next++
+			created = append(created, obj)
+		}
+		w.WriteHeader(http.StatusCreated)
+		_ = json.NewEncoder(w).Encode(created)
+		return
+	}
 	if r.Method == http.MethodPost && strings.HasSuffix(collection, "/available-ips") {
 		// allocate the next free address
 		var entries []map[string]any
