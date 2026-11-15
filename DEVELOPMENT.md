@@ -98,6 +98,10 @@ go run ./tools/gendatasources -url http://localhost:8001
 go run ./tools/netboxdrift -url http://localhost:8001 -baseline tools/netboxdrift/baseline.txt -write-baseline
 ```
 
+CI runs the report against the oldest and newest patch release of each minor release of NetBox, because an older version can have fields and filters that a newer one dropped. A gap that only older versions have, and that is not worth closing, goes in `notManaged`, `notFiltered` or `notProvided` in `tools/netboxdrift/main.go`, with the reason. Run it against one version with `make -e drift NETBOX_VERSION=v4.4.10`.
+
+A weekly job (`scripts/check_netbox_releases.sh`) fails when NetBox has a release that is newer than the newest one in the CI matrix. Add the version to the `all` list in `.github/workflows/ci.yml`, and to `edges` when it is the newest patch release of its minor release.
+
 ### Versions
 
 NetBox adds fields and objects in every release. A field that the server does not have is silently ignored, which causes a plan that never gets empty. `versions_generated.go` records the first NetBox version that has each resource, attribute, data source and data source filter. The provider adds "Needs NetBox X or later" to the documentation and stops with an error when a configuration uses something that the server is too old for.
