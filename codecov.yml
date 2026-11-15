@@ -6,9 +6,12 @@ ignore:
 
 coverage:
   status:
+    # The total may not drop by more than 1% compared with the base of a pull request.
     project:
       default:
-        informational: true
+        target: auto
+        threshold: 1%
+    # New and changed lines have to be covered by tests.
     patch:
       default:
-        informational: true
+        target: 80%
