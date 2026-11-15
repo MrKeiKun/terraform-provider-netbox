@@ -574,10 +574,28 @@ func (r *Resource) afterWrite(ctx context.Context, obj *map[string]any, plan, pr
 // shows a change.
 func (r *Resource) reload(ctx context.Context, obj *map[string]any) (*map[string]any, error) {
 	id, ok := intFromJSON((*obj)["id"])
-	if !ok || !r.spec.Reload {
+	if !ok || (!r.spec.Reload && !r.missingReadOnly(*obj)) {
 		return obj, nil
 	}
 	return netboxapi.Get[map[string]any](ctx, r.state.Rest, r.spec.Path, id)
+}
+
+// missingReadOnly reports whether the response to a write leaves out a read-only attribute. NetBox
+// only adds some fields, for example the counts of related objects, to what it returns on a read.
+func (r *Resource) missingReadOnly(obj map[string]any) bool {
+	for _, a := range r.spec.Attrs {
+		if !a.Computed || a.Optional || a.Required || a.Local || a.WriteOnly {
+			continue
+		}
+		key := a.Key
+		if key == "" {
+			key = a.Name
+		}
+		if _, ok := obj[key]; !ok {
+			return true
+		}
+	}
+	return false
 }
 
 // allocate lets NetBox pick the object and then sets all attributes with an update.

@@ -55,18 +55,18 @@ func TestResourceAPIErrors(t *testing.T) {
 	fake, srv := newFakeNetBox()
 	defer srv.Close()
 	h := newHarness(t, srv.URL)
-	const name = "netbox_tenant"
+	const name = "netbox_contact_role"
 	typ := h.schemas.ResourceSchemas[name].ValueType()
 	cfg := map[string]tftypes.Value{"name": str("x")}
 
 	// create
-	fake.failOn("POST", "tenancy/tenants", 500)
+	fake.failOn("POST", "tenancy/contact-roles", 500)
 	diags, _ := h.tryApply(name, nullObject(), cfg)
 	h.wantError("a create that NetBox rejects", diags)
 	fake.clearFailures()
 
 	// the response to the create is the state, the object is not read again
-	fake.failOn("GET", "tenancy/tenants/", 500)
+	fake.failOn("GET", "tenancy/contact-roles/", 500)
 	diags, _ = h.tryApply(name, nullObject(), cfg)
 	h.noErrors("a create does not read the object back", diags)
 	fake.clearFailures()
@@ -74,7 +74,7 @@ func TestResourceAPIErrors(t *testing.T) {
 	state := h.apply(name, nullObject(), cfg)
 
 	// read
-	fake.failOn("GET", "tenancy/tenants/", 500)
+	fake.failOn("GET", "tenancy/contact-roles/", 500)
 	h.wantError("a read that NetBox rejects", h.read(name, state).Diagnostics)
 
 	// update, with reads failing: the response to the update is the state
@@ -83,16 +83,16 @@ func TestResourceAPIErrors(t *testing.T) {
 	fake.clearFailures()
 
 	// update
-	fake.failOn("PATCH", "tenancy/tenants/", 500)
+	fake.failOn("PATCH", "tenancy/contact-roles/", 500)
 	diags, _ = h.tryApply(name, state, map[string]tftypes.Value{"name": str("y")})
 	h.wantError("an update that NetBox rejects", diags)
 	fake.clearFailures()
 
 	// delete
-	fake.failOn("DELETE", "tenancy/tenants/", 500)
+	fake.failOn("DELETE", "tenancy/contact-roles/", 500)
 	h.wantError("a delete that NetBox rejects", h.destroy(name, state))
 	fake.clearFailures()
-	fake.failOn("DELETE", "tenancy/tenants/", 404)
+	fake.failOn("DELETE", "tenancy/contact-roles/", 404)
 	h.noErrors("a delete of an object that is gone", h.destroy(name, state))
 	fake.clearFailures()
 

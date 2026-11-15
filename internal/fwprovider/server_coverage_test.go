@@ -228,25 +228,25 @@ func TestResourceWriteErrors(t *testing.T) {
 	fake, srv := newFakeNetBox()
 	defer srv.Close()
 	h := newHarness(t, srv.URL)
-	const name = "netbox_tenant"
+	const name = "netbox_contact_role"
 	set := func(desc string) map[string]tftypes.Value {
 		return map[string]tftypes.Value{"name": str("t"), "slug": str("t"), "description": str(desc)}
 	}
 
 	// the response to the write is the state, so a failing read does not matter
-	fake.failOn("GET", "tenancy/tenants", 500)
+	fake.failOn("GET", "tenancy/contact-roles", 500)
 	diags, _ := h.tryApply(name, nullObject(), set("a"))
 	h.noErrors("a create does not read the object back", diags)
 	fake.clearFailures()
 
 	state := h.apply(name, nullObject(), set("a"))
 
-	fake.failOn("PATCH", "tenancy/tenants", 500)
+	fake.failOn("PATCH", "tenancy/contact-roles", 500)
 	diags, _ = h.tryApply(name, state, set("b"))
 	h.wantError("an update that NetBox rejects", diags)
 	fake.clearFailures()
 
-	fake.failOn("GET", "tenancy/tenants", 500)
+	fake.failOn("GET", "tenancy/contact-roles", 500)
 	diags, _ = h.tryApply(name, state, set("c"))
 	h.noErrors("an update does not read the object back", diags)
 	h.wantError("a read that NetBox rejects", h.read(name, state).Diagnostics)
