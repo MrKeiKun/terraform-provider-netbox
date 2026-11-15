@@ -1,3 +1,5 @@
+<!-- markdownlint-disable MD041 -->
+
 ## What this does
 
 Describe the change and why it is needed. Link the issue it closes, for example `Closes #123`.
