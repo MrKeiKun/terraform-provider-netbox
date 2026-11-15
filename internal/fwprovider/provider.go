@@ -38,6 +38,7 @@ func (p *Provider) Schema(_ context.Context, _ provider.SchemaRequest, resp *pro
 			},
 			"api_token": schema.StringAttribute{
 				Optional:            true,
+				Sensitive:           true,
 				MarkdownDescription: "Netbox API authentication token. Supports both v1 tokens (`Authorization: Token <key>`) and v2 tokens (`Authorization: Bearer nbt_<key>.<token>`). V2 tokens are auto-detected by their `nbt_` prefix. Can be set via the `NETBOX_API_TOKEN` environment variable.",
 			},
 			"allow_insecure_https": schema.BoolAttribute{
@@ -45,7 +46,9 @@ func (p *Provider) Schema(_ context.Context, _ provider.SchemaRequest, resp *pro
 				MarkdownDescription: "Flag to set whether to allow https with invalid certificates. Can be set via the `NETBOX_ALLOW_INSECURE_HTTPS` environment variable. Defaults to `false`.",
 			},
 			"headers": schema.MapAttribute{
-				Optional:            true,
+				Optional: true,
+				// Headers often carry credentials, for example for a proxy in front of Netbox.
+				Sensitive:           true,
 				ElementType:         types.StringType,
 				MarkdownDescription: "Set these header on all requests to Netbox. Can be set via the `NETBOX_HEADERS` environment variable.",
 			},
@@ -68,6 +71,10 @@ func (p *Provider) Schema(_ context.Context, _ provider.SchemaRequest, resp *pro
 			"page_size": schema.Int64Attribute{
 				Optional:            true,
 				MarkdownDescription: "How many objects a data source that lists objects asks Netbox for with each request. Netbox returns at most its `MAX_PAGE_SIZE` (1000 unless the administrator changed it) and the data source reads the next page until it has all objects. Lower it when Netbox is slow to answer a large page and requests time out. Can be set via the `NETBOX_PAGE_SIZE` environment variable. Defaults to `1000`.",
+			},
+			"batch_reads": schema.BoolAttribute{
+				Optional:            true,
+				MarkdownDescription: "If true, objects of the same kind that Terraform reads at the same time are read with one request to Netbox in place of one request for each object. That makes `terraform plan` faster and puts less load on Netbox. Set it to `false` when a proxy in front of Netbox does not allow list requests. Can be set via the `NETBOX_BATCH_READS` environment variable. Defaults to `true`.",
 			},
 			"default_tags": schema.SetAttribute{
 				Optional:            true,

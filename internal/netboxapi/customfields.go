@@ -1,6 +1,7 @@
 package netboxapi
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -55,7 +56,8 @@ func (c *Client) encodeBody(ctx context.Context, method, rawURL string, body any
 	if method != http.MethodPost && method != http.MethodPut && method != http.MethodPatch {
 		return buf, nil
 	}
-	if strings.Contains(rawURL, "/extras/custom-fields/") {
+	// Most bodies have no custom fields. They are sent as they are, without taking them apart.
+	if strings.Contains(rawURL, "/extras/custom-fields/") || !bytes.Contains(buf, []byte(`"custom_fields"`)) {
 		return buf, nil
 	}
 

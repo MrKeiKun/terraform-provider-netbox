@@ -1,0 +1,35 @@
+---
+name: Vulnerabilities
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  schedule:
+    # every day, so that a vulnerability published after the last commit is found too
+    - cron: "0 20 * * *" # 20:00 UTC is 04:00 in the Philippines
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  govulncheck:
+    name: govulncheck
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      # Reports the known vulnerabilities in the Go standard library and the dependencies, but only
+      # those in code the provider really calls.
+      - name: Check for known vulnerabilities
+        uses: golang/govulncheck-action@032d45514ae346b1db93c04b0c90b841c370344f # v1.1.0
+        with:
+          go-version-file: go.mod
+          go-package: ./...
+          repo-checkout: false

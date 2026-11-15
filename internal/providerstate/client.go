@@ -3,15 +3,17 @@ package providerstate
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"fmt"
+	"net"
 	"net/http"
+	"net/url"
 	"os"
-	"sort"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
-	"github.com/goware/urlx"
-	log "github.com/sirupsen/logrus"
 )
 
 // Config struct for the netbox provider
@@ -24,6 +26,10 @@ type Config struct {
 	MaxRetries                  int
 	StripTrailingSlashesFromURL bool
 	CACertFile                  string
+	// BatchReads reads objects that are asked for at the same time with one list request.
+	BatchReads bool
+	// UserAgent is sent with every request. Empty leaves the default of the HTTP library.
+	UserAgent string
 }
 
 // customHeaderTransport is a transport that adds the specified headers on
@@ -33,20 +39,42 @@ type customHeaderTransport struct {
 	headers  map[string]interface{}
 }
 
+// hasScheme matches an address that starts with a scheme, as in "https://netbox". The port in
+// "localhost:8080" is not one.
+var hasScheme = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9+.-]*:/`)
+
+// parseServerURL checks the address of the NetBox server. An address without a scheme, for example
+// "localhost:8080", is taken as http.
+func parseServerURL(raw string) (*url.URL, error) {
+	raw = strings.TrimSpace(raw)
+	if !hasScheme.MatchString(raw) {
+		raw = "http://" + raw
+	}
+	u, err := url.Parse(raw)
+	if err != nil {
+		return nil, err
+	}
+	if u.Scheme != "http" && u.Scheme != "https" {
+		return nil, fmt.Errorf("unsupported scheme %q, use http or https", u.Scheme)
+	}
+	if u.Hostname() == "" {
+		return nil, errors.New("the URL has no host")
+	}
+	if u.User != nil {
+		return nil, errors.New("the URL must not hold a user name or password, NetBox takes the API token")
+	}
+	return u, nil
+}
+
 // Client creates the client that talks to the Netbox REST API.
 func (cfg *Config) Client() (*netboxapi.Client, error) {
-	log.WithFields(log.Fields{
-		"server_url": cfg.ServerURL,
-	}).Debug("Initializing Netbox client")
-
 	if cfg.APIToken == "" {
 		return nil, fmt.Errorf("missing netbox API key")
 	}
 
-	// urlx accepts URLs without a scheme, for example "localhost:8080"
-	parsedURL, err := urlx.Parse(cfg.ServerURL)
+	parsedURL, err := parseServerURL(cfg.ServerURL)
 	if err != nil {
-		return nil, fmt.Errorf("error while trying to parse URL: %s", err)
+		return nil, fmt.Errorf("error while trying to parse URL: %w", err)
 	}
 
 	httpClient, err := cfg.httpClient()
@@ -59,12 +87,20 @@ func (cfg *Config) Client() (*netboxapi.Client, error) {
 		return nil, err
 	}
 	client.SetMaxRetries(cfg.MaxRetries)
+	client.SetUserAgent(cfg.UserAgent)
+	client.SetBatchReads(cfg.BatchReads)
 	return client, nil
 }
+
+// maxIdleConnsPerHost is how many open connections to NetBox are kept for the next request. The
+// default of the HTTP library is 2, while Terraform works on 10 resources at a time by default, so
+// most requests would open a new connection, with a new TLS handshake.
+const maxIdleConnsPerHost = 32
 
 // httpClient builds the HTTP client: TLS options, proxy, custom headers and timeout.
 func (cfg *Config) httpClient() (*http.Client, error) {
 	tlsConfig := &tls.Config{
+		MinVersion:         tls.VersionTLS12,
 		InsecureSkipVerify: cfg.AllowInsecureHTTPS, //nolint:gosec // the user asked for it with allow_insecure_https
 	}
 
@@ -81,22 +117,19 @@ func (cfg *Config) httpClient() (*http.Client, error) {
 	}
 
 	transport := &http.Transport{
-		Proxy:           http.ProxyFromEnvironment,
-		TLSClientConfig: tlsConfig,
+		Proxy:                 http.ProxyFromEnvironment,
+		DialContext:           (&net.Dialer{Timeout: 30 * time.Second, KeepAlive: 30 * time.Second}).DialContext,
+		TLSClientConfig:       tlsConfig,
+		ForceAttemptHTTP2:     true,
+		MaxIdleConns:          100,
+		MaxIdleConnsPerHost:   maxIdleConnsPerHost,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: time.Second,
 	}
 
 	var roundTripper http.RoundTripper = transport
 	if len(cfg.Headers) > 0 {
-		// Only the names are logged, the values may be secrets.
-		names := make([]string, 0, len(cfg.Headers))
-		for name := range cfg.Headers {
-			names = append(names, name)
-		}
-		sort.Strings(names)
-		log.WithFields(log.Fields{
-			"custom_headers": names,
-		}).Debug("Setting custom headers on every request to Netbox")
-
 		roundTripper = customHeaderTransport{
 			original: transport,
 			headers:  cfg.Headers,
@@ -104,9 +137,27 @@ func (cfg *Config) httpClient() (*http.Client, error) {
 	}
 
 	return &http.Client{
-		Transport: roundTripper,
-		Timeout:   time.Second * time.Duration(cfg.RequestTimeout),
+		Transport:     roundTripper,
+		Timeout:       time.Second * time.Duration(cfg.RequestTimeout),
+		CheckRedirect: checkRedirect,
 	}, nil
+}
+
+// checkRedirect follows a redirect only when it stays on the NetBox host and does not go from https
+// to http. The API token and the custom headers go out with every request, so following a redirect
+// to another host, or to an unencrypted address, would hand them to whoever answers there.
+func checkRedirect(req *http.Request, via []*http.Request) error {
+	if len(via) >= 10 {
+		return errors.New("stopped after 10 redirects")
+	}
+	first := via[0].URL
+	if !strings.EqualFold(req.URL.Hostname(), first.Hostname()) {
+		return fmt.Errorf("NetBox redirected the request to another host (%s). The provider does not follow it, since that would send the API token there. Set server_url to the address NetBox is served from", req.URL.Host)
+	}
+	if first.Scheme == "https" && req.URL.Scheme != "https" {
+		return errors.New("NetBox redirected the request from https to http. The provider does not follow it, since that would send the API token without encryption")
+	}
+	return nil
 }
 
 // RoundTrip adds the headers specified in the transport on every request.

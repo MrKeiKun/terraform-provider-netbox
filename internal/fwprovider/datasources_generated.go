@@ -377,7 +377,7 @@ var generatedDataSources = []*fwresource.DataSourceSpec{
 			{Name: "last_updated", Kind: fwresource.String, Zero: true, Description: "When the data sources was last changed."},
 			{Name: "name", Kind: fwresource.String, Zero: true, Description: "The name of the data sources."},
 			{Name: "owner_id", Kind: fwresource.Int, Zero: true, Key: "owner", Description: "The ID of the owner associated with the data sources."},
-			{Name: "parameters", Kind: fwresource.JSON, Description: "The parameters of the data sources."},
+			{Name: "parameters", Kind: fwresource.JSON, Sensitive: true, Description: "The parameters of the data sources."},
 			{Name: "source_url", Kind: fwresource.String, Zero: true, Description: "The source url of the data sources."},
 			{Name: "status", Kind: fwresource.String, Zero: true, Description: "The status of the data sources."},
 			{Name: "sync_interval", Kind: fwresource.Int, Zero: true, Description: "The sync interval of the data sources."},
@@ -2769,7 +2769,7 @@ var generatedDataSources = []*fwresource.DataSourceSpec{
 		Noun:        "webhook",
 		Description: ":meta:subcategory:Extras:Retrieves a single webhook from NetBox. The lookup fails if no match or more than one match is found.",
 		Attrs: []fwresource.Attr{
-			{Name: "additional_headers", Kind: fwresource.String, Computed: true, Zero: true, Description: "The additional headers of the webhook."},
+			{Name: "additional_headers", Kind: fwresource.String, Computed: true, Zero: true, Sensitive: true, Description: "The additional headers of the webhook."},
 			{Name: "body_template", Kind: fwresource.String, Computed: true, Zero: true, Description: "The body template of the webhook."},
 			{Name: "ca_file_path", Kind: fwresource.String, Computed: true, Zero: true, Description: "The ca file path of the webhook."},
 			{Name: "created", Kind: fwresource.String, Computed: true, Zero: true, Description: "When the webhook was created."},
@@ -2793,7 +2793,7 @@ var generatedDataSources = []*fwresource.DataSourceSpec{
 		Description: ":meta:subcategory:Extras:Retrieves all webhooks from NetBox. Narrow the result with filter blocks and cap it with limit.",
 		Plural:      &fwresource.Plural{Result: "webhooks", What: "webhooks", Filters: map[string]string{"ca_file_path": "ca_file_path[]", "created": "created[]", "created_by_request": "created_by_request", "description": "description[]", "http_content_type": "http_content_type[]", "http_method": "http_method[]", "id": "id[]", "last_updated": "last_updated[]", "modified_by_request": "modified_by_request", "name": "name[]", "owner": "owner[]", "owner_group": "owner_group[]", "owner_group_id": "owner_group_id[]", "owner_id": "owner_id[]", "payload_url": "payload_url[]", "q": "q", "secret": "secret[]", "ssl_verification": "ssl_verification", "start": "start", "tag": "tag[]", "tag_id": "tag_id[]", "timeout": "timeout[]", "updated_by_request": "updated_by_request"}},
 		Attrs: []fwresource.Attr{
-			{Name: "additional_headers", Kind: fwresource.String, Zero: true, Description: "The additional headers of the webhooks."},
+			{Name: "additional_headers", Kind: fwresource.String, Zero: true, Sensitive: true, Description: "The additional headers of the webhooks."},
 			{Name: "body_template", Kind: fwresource.String, Zero: true, Description: "The body template of the webhooks."},
 			{Name: "ca_file_path", Kind: fwresource.String, Zero: true, Description: "The ca file path of the webhooks."},
 			{Name: "created", Kind: fwresource.String, Zero: true, Description: "When the webhooks was created."},
@@ -2896,7 +2896,7 @@ var generatedDataSources = []*fwresource.DataSourceSpec{
 		Description: ":meta:subcategory:IP Address Management (IPAM):Retrieves all fhrp groups from NetBox. Narrow the result with filter blocks and cap it with limit.",
 		Plural:      &fwresource.Plural{Result: "fhrp_groups", What: "fhrp groups", Filters: map[string]string{"auth_key": "auth_key[]", "auth_type": "auth_type[]", "created": "created[]", "created_by_request": "created_by_request", "description": "description[]", "group_id": "group_id[]", "id": "id[]", "last_updated": "last_updated[]", "modified_by_request": "modified_by_request", "name": "name[]", "owner": "owner[]", "owner_group": "owner_group[]", "owner_group_id": "owner_group_id[]", "owner_id": "owner_id[]", "protocol": "protocol[]", "q": "q", "related_ip": "related_ip[]", "start": "start", "tag": "tag[]", "tag_id": "tag_id[]", "updated_by_request": "updated_by_request"}},
 		Attrs: []fwresource.Attr{
-			{Name: "auth_key", Kind: fwresource.String, Zero: true, Description: "The auth key of the fhrp groups."},
+			{Name: "auth_key", Kind: fwresource.String, Zero: true, Sensitive: true, Description: "The auth key of the fhrp groups."},
 			{Name: "auth_type", Kind: fwresource.String, Zero: true, Description: "The auth type of the fhrp groups."},
 			{Name: "comments", Kind: fwresource.String, Zero: true, Description: "Free-form comments about the fhrp groups."},
 			{Name: "created", Kind: fwresource.String, Zero: true, Description: "When the fhrp groups was created."},
@@ -3518,7 +3518,7 @@ var generatedDataSources = []*fwresource.DataSourceSpec{
 			{Name: "mode", Kind: fwresource.String, Zero: true, Description: "The mode of the ike policies."},
 			{Name: "name", Kind: fwresource.String, Zero: true, Description: "The name of the ike policies."},
 			{Name: "owner_id", Kind: fwresource.Int, Zero: true, Key: "owner", Description: "The ID of the owner associated with the ike policies."},
-			{Name: "preshared_key", Kind: fwresource.String, Zero: true, Description: "The preshared key of the ike policies."},
+			{Name: "preshared_key", Kind: fwresource.String, Zero: true, Sensitive: true, Description: "The preshared key of the ike policies."},
 			{Name: "proposals", Kind: fwresource.IntList, Description: "The IDs of the proposals of the ike policies."},
 			{Name: "tags", Kind: fwresource.StringSet, ElemKey: "name", Description: "Tags assigned to the object, by name."},
 			{Name: "version", Kind: fwresource.String, Zero: true, Description: "The version of the ike policies."},
@@ -3754,7 +3754,7 @@ var generatedDataSources = []*fwresource.DataSourceSpec{
 		Attrs: []fwresource.Attr{
 			{Name: "id", Kind: fwresource.Int, Optional: true, Computed: true, Description: "The numeric ID of the wireless lan."},
 			{Name: "auth_cipher", Kind: fwresource.String, Optional: true, Computed: true, Description: "The auth cipher of the wireless lan."},
-			{Name: "auth_psk", Kind: fwresource.String, Optional: true, Computed: true, Description: "The auth psk of the wireless lan."},
+			{Name: "auth_psk", Kind: fwresource.String, Optional: true, Computed: true, Sensitive: true, Description: "The auth psk of the wireless lan."},
 			{Name: "auth_type", Kind: fwresource.String, Optional: true, Computed: true, Description: "The auth type of the wireless lan."},
 			{Name: "comments", Kind: fwresource.String, Computed: true, Zero: true, Description: "Free-form comments about the wireless lan."},
 			{Name: "created", Kind: fwresource.String, Computed: true, Zero: true, Description: "When the wireless lan was created."},
@@ -3780,7 +3780,7 @@ var generatedDataSources = []*fwresource.DataSourceSpec{
 		Plural:      &fwresource.Plural{Result: "wireless_lans", What: "wireless lans", Filters: map[string]string{"auth_cipher": "auth_cipher[]", "auth_psk": "auth_psk[]", "auth_type": "auth_type[]", "created": "created[]", "created_by_request": "created_by_request", "description": "description[]", "group": "group[]", "group_id": "group_id[]", "id": "id[]", "interface_id": "interface_id[]", "last_updated": "last_updated[]", "location": "location[]", "location_id": "location_id[]", "modified_by_request": "modified_by_request", "owner": "owner[]", "owner_group": "owner_group[]", "owner_group_id": "owner_group_id[]", "owner_id": "owner_id[]", "q": "q", "region": "region[]", "region_id": "region_id[]", "scope_id": "scope_id[]", "scope_type": "scope_type[]", "site": "site[]", "site_group": "site_group[]", "site_group_id": "site_group_id[]", "site_id": "site_id[]", "ssid": "ssid[]", "start": "start", "status": "status[]", "tag": "tag[]", "tag_id": "tag_id[]", "tenant": "tenant[]", "tenant_group": "tenant_group[]", "tenant_group_id": "tenant_group_id[]", "tenant_id": "tenant_id[]", "updated_by_request": "updated_by_request", "vlan_id": "vlan_id[]"}},
 		Attrs: []fwresource.Attr{
 			{Name: "auth_cipher", Kind: fwresource.String, Zero: true, Description: "The auth cipher of the wireless lans."},
-			{Name: "auth_psk", Kind: fwresource.String, Zero: true, Description: "The auth psk of the wireless lans."},
+			{Name: "auth_psk", Kind: fwresource.String, Zero: true, Sensitive: true, Description: "The auth psk of the wireless lans."},
 			{Name: "auth_type", Kind: fwresource.String, Zero: true, Description: "The auth type of the wireless lans."},
 			{Name: "comments", Kind: fwresource.String, Zero: true, Description: "Free-form comments about the wireless lans."},
 			{Name: "created", Kind: fwresource.String, Zero: true, Description: "When the wireless lans was created."},
@@ -3807,7 +3807,7 @@ var generatedDataSources = []*fwresource.DataSourceSpec{
 		Plural:      &fwresource.Plural{Result: "wireless_links", What: "wireless links", Filters: map[string]string{"auth_cipher": "auth_cipher[]", "auth_psk": "auth_psk[]", "auth_type": "auth_type[]", "created": "created[]", "created_by_request": "created_by_request", "description": "description[]", "distance": "distance[]", "distance_unit": "distance_unit", "id": "id[]", "interface_a_id": "interface_a_id[]", "interface_b_id": "interface_b_id[]", "last_updated": "last_updated[]", "modified_by_request": "modified_by_request", "owner": "owner[]", "owner_group": "owner_group[]", "owner_group_id": "owner_group_id[]", "owner_id": "owner_id[]", "q": "q", "ssid": "ssid[]", "start": "start", "status": "status[]", "tag": "tag[]", "tag_id": "tag_id[]", "tenant": "tenant[]", "tenant_group": "tenant_group[]", "tenant_group_id": "tenant_group_id[]", "tenant_id": "tenant_id[]", "updated_by_request": "updated_by_request"}},
 		Attrs: []fwresource.Attr{
 			{Name: "auth_cipher", Kind: fwresource.String, Zero: true, Description: "The auth cipher of the wireless links."},
-			{Name: "auth_psk", Kind: fwresource.String, Zero: true, Description: "The auth psk of the wireless links."},
+			{Name: "auth_psk", Kind: fwresource.String, Zero: true, Sensitive: true, Description: "The auth psk of the wireless links."},
 			{Name: "auth_type", Kind: fwresource.String, Zero: true, Description: "The auth type of the wireless links."},
 			{Name: "comments", Kind: fwresource.String, Zero: true, Description: "Free-form comments about the wireless links."},
 			{Name: "created", Kind: fwresource.String, Zero: true, Description: "When the wireless links was created."},

@@ -3,10 +3,14 @@ package providerstate
 import (
 	"context"
 	"encoding/pem"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
+	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -211,7 +215,7 @@ func TestCustomHeaderTransportClonesRequest(t *testing.T) {
 	defer ts.Close()
 
 	rt := customHeaderTransport{original: http.DefaultTransport, headers: map[string]interface{}{"X-Proxy": "new"}}
-	req, _ := http.NewRequest(http.MethodGet, ts.URL, nil)
+	req, _ := http.NewRequestWithContext(context.Background(), http.MethodGet, ts.URL, nil)
 	req.Header.Set("X-Proxy", "old")
 	resp, err := rt.RoundTrip(req)
 	if err != nil {
@@ -223,5 +227,123 @@ func TestCustomHeaderTransportClonesRequest(t *testing.T) {
 	}
 	if req.Header.Get("X-Proxy") != "old" {
 		t.Error("the caller's request was changed")
+	}
+}
+
+func TestParseServerURL(t *testing.T) {
+	for raw, want := range map[string]string{
+		"localhost:8080":             "http://localhost:8080",
+		" https://netbox.example ":   "https://netbox.example",
+		"netbox.example/netbox":      "http://netbox.example/netbox",
+		"http://[::1]:8000":          "http://[::1]:8000",
+		"ftp://netbox.example":       "",
+		"xyz:/localhost:8080":        "",
+		"https://":                   "",
+		"https://user:pw@netbox.com": "",
+	} {
+		u, err := parseServerURL(raw)
+		if want == "" {
+			assert.Error(t, err, raw)
+			continue
+		}
+		if assert.NoError(t, err, raw) {
+			assert.Equal(t, want, u.String(), raw)
+		}
+	}
+}
+
+// The API token must not follow a redirect to another host or from https to http.
+func TestRedirectsThatLeakTheTokenAreRefused(t *testing.T) {
+	var leaked atomic.Bool
+	other := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Authorization") != "" || r.Header.Get("X-Secret") != "" {
+			leaked.Store(true)
+		}
+		_, _ = w.Write([]byte(`{}`))
+	}))
+	defer other.Close()
+	// 127.0.0.1 and localhost are the same server but not the same host name.
+	elsewhere := strings.Replace(other.URL, "127.0.0.1", "localhost", 1)
+
+	var target string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/api/moved/" {
+			_, _ = w.Write([]byte(`{"ok": true}`))
+			return
+		}
+		http.Redirect(w, r, target, http.StatusTemporaryRedirect)
+	}))
+	defer srv.Close()
+
+	config := Config{APIToken: "secret", ServerURL: srv.URL, RequestTimeout: 5, Headers: map[string]interface{}{"X-Secret": "s"}}
+	client, err := config.Client()
+	assert.NoError(t, err)
+
+	target = elsewhere + "/api/status/"
+	_, err = netboxapi.Request[map[string]any](context.Background(), client, http.MethodGet, "status/", nil, nil)
+	if assert.Error(t, err) {
+		assert.Contains(t, err.Error(), "another host")
+	}
+	assert.False(t, leaked.Load(), "the token or a custom header was sent to another host")
+
+	// A redirect that stays on the host is followed.
+	target = srv.URL + "/api/moved/"
+	out, err := netboxapi.Request[map[string]any](context.Background(), client, http.MethodGet, "status/", nil, nil)
+	if assert.NoError(t, err) {
+		assert.Equal(t, true, (*out)["ok"])
+	}
+}
+
+func TestCheckRedirectRefusesDowngrade(t *testing.T) {
+	req := func(raw string) *http.Request {
+		r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, raw, nil)
+		assert.NoError(t, err)
+		return r
+	}
+	first := []*http.Request{req("https://netbox.example/api/status/")}
+	assert.NoError(t, checkRedirect(req("https://NETBOX.example:8443/api/status/"), first))
+	assert.ErrorContains(t, checkRedirect(req("http://netbox.example/api/status/"), first), "https to http")
+	assert.NoError(t, checkRedirect(req("https://netbox.example/api/status/"), []*http.Request{req("http://netbox.example/api/status/")}))
+	assert.ErrorContains(t, checkRedirect(req("https://netbox.example/"), make([]*http.Request, 10)), "10 redirects")
+}
+
+// Terraform works on many resources at once, their requests must share connections.
+func TestConnectionsAreReused(t *testing.T) {
+	var conns atomic.Int32
+	srv := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(5 * time.Millisecond)
+		_, _ = w.Write([]byte(`{}`))
+	}))
+	srv.Config.ConnState = func(_ net.Conn, s http.ConnState) {
+		if s == http.StateNew {
+			conns.Add(1)
+		}
+	}
+	srv.Start()
+	defer srv.Close()
+
+	config := Config{APIToken: "t", ServerURL: srv.URL, RequestTimeout: 5}
+	client, err := config.Client()
+	assert.NoError(t, err)
+
+	const parallel = 10
+	for round := 0; round < 5; round++ {
+		var wg sync.WaitGroup
+		for i := 0; i < parallel; i++ {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				_, err := netboxapi.Request[map[string]any](context.Background(), client, http.MethodGet, "status/", nil, nil)
+				assert.NoError(t, err)
+			}()
+		}
+		wg.Wait()
+	}
+	assert.LessOrEqual(t, conns.Load(), int32(parallel), "requests opened new connections instead of reusing idle ones")
+}
+
+func TestIsLoopback(t *testing.T) {
+	for host, want := range map[string]bool{"localhost": true, "127.0.0.1": true, "::1": true, "netbox": false, "10.0.0.1": false} {
+		assert.Equal(t, want, isLoopback(host), host)
 	}
 }

@@ -28,7 +28,7 @@ data "netbox_wireless_link" "example" {
 ### Read-Only
 
 - `auth_cipher` (String) The auth cipher of the wireless link.
-- `auth_psk` (String) The auth psk of the wireless link.
+- `auth_psk` (String, Sensitive) The auth psk of the wireless link.
 - `auth_type` (String) The auth type of the wireless link.
 - `comments` (String) Free-form comments about the wireless link.
 - `created` (String) When the wireless link was created.

@@ -177,7 +177,7 @@ var standardResources = []*fwresource.Spec{
 	{
 		TypeName:     "netbox_circuit_provider_network",
 		Path:         "circuits/provider-networks/",
-		Description:  ":meta:subcategory:Circuits:From the [offical documentation](https://netboxlabs.com/docs/netbox/models/circuits/providernetwork/):\n\n> This model can be used to represent the boundary of a provider network, the details of which are unknown or unimportant to the NetBox user. For example, it might represent a provider's regional MPLS network to which multiple circuits provide connectivity.",
+		Description:  ":meta:subcategory:Circuits:From the [official documentation](https://netboxlabs.com/docs/netbox/models/circuits/providernetwork/):\n\n> This model can be used to represent the boundary of a provider network, the details of which are unknown or unimportant to the NetBox user. For example, it might represent a provider's regional MPLS network to which multiple circuits provide connectivity.",
 		Tags:         true,
 		CustomFields: true,
 		Attrs: []fwresource.Attr{
@@ -611,7 +611,7 @@ var standardResources = []*fwresource.Spec{
 			{Name: "ignore_rules", Kind: fwresource.String, Optional: true, Description: "Patterns (one per line) matching files or paths to ignore when syncing."},
 			{Name: "name", Kind: fwresource.String, Required: true, Description: "The name of the data source.", MaxLen: 100},
 			{Name: "owner_id", Kind: fwresource.Int, Key: "owner", Ref: true, Nullable: true, Optional: true, Description: "The ID of the owner associated with the data source."},
-			{Name: "parameters", Kind: fwresource.JSON, Nullable: true, Optional: true, Description: "The parameters of the data source."},
+			{Name: "parameters", Kind: fwresource.JSON, Nullable: true, Optional: true, Sensitive: true, Description: "The parameters of the data source."},
 			{Name: "source_url", Kind: fwresource.String, Required: true, Description: "The source url of the data source.", MaxLen: 200},
 			{Name: "sync_interval", Kind: fwresource.Int, OmitZero: true, Nullable: true, Optional: true, Description: "One of [1, 60, 720, 1440, 10080, 43200].", Min: i64(0), Max: i64(32767)},
 			{Name: "type", Kind: fwresource.String, Required: true, Description: "The type of the data source.", MaxLen: 50},
@@ -934,7 +934,7 @@ var standardResources = []*fwresource.Spec{
 		CustomFields: true,
 		Put:          true,
 		Attrs: []fwresource.Attr{
-			{Name: "auth_key", Kind: fwresource.String, Optional: true, Description: "Authentication key.", MaxLen: 255},
+			{Name: "auth_key", Kind: fwresource.String, Optional: true, Sensitive: true, Description: "Authentication key.", MaxLen: 255},
 			{Name: "auth_type", Kind: fwresource.String, Nullable: true, Optional: true, Description: "Auth type.", OneOf: []string{"md5", "plaintext"}},
 			{Name: "comments", Kind: fwresource.String, Optional: true, Description: "Comments."},
 			{Name: "description", Kind: fwresource.String, Optional: true, Description: "Description.", MaxLen: 200},
@@ -1002,7 +1002,7 @@ var standardResources = []*fwresource.Spec{
 			{Name: "mode", Kind: fwresource.String, Nullable: true, Optional: true, Description: "One of [aggressive, main].", OneOf: []string{"aggressive", "main"}},
 			{Name: "name", Kind: fwresource.String, Required: true, Description: "The name of the ike policy.", MaxLen: 100},
 			{Name: "owner_id", Kind: fwresource.Int, Key: "owner", Ref: true, Nullable: true, Optional: true, Description: "The ID of the owner associated with the ike policy."},
-			{Name: "preshared_key", Kind: fwresource.String, Optional: true, Description: "The preshared key of the ike policy."},
+			{Name: "preshared_key", Kind: fwresource.String, Optional: true, Sensitive: true, Description: "The preshared key of the ike policy."},
 			{Name: "proposal_ids", Kind: fwresource.IntSet, Key: "proposals", Ref: true, Optional: true, Description: "The IDs of the proposal associated with the ike policy."},
 			{Name: "version", Kind: fwresource.Int, OmitZero: true, Optional: true, Computed: true, Description: "One of [1, 2].", Min: i64(0), Max: i64(32767)},
 		},
@@ -2218,7 +2218,7 @@ var standardResources = []*fwresource.Spec{
 		CustomFields: true,
 		Put:          true,
 		Attrs: []fwresource.Attr{
-			{Name: "additional_headers", Kind: fwresource.String, Optional: true, Description: "The additional headers of the webhook."},
+			{Name: "additional_headers", Kind: fwresource.String, Optional: true, Sensitive: true, Description: "The additional headers of the webhook."},
 			{Name: "body_template", Kind: fwresource.String, Optional: true, Description: "The body template of the webhook."},
 			{Name: "ca_file_path", Kind: fwresource.String, Nullable: true, Optional: true, Description: "The ca file path of the webhook.", MaxLen: 4096},
 			{Name: "description", Kind: fwresource.String, Optional: true, Description: "A description of the webhook.", MaxLen: 200},
@@ -2278,7 +2278,7 @@ var standardResources = []*fwresource.Spec{
 		CustomFields: true,
 		Attrs: []fwresource.Attr{
 			{Name: "auth_cipher", Kind: fwresource.String, Nullable: true, Optional: true, Description: "One of [auto, tkip, aes].", OneOf: []string{"aes", "auto", "tkip"}},
-			{Name: "auth_psk", Kind: fwresource.String, Optional: true, Description: "The auth psk of the wireless link.", MaxLen: 64},
+			{Name: "auth_psk", Kind: fwresource.String, Optional: true, Sensitive: true, Description: "The auth psk of the wireless link.", MaxLen: 64},
 			{Name: "auth_type", Kind: fwresource.String, Nullable: true, Optional: true, Description: "One of [open, wep, wpa-personal, wpa-enterprise].", OneOf: []string{"open", "wep", "wpa-enterprise", "wpa-personal"}},
 			{Name: "comments", Kind: fwresource.String, Optional: true, Description: "Free-form comments about the wireless link."},
 			{Name: "description", Kind: fwresource.String, Optional: true, Description: "A description of the wireless link.", MaxLen: 200},

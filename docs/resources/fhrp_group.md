@@ -33,7 +33,7 @@ resource "netbox_fhrp_group" "test" {
 
 ### Optional
 
-- `auth_key` (String) Authentication key.
+- `auth_key` (String, Sensitive) Authentication key.
 - `auth_type` (String) Auth type.
 - `comments` (String) Comments.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.

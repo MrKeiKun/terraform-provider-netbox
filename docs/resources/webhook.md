@@ -33,7 +33,7 @@ resource "netbox_webhook" "test" {
 
 ### Optional
 
-- `additional_headers` (String) The additional headers of the webhook.
+- `additional_headers` (String, Sensitive) The additional headers of the webhook.
 - `body_template` (String) The body template of the webhook.
 - `ca_file_path` (String) The ca file path of the webhook.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.

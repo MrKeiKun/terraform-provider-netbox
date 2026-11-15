@@ -34,7 +34,7 @@ resource "netbox_wireless_link" "example" {
 ### Optional
 
 - `auth_cipher` (String) One of [auto, tkip, aes].
-- `auth_psk` (String) The auth psk of the wireless link.
+- `auth_psk` (String, Sensitive) The auth psk of the wireless link.
 - `auth_type` (String) One of [open, wep, wpa-personal, wpa-enterprise].
 - `comments` (String) Free-form comments about the wireless link.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.

@@ -105,7 +105,7 @@ type deviceTags struct {
 // device is left alone.
 func (r *deviceTag) updateTags(ctx context.Context, deviceID int64, tags []netboxapi.TagRef) error {
 	body := map[string]any{"tags": tags}
-	_, err := netboxapi.Patch[netboxapi.Ref](ctx, r.state.Rest, deviceAPIPath, deviceID, body)
+	_, err := netboxapi.Patch[netboxapi.Ref](ctx, r.state.Rest, deviceAPIPath, deviceID, body, omitQuery(deviceAPIPath, nil))
 	return err
 }
 
@@ -126,7 +126,7 @@ func (r *deviceTag) Create(ctx context.Context, req resource.CreateRequest, resp
 		resp.Diagnostics.AddError("Could not find the tag", err.Error())
 		return
 	}
-	device, err := netboxapi.Get[deviceTags](ctx, r.state.Rest, deviceAPIPath, deviceID.ValueInt64())
+	device, err := netboxapi.Get[deviceTags](ctx, r.state.Rest, deviceAPIPath, deviceID.ValueInt64(), omitQuery(deviceAPIPath, nil))
 	if err != nil {
 		resp.Diagnostics.AddError("Could not read the device", err.Error())
 		return
@@ -166,7 +166,7 @@ func (r *deviceTag) Read(ctx context.Context, req resource.ReadRequest, resp *re
 		resp.Diagnostics.AddError("Invalid ID", err.Error())
 		return
 	}
-	device, err := netboxapi.Get[deviceTags](ctx, r.state.Rest, deviceAPIPath, deviceID)
+	device, err := netboxapi.Get[deviceTags](ctx, r.state.Rest, deviceAPIPath, deviceID, omitQuery(deviceAPIPath, nil))
 	if err != nil {
 		if netboxapi.IsNotFound(err) {
 			// the device is gone, so is the tag assignment
@@ -204,7 +204,7 @@ func (r *deviceTag) Delete(ctx context.Context, req resource.DeleteRequest, resp
 		resp.Diagnostics.AddError("Invalid ID", err.Error())
 		return
 	}
-	device, err := netboxapi.Get[deviceTags](ctx, r.state.Rest, deviceAPIPath, deviceID)
+	device, err := netboxapi.Get[deviceTags](ctx, r.state.Rest, deviceAPIPath, deviceID, omitQuery(deviceAPIPath, nil))
 	if err != nil {
 		if netboxapi.IsNotFound(err) {
 			// the device is already gone, nothing left to clean up
