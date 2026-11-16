@@ -11,6 +11,7 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
@@ -28,6 +29,9 @@ type Config struct {
 	CACertFile                  string
 	// BatchReads reads objects that are asked for at the same time with one list request.
 	BatchReads bool
+	// redirected holds the address of the first redirect that was followed, see Connect.
+	redirected *atomic.Pointer[string]
+
 	// UserAgent is sent with every request. Empty leaves the default of the HTTP library.
 	UserAgent string
 }
@@ -77,6 +81,7 @@ func (cfg *Config) Client() (*netboxapi.Client, error) {
 		return nil, fmt.Errorf("error while trying to parse URL: %w", err)
 	}
 
+	cfg.redirected = &atomic.Pointer[string]{}
 	httpClient, err := cfg.httpClient()
 	if err != nil {
 		return nil, err
@@ -137,25 +142,53 @@ func (cfg *Config) httpClient() (*http.Client, error) {
 	}
 
 	return &http.Client{
-		Transport:     roundTripper,
-		Timeout:       time.Second * time.Duration(cfg.RequestTimeout),
-		CheckRedirect: checkRedirect,
+		Transport: roundTripper,
+		Timeout:   time.Second * time.Duration(cfg.RequestTimeout),
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			if err := checkRedirect(req, via); err != nil {
+				return err
+			}
+			target := *req.URL
+			target.Path, target.RawQuery = "", ""
+			addr := target.String()
+			if cfg.redirected != nil {
+				cfg.redirected.CompareAndSwap(nil, &addr)
+			}
+			return nil
+		},
 	}, nil
 }
+
+// redirectError is a redirect the provider does not follow. Sending the request again would get the
+// same answer.
+type redirectError struct{ msg string }
+
+func (e *redirectError) Error() string   { return e.msg }
+func (e *redirectError) Permanent() bool { return true }
 
 // checkRedirect follows a redirect only when it stays on the NetBox host and does not go from https
 // to http. The API token and the custom headers go out with every request, so following a redirect
 // to another host, or to an unencrypted address, would hand them to whoever answers there.
+//
+// It also refuses a redirect that turns a request that writes into a GET, as 301, 302 and 303 do.
+// That happens when server_url says http and a web server in front of NetBox sends everything to
+// https: the object would not be created, and the provider would get a list where it expects the new
+// object.
 func checkRedirect(req *http.Request, via []*http.Request) error {
 	if len(via) >= 10 {
-		return errors.New("stopped after 10 redirects")
+		return &redirectError{"stopped after 10 redirects"}
 	}
-	first := via[0].URL
-	if !strings.EqualFold(req.URL.Hostname(), first.Hostname()) {
-		return fmt.Errorf("NetBox redirected the request to another host (%s). The provider does not follow it, since that would send the API token there. Set server_url to the address NetBox is served from", req.URL.Host)
+	first := via[0]
+	if !strings.EqualFold(req.URL.Hostname(), first.URL.Hostname()) {
+		return &redirectError{fmt.Sprintf("NetBox redirected the request to another host (%s). The provider does not follow it, since that would send the API token there. Set server_url to the address NetBox is served from", req.URL.Host)}
 	}
-	if first.Scheme == "https" && req.URL.Scheme != "https" {
-		return errors.New("NetBox redirected the request from https to http. The provider does not follow it, since that would send the API token without encryption")
+	if first.URL.Scheme == "https" && req.URL.Scheme != "https" {
+		return &redirectError{"NetBox redirected the request from https to http. The provider does not follow it, since that would send the API token without encryption"}
+	}
+	if req.Method != first.Method {
+		target := *req.URL
+		target.Path, target.RawQuery = "", ""
+		return &redirectError{fmt.Sprintf("NetBox redirected a %s request to %s. Following it would turn the request into a %s, and nothing would be written. Set server_url to the address NetBox redirects to, probably %s", first.Method, req.URL, req.Method, target.String())}
 	}
 	return nil
 }

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strings"
 	"sync/atomic"
 	"testing"
 )
@@ -171,5 +172,26 @@ func TestTypedCustomFieldValueFallsBack(t *testing.T) {
 	}
 	if toIDOK := func() bool { _, ok := toID(true); return ok }; toIDOK() {
 		t.Error("a bool is not an id")
+	}
+}
+
+// A token that may not view custom fields gets an error that names the missing permission.
+func TestCustomFieldDefinitionsForbidden(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.Contains(r.URL.Path, "custom-fields") {
+			http.Error(w, `{"detail":"You do not have permission to perform this action."}`, http.StatusForbidden)
+			return
+		}
+		t.Errorf("the object was sent although the custom field types are not known")
+	}))
+	defer srv.Close()
+	c, err := New(srv.URL, "token", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := map[string]any{"name": "a", "custom_fields": map[string]any{"rack_units": "4"}}
+	_, err = Create[Ref](context.Background(), c, "dcim/sites/", body)
+	if err == nil || !strings.Contains(err.Error(), "view permission") || !strings.Contains(err.Error(), "403") {
+		t.Fatalf("got %v, want an error that names the missing permission", err)
 	}
 }

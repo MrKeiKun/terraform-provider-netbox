@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -35,7 +37,11 @@ func (c *Client) customFieldTypes(ctx context.Context, names []string) (map[stri
 	if missing {
 		defs, err := List[customFieldDef](ctx, c, "extras/custom-fields/", url.Values{"limit": {"1000"}})
 		if err != nil {
-			return nil, err
+			var apiErr *APIError
+			if errors.As(err, &apiErr) && apiErr.StatusCode == http.StatusForbidden {
+				return nil, fmt.Errorf("the API token may not view custom fields. The provider reads their definitions to send the values of custom_fields with the right type, so give the token the view permission on \"Extras > Custom field\": %w", err)
+			}
+			return nil, fmt.Errorf("reading the custom field definitions: %w", err)
 		}
 		c.cfTypes = make(map[string]string, len(defs))
 		for _, d := range defs {

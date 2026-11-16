@@ -2,6 +2,7 @@ package netboxapi
 
 import (
 	"context"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -166,6 +167,88 @@ func BenchmarkEncodeBody(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		if _, err := c.encodeBody(context.Background(), http.MethodPost, "http://netbox.example/api/dcim/sites/", body); err != nil {
 			b.Fatal(err)
+		}
+	}
+}
+
+// When no connection can be made nothing was sent, so a request that creates an object is sent again
+// too. NetBox is briefly unreachable when it restarts.
+func TestRequestIsRepeatedWhenNoConnectionCanBeMade(t *testing.T) {
+	retryDelay = time.Millisecond
+	defer func() { retryDelay = time.Second }()
+
+	// A port nothing listens on.
+	l, err := (&net.ListenConfig{}).Listen(context.Background(), "tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	addr := l.Addr().String()
+	_ = l.Close()
+
+	var dials atomic.Int32
+	hc := &http.Client{Transport: &http.Transport{
+		DialContext: func(ctx context.Context, network, _ string) (net.Conn, error) {
+			dials.Add(1)
+			return (&net.Dialer{}).DialContext(ctx, network, addr)
+		},
+	}}
+	c, err := New("http://"+addr, "token", hc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = c.Do(context.Background(), http.MethodPost, "http://"+addr+"/api/dcim/sites/", map[string]any{"name": "a"}, nil)
+	if err == nil {
+		t.Fatal("no error for a server that is not there")
+	}
+	if got := dials.Load(); got != 1+DefaultMaxRetries {
+		t.Errorf("%d connection attempts, want %d", got, 1+DefaultMaxRetries)
+	}
+}
+
+// A connection that breaks after the request went out may have reached NetBox, so a POST is not
+// sent again.
+func TestPostIsNotRepeatedWhenTheConnectionBreaks(t *testing.T) {
+	retryDelay = time.Millisecond
+	defer func() { retryDelay = time.Second }()
+
+	var hits atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hits.Add(1)
+		conn, _, err := w.(http.Hijacker).Hijack()
+		if err == nil {
+			_ = conn.Close()
+		}
+	}))
+	defer srv.Close()
+	c, err := New(srv.URL, "token", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := c.Do(context.Background(), http.MethodPost, srv.URL+"/api/dcim/sites/", map[string]any{"name": "a"}, nil); err == nil {
+		t.Fatal("no error for a broken connection")
+	}
+	if got := hits.Load(); got != 1 {
+		t.Errorf("the POST was sent %d times", got)
+	}
+}
+
+func TestMaybeProcessed(t *testing.T) {
+	for name, tc := range map[string]struct {
+		err  error
+		want bool
+	}{
+		"no error":          {nil, false},
+		"validation error":  {&APIError{StatusCode: http.StatusBadRequest}, false},
+		"too many requests": {&APIError{StatusCode: http.StatusTooManyRequests}, false},
+		"unavailable":       {&APIError{StatusCode: http.StatusServiceUnavailable}, false},
+		"bad gateway":       {&APIError{StatusCode: http.StatusBadGateway}, true},
+		"gateway timeout":   {&APIError{StatusCode: http.StatusGatewayTimeout}, true},
+		"no connection":     {&net.OpError{Op: "dial"}, false},
+		"broken connection": {&net.OpError{Op: "read"}, true},
+		"timeout":           {context.DeadlineExceeded, true},
+	} {
+		if got := MaybeProcessed(tc.err); got != tc.want {
+			t.Errorf("%s: got %v, want %v", name, got, tc.want)
 		}
 	}
 }

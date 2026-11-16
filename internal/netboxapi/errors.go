@@ -39,3 +39,18 @@ func IsNotFound(err error) bool {
 	var apiErr *APIError
 	return errors.As(err, &apiErr) && apiErr.StatusCode == http.StatusNotFound
 }
+
+// MaybeProcessed reports whether a failed request may still have been carried out by NetBox: the
+// connection broke or timed out after the request went out, or a proxy answered 502 or 504. After
+// such a failure of a request that creates an object, the object may exist.
+func MaybeProcessed(err error) bool {
+	if err == nil || notProcessed(err) || permanent(err) {
+		return false
+	}
+	var apiErr *APIError
+	if errors.As(err, &apiErr) {
+		return apiErr.StatusCode == http.StatusBadGateway || apiErr.StatusCode == http.StatusGatewayTimeout
+	}
+	// Everything that is not an answer from NetBox is a failure of the connection.
+	return true
+}

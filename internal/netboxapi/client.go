@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"io"
 	"math/rand/v2"
+	"net"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -140,7 +141,8 @@ func retryAfter(h http.Header) time.Duration {
 
 // idempotent reports whether a request can safely be sent again after a
 // temporary failure. POST and PATCH are left out, since a lost response could
-// create a duplicate. A database deadlock is the exception, see isDeadlock.
+// create a duplicate. They are only sent again when NetBox did not carry out the
+// request, see notProcessed.
 func idempotent(method string) bool {
 	switch method {
 	case http.MethodGet, http.MethodHead, http.MethodPut, http.MethodDelete:
@@ -157,22 +159,39 @@ func isDeadlock(status int, body []byte) bool {
 		bytes.Contains(bytes.ToLower(body), []byte("deadlock detected"))
 }
 
-// notProcessed reports whether err is an answer that tells NetBox did not carry out the request, so
-// that it is safe to send again whatever its method: a database deadlock, or 429 Too Many Requests
-// from NetBox or a proxy in front of it.
+// permanent reports whether err says of itself that sending the request again will not help, for
+// example a redirect the HTTP client refuses to follow.
+func permanent(err error) bool {
+	var p interface{ Permanent() bool }
+	return errors.As(err, &p) && p.Permanent()
+}
+
+// notProcessed reports whether err tells that NetBox did not carry out the request, so that it is
+// safe to send again whatever its method:
+//   - a database deadlock, Postgres rolled the transaction back
+//   - 429 Too Many Requests, the request was turned away
+//   - 503 Service Unavailable, which a proxy or the application server answers when it cannot hand
+//     the request to NetBox, for example while NetBox restarts or has too much to do
+//   - no connection could be made, so nothing was sent
+//
+// 502 and 504 are not in the list: a proxy also answers them when NetBox did the work but the
+// answer got lost or came too late.
 func notProcessed(err error) bool {
 	var apiErr *APIError
-	if !errors.As(err, &apiErr) {
-		return false
+	if errors.As(err, &apiErr) {
+		return apiErr.StatusCode == http.StatusTooManyRequests ||
+			apiErr.StatusCode == http.StatusServiceUnavailable ||
+			isDeadlock(apiErr.StatusCode, []byte(apiErr.Body))
 	}
-	return apiErr.StatusCode == http.StatusTooManyRequests || isDeadlock(apiErr.StatusCode, []byte(apiErr.Body))
+	var opErr *net.OpError
+	return errors.As(err, &opErr) && opErr.Op == "dial"
 }
 
 // Do sends a request to rawURL. body is JSON encoded when not nil. When out
 // is not nil the JSON response is decoded into it. Idempotent requests are
 // sent again (see SetMaxRetries) when the connection fails or NetBox (or a proxy
-// in front of it) answers 502, 503 or 504. Any request is sent again when the
-// NetBox database reports a deadlock or the answer is 429 Too Many Requests.
+// in front of it) answers 502, 503 or 504. Any request is sent again when NetBox
+// did not carry it out, see notProcessed.
 func (c *Client) Do(ctx context.Context, method, rawURL string, body, out any) error {
 	var buf []byte
 	if body != nil {
@@ -228,7 +247,7 @@ func (c *Client) doOnce(ctx context.Context, method, rawURL string, buf []byte, 
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return ctx.Err() == nil, err
+		return ctx.Err() == nil && !permanent(err), err
 	}
 	defer resp.Body.Close()
 

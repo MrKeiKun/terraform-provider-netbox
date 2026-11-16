@@ -182,6 +182,7 @@ func generate(doc obj) ([]byte, []byte, []byte, []byte, error) {
 	hand := fwprovider.HandwrittenDataSources()
 	takenNames := map[string]bool{}
 	extraFilters := map[string]map[string]string{}
+	lookups := map[string]map[string][]string{}
 	byPath := map[string][]bool{}
 	handPlural := map[string][]*fwresource.DataSourceSpec{}
 	handByPath := map[string][]*fwresource.DataSourceSpec{}
@@ -259,6 +260,7 @@ func generate(doc obj) ([]byte, []byte, []byte, []byte, error) {
 			sch, _ := par["schema"].(obj)
 			c.params[name] = sch["type"] == "array"
 		}
+		lookups[c.path] = c.lookups()
 		for _, d := range handPlural[trimmed] {
 			extraFilters[d.TypeName] = missingFilters(d, c.params)
 		}
@@ -291,7 +293,7 @@ func generate(doc obj) ([]byte, []byte, []byte, []byte, error) {
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}
-	filters, err := format.Source(filtersSource(extraFilters))
+	filters, err := format.Source(append(filtersSource(extraFilters), lookupsSource(lookups)...))
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}

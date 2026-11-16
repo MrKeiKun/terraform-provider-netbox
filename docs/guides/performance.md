@@ -13,9 +13,9 @@ A `terraform plan` reads every resource in the state from NetBox, so the time it
 
 Terraform reads resources one by one, ten at a time unless you change `-parallelism`. NetBox spends most of the time of a small request on work that is the same for every request, so asking for ten objects with one request is much faster than ten requests for one object each.
 
-The provider reads objects of the same kind that Terraform asks for at the same time with one list request, filtered by ID. A read is never held back to wait for others: the first one is sent at once, and the reads that arrive while it is under way go out together. When an object is not in the answer, the provider reads it on its own before it reports it as gone.
+The provider reads objects of the same kind that Terraform asks for within a few milliseconds of each other with one list request, filtered by ID. A read waits 5 milliseconds at most for others to join it, however long NetBox takes to answer. When an object is not in the answer, the provider reads it on its own before it reports it as gone.
 
-In a test with 605 resources against NetBox 4.7, a plan took 155 requests in place of 606.
+In a test with 605 resources against NetBox 4.7, a plan took 105 requests in place of 606 and a third less time.
 
 Set `batch_reads = false` (or `NETBOX_BATCH_READS=false`) when something in front of NetBox, for example a proxy that only allows some paths, does not let list requests through.
 
@@ -25,14 +25,19 @@ Set `batch_reads = false` (or `NETBOX_BATCH_READS=false`) when something in fron
 - The config context of a device or virtual machine is not requested by the resources that do not show it. NetBox has to put it together from all config contexts for every read.
 - After a create or update the provider uses the answer of NetBox and does not read the object again, unless the answer leaves out a field.
 - Tags are looked up by name once and then remembered for the rest of the run.
+- A data source that lists objects asks for up to four pages at the same time, and turns each page into results as it arrives. Reading 30,000 IP addresses takes about 650 MB of memory in the provider. Terraform itself needs about as much again, so use `filter` and `limit` when you do not need every object.
 
 ## Settings
 
-| Setting           | Default | When to change it                                                                                         |
-| ----------------- | ------- | --------------------------------------------------------------------------------------------------------- |
-| `batch_reads`     | `true`  | Set to `false` when list requests are not allowed through to NetBox.                                      |
-| `page_size`       | `1000`  | Lower it when NetBox is slow to answer a large page of a data source that lists objects.                  |
-| `request_timeout` | `10`    | Raise it when NetBox takes longer than 10 seconds to answer, for example for large data sources.          |
-| `max_retries`     | `3`     | Raise it when NetBox or a proxy in front of it often answers 429, 502, 503 or 504. `0` turns retries off. |
+| Setting           | Default | When to change it                                                                                             |
+| ----------------- | ------- | ------------------------------------------------------------------------------------------------------------- |
+| `batch_reads`     | `true`  | Set to `false` when list requests are not allowed through to NetBox.                                          |
+| `page_size`       | `1000`  | Lower it when NetBox is slow to answer a large page of a data source that lists objects.                      |
+| `request_timeout` | `10`    | Raise it when NetBox takes longer than 10 seconds to answer, for example for large data sources.              |
+| `max_retries`     | `3`     | Raise it when NetBox or a proxy in front of it is often busy or restarts during a run. `0` turns retries off. |
 
-When NetBox answers `429 Too Many Requests`, the provider waits and sends the request again. It waits as long as the `Retry-After` header says, up to 30 seconds.
+## When NetBox is busy or restarts
+
+When NetBox or a proxy in front of it answers `429 Too Many Requests` or `503 Service Unavailable`, or no connection can be made, the provider waits and sends the request again, also when it creates an object: NetBox did not carry out the request. It waits as long as the `Retry-After` header says, up to 30 seconds, and otherwise twice as long with every attempt.
+
+A request that creates an object is not sent again when the connection breaks or times out after the request went out, or the answer is 502 or 504. NetBox may have created the object, and a second request would create it twice. The error then tells you to check NetBox before you apply again.

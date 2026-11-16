@@ -29,7 +29,10 @@ func TestDoRetriesTemporaryFailures(t *testing.T) {
 	}{
 		{"GET recovers after 503", http.MethodGet, 2, http.StatusServiceUnavailable, "", false, 3, false},
 		{"GET gives up after three tries", http.MethodGet, 5, http.StatusBadGateway, "", true, 3, false},
-		{"POST is never repeated", http.MethodPost, 1, http.StatusServiceUnavailable, "", true, 1, false},
+		{"POST is not repeated after a 502", http.MethodPost, 1, http.StatusBadGateway, "", true, 1, false},
+		{"POST is not repeated after a 504", http.MethodPost, 1, http.StatusGatewayTimeout, "", true, 1, false},
+		{"POST is repeated after a 503", http.MethodPost, 2, http.StatusServiceUnavailable, "", false, 3, false},
+		{"PATCH is repeated after a 503", http.MethodPatch, 1, http.StatusServiceUnavailable, "", false, 2, false},
 		{"GET does not retry a 404", http.MethodGet, 1, http.StatusNotFound, "", true, 1, false},
 		{"PUT is repeated", http.MethodPut, 1, http.StatusGatewayTimeout, "", false, 2, false},
 		{"retries can be turned off", http.MethodGet, 1, http.StatusServiceUnavailable, "", true, 1, true},

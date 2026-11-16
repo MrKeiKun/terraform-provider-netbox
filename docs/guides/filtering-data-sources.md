@@ -44,7 +44,7 @@ output "device_names" {
 }
 ```
 
-- A name that the data source does not support is an error.
+- A name that the data source does not support is an error. NetBox itself would ignore it and return every object.
 - Several blocks have to match all together.
 - For filters that take a list in the NetBox API, a value can hold several choices, separated by commas. `"active,planned"` returns objects that have either status.
 - An empty value is ignored.
@@ -52,6 +52,39 @@ output "device_names" {
 - Many plural data sources also have `name_regex`, which keeps the objects whose name matches a regular expression. The matching happens in Terraform, after NetBox returned the objects, so narrow the result with a `filter` first when there are many objects.
 
 The objects are in a list attribute named after the data source, here `devices`. Each element has the same attributes as the singular data source.
+
+### Lookup expressions
+
+A filter name can end in a lookup expression of NetBox, joined with two underscores. `name__ic` matches a part of the name, `status__n` leaves a status out, `id__gt` takes the objects after an ID.
+
+```hcl
+data "netbox_devices" "spares" {
+  filter {
+    name  = "name__isw"
+    value = "spare-"
+  }
+  filter {
+    name  = "status__n"
+    value = "active"
+  }
+}
+```
+
+| Lookup                   | Meaning                                              | For                                     |
+| ------------------------ | ---------------------------------------------------- | --------------------------------------- |
+| `n`                      | is not                                               | almost every filter                     |
+| `ic`, `nic`              | contains, does not contain (ignoring case)           | text                                    |
+| `isw`, `nisw`            | starts with, does not start with (ignoring case)     | text                                    |
+| `iew`, `niew`            | ends with, does not end with (ignoring case)         | text                                    |
+| `ie`, `nie`              | is, is not (ignoring case)                           | text                                    |
+| `regex`, `iregex`        | matches a regular expression (`iregex` ignores case) | text                                    |
+| `empty`                  | is empty (`true`) or is not (`false`)                | text and numbers                        |
+| `gt`, `gte`, `lt`, `lte` | greater than, at least, less than, at most           | numbers and dates                       |
+| `any`                    | has any of the tags, where `tag` wants all of them   | `tag`, `tag_id` (NetBox 4.6.6 or newer) |
+
+Which lookups a filter has depends on the filter. The provider knows them from the NetBox API and stops with an error that lists them when a name is not one of them. That matters, because NetBox does not complain about a filter it does not know: it ignores it and returns every object.
+
+Every plural data source also takes the filter `id`, with the IDs separated by commas.
 
 ## Filtering on custom fields
 

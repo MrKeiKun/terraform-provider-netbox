@@ -288,3 +288,67 @@ func TestGetReportsBrokenJSON(t *testing.T) {
 		t.Fatalf("got %v, want a decoding error", err)
 	}
 }
+
+// Batches must not wait for each other. When NetBox is slow, holding reads back until the request
+// before them is done makes a refresh slower than it is without batching.
+func TestBatchesDoNotWaitForEachOther(t *testing.T) {
+	s := newBatchServer(t)
+	s.wait = 150 * time.Millisecond
+	c := s.client(t, true)
+
+	start := time.Now()
+	var wg sync.WaitGroup
+	// Three groups of reads arrive while the first request is still under way.
+	for wave := int64(0); wave < 3; wave++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			time.Sleep(time.Duration(wave) * 4 * gatherWindow)
+			for id, err := range readAll(t, c, ids(wave*10+1, wave*10+5)) {
+				if err != nil {
+					t.Errorf("object %d: %v", id, err)
+				}
+			}
+		}()
+	}
+	wg.Wait()
+	// One after the other, the three requests would take 450 ms.
+	if took := time.Since(start); took > 300*time.Millisecond {
+		t.Errorf("the reads took %s, the batches were sent one after the other", took)
+	}
+	if n := s.lists.Load(); n != 3 {
+		t.Errorf("got %d list requests, want one for each group of reads", n)
+	}
+}
+
+// A read is held for the gather window at most, however long NetBox takes.
+func TestSingleReadIsNotHeldBack(t *testing.T) {
+	s := newBatchServer(t)
+	s.wait = 0
+	c := s.client(t, true)
+	start := time.Now()
+	for i := int64(1); i <= 5; i++ {
+		if _, err := Get[named](context.Background(), c, "dcim/sites/", i); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if per := time.Since(start) / 5; per > gatherWindow+20*time.Millisecond {
+		t.Errorf("a read on its own took %s", per)
+	}
+	if s.lists.Load() != 0 {
+		t.Errorf("reads on their own were sent as list requests")
+	}
+}
+
+func TestMoreReadsThanABatchHolds(t *testing.T) {
+	s := newBatchServer(t)
+	c := s.client(t, true)
+	for id, err := range readAll(t, c, ids(1, 100)) {
+		if err != nil {
+			t.Errorf("object %d: %v", id, err)
+		}
+	}
+	if n := s.lists.Load() + s.singles.Load(); n > 10 {
+		t.Errorf("100 reads took %d requests", n)
+	}
+}
