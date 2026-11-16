@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"net/url"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -23,7 +25,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
+
+// pageWorkers is how many pages of a plural data source are asked for at the same time. NetBox
+// answers a page of 1000 objects in a second or more, so reading them one after the other takes long
+// on a large NetBox. More than a few at once only makes NetBox slower for everyone else.
+const pageWorkers = 4
 
 // DataSourceSpec describes a data source. A singular data source finds exactly one object with the
 // filters given as optional attributes. A plural one lists the objects that match its filter blocks.
@@ -84,6 +92,10 @@ type Plural struct {
 	// Filters maps the name of a filter to the query parameter. A parameter ending in [] takes a comma
 	// separated list.
 	Filters map[string]string
+	// Lookups are the lookup expressions NetBox has for a query parameter: "name" -> ["ic", "isw",
+	// "n"] for the parameters name__ic, name__isw and name__n. A filter block can name a filter with
+	// one of its lookups, as in status__n.
+	Lookups map[string][]string
 	// NoFilter leaves out the filter blocks and the limit attribute.
 	NoFilter bool
 	// Extra are fixed query parameters.
@@ -91,6 +103,43 @@ type Plural struct {
 	// NameRegex names the attribute that holds a regular expression the names of the results have to
 	// match. It is applied after all objects were fetched.
 	NameRegex string
+}
+
+// lookupSince are the lookup expressions that the oldest supported NetBox does not have, with the
+// first version that has them. The others are the same from NetBox 4.4.0 on.
+var lookupSince = map[string]string{
+	// tag__any and tag_id__any: objects with any of the tags, where tag wants all of them
+	"any": "4.6.6",
+}
+
+// filterParam returns the query parameter of a filter named in a filter block. The name is a filter of
+// the data source, or one with a lookup expression of NetBox behind it, as in name__ic. A parameter
+// ending in [] takes a comma separated list.
+//
+// NetBox ignores a query parameter it does not know and returns all objects, so a name that is not
+// known is an error here and never sent.
+func (p *Plural) filterParam(name string) (string, error) {
+	if param, ok := p.Filters[name]; ok {
+		return param, nil
+	}
+	base, lookup, hasLookup := strings.Cut(name, "__")
+	baseParam, ok := p.Filters[base]
+	if !hasLookup || !ok {
+		return "", fmt.Errorf("'%s' is not a supported filter parameter", name)
+	}
+	query, isList := strings.CutSuffix(baseParam, "[]")
+	lookups := p.Lookups[query]
+	if !slices.Contains(lookups, lookup) {
+		if len(lookups) == 0 {
+			return "", fmt.Errorf("'%s' is not a supported filter parameter: the filter %s has no lookup expressions", name, base)
+		}
+		return "", fmt.Errorf("'%s' is not a supported filter parameter: the filter %s has the lookup expressions %s", name, base, strings.Join(lookups, ", "))
+	}
+	param := query + "__" + lookup
+	if isList {
+		param += "[]"
+	}
+	return param, nil
 }
 
 // pageSize returns the number of objects to ask for with each request of a plural data source. It is
@@ -254,7 +303,7 @@ func (s *DataSourceSpec) buildSchema() schema.Schema {
 			attrs["limit"] = schema.Int64Attribute{
 				Optional:            true,
 				MarkdownDescription: "The maximum number of items to return. Defaults to 0, which returns all items.",
-				Validators:          []validator.Int64{int64validator.AtLeast(1)},
+				Validators:          []validator.Int64{int64validator.AtLeast(0)},
 			}
 			blocks["filter"] = schema.SetNestedBlock{
 				MarkdownDescription: "Filters that select which items are returned. Each filter is a name/value pair.",
@@ -549,12 +598,18 @@ func (d *DataSource) readPlural(ctx context.Context, req datasource.ReadRequest,
 		}
 		name := stringOf(obj.Attributes()["name"])
 		value := stringOf(obj.Attributes()["value"])
-		param, ok := p.Filters[name]
-		if !ok {
-			resp.Diagnostics.AddError("Invalid filter", fmt.Sprintf("'%s' is not a supported filter parameter", name))
+		param, err := p.filterParam(name)
+		if err != nil {
+			resp.Diagnostics.AddError("Invalid filter", err.Error())
 			return
 		}
-		if since := d.spec.FilterSince[name]; d.state != nil && serverOlderThan(d.state.Version, since) {
+		// a filter with a lookup needs the NetBox version of the filter itself
+		base, lookup, _ := strings.Cut(name, "__")
+		if since := lookupSince[lookup]; since != "" && d.state != nil && serverOlderThan(d.state.Version, since) {
+			resp.Diagnostics.AddError("NetBox is too old", fmt.Sprintf("The lookup %s of the filter %s needs NetBox %s or later, and the server runs %s. An older NetBox ignores it and returns all objects.", lookup, name, since, d.state.Version))
+			return
+		}
+		if since := d.spec.FilterSince[base]; d.state != nil && serverOlderThan(d.state.Version, since) {
 			resp.Diagnostics.AddError("NetBox is too old", fmt.Sprintf("The filter %s of %s needs NetBox %s or later, and the server runs %s.", name, d.spec.TypeName, since, d.state.Version))
 			return
 		}
@@ -577,34 +632,27 @@ func (d *DataSource) readPlural(ctx context.Context, req datasource.ReadRequest,
 	}
 
 	userLimit := limit.ValueInt64()
-	var all []map[string]any
-	if d.spec.Custom != nil {
-		objs, err := d.spec.Custom(ctx, d.state, cfg, req)
-		if err != nil {
-			resp.Diagnostics.AddError("Could not read "+p.What, err.Error())
-			return
-		}
-		all = objs
+	filtered := d.spec.Keep != nil || keepRegex != nil
+
+	// Every page is turned into result values as it arrives and then let go. A large NetBox returns
+	// tens of thousands of objects, and the decoded JSON of an object takes several times the memory
+	// of its values.
+	//
+	// The values are kept in the form Terraform is sent, not as framework values. Setting a list of
+	// 40,000 objects with State.SetAttribute takes about 2 GB, because the framework converts and
+	// walks the whole list again.
+	elem := Attr{Name: p.Result, Kind: NestedList, Sub: d.spec.Attrs, Computed: true}
+	ot := elem.objectType()
+	objType := ot.TerraformType(ctx)
+	subs := make([]Attr, len(elem.Sub))
+	for i, sub := range elem.Sub {
+		sub.Computed, sub.Zero = true, true
+		subs[i] = sub
 	}
-	for d.spec.Custom == nil {
-		query.Set("limit", strconv.Itoa(d.pageSize(userLimit, d.spec.Keep != nil || keepRegex != nil)))
-		query.Set("offset", strconv.Itoa(len(all)))
-		page, err := netboxapi.ListPage[map[string]any](ctx, d.state.Rest, d.spec.Path, query)
-		if err != nil {
-			resp.Diagnostics.AddError("Could not read "+p.What, fmt.Sprintf("failed to fetch %s at offset %d: %s", p.What, len(all), err))
-			return
-		}
-		all = append(all, page.Results...)
-		if len(page.Results) == 0 || page.Next == nil || *page.Next == "" {
-			break
-		}
-		if d.spec.Keep == nil && keepRegex == nil && userLimit > 0 && int64(len(all)) >= userLimit {
-			break
-		}
-	}
-	if d.spec.Keep != nil || keepRegex != nil {
-		kept := all[:0]
-		for _, o := range all {
+	var results []tftypes.Value
+	var convErr error
+	add := func(objs []map[string]any) {
+		for _, o := range objs {
 			if d.spec.Keep != nil && !d.spec.Keep(cfg, o) {
 				continue
 			}
@@ -614,28 +662,104 @@ func (d *DataSource) readPlural(ctx context.Context, req datasource.ReadRequest,
 					continue
 				}
 			}
-			kept = append(kept, o)
-		}
-		all = kept
-	}
-	if userLimit > 0 && int64(len(all)) > userLimit {
-		all = all[:userLimit]
-	}
-
-	elem := Attr{Name: p.Result, Kind: NestedList, Sub: d.spec.Attrs, Computed: true}
-	items := make([]any, len(all))
-	for i, o := range all {
-		for _, sc := range d.spec.ResultScopes {
-			typ, _ := o[sc.TypeKey].(string)
-			for _, opt := range sc.Options {
-				if opt.Type == typ && o[sc.IDKey] != nil {
-					o[opt.Attr] = o[sc.IDKey]
+			for _, sc := range d.spec.ResultScopes {
+				typ, _ := o[sc.TypeKey].(string)
+				for _, opt := range sc.Options {
+					if opt.Type == typ && o[sc.IDKey] != nil {
+						o[opt.Attr] = o[sc.IDKey]
+					}
 				}
 			}
+			// The object is built from the values of its attributes directly. Going through a
+			// framework object would work out the type of the object again for every result.
+			vals := make(map[string]tftypes.Value, len(subs))
+			for _, sub := range subs {
+				sv := sub.fromJSON(sub.pick(o), nil)
+				if sv == nil || sv.IsNull() && sub.Required {
+					sv = nullOf(sub)
+				}
+				tv, err := sv.ToTerraformValue(ctx)
+				if err != nil {
+					convErr = fmt.Errorf("%s: %w", sub.Name, err)
+					return
+				}
+				vals[sub.Name] = tv
+			}
+			results = append(results, tftypes.NewValue(objType, vals))
 		}
-		items[i] = o
 	}
-	result := elem.fromJSONList(items)
+
+	if d.spec.Custom != nil {
+		objs, err := d.spec.Custom(ctx, d.state, cfg, req)
+		if err != nil {
+			resp.Diagnostics.AddError("Could not read "+p.What, err.Error())
+			return
+		}
+		add(objs)
+	}
+	// The first page tells how many objects there are and how many NetBox returns for a page. The
+	// pages after it are asked for a few at a time, and added in order.
+	fetched, per, total := 0, 0, 0
+	for d.spec.Custom == nil {
+		n := 1
+		if per > 0 {
+			n = min(pageWorkers, max(1, (total-fetched+per-1)/per))
+		}
+		pages := make([]*netboxapi.Page[map[string]any], n)
+		errs := make([]error, n)
+		var wg sync.WaitGroup
+		for i := range pages {
+			q := url.Values{}
+			for k, v := range query {
+				q[k] = v
+			}
+			limit := d.pageSize(userLimit, filtered)
+			if per > 0 {
+				// every page has to be as long as the first, or the offsets do not line up
+				limit = per
+			}
+			q.Set("limit", strconv.Itoa(limit))
+			q.Set("offset", strconv.Itoa(fetched+i*per))
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				pages[i], errs[i] = netboxapi.ListPage[map[string]any](ctx, d.state.Rest, d.spec.Path, q)
+			}()
+		}
+		wg.Wait()
+
+		start := fetched
+		more := false
+		for i, page := range pages {
+			if errs[i] != nil {
+				resp.Diagnostics.AddError("Could not read "+p.What, fmt.Sprintf("failed to fetch %s at offset %d: %s", p.What, start+i*per, errs[i]))
+				return
+			}
+			if per == 0 {
+				per, total = len(page.Results), int(page.Count)
+				if !filtered && userLimit > 0 && int(userLimit) < total {
+					total = int(userLimit)
+				}
+			}
+			fetched += len(page.Results)
+			add(page.Results)
+			more = len(page.Results) > 0 && page.Next != nil && *page.Next != ""
+			pages[i] = nil // the objects of the page are no longer needed
+		}
+		if !more {
+			break
+		}
+		if !filtered && userLimit > 0 && int64(fetched) >= userLimit {
+			break
+		}
+	}
+	if userLimit > 0 && int64(len(results)) > userLimit {
+		results = results[:userLimit]
+	}
+	if convErr != nil {
+		resp.Diagnostics.AddError("Could not read "+p.What, convErr.Error())
+		return
+	}
 	for _, a := range d.spec.ExtraFilters {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root(a.Name), cfg[a.Name])...)
 	}
@@ -643,12 +767,21 @@ func (d *DataSource) readPlural(ctx context.Context, req datasource.ReadRequest,
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root(customFieldsKey), cfg[customFieldsKey])...)
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), types.StringValue(uniqueID()))...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root(p.Result), result)...)
-}
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-// fromJSONList converts a list of objects.
-func (a Attr) fromJSONList(items []any) attr.Value {
-	return a.fromJSON(items, nil)
+	// The result goes straight into the raw state, next to the attributes set above.
+	state := map[string]tftypes.Value{}
+	if err := resp.State.Raw.As(&state); err != nil {
+		resp.Diagnostics.AddError("Could not read "+p.What, err.Error())
+		return
+	}
+	if results == nil {
+		results = []tftypes.Value{}
+	}
+	state[p.Result] = tftypes.NewValue(tftypes.List{ElementType: objType}, results)
+	resp.State.Raw = tftypes.NewValue(resp.State.Raw.Type(), state)
 }
 
 var idCounter atomic.Int64

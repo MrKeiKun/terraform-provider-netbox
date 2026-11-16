@@ -157,3 +157,33 @@ func TestTagLookupErrors(t *testing.T) {
 	_, err = state.TagRef(context.Background(), "x")
 	assert.Error(t, err, "an unreachable NetBox was accepted")
 }
+
+// When server_url answers with a redirect, the provider says where to point it, before a write fails.
+func TestConnectWarnsAboutARedirect(t *testing.T) {
+	final := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`{"netbox-version": "4.7.5"}`))
+	}))
+	defer final.Close()
+	front := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, final.URL+r.URL.RequestURI(), http.StatusMovedPermanently)
+	}))
+	defer front.Close()
+
+	state, diags := connect(t, Settings{Config: Config{ServerURL: front.URL}})
+	if state == nil {
+		t.Fatalf("no state: %+v", diags)
+	}
+	if !hasWarning(diags, "server_url redirects to "+final.URL) {
+		t.Errorf("no warning about the redirect: %+v", diags)
+	}
+
+	state, diags = connect(t, Settings{Config: Config{ServerURL: final.URL}})
+	if state == nil {
+		t.Fatalf("no state: %+v", diags)
+	}
+	for _, d := range diags {
+		if strings.Contains(d.Summary, "redirects") {
+			t.Errorf("warning without a redirect: %+v", d)
+		}
+	}
+}

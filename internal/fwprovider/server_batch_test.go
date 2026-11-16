@@ -90,3 +90,35 @@ func TestBatchReadsCanBeTurnedOff(t *testing.T) {
 		t.Errorf("refreshing %d resources took %d requests, want one for each", count, gets)
 	}
 }
+
+// When the answer to a create is lost, the object may exist in NetBox without Terraform knowing it.
+// The error has to say so, or the next apply creates a second object.
+func TestCreateErrorTellsWhenTheObjectMayExist(t *testing.T) {
+	fake, srv := newFakeNetBox()
+	defer srv.Close()
+	h := newHarness(t, srv.URL)
+	const name = "netbox_contact_role"
+	cfg := map[string]tftypes.Value{"name": str("x")}
+	const hint = "may have created the object"
+
+	for status, want := range map[int]bool{
+		http.StatusGatewayTimeout: true,
+		http.StatusBadGateway:     true,
+		http.StatusBadRequest:     false,
+		http.StatusForbidden:      false,
+	} {
+		fake.failOn("POST", "tenancy/contact-roles", status)
+		diags, _ := h.tryApply(name, nullObject(), cfg)
+		h.wantError(fmt.Sprintf("a create answered with %d", status), diags)
+		got := false
+		for _, d := range diags {
+			if strings.Contains(d.Detail, hint) {
+				got = true
+			}
+		}
+		if got != want {
+			t.Errorf("status %d: hint in the error = %v, want %v", status, got, want)
+		}
+		fake.clearFailures()
+	}
+}

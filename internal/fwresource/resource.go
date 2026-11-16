@@ -533,7 +533,13 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		}
 	}
 	if err != nil {
-		resp.Diagnostics.AddError("Could not create "+r.spec.TypeName, err.Error())
+		detail := err.Error()
+		if netboxapi.MaybeProcessed(err) {
+			// Terraform does not know the object, so the next apply would create it a second time or
+			// fail because it already exists.
+			detail += "\n\nThe connection failed after the request was sent, so Netbox may have created the object anyway. Check Netbox before you apply again. When the object is there, import it with `terraform import` or delete it."
+		}
+		resp.Diagnostics.AddError("Could not create "+r.spec.TypeName, detail)
 		return
 	}
 

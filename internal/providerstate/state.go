@@ -132,6 +132,15 @@ func Connect(ctx context.Context, s Settings) (*State, []Diag) {
 		}
 	}
 
+	// A web server that sends http to https answers the version check with a redirect. Reads follow
+	// it, but every one then takes two requests, and a write cannot follow it at all.
+	if addr := s.redirected.Load(); addr != nil {
+		diags = append(diags, Diag{
+			Summary: "server_url redirects to " + *addr,
+			Detail:  fmt.Sprintf("Netbox answered the request to %s with a redirect to %s. Set `server_url` to that address. Reading still works, with two requests in place of one, but creating or changing an object fails when the redirect turns the request into a GET.", serverURL, *addr),
+		})
+	}
+
 	state := &State{
 		Rest:        rest,
 		Version:     serverVersion,

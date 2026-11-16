@@ -112,3 +112,87 @@ const initSource = `func init() {
 	}
 }
 `
+
+// lookups returns the lookup expressions the list endpoint has for each filter: "name" -> ["ic",
+// "isw", "n", ...] for the parameters name__ic, name__isw, name__n and so on.
+func (c *collection) lookups() map[string][]string {
+	out := map[string][]string{}
+	for q := range c.params {
+		base, lookup, ok := strings.Cut(q, "__")
+		if !ok || strings.HasPrefix(q, "cf_") || !c.hasParam(base) || !validName.MatchString(base) || !validName.MatchString(lookup) {
+			continue
+		}
+		out[base] = append(out[base], lookup)
+	}
+	for base := range out {
+		sort.Strings(out[base])
+	}
+	return out
+}
+
+func (c *collection) hasParam(name string) bool {
+	_, ok := c.params[name]
+	return ok
+}
+
+// lookupsSource writes the lookup expressions of every collection. NetBox has only a handful of
+// different sets of lookups, so each filter points at its set by number.
+func lookupsSource(lookups map[string]map[string][]string) []byte {
+	var sets []string
+	index := map[string]int{}
+	var paths []string
+	for p, byFilter := range lookups {
+		if len(byFilter) > 0 {
+			paths = append(paths, p)
+		}
+		for _, l := range byFilter {
+			index[strings.Join(l, ",")] = 0
+		}
+	}
+	for set := range index {
+		sets = append(sets, set)
+	}
+	sort.Strings(sets)
+	for i, set := range sets {
+		index[set] = i
+	}
+	sort.Strings(paths)
+
+	var b bytes.Buffer
+	b.WriteString("\n// generatedLookupSets are the sets of lookup expressions NetBox has for a filter, for example\n")
+	b.WriteString("// name__ic and name__isw for the filter name.\n")
+	b.WriteString("var generatedLookupSets = [][]string{\n")
+	for _, set := range sets {
+		b.WriteString("\t{")
+		for i, l := range strings.Split(set, ",") {
+			if i > 0 {
+				b.WriteString(", ")
+			}
+			fmt.Fprintf(&b, "%q", l)
+		}
+		b.WriteString("},\n")
+	}
+	b.WriteString("}\n\n")
+	b.WriteString("// generatedLookups tells, by API path and query parameter, which lookup expressions the list\n")
+	b.WriteString("// endpoint has for the parameter, as a number of generatedLookupSets. NetBox ignores a query\n")
+	b.WriteString("// parameter it does not know and returns all objects, so the provider only sends lookups from\n")
+	b.WriteString("// this table.\n")
+	b.WriteString("var generatedLookups = map[string]map[string]uint8{\n")
+	for _, p := range paths {
+		fmt.Fprintf(&b, "\t%q: {", p)
+		var names []string
+		for n := range lookups[p] {
+			names = append(names, n)
+		}
+		sort.Strings(names)
+		for i, n := range names {
+			if i > 0 {
+				b.WriteString(", ")
+			}
+			fmt.Fprintf(&b, "%q: %d", n, index[strings.Join(lookups[p][n], ",")])
+		}
+		b.WriteString("},\n")
+	}
+	b.WriteString("}\n")
+	return b.Bytes()
+}
