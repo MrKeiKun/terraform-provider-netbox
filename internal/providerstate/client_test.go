@@ -3,6 +3,7 @@ package providerstate
 import (
 	"context"
 	"encoding/pem"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -346,4 +347,64 @@ func TestIsLoopback(t *testing.T) {
 	for host, want := range map[string]bool{"localhost": true, "127.0.0.1": true, "::1": true, "netbox": false, "10.0.0.1": false} {
 		assert.Equal(t, want, isLoopback(host), host)
 	}
+}
+
+// A web server that sends http to https answers a POST with a 301, which turns it into a GET. The
+// provider must not follow that: nothing would be created.
+func TestRedirectThatTurnsAWriteIntoAReadIsRefused(t *testing.T) {
+	var posts, gets atomic.Int32
+	final := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			posts.Add(1)
+		} else {
+			gets.Add(1)
+		}
+		_, _ = w.Write([]byte(`{"count": 0, "results": []}`))
+	}))
+	defer final.Close()
+	var hits atomic.Int32
+	front := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hits.Add(1)
+		http.Redirect(w, r, final.URL+r.URL.RequestURI(), http.StatusMovedPermanently)
+	}))
+	defer front.Close()
+
+	config := Config{APIToken: "t", ServerURL: front.URL, RequestTimeout: 5, MaxRetries: 3}
+	client, err := config.Client()
+	assert.NoError(t, err)
+
+	_, err = netboxapi.Create[map[string]any](context.Background(), client, "tenancy/tenants/", map[string]any{"name": "a"})
+	if assert.Error(t, err) {
+		assert.Contains(t, err.Error(), "Set server_url to the address NetBox redirects to, probably "+final.URL)
+		assert.False(t, netboxapi.MaybeProcessed(err), "nothing was written, the error must not say the object may exist")
+	}
+	assert.Equal(t, int32(1), hits.Load(), "a refused redirect was tried again")
+	assert.Equal(t, int32(0), posts.Load()+gets.Load(), "the redirect was followed")
+
+	// A read is still followed, it stays a read.
+	_, err = netboxapi.ListPage[map[string]any](context.Background(), client, "tenancy/tenants/", nil)
+	assert.NoError(t, err)
+	assert.Equal(t, int32(1), gets.Load())
+}
+
+// 307 and 308 keep the method and the body, so a write can follow them.
+func TestRedirectThatKeepsTheMethodIsFollowed(t *testing.T) {
+	var body string
+	final := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		b, _ := io.ReadAll(r.Body)
+		body = r.Method + " " + string(b)
+		_, _ = w.Write([]byte(`{"id": 1}`))
+	}))
+	defer final.Close()
+	front := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, final.URL+r.URL.RequestURI(), http.StatusPermanentRedirect)
+	}))
+	defer front.Close()
+
+	config := Config{APIToken: "t", ServerURL: front.URL, RequestTimeout: 5}
+	client, err := config.Client()
+	assert.NoError(t, err)
+	_, err = netboxapi.Create[map[string]any](context.Background(), client, "tenancy/tenants/", map[string]any{"name": "a"})
+	assert.NoError(t, err)
+	assert.Equal(t, `POST {"name":"a"}`, body)
 }

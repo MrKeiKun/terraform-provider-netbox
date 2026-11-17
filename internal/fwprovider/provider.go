@@ -66,7 +66,7 @@ func (p *Provider) Schema(_ context.Context, _ provider.SchemaRequest, resp *pro
 			},
 			"max_retries": schema.Int64Attribute{
 				Optional:            true,
-				MarkdownDescription: "How many times a failed GET, PUT or DELETE request is sent again after a connection error, or a 502, 503 or 504 response. A request that fails because of a database deadlock in Netbox is sent again whatever its method, since nothing was changed. Other requests that create objects are never repeated. Set to `0` to turn retries off. Can be set via the `NETBOX_MAX_RETRIES` environment variable. Defaults to `3`.",
+				MarkdownDescription: "How many times a failed request is sent again. GET, PUT and DELETE requests are repeated after a connection error or a 502, 503 or 504 response. A request that creates or changes an object (POST, PATCH) is only repeated when Netbox did not carry it out: no connection could be made, the response is 429 or 503, or Netbox reports a database deadlock. The wait doubles with every attempt and follows a `Retry-After` header. Set to `0` to turn retries off. Can be set via the `NETBOX_MAX_RETRIES` environment variable. Defaults to `3`.",
 			},
 			"page_size": schema.Int64Attribute{
 				Optional:            true,

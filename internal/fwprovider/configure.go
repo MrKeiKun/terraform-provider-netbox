@@ -172,17 +172,33 @@ func (p *Provider) Resources(_ context.Context) []func() resource.Resource {
 
 func (p *Provider) DataSources(_ context.Context) []func() datasource.DataSource {
 	out := make([]func() datasource.DataSource, 0, len(standardDataSources)+len(customDataSources))
-	for _, spec := range standardDataSources {
-		out = append(out, fwresource.NewDataSource(spec))
-	}
-	for _, spec := range customDataSources {
-		out = append(out, fwresource.NewDataSource(spec))
-	}
-	for _, spec := range generatedDataSources {
-		out = append(out, fwresource.NewDataSource(spec))
-	}
-	for _, spec := range aliasedDataSources() {
-		out = append(out, fwresource.NewDataSource(spec))
+	for _, list := range [][]*fwresource.DataSourceSpec{standardDataSources, customDataSources, generatedDataSources, aliasedDataSources()} {
+		for _, spec := range list {
+			out = append(out, fwresource.NewDataSource(withLookups(spec)))
+		}
 	}
 	return out
+}
+
+// withLookups gives a plural data source the lookup expressions of its list endpoint, so that a
+// filter block can use name__ic or status__n, and the id filter.
+func withLookups(spec *fwresource.DataSourceSpec) *fwresource.DataSourceSpec {
+	byParam := generatedLookups[spec.Path]
+	if spec.Plural == nil || spec.Plural.NoFilter || spec.Plural.Lookups != nil || len(byParam) == 0 {
+		return spec
+	}
+	// Every list of NetBox can be filtered by ID, and takes several of them.
+	if _, ok := spec.Plural.Filters["id"]; !ok {
+		if _, known := byParam["id"]; known {
+			if spec.Plural.Filters == nil {
+				spec.Plural.Filters = map[string]string{}
+			}
+			spec.Plural.Filters["id"] = "id[]"
+		}
+	}
+	spec.Plural.Lookups = make(map[string][]string, len(byParam))
+	for param, set := range byParam {
+		spec.Plural.Lookups[param] = generatedLookupSets[set]
+	}
+	return spec
 }
