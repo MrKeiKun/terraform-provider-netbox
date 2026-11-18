@@ -74,7 +74,6 @@ State upgrades live in `Upgraders`, keyed by the schema version, and work on the
 2. Add `examples/resources/<type name>/resource.tf` and `import.sh`. `scripts/ensure_docs_examples.sh` fails when the example is missing.
 3. Add an acceptance test in `netbox/` that creates, updates and imports the resource. A test that only creates is not enough.
 4. Run `make docs`, then commit the changes in `docs/`.
-5. Add a line to `CHANGELOG.md` under `# Unreleased`.
 
 ## Testing
 

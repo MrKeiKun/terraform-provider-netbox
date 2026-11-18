@@ -1,4 +1,4 @@
-# Unreleased
+# 1.0.0-rc1 (November 2026)
 
 NOTES
 
