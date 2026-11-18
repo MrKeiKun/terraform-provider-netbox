@@ -120,8 +120,7 @@ Contributions are welcome. Before opening a PR:
 
 - Run `make test` and `make docs`, and add or update acceptance tests for what you change.
 - Run `pre-commit run --all-files` (see `.pre-commit-config.yaml`). CI runs the same checks, plus `golangci-lint`. CodeQL scans run as a separate check.
-- Add a line for your change under `# Unreleased` in `CHANGELOG.md`.
 
 ## Releasing
 
-Maintainers release by tagging the latest commit on `master` with a signed tag, for example `git tag -s v1.0.0 -m "v1.0.0"` and `git push origin v1.0.0`. The release workflow builds and signs the binaries, publishes the GitHub release with the notes from the `# Unreleased` section, then renames that section to the new version in `CHANGELOG.md`. The Terraform registry picks up the new release automatically.
+Maintainers release in two steps. First, a pull request adds a section for the version to `CHANGELOG.md`, for example `# 1.0.0 (December 2026)`, and is merged. Second, the maintainer tags the latest commit on `master` with a signed tag, for example `git tag -s v1.0.0 -m "v1.0.0"` and `git push origin v1.0.0`. The release workflow builds and signs the binaries and publishes the GitHub release with the notes from that section. It stops before building if the section is missing or empty. A tag with a suffix, such as `v1.0.0-rc1`, is published as a pre-release. Contributors do not edit `CHANGELOG.md`. The Terraform registry picks up the new release automatically.

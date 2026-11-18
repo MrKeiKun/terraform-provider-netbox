@@ -49,15 +49,21 @@ jobs:
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
-      - name: Extract release notes from the Unreleased section
+      # The notes are the section of CHANGELOG.md whose heading starts with the tag, for example
+      # "# 1.0.0-rc1 (November 2026)" for v1.0.0-rc1. The maintainer writes it before tagging.
+      - name: Extract the release notes of this version from CHANGELOG.md
         run: |
-          awk '
-            /^# Unreleased$/ { found = 1; next }
-            found && /^# / { exit }
+          version="${GITHUB_REF_NAME#v}"
+          awk -v v="$version" '
+            /^# / {
+              if (found) exit
+              if (index($0, "# " v " (") == 1 || $0 == "# " v) found = 1
+              next
+            }
             found { print }
           ' CHANGELOG.md > "$RUNNER_TEMP/release-notes.md"
           if ! grep -q '[^[:space:]]' "$RUNNER_TEMP/release-notes.md"; then
-            echo "::error::The '# Unreleased' section in CHANGELOG.md is empty or missing."
+            echo "::error::CHANGELOG.md has no section '# $version (...)' with notes. Add it, merge it, and tag the new tip of master."
             exit 1
           fi
       - name: Run GoReleaser
@@ -75,22 +81,3 @@ jobs:
           subject-path: |
             dist/*.zip
             dist/*_SHA256SUMS
-      - name: Update CHANGELOG.md on master
-        env:
-          GIT_AUTHOR_NAME: ${{ github.actor }}
-          GIT_AUTHOR_EMAIL: ${{ steps.import_gpg.outputs.email }}
-          GIT_COMMITTER_NAME: ${{ github.actor }}
-          GIT_COMMITTER_EMAIL: ${{ steps.import_gpg.outputs.email }}
-        run: |
-          version="${GITHUB_REF_NAME#v}"
-          git fetch origin master
-          git checkout -B master origin/master
-          heading="# $version ($(date -u '+%B %Y'))"
-          awk -v h="$heading" '
-            !done && /^# Unreleased$/ { print; print ""; print h; done = 1; next }
-            { print }
-          ' CHANGELOG.md > "$RUNNER_TEMP/CHANGELOG.md"
-          mv "$RUNNER_TEMP/CHANGELOG.md" CHANGELOG.md
-          git add CHANGELOG.md
-          git commit -S -m "Release $version in the changelog."
-          git push origin master
