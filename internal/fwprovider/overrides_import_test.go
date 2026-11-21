@@ -125,3 +125,22 @@ func TestAliasPlanFollowsTheNameThatIsWritten(t *testing.T) {
 		t.Errorf("both written, nothing to follow: %v", got)
 	}
 }
+
+func TestDataFileBodyLeavesOutANullDataFile(t *testing.T) {
+	create := map[string]any{"data_file": nil, "name": "a"}
+	if err := dataFileBody(context.Background(), nil, nil, create); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := create["data_file"]; ok {
+		t.Fatalf("a create must not send data_file: null, got %v", create)
+	}
+
+	hadFile := fwresource.Values{"data_file_id": types.Int64Value(7)}
+	update := map[string]any{"data_file": nil}
+	if err := dataFileBody(context.Background(), nil, hadFile, update); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := update["data_file"]; !ok {
+		t.Fatal("taking a data file away must still send null")
+	}
+}
