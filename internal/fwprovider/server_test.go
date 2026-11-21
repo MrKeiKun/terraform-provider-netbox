@@ -197,6 +197,18 @@ func (f *fakeNetBox) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPatch, http.MethodPut:
 			for k, v := range body {
+				if sent, ok := v.(map[string]any); ok && k == "custom_fields" {
+					// NetBox merges the custom fields instead of replacing them
+					merged, _ := obj[k].(map[string]any)
+					if merged == nil {
+						merged = map[string]any{}
+					}
+					for ck, cv := range sent {
+						merged[ck] = cv
+					}
+					obj[k] = merged
+					continue
+				}
 				obj[k] = v
 			}
 		case http.MethodDelete:

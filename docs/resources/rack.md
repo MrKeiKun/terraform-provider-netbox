@@ -63,7 +63,7 @@ resource "netbox_rack" "test" {
 - `mounting_depth` (Number) The mounting depth of the rack.
 - `outer_depth` (Number) The outer depth of the rack.
 - `outer_height` (Number) Outer dimension of rack (height).
-- `outer_unit` (String) Valid values are `mm` and `in`. Required when `outer_width` and `outer_depth` is set.
+- `outer_unit` (String) Valid values are `mm` and `in`. Required when `outer_width` or `outer_depth` is set.
 - `outer_width` (Number) The outer width of the rack.
 - `owner_id` (Number) The ID of the owner associated with the rack. Needs NetBox 4.5.0 or later.
 - `rack_type_id` (Number) Reference to a `netbox_rack_type`. When set, the rack's physical dimensions (such as `width`, `u_height` and `form_factor`) are inherited from the rack type. Conflicts with `width`, `u_height` and `form_factor`.
@@ -74,7 +74,7 @@ resource "netbox_rack" "test" {
 - `tenant_id` (Number) The ID of the tenant associated with the rack.
 - `u_height` (Number) The height of the rack in rack units. Conflicts with `rack_type_id`.
 - `weight` (Number) The weight of the rack.
-- `weight_unit` (String) Valid values are `kg`, `g`, `lb` and `oz`. Required when `weight` and `max_weight` is set.
+- `weight_unit` (String) Valid values are `kg`, `g`, `lb` and `oz`. Required when `weight` or `max_weight` is set.
 - `width` (Number) Valid values are `10`, `19`, `21` and `23`. Inherited from `rack_type_id` when set. Conflicts with `rack_type_id`.
 
 ### Read-Only

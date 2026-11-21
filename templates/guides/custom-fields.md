@@ -40,7 +40,7 @@ JSON values are compared by what they contain. Different spacing or key order is
 ## Which fields Terraform manages
 
 - Only the fields in your configuration are managed. A field in NetBox that is not in `custom_fields` is left alone, and no difference is shown for it.
-- When you remove a field from `custom_fields`, it is cleared in NetBox.
+- When you remove a field from `custom_fields`, it keeps its value in NetBox and is no longer managed. To clear a field, set it to `""`.
 - When you do not write `custom_fields` at all, no field is changed. The state then holds the fields that have a value in NetBox, so you can read them.
 - An empty string means the field is not set.
 

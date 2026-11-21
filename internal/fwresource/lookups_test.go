@@ -38,3 +38,31 @@ func TestFilterParam(t *testing.T) {
 		}
 	}
 }
+
+func TestFilterSuggestion(t *testing.T) {
+	p := &Plural{Filters: map[string]string{"site_id": "site_id", "tags": "tag[]", "name": "name"}}
+	for name, want := range map[string]string{
+		"site": "Did you mean 'site_id'?",
+		"tag":  "Did you mean 'tags'?",
+	} {
+		if _, err := p.filterParam(name); err == nil || !strings.Contains(err.Error(), want) {
+			t.Errorf("%s: got %v, want %q", name, err, want)
+		}
+	}
+	if _, err := p.filterParam("bogus"); err == nil || strings.Contains(err.Error(), "Did you mean") {
+		t.Errorf("a name without a similar filter got a suggestion: %v", err)
+	}
+}
+
+func TestFilterSuggestionEdges(t *testing.T) {
+	// without filters there is nothing to suggest
+	if _, err := (&Plural{}).filterParam("site"); err == nil || strings.Contains(err.Error(), "Did you mean") {
+		t.Errorf("got %v", err)
+	}
+	// a lookup stays on the suggested name, and every close name is offered
+	p := &Plural{Filters: map[string]string{"site_id": "site_id", "sites": "sites"}}
+	_, err := p.filterParam("site__n")
+	if err == nil || !strings.Contains(err.Error(), "Did you mean 'site_id__n' or 'sites__n'?") {
+		t.Errorf("got %v", err)
+	}
+}
