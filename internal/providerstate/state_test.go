@@ -66,6 +66,9 @@ func TestConnectDoesNotRetryAWrongToken(t *testing.T) {
 	if state != nil || len(diags) == 0 {
 		t.Fatal("a wrong token was accepted")
 	}
+	if state != nil || diags[0].Summary != "Netbox rejected the API token" || !strings.Contains(diags[0].Detail, "Original error:") {
+		t.Errorf("the error does not name the token: %+v", diags)
+	}
 	if n := atomic.LoadInt32(&calls); n != 1 {
 		t.Errorf("the status endpoint was called %d times, want 1", n)
 	}

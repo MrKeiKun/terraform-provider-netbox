@@ -248,8 +248,9 @@ func mapOf(m map[string]string) tftypes.Value {
 	return tftypes.NewValue(tftypes.Map{ElementType: tftypes.String}, vals)
 }
 
-// A custom field that is no longer in the configuration is cleared in NetBox.
-func TestRemovedCustomFieldIsCleared(t *testing.T) {
+// A custom field that is no longer in the configuration keeps its value in NetBox, and an empty
+// string clears it.
+func TestRemovedCustomFieldKeepsItsValue(t *testing.T) {
 	fake, srv := newFakeNetBox()
 	defer srv.Close()
 	h := newHarness(t, srv.URL)
@@ -262,11 +263,17 @@ func TestRemovedCustomFieldIsCleared(t *testing.T) {
 
 	state = h.apply(name, state, map[string]tftypes.Value{"name": str("cf"), "custom_fields": mapOf(map[string]string{"a": "1"})})
 	cf, _ := obj["custom_fields"].(map[string]any)
-	if v, present := cf["b"]; !present || v != nil {
-		t.Errorf("b was not cleared: %v", cf)
+	if v, present := cf["b"]; !present || v != "2" {
+		t.Errorf("b was changed although it is not in the configuration: %v", cf)
 	}
 	if cf["a"] != "1" {
 		t.Errorf("a = %v", cf["a"])
+	}
+
+	// an empty string clears a field
+	state = h.apply(name, state, map[string]tftypes.Value{"name": str("cf"), "custom_fields": mapOf(map[string]string{"a": ""})})
+	if cf, _ := obj["custom_fields"].(map[string]any); cf["a"] != nil {
+		t.Errorf("an empty string did not clear a: %v", cf)
 	}
 
 	// not mentioning custom fields at all leaves them alone

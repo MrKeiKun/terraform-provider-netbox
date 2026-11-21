@@ -11,7 +11,6 @@ import (
 
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/netboxapi"
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/providerstate"
-	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -111,26 +110,25 @@ func (r *Resource) UpgradeState(_ context.Context) map[int64]resource.StateUpgra
 }
 
 func (r *Resource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
-	paths := func(names []string) []path.Expression {
-		out := make([]path.Expression, len(names))
-		for i, n := range names {
-			out[i] = path.MatchRoot(n)
+	zero := map[string]bool{}
+	for _, a := range r.spec.Attrs {
+		if a.zero {
+			zero[a.Name] = true
 		}
-		return out
 	}
 	var v []resource.ConfigValidator
 	for _, g := range r.spec.ExactlyOneOf {
-		v = append(v, resourcevalidator.ExactlyOneOf(paths(g)...))
+		v = append(v, groupValidator{kind: groupExactlyOne, names: g, zero: zero})
 	}
 	for _, g := range r.spec.AtLeastOneOf {
-		v = append(v, resourcevalidator.AtLeastOneOf(paths(g)...))
+		v = append(v, groupValidator{kind: groupAtLeastOne, names: g, zero: zero})
 	}
 	for _, g := range r.spec.Conflicts {
-		v = append(v, resourcevalidator.Conflicting(paths(g)...))
+		v = append(v, groupValidator{kind: groupConflicts, names: g, zero: zero})
 	}
 	for _, g := range r.spec.RequiredWith {
 		if len(g) == 2 {
-			v = append(v, requiredWith{attr: g[0], other: g[1]})
+			v = append(v, requiredWith{attr: g[0], other: g[1], zero: zero})
 		}
 	}
 	return v
@@ -309,24 +307,10 @@ func (r *Resource) body(ctx context.Context, plan, prior Values) (map[string]any
 			}
 			body["custom_fields"] = m
 		}
-		// A field that was in the state but is no longer in the configuration is cleared. Null
-		// custom fields in the configuration leave all fields alone.
-		if cf, ok := stringMapValues(plan[customFieldsKey]); ok && prior != nil {
-			if old, hadOld := stringMapValues(prior[customFieldsKey]); hadOld {
-				m, _ := body["custom_fields"].(map[string]any)
-				for k := range old {
-					if _, kept := cf[k]; !kept {
-						if m == nil {
-							m = map[string]any{}
-						}
-						m[k] = nil
-					}
-				}
-				if m != nil {
-					body["custom_fields"] = m
-				}
-			}
-		}
+		// A field that is only missing from the configuration is not managed any more and keeps its
+		// value in NetBox. State written by older versions holds the values of fields the
+		// configuration never mentioned, so clearing them would lose data. A field is cleared by
+		// setting it to "".
 	}
 
 	if r.spec.ModifyBody != nil {
@@ -817,6 +801,7 @@ func (r *Resource) importByName(ctx context.Context, name string) (string, error
 // configuration, other has to be set too.
 type requiredWith struct {
 	attr, other string
+	zero        map[string]bool
 }
 
 func (v requiredWith) Description(context.Context) string {
@@ -833,7 +818,10 @@ func (v requiredWith) ValidateResource(ctx context.Context, req resource.Validat
 		return
 	}
 	a, b := obj[v.attr], obj[v.other]
-	if a.IsNull() || !a.IsKnown() {
+	if !a.IsKnown() || !isSetValue(a, v.zero[v.attr]) {
+		return
+	}
+	if !b.IsKnown() {
 		return
 	}
 	if b.IsNull() {

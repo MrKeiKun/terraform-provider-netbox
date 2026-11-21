@@ -38,3 +38,18 @@ func TestFilterParam(t *testing.T) {
 		}
 	}
 }
+
+func TestFilterSuggestion(t *testing.T) {
+	p := &Plural{Filters: map[string]string{"site_id": "site_id", "tags": "tag[]", "name": "name"}}
+	for name, want := range map[string]string{
+		"site": "Did you mean 'site_id'?",
+		"tag":  "Did you mean 'tags'?",
+	} {
+		if _, err := p.filterParam(name); err == nil || !strings.Contains(err.Error(), want) {
+			t.Errorf("%s: got %v, want %q", name, err, want)
+		}
+	}
+	if _, err := p.filterParam("bogus"); err == nil || strings.Contains(err.Error(), "Did you mean") {
+		t.Errorf("a name without a similar filter got a suggestion: %v", err)
+	}
+}

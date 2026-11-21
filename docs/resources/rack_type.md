@@ -63,13 +63,13 @@ resource "netbox_rack_type" "test" {
 - `mounting_depth_mm` (Number) The mounting depth mm of the rack type.
 - `outer_depth` (Number) The outer depth of the rack type.
 - `outer_height` (Number) Outer dimension of rack (height).
-- `outer_unit` (String) Valid values are `mm` and `in`. Required when `outer_width` and `outer_depth` is set.
+- `outer_unit` (String) Valid values are `mm` and `in`. Required when `outer_width` or `outer_depth` is set.
 - `outer_width` (Number) The outer width of the rack type.
 - `owner_id` (Number) The ID of the owner associated with the rack type. Needs NetBox 4.5.0 or later.
 - `slug` (String) The URL-friendly slug of the rack type.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `weight` (Number) The weight of the rack type.
-- `weight_unit` (String) Valid values are `kg`, `g`, `lb` and `oz`. Required when `weight` and `max_weight` is set.
+- `weight_unit` (String) Valid values are `kg`, `g`, `lb` and `oz`. Required when `weight` or `max_weight` is set.
 
 ### Read-Only
 

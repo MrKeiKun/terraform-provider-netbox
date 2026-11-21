@@ -4,6 +4,7 @@ package providerstate
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -173,6 +174,21 @@ func checkVersion(ctx context.Context, rest *netboxapi.Client, serverURL string)
 	// The client already sends the request again when the connection fails or NetBox answers 502,
 	// 503 or 504, and stops when the context is cancelled. A wrong URL or token is reported at once.
 	res, err := netboxapi.Request[map[string]interface{}](ctx, rest, http.MethodGet, "status/", nil, nil)
+	var apiErr *netboxapi.APIError
+	if errors.As(err, &apiErr) && (apiErr.StatusCode == http.StatusUnauthorized || apiErr.StatusCode == http.StatusForbidden) {
+		return "", []Diag{{
+			Error:   true,
+			Summary: "Netbox rejected the API token",
+			Detail: fmt.Sprintf(
+				"Netbox answered a GET request to `%s/api/status/` with status %d.\n\n"+
+					"This usually means the `api_token` is wrong, expired or disabled, or the user of the token is not active. "+
+					"For a version 2 token, the value must be the whole `nbt_<key>.<token>` string. "+
+					"A reverse proxy in front of Netbox can also answer this way.\n\n"+
+					"Original error: %s",
+				serverURL, apiErr.StatusCode, err,
+			),
+		}}
+	}
 	if err != nil {
 		return "", []Diag{{
 			Error:   true,

@@ -125,7 +125,7 @@ func (p *Plural) filterParam(name string) (string, error) {
 	base, lookup, hasLookup := strings.Cut(name, "__")
 	baseParam, ok := p.Filters[base]
 	if !hasLookup || !ok {
-		return "", fmt.Errorf("'%s' is not a supported filter parameter", name)
+		return "", fmt.Errorf("'%s' is not a supported filter parameter%s", name, p.suggestion(name))
 	}
 	query, isList := strings.CutSuffix(baseParam, "[]")
 	lookups := p.Lookups[query]
@@ -140,6 +140,34 @@ func (p *Plural) filterParam(name string) (string, error) {
 		param += "[]"
 	}
 	return param, nil
+}
+
+// suggestion names a filter that looks like the one that is not known, as ". Did you mean 'x'?",
+// or is empty. These are the usual mix-ups: the name of an object where its id is wanted (site and
+// site_id), and a singular where the filter is plural (tag and tags).
+func (p *Plural) suggestion(name string) string {
+	if p.Filters == nil {
+		return ""
+	}
+	base, lookup, hasLookup := strings.Cut(name, "__")
+	var found []string
+	for _, c := range []string{base + "_id", base + "s", strings.TrimSuffix(base, "s"), strings.TrimSuffix(base, "_id")} {
+		if c == base || c == "" || slices.Contains(found, c) {
+			continue
+		}
+		if _, ok := p.Filters[c]; ok {
+			found = append(found, c)
+		}
+	}
+	if len(found) == 0 {
+		return ""
+	}
+	if hasLookup {
+		for i := range found {
+			found[i] += "__" + lookup
+		}
+	}
+	return fmt.Sprintf(". Did you mean '%s'?", strings.Join(found, "' or '"))
 }
 
 // pageSize returns the number of objects to ask for with each request of a plural data source. It is

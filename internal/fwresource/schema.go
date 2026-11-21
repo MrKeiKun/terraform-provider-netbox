@@ -199,6 +199,12 @@ func (a Attr) schemaAttribute() schema.Attribute {
 		case a.Max != nil:
 			out.Validators = []validator.Int64{int64validator.AtMost(*a.Max)}
 		}
+		if a.zero {
+			// 0 is how an attribute that is not set reads, so it is not checked against the range
+			for i, val := range out.Validators {
+				out.Validators[i] = skipZeroInt64{val}
+			}
+		}
 		return out
 	case Float:
 		out := schema.Float64Attribute{
@@ -356,4 +362,16 @@ func toFloat64(v any) float64 {
 		return f
 	}
 	return 0
+}
+
+// skipZeroInt64 does not check the value 0, which an optional number holds while it is not set.
+type skipZeroInt64 struct {
+	validator.Int64
+}
+
+func (v skipZeroInt64) ValidateInt64(ctx context.Context, req validator.Int64Request, resp *validator.Int64Response) {
+	if !req.ConfigValue.IsNull() && !req.ConfigValue.IsUnknown() && req.ConfigValue.ValueInt64() == 0 {
+		return
+	}
+	v.Int64.ValidateInt64(ctx, req, resp)
 }
