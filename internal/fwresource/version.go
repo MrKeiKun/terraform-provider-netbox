@@ -30,6 +30,39 @@ func isSet(v attr.Value) bool {
 	return true
 }
 
+// isConfigured tells whether the configuration asks for something with the attribute. The value an
+// attribute has while it is not set, its zero value or its default, does not count: the state of an
+// object holds it, and so does a configuration written from that state.
+func isConfigured(a Attr, v attr.Value) bool {
+	if !isSet(v) {
+		return false
+	}
+	if a.zero && isZero(v) {
+		return false
+	}
+	if a.Default != nil {
+		switch x := v.(type) {
+		case types.Bool:
+			if d, ok := a.Default.(bool); ok && d == x.ValueBool() {
+				return false
+			}
+		case types.Int64:
+			if _, ok := a.Default.(emptyCollection); !ok && toInt64(a.Default) == x.ValueInt64() {
+				return false
+			}
+		case types.Float64:
+			if _, ok := a.Default.(emptyCollection); !ok && toFloat64(a.Default) == x.ValueFloat64() {
+				return false
+			}
+		case types.String:
+			if d, ok := a.Default.(string); ok && d == x.ValueString() {
+				return false
+			}
+		}
+	}
+	return true
+}
+
 // checkVersion reports the object type and the attributes that the NetBox server is too old for.
 // It does nothing when the version of the server is not known.
 func (r *Resource) checkVersion(ctx context.Context, req resource.ModifyPlanRequest) diag.Diagnostics {
@@ -57,8 +90,12 @@ func (r *Resource) checkVersion(ctx context.Context, req resource.ModifyPlanRequ
 	if d.HasError() {
 		return diags
 	}
+	attrs := make(map[string]Attr, len(r.spec.Attrs))
+	for _, a := range r.spec.Attrs {
+		attrs[a.Name] = a
+	}
 	for name, since := range r.spec.Since {
-		if isSet(config[name]) && older(since) {
+		if isConfigured(attrs[name], config[name]) && older(since) {
 			diags.AddAttributeError(path.Root(name), "NetBox is too old", fmt.Sprintf("The attribute %s of %s needs NetBox %s or later, and the server runs %s. NetBox would ignore it.", name, r.spec.TypeName, since, r.state.Version))
 		}
 	}

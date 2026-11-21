@@ -111,3 +111,30 @@ func isSetValue(v tftypes.Value, zero bool) bool {
 	}
 	return true
 }
+
+// sameValues checks that two attributes that name the same thing have the same value when both are
+// written.
+type sameValues struct {
+	a, b string
+}
+
+func (v sameValues) Description(context.Context) string {
+	return fmt.Sprintf("%s and %s must have the same value", v.a, v.b)
+}
+
+func (v sameValues) MarkdownDescription(ctx context.Context) string { return v.Description(ctx) }
+
+func (v sameValues) ValidateResource(_ context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var obj map[string]tftypes.Value
+	if err := req.Config.Raw.As(&obj); err != nil {
+		return
+	}
+	a, b := obj[v.a], obj[v.b]
+	if a.IsNull() || b.IsNull() || !a.IsFullyKnown() || !b.IsFullyKnown() {
+		return
+	}
+	if !a.Equal(b) {
+		resp.Diagnostics.AddAttributeError(path.Root(v.a), "Conflicting values",
+			fmt.Sprintf("%s and %s name the same thing and must have the same value. Use only %s.", v.a, v.b, v.b))
+	}
+}

@@ -28,6 +28,7 @@ output "user_id" {
 ### Optional
 
 - `date_joined` (String) The date joined of the user.
+- `email` (String) The email of the user.
 - `first_name` (String) The first name of the user.
 - `id` (Number) The numeric ID of the user.
 - `last_login` (String) The last login of the user.
@@ -36,7 +37,6 @@ output "user_id" {
 
 ### Read-Only
 
-- `email` (String) The email of the user.
 - `groups` (List of Number) The IDs of the groups of the user.
 - `is_active` (Boolean) The is active of the user.
 - `permissions` (List of Number) The IDs of the permissions of the user.

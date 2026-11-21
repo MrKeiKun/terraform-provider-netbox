@@ -20,6 +20,7 @@ Guides:
 - [Tags and `default_tags`](guides/tags)
 - [NetBox versions](guides/netbox-versions)
 - [Performance and connection settings](guides/performance)
+- [Importing existing objects](guides/importing-existing-objects)
 - [Changing the provider source](guides/changing-the-provider-source)
 
 ## Supported Netbox versions

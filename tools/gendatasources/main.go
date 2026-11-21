@@ -306,7 +306,7 @@ func generate(doc obj) ([]byte, []byte, []byte, []byte, error) {
 }
 
 func skipped(path string) bool {
-	if path == "core/data-sources/" {
+	if path == "core/data-sources/" || path == "core/data-files/" {
 		return false
 	}
 	for _, p := range skippedPrefixes {
@@ -461,10 +461,31 @@ func classify(doc obj, name string, p obj, noun string) (attr, bool) {
 			return attr{name: name + "_id", kind: "Int", key: name, zero: true, desc: fmt.Sprintf("The ID of the %s associated with the %s.", human(name), noun)}, true
 		}
 		if len(props) == 0 {
+			if stringUnion(doc, p) {
+				return attr{name: name, kind: "String", zero: true, desc: desc}, true
+			}
 			return attr{name: name, kind: "JSON", desc: desc}, true
 		}
 	}
 	return attr{}, false
+}
+
+// stringUnion tells whether a property is one of several strings, which is how NetBox describes a
+// string that may also be empty (a color, an email address, a link). It is a plain string, not JSON.
+func stringUnion(doc obj, p obj) bool {
+	for _, key := range []string{"oneOf", "anyOf"} {
+		members := asList(p[key])
+		if len(members) == 0 {
+			continue
+		}
+		for _, m := range members {
+			if typ, _ := resolve(doc, m)["type"].(string); typ != "string" {
+				return false
+			}
+		}
+		return true
+	}
+	return false
 }
 
 func (c *collection) hasProp(name string) bool {

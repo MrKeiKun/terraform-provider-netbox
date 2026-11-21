@@ -4,6 +4,7 @@ package providerstate
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"net"
@@ -186,6 +187,21 @@ func checkVersion(ctx context.Context, rest *netboxapi.Client, serverURL string)
 					"A reverse proxy in front of Netbox can also answer this way.\n\n"+
 					"Original error: %s",
 				serverURL, apiErr.StatusCode, err,
+			),
+		}}
+	}
+	var certErr *tls.CertificateVerificationError
+	if errors.As(err, &certErr) {
+		return "", []Diag{{
+			Error:   true,
+			Summary: "Netbox's certificate is not trusted",
+			Detail: fmt.Sprintf(
+				"The provider could not verify the certificate of `%s`.\n\n"+
+					"If Netbox uses a certificate from your own certificate authority, set `ca_cert_file` to the PEM file of that authority. "+
+					"If the certificate is self-signed or for another host name, `allow_insecure_https = true` turns the check off, which you should only do for a test. "+
+					"A certificate that has expired, or a host name that is not in the certificate, gives the same error.\n\n"+
+					"Original error: %s",
+				serverURL, err,
 			),
 		}}
 	}

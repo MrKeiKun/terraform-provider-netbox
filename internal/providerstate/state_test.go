@@ -190,3 +190,21 @@ func TestConnectWarnsAboutARedirect(t *testing.T) {
 		}
 	}
 }
+
+// A certificate that is not trusted gets its own message, not the generic one about a misconfigured URL.
+func TestConnectNamesAnUntrustedCertificate(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"netbox-version": "4.7.5"}`))
+	}))
+	defer ts.Close()
+
+	state, diags := Connect(context.Background(), Settings{ServerURL: ts.URL, APIToken: "0123456789abcdef0123456789abcdef01234567", RequestTimeout: 10})
+	assert.Nil(t, state)
+	if assert.NotEmpty(t, diags) {
+		assert.Equal(t, "Netbox's certificate is not trusted", diags[0].Summary)
+		assert.Contains(t, diags[0].Detail, "ca_cert_file")
+		assert.Contains(t, diags[0].Detail, "allow_insecure_https")
+		assert.Contains(t, diags[0].Detail, "Original error:")
+	}
+}

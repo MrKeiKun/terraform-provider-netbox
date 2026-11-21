@@ -46,10 +46,10 @@ resource "netbox_service" "ssh" {
 - `device_id` (Number) The ID of the device associated with the service. Exactly one of `virtual_machine_id` or `device_id` must be given.
 - `ipaddresses` (Set of Number) The IDs of the IP addresses the service is bound to.
 - `owner_id` (Number) The ID of the owner associated with the service. Needs NetBox 4.5.0 or later.
-- `port` (Number, Deprecated) The port of the service. Exactly one of `port`, `ports` or `port_mappings` must be given.
-- `port_mappings` (Set of String) The ports of the service as `protocol/port` strings, for example `tcp/80`. Use this for a service that spans more than one protocol. Needs NetBox 4.6 or newer. Exactly one of `port`, `ports` or `port_mappings` must be given. Conflicts with `protocol`.
-- `ports` (Set of Number) The ports of the service. Exactly one of `port`, `ports` or `port_mappings` must be given.
-- `protocol` (String) Valid values are `tcp`, `udp` and `sctp`. Conflicts with `port_mappings`.
+- `port` (Number, Deprecated) The port of the service. At least one of `port`, `ports` or `port_mappings` must be given.
+- `port_mappings` (Set of String) The ports of the service as `protocol/port` strings, for example `tcp/80`. Use this for a service that spans more than one protocol. Needs NetBox 4.6 or newer. At least one of `port`, `ports` or `port_mappings` must be given. NetBox rejects `protocol` and `ports` that do not match `port_mappings`.
+- `ports` (Set of Number) The ports of the service. At least one of `port`, `ports` or `port_mappings` must be given.
+- `protocol` (String) Valid values are `tcp`, `udp` and `sctp`. Together with `port_mappings` it must match them.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `virtual_machine_id` (Number) The ID of the virtual machine associated with the service. Exactly one of `virtual_machine_id` or `device_id` must be given.
 

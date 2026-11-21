@@ -93,3 +93,52 @@ func TestIsSetValue(t *testing.T) {
 		}
 	}
 }
+
+// A switch that is off does not need the attribute it depends on.
+func TestRequiredWithIgnoresASwitchThatIsOff(t *testing.T) {
+	obj := tftypes.Object{AttributeTypes: map[string]tftypes.Type{"on": tftypes.Bool, "file": tftypes.Number}}
+	run := func(on tftypes.Value) bool {
+		cfg := tfsdk.Config{Raw: tftypes.NewValue(obj, map[string]tftypes.Value{"on": on, "file": tftypes.NewValue(tftypes.Number, nil)})}
+		var resp resource.ValidateConfigResponse
+		requiredWith{attr: "on", other: "file"}.ValidateResource(context.Background(), resource.ValidateConfigRequest{Config: cfg}, &resp)
+		return resp.Diagnostics.HasError()
+	}
+	if run(tftypes.NewValue(tftypes.Bool, false)) {
+		t.Error("false required another attribute")
+	}
+	if !run(tftypes.NewValue(tftypes.Bool, true)) {
+		t.Error("true did not require another attribute")
+	}
+}
+
+func TestSameValuesRejectsDifferentValues(t *testing.T) {
+	setT := tftypes.Set{ElementType: tftypes.String}
+	obj := tftypes.Object{AttributeTypes: map[string]tftypes.Type{"a": setT, "b": setT}}
+	val := func(a, b []string) tftypes.Value {
+		mk := func(v []string) tftypes.Value {
+			if v == nil {
+				return tftypes.NewValue(setT, nil)
+			}
+			elems := make([]tftypes.Value, len(v))
+			for i, s := range v {
+				elems[i] = tftypes.NewValue(tftypes.String, s)
+			}
+			return tftypes.NewValue(setT, elems)
+		}
+		return tftypes.NewValue(obj, map[string]tftypes.Value{"a": mk(a), "b": mk(b)})
+	}
+	run := func(a, b []string) bool {
+		var resp resource.ValidateConfigResponse
+		sameValues{a: "a", b: "b"}.ValidateResource(context.Background(), resource.ValidateConfigRequest{Config: tfsdk.Config{Raw: val(a, b)}}, &resp)
+		return resp.Diagnostics.HasError()
+	}
+	if run([]string{"x", "y"}, []string{"y", "x"}) {
+		t.Error("the same values in another order were rejected")
+	}
+	if !run([]string{"x"}, []string{"y"}) {
+		t.Error("different values were accepted")
+	}
+	if run([]string{"x"}, nil) || run(nil, nil) {
+		t.Error("an attribute that is not written was compared")
+	}
+}

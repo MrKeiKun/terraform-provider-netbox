@@ -25,7 +25,7 @@ resource "netbox_webhook" "test" {
 
 resource "netbox_event_rule" "webhook" {
   name             = "my-event-rule"
-  content_types    = ["dcim.site", "virtualization.cluster"]
+  object_types     = ["dcim.site", "virtualization.cluster"]
   action_type      = "webhook"
   action_object_id = netbox_webhook.test.id
   event_types = [
@@ -41,7 +41,7 @@ resource "netbox_event_rule" "webhook" {
 
 resource "netbox_event_rule" "script" {
   name             = "my-script-event-rule"
-  content_types    = ["dcim.site"]
+  object_types     = ["dcim.site"]
   action_type      = "script"
   action_object_id = 42 # existing NetBox Script ID
   event_types      = ["object_created"]
@@ -55,17 +55,18 @@ resource "netbox_event_rule" "script" {
 
 - `action_object_id` (Number) The ID of the action object associated with the event rule.
 - `action_type` (String) Valid values are `webhook` and `script`.
-- `content_types` (Set of String) The object types the event rule applies to.
 - `event_types` (Set of String) The types of event which will trigger this rule. By default, valid values are `object_created`, `oject_updated`, `object_deleted`, `job_started`, `job_completed`, `job_failed` and `job_errored`.
 - `name` (String) The name of the event rule.
 
 ### Optional
 
 - `action_object_type` (String) The object type of the action object, for example extras.script.
-- `conditions` (String) The conditions of the event rule.
+- `conditions` (String) The conditions of the event rule, as a JSON document.
+- `content_types` (Set of String, Deprecated) The object types the event rule applies to. The same as `object_types`.
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the event rule.
 - `enabled` (Boolean) Whether the event rule is enabled. Defaults to `true`.
+- `object_types` (Set of String) The object types the event rule applies to. One of `object_types` or `content_types` must be given.
 - `owner_id` (Number) The ID of the owner associated with the event rule. Needs NetBox 4.5.0 or later.
 - `tags` (Set of String) Tags assigned to the object, by name.
 

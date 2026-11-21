@@ -28,6 +28,7 @@ output "cable_id" {
 ### Optional
 
 - `bundle_id` (Number) The ID of the bundle associated with the cable.
+- `color` (String) The color of the cable.
 - `id` (Number) The numeric ID of the cable.
 - `label` (String) The label of the cable.
 - `owner_id` (Number) The ID of the owner associated with the cable.
@@ -38,7 +39,6 @@ output "cable_id" {
 
 ### Read-Only
 
-- `color` (String) The color of the cable.
 - `comments` (String) Free-form comments about the cable.
 - `created` (String) When the cable was created.
 - `custom_fields` (Map of String) Custom field values of the cable, as a map of field name to value.
