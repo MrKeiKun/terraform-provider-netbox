@@ -39,7 +39,7 @@ func device() *fwresource.Spec {
 		Tags:         true,
 		CustomFields: true,
 		Put:          true,
-		RequiredWith: [][]string{{"rack_face", "rack_position"}, {"virtual_chassis_id", "virtual_chassis_master"}, {"virtual_chassis_master", "virtual_chassis_id"}},
+		RequiredWith: [][]string{{"rack_face", "rack_position"}, {"virtual_chassis_master", "virtual_chassis_id"}},
 		Attrs: []fwresource.Attr{
 			{Name: "airflow", Kind: fwresource.String, Nullable: true, Optional: true, Description: "Airflow direction of the device. One of [front-to-rear, rear-to-front, left-to-right, right-to-left, side-to-rear, rear-to-side, bottom-to-top, top-to-bottom, passive, mixed]", OneOf: []string{"bottom-to-top", "front-to-rear", "left-to-right", "mixed", "passive", "rear-to-front", "rear-to-side", "right-to-left", "side-to-rear", "top-to-bottom"}},
 			{Name: "asset_tag", Kind: fwresource.String, Nullable: true, Optional: true, Description: "The asset tag of the device."},
@@ -53,8 +53,8 @@ func device() *fwresource.Spec {
 			{Name: "local_context_data", Kind: fwresource.JSON, Optional: true, Description: "This is best managed through the use of `jsonencode` and a map of settings."},
 			{Name: "location_id", Kind: fwresource.Int, Key: "location", Ref: true, Nullable: true, Optional: true, Computed: true, Description: "The ID of the location associated with the device. NetBox takes it from the rack when it is not set."},
 			{Name: "longitude", Kind: fwresource.Float, Nullable: true, Optional: true, Description: "GPS longitude of the device in decimal format."},
-			{Name: "name", Kind: fwresource.String, Required: true, Description: "The name of the device."},
-			{Name: "oob_ip_id", Kind: fwresource.Int, Key: "oob_ip", Ref: true, Nullable: true, Optional: true, Computed: true, Description: "The ID of the out of band IP address associated with the device. It can also be set with `netbox_device_oob_ip`."},
+			{Name: "name", Kind: fwresource.String, Optional: true, Description: "The name of the device. NetBox allows a device without a name."},
+			{Name: "oob_ip_id", Kind: fwresource.Int, Key: "oob_ip", Ref: true, Nullable: true, Optional: true, Computed: true, Description: "The ID of the out of band IP address associated with the device. It can also be set with `netbox_device_oob_ip`. NetBox only accepts an address that is already assigned to this device, which makes a dependency cycle when the device and the address are in one configuration. Use `netbox_device_oob_ip` to set it without the cycle."},
 			{Name: "owner_id", Kind: fwresource.Int, Key: "owner", Ref: true, Nullable: true, Optional: true, Description: "The ID of the owner associated with the device."},
 			{Name: "platform_id", Kind: fwresource.Int, Key: "platform", Ref: true, Nullable: true, Optional: true, Description: "The ID of the platform associated with the device."},
 			{Name: "primary_ipv4", Kind: fwresource.Int, Key: "primary_ip4", Ref: true, Computed: true, Description: "The primary ipv4 of the device."},
@@ -72,7 +72,7 @@ func device() *fwresource.Spec {
 			{Name: "virtual_chassis_position", Kind: fwresource.Int, Key: "vc_position", Nullable: true, Optional: true, Description: "The virtual chassis position of the device."},
 			{Name: "virtual_chassis_priority", Kind: fwresource.Int, Key: "vc_priority", Nullable: true, Optional: true, Description: "The virtual chassis priority of the device."},
 		},
-		ModifyPlan: func(config, plan fwresource.Values) map[string]attr.Value {
+		ModifyPlan: func(config, plan, _ fwresource.Values) map[string]attr.Value {
 			// NetBox takes the location from the rack. Without a rack and a location in the
 			// configuration the device has no location.
 			if config["location_id"].IsNull() && config["rack_id"].IsNull() {

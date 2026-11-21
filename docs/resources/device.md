@@ -51,7 +51,6 @@ resource "netbox_device" "test" {
 ### Required
 
 - `device_type_id` (Number) The ID of the device type associated with the device.
-- `name` (String) The name of the device.
 - `role_id` (Number) The ID of the role associated with the device.
 - `site_id` (Number) The ID of the site associated with the device.
 
@@ -69,7 +68,8 @@ resource "netbox_device" "test" {
 - `local_context_data` (String) This is best managed through the use of `jsonencode` and a map of settings.
 - `location_id` (Number) The ID of the location associated with the device. NetBox takes it from the rack when it is not set.
 - `longitude` (Number) GPS longitude of the device in decimal format.
-- `oob_ip_id` (Number) The ID of the out of band IP address associated with the device. It can also be set with `netbox_device_oob_ip`.
+- `name` (String) The name of the device. NetBox allows a device without a name.
+- `oob_ip_id` (Number) The ID of the out of band IP address associated with the device. It can also be set with `netbox_device_oob_ip`. NetBox only accepts an address that is already assigned to this device, which makes a dependency cycle when the device and the address are in one configuration. Use `netbox_device_oob_ip` to set it without the cycle.
 - `owner_id` (Number) The ID of the owner associated with the device. Needs NetBox 4.5.0 or later.
 - `platform_id` (Number) The ID of the platform associated with the device.
 - `rack_face` (String) Valid values are `front` and `rear`.

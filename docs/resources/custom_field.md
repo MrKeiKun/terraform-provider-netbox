@@ -21,7 +21,7 @@ From the [official documentation](https://docs.netbox.dev/en/stable/customizatio
 resource "netbox_custom_field" "test" {
   name             = "test"
   type             = "text"
-  content_types    = ["virtualization.vminterface"]
+  object_types     = ["virtualization.vminterface"]
   weight           = 100
   validation_regex = "^.*$"
 }
@@ -32,7 +32,6 @@ resource "netbox_custom_field" "test" {
 
 ### Required
 
-- `content_types` (Set of String) The object types the custom field applies to.
 - `name` (String) The name of the custom field.
 - `type` (String) The type of the custom field.
 
@@ -40,6 +39,7 @@ resource "netbox_custom_field" "test" {
 
 - `choice_set_id` (Number) The ID of the choice set associated with the custom field.
 - `comments` (String) Free-form comments about the custom field.
+- `content_types` (Set of String, Deprecated) The object types the custom field applies to. The same as `object_types`.
 - `default` (String) The default value of the custom field.
 - `description` (String) A description of the custom field.
 - `filter_logic` (String) One of [disabled, loose, exact].
@@ -47,6 +47,7 @@ resource "netbox_custom_field" "test" {
 - `is_cloneable` (Boolean) Replicate this value when cloning objects.
 - `label` (String) The label of the custom field.
 - `nulls_first` (Boolean) Sort null values before non-null values when ordering by this field. Needs NetBox 4.7.0 or later.
+- `object_types` (Set of String) The object types the custom field applies to. One of `object_types` or `content_types` must be given.
 - `owner_id` (Number) The ID of the owner associated with the custom field. Needs NetBox 4.5.0 or later.
 - `related_object_filter` (String) Filter the object choices of the custom field with a JSON object of query parameters. This is best managed through the use of `jsonencode`.
 - `related_object_type` (String) The related object type of the custom field.

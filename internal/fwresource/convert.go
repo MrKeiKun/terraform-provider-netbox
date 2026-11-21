@@ -1,9 +1,11 @@
 package fwresource
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"math"
+	"math/big"
 	"net"
 	"strconv"
 	"strings"
@@ -11,6 +13,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
 // stringFromJSON turns a value of the API into a string. Choices come as objects with a value and a label.
@@ -144,8 +147,9 @@ func (a Attr) fromJSON(v any, prior attr.Value) attr.Value {
 		if v == nil {
 			return types.StringNull()
 		}
-		if !priorSet {
-			// an empty document is the same as none
+		if !priorSet && a.Default == nil {
+			// an empty document is the same as none, unless the attribute has a default (it is
+			// "{}" for environment_params): the state then holds what the plan will hold
 			if m, ok := v.(map[string]any); ok && len(m) == 0 {
 				return types.StringNull()
 			}
@@ -180,7 +184,7 @@ func (a Attr) fromJSON(v any, prior attr.Value) attr.Value {
 			}
 			return types.Float64Null()
 		}
-		return types.Float64Value(n)
+		return float64Value(n)
 	case Bool:
 		b, ok := boolFromJSON(v)
 		if !ok {
@@ -519,6 +523,11 @@ func (a Attr) looseJSONFromJSON(v any, prior attr.Value) attr.Value {
 		if ps.ValueString() == s || jsonEqual(ps.ValueString(), s) {
 			return prior
 		}
+		// a string written as a JSON string ("abc" with its quotes) means the text abc
+		var text string
+		if json.Unmarshal([]byte(ps.ValueString()), &text) == nil && text == s {
+			return prior
+		}
 	}
 	return types.StringValue(s)
 }
@@ -578,4 +587,24 @@ func (a Attr) pick(obj map[string]any) any {
 		}
 	}
 	return cur
+}
+
+// float64Value makes the value of a number attribute. A number in the configuration reaches the
+// provider with the precision of its decimal text, not as the nearest float64, and the framework
+// reports a difference when a value does not match it bit for bit. 40.37 from NetBox and 40.37 from
+// the configuration are then different values, and every plan after an import shows an update
+// with no visible change. A value made from the shortest text of the number is the same.
+func float64Value(n float64) types.Float64 {
+	if math.IsInf(n, 0) {
+		return types.Float64Value(n)
+	}
+	// 512 bits is the precision Terraform parses numbers with
+	if bf, _, err := big.ParseFloat(strconv.FormatFloat(n, 'g', -1, 64), 10, 512, big.ToNearestEven); err == nil {
+		if v, err := types.Float64Type.ValueFromTerraform(context.Background(), tftypes.NewValue(tftypes.Number, bf)); err == nil {
+			if f, ok := v.(types.Float64); ok {
+				return f
+			}
+		}
+	}
+	return types.Float64Value(n)
 }

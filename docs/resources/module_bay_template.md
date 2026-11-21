@@ -40,12 +40,12 @@ resource "netbox_module_bay_template" "test" {
 
 ### Required
 
-- `device_type_id` (Number) The ID of the device type associated with the module bay template.
 - `name` (String) The name of the module bay template.
 
 ### Optional
 
 - `description` (String) A description of the module bay template.
+- `device_type_id` (Number) The ID of the device type associated with the module bay template. Exactly one of `device_type_id` or `module_type_id` must be given.
 - `enabled` (Boolean) Whether the module bay template is enabled. Needs NetBox 4.6.0 or later.
 - `label` (String) The label of the module bay template.
 - `module_bay_type_ids` (Set of Number) The IDs of the module bay type associated with the module bay template.

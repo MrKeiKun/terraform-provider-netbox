@@ -117,3 +117,23 @@ func TestZeroIsNotRangeChecked(t *testing.T) {
 }
 
 func i64(n int64) *int64 { return &n }
+
+// A write-only flag that is not set is left out of the request, because NetBox rejects null for it.
+func TestBodyLeavesOutAWriteOnlyValueThatIsNotSet(t *testing.T) {
+	spec := (&Spec{TypeName: "netbox_x", Attrs: []Attr{
+		{Name: "flag", Kind: Bool, Optional: true, WriteOnly: true},
+	}}).withZeroDefaults()
+	r := &Resource{spec: spec}
+	prior := Values{"flag": types.BoolNull()}
+	body, err := r.body(context.Background(), Values{"flag": types.BoolNull()}, prior)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := body["flag"]; ok {
+		t.Errorf("a null write-only flag was sent: %v", body)
+	}
+	body, err = r.body(context.Background(), Values{"flag": types.BoolValue(true)}, prior)
+	if err != nil || body["flag"] != true {
+		t.Errorf("a set write-only flag was not sent: %v %v", body, err)
+	}
+}

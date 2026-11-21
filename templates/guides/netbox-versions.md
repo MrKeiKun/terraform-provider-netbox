@@ -45,6 +45,22 @@ resource "netbox_site" "example" {
 }
 ```
 
+## Known NetBox problems
+
+These come from NetBox itself. The provider cannot fix them.
+
+### Creating a device fails with 403 Forbidden
+
+Creating a `netbox_device` can fail with `403 Forbidden`, even with a token that has all permissions. This happens when the device type has inventory item templates and some of them have a parent template.
+
+NetBox creates the inventory items of a new device before it saves any of them, so a child item cannot find its parent. NetBox then reports the failed lookup as a permission error.
+
+- We saw it on NetBox 4.6.10 and 4.7.5. NetBox 4.4.0 is not affected.
+- The failed lookup is tracked in [netbox-community/netbox#23743](https://github.com/netbox-community/netbox/issues/23743). The wrong 403 error is tracked in [netbox-community/netbox#23765](https://github.com/netbox-community/netbox/issues/23765).
+- Until NetBox fixes it, you can use a device type whose inventory item templates have no parent, or a NetBox version that is not affected.
+
+If you get a 403 on a device create, check this first before you change the token permissions.
+
 ## Upgrading NetBox
 
 1. Check that the new NetBox version is in the list of your provider release. If it is not, upgrade the provider first.

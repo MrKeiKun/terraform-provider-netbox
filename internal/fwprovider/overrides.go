@@ -2,6 +2,7 @@ package fwprovider
 
 import (
 	"context"
+	"errors"
 
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/fwresource"
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/providerstate"
@@ -85,8 +86,48 @@ var overrides = map[string]func(s *fwresource.Spec){
 				{Attr: "device_id", Type: "dcim.device"},
 			},
 		}}
+		s.ModifyBody = legacyPortsOrMappings
+		s.ModifyPlan = legacyPortsPlan
+	},
+	"netbox_service_template": func(s *fwresource.Spec) {
+		s.ModifyBody = legacyPortsOrMappings
+		s.ModifyPlan = legacyPortsPlan
+	},
+	"netbox_rack": func(s *fwresource.Spec) {
+		// A rack with a rack type gets its form factor, width and height from the type, and NetBox
+		// ignores values sent with it. The state does not hold them, so a configuration written from
+		// the state (terraform plan -generate-config-out) does not conflict with rack_type_id.
+		s.ModifyState = func(_ context.Context, obj map[string]any, _, out fwresource.Values) error {
+			if obj["rack_type"] != nil {
+				out["form_factor"] = types.StringNull()
+				out["width"] = types.Int64Null()
+				out["u_height"] = types.Int64Null()
+			}
+			return nil
+		}
+	},
+	"netbox_config_context": func(s *fwresource.Spec) {
+		s.ModifyBody = dataFileBody
+		s.ModifyPlan = dataFilePlan
+		s.ModifyState = dataFileState
+	},
+	"netbox_config_context_profile": func(s *fwresource.Spec) {
+		s.ModifyBody = dataFileBody
+		s.ModifyPlan = dataFilePlan
+		s.ModifyState = dataFileState
+	},
+	"netbox_config_template": func(s *fwresource.Spec) {
+		s.ModifyBody = dataFileBody
+		s.ModifyPlan = dataFilePlan
+		s.ModifyState = dataFileState
+	},
+	"netbox_export_template": func(s *fwresource.Spec) {
+		s.ModifyBody = dataFileBody
+		s.ModifyPlan = dataFilePlan
+		s.ModifyState = dataFileState
 	},
 	"netbox_event_rule": func(s *fwresource.Spec) {
+		s.ModifyPlan = aliasPlan("content_types", "object_types")
 		s.ModifyBody = func(_ context.Context, plan, _ fwresource.Values, body map[string]any) error {
 			if t, ok := plan["action_type"].(types.String); ok {
 				switch t.ValueString() {
@@ -214,8 +255,24 @@ var overrides = map[string]func(s *fwresource.Spec){
 	},
 	"netbox_user": func(s *fwresource.Spec) {
 		setAttr(s, "password", func(a *fwresource.Attr) { a.WriteOnly = true })
+		s.ModifyBody = func(_ context.Context, plan, prior fwresource.Values, _ map[string]any) error {
+			if prior == nil && stringValue(plan, "password") == "" {
+				return errors.New("password is required to create a user")
+			}
+			return nil
+		}
+		// NetBox 4.5 and later have no is_staff. The state then keeps what the configuration said.
+		s.ModifyState = func(_ context.Context, obj map[string]any, prior, out fwresource.Values) error {
+			if _, has := obj["is_staff"]; !has && prior != nil {
+				if v, ok := prior["staff"]; ok && v != nil && !v.IsNull() && !v.IsUnknown() {
+					out["staff"] = v
+				}
+			}
+			return nil
+		}
 	},
 	"netbox_custom_field": func(s *fwresource.Spec) {
+		s.ModifyPlan = aliasPlan("content_types", "object_types")
 		setAttr(s, "default", func(a *fwresource.Attr) {
 			a.Kind = fwresource.String
 			a.LooseJSON = true
@@ -336,4 +393,112 @@ func listLen(v attr.Value) int {
 		return len(x.Elements())
 	}
 	return 0
+}
+
+// legacyPortsOrMappings sends either port_mappings or the older protocol and ports to NetBox,
+// never both, because NetBox rejects an update that has both. port_mappings keeps the value from the
+// state while it is not configured, so a change of ports would otherwise be sent together with the
+// old mappings.
+func legacyPortsOrMappings(_ context.Context, plan, prior fwresource.Values, body map[string]any) error {
+	if prior == nil {
+		return nil
+	}
+	a, b := plan["port_mappings"], prior["port_mappings"]
+	if a == nil || b == nil || a.IsUnknown() || a.Equal(b) {
+		// not configured, or the same as before: protocol and ports are the ones that count
+		delete(body, "port_mappings")
+		return nil
+	}
+	delete(body, "protocol")
+	delete(body, "ports")
+	return nil
+}
+
+// legacyPortsPlan lets NetBox work out port_mappings again when protocol or ports change and
+// port_mappings is not configured. Without this the plan keeps the old mappings from the state and
+// NetBox returns new ones.
+func legacyPortsPlan(config, plan, prior fwresource.Values) map[string]attr.Value {
+	if prior == nil {
+		return nil
+	}
+	if m, ok := config["port_mappings"].(types.Set); ok && !m.IsNull() {
+		return nil
+	}
+	for _, name := range []string{"protocol", "ports", "port"} {
+		a, b := plan[name], prior[name]
+		if a != nil && b != nil && !a.Equal(b) {
+			return map[string]attr.Value{"port_mappings": types.SetUnknown(types.StringType)}
+		}
+	}
+	return nil
+}
+
+// dataFileBody leaves out a data file that is null. NetBox before 4.7.5 refuses null on create, and
+// there is nothing to clear unless the object had a data file before.
+func dataFileBody(_ context.Context, _, prior fwresource.Values, body map[string]any) error {
+	if v, ok := body["data_file"]; !ok || v != nil {
+		return nil
+	}
+	if f, ok := prior["data_file_id"].(types.Int64); ok && !f.IsNull() && f.ValueInt64() != 0 {
+		return nil
+	}
+	delete(body, "data_file")
+	return nil
+}
+
+// dataFilePlan predicts what NetBox does when the data file is taken away: it derives the data
+// source, the data path and the automatic sync from the data file, and clears all of them when the
+// object has none. The state would otherwise keep the old values in the plan.
+func dataFilePlan(config, plan, prior fwresource.Values) map[string]attr.Value {
+	if prior == nil {
+		return nil
+	}
+	// only a data file that is taken away changes anything. An object that has a data source and no
+	// data file (older NetBox versions keep it) is left as it is.
+	if f, ok := prior["data_file_id"].(types.Int64); !ok || f.IsNull() || f.ValueInt64() == 0 {
+		return nil
+	}
+	if f, ok := config["data_file_id"].(types.Int64); ok && !f.IsNull() && f.ValueInt64() != 0 {
+		return nil
+	}
+	out := map[string]attr.Value{}
+	if _, ok := plan["data_source_id"]; ok {
+		out["data_source_id"] = types.Int64Value(0)
+	}
+	if _, ok := plan["data_path"]; ok {
+		out["data_path"] = types.StringValue("")
+	}
+	if _, ok := plan["auto_sync_enabled"].(types.Bool); ok {
+		// only a value the configuration leaves open can be planned
+		if c, isBool := config["auto_sync_enabled"].(types.Bool); !isBool || c.IsNull() {
+			out["auto_sync_enabled"] = types.BoolValue(false)
+		}
+	}
+	return out
+}
+
+// dataFileState keeps data_source_id at 0 while the object has no data file, as it was before the
+// data file could be set, so a configuration that says 0 stays valid.
+func dataFileState(_ context.Context, obj map[string]any, _, out fwresource.Values) error {
+	if obj["data_source"] == nil {
+		if _, ok := out["data_source_id"]; ok {
+			out["data_source_id"] = types.Int64Value(0)
+		}
+	}
+	return nil
+}
+
+// aliasPlan keeps an old attribute name and its new name equal in the plan: the one the configuration
+// leaves out takes the value of the other.
+func aliasPlan(oldName, newName string) func(config, plan, prior fwresource.Values) map[string]attr.Value {
+	set := func(v attr.Value) bool { return v != nil && !v.IsNull() && !v.IsUnknown() }
+	return func(config, plan, _ fwresource.Values) map[string]attr.Value {
+		switch {
+		case set(config[oldName]) && !set(config[newName]):
+			return map[string]attr.Value{newName: plan[oldName]}
+		case set(config[newName]) && !set(config[oldName]):
+			return map[string]attr.Value{oldName: plan[newName]}
+		}
+		return nil
+	}
 }

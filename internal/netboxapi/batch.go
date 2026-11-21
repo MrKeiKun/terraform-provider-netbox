@@ -83,7 +83,9 @@ func (c *Client) getRaw(ctx context.Context, path string, id int64, query url.Va
 	case len(g.waiting) == 1:
 		// The first read of a batch starts the clock.
 		time.AfterFunc(gatherWindow, func() { c.flush(g) })
-	case len(g.waiting) >= maxBatch:
+	case len(g.waiting) == maxBatch:
+		// A full batch leaves at once. Reads that arrive after it are left for the next batch,
+		// they do not send a request of their own.
 		go c.flush(g)
 	}
 	c.batchMu.Unlock()
@@ -111,17 +113,19 @@ func (c *Client) flush(g *batchGroup) {
 	n := min(len(g.waiting), maxBatch)
 	calls := g.waiting[:n:n]
 	g.waiting = g.waiting[n:]
-	if len(g.waiting) > 0 {
+	switch {
+	case len(g.waiting) >= maxBatch:
 		go c.flush(g)
+	case len(g.waiting) > 0:
+		// What is left waits for more reads to join, like a batch that has just started.
+		time.AfterFunc(gatherWindow, func() { c.flush(g) })
 	}
 	c.batchMu.Unlock()
 	if n == 0 {
 		return
 	}
 	if !c.fetchBatch(g, calls) {
-		c.batchMu.Lock()
-		g.single = true
-		c.batchMu.Unlock()
+		c.markSingle(g)
 	}
 }
 
@@ -141,6 +145,7 @@ func (c *Client) fetchBatch(g *batchGroup, calls []*getCall) bool {
 	}
 	if len(live) == 1 {
 		c.finishAlone(g, live)
+		release(live)
 		return true
 	}
 
@@ -162,8 +167,11 @@ func (c *Client) fetchBatch(g *batchGroup, calls []*getCall) bool {
 	ctx := context.WithoutCancel(live[0].ctx)
 	page, err := ListPage[json.RawMessage](ctx, c, g.path, query)
 	if err != nil {
-		// Reading the objects alone gives every caller the error that belongs to its object.
+		// Reading the objects alone gives every caller the error that belongs to its object. The
+		// collection is marked before the callers go on, or one of them could start another batch.
 		c.finishAlone(g, live)
+		c.markSingle(g)
+		release(live)
 		return false
 	}
 
@@ -182,7 +190,6 @@ func (c *Client) fetchBatch(g *batchGroup, calls []*getCall) bool {
 	for _, call := range live {
 		if raw, hit := found[call.id]; hit {
 			call.raw = raw
-			close(call.done)
 		} else {
 			missing = append(missing, call)
 		}
@@ -197,10 +204,29 @@ func (c *Client) fetchBatch(g *batchGroup, calls []*getCall) bool {
 			}
 		}
 	}
+	if !ok {
+		c.markSingle(g)
+	}
+	release(live)
 	return ok
 }
 
-// finishAlone reads the object of every call with its own request, side by side.
+// markSingle makes the collection read object by object from now on.
+func (c *Client) markSingle(g *batchGroup) {
+	c.batchMu.Lock()
+	g.single = true
+	c.batchMu.Unlock()
+}
+
+// release lets the callers go on with the result they were given.
+func release(calls []*getCall) {
+	for _, call := range calls {
+		close(call.done)
+	}
+}
+
+// finishAlone reads the object of every call with its own request, side by side. The callers are
+// released by the caller of this function.
 func (c *Client) finishAlone(g *batchGroup, calls []*getCall) {
 	var wg sync.WaitGroup
 	for _, call := range calls {
@@ -208,7 +234,6 @@ func (c *Client) finishAlone(g *batchGroup, calls []*getCall) {
 		go func() {
 			defer wg.Done()
 			call.raw, call.err = c.getOne(call.ctx, g.path, call.id, g.query)
-			close(call.done)
 		}()
 	}
 	wg.Wait()
