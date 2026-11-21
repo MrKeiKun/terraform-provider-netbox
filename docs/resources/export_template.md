@@ -28,13 +28,14 @@ resource "netbox_export_template" "example" {
 
 - `name` (String) The name of the export template.
 - `object_types` (Set of String) The object types the export template applies to.
-- `template_code` (String) Jinja template code.
+- `template_code` (String) Jinja template code. With `data_file_id` NetBox keeps it equal to the content of the data file, so write the same content.
 
 ### Optional
 
 - `as_attachment` (Boolean) Download file as attachment. Defaults to `false`.
-- `auto_sync_enabled` (Boolean) Enable automatic synchronization of data when the data file is updated. Defaults to `false`. Needs NetBox 4.7.0 or later.
-- `data_source_id` (Number) The ID of the data source associated with the export template.
+- `auto_sync_enabled` (Boolean) Enable automatic synchronization of data when the data file is updated. Needs `data_file_id`. Defaults to `false`. Needs NetBox 4.7.0 or later.
+- `data_file_id` (Number) The ID of the data file the export template takes its content from. NetBox sets `data_source_id` and `data_path` from it and keeps the content in sync with the file, so write the same content as the file has. Data files are created when a data source is synced in NetBox, and the data source `netbox_data_file` finds one.
+- `data_source_id` (Number, Deprecated) The ID of the data source of the data file. NetBox sets it from `data_file_id`, so do not set it. It is 0 while there is no data file.
 - `description` (String) A description of the export template.
 - `environment_params` (String) Any <a href="https://jinja.palletsprojects.com/en/stable/api/#jinja2.Environment">additional parameters</a> to pass when constructing the Jinja environment.
 - `file_extension` (String) Extension to append to the rendered filename.

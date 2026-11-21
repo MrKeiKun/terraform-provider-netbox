@@ -40,7 +40,6 @@ resource "netbox_vpn_tunnel" "test" {
 - `encapsulation` (String) Valid values are `ipsec-transport`, `ipsec-tunnel`, `ip-ip` and `gre`.
 - `name` (String) The name of the vpn tunnel.
 - `status` (String) Valid values are `planned`, `active` and `disabled`.
-- `tunnel_group_id` (Number) The ID of the tunnel group associated with the vpn tunnel.
 
 ### Optional
 
@@ -51,6 +50,7 @@ resource "netbox_vpn_tunnel" "test" {
 - `owner_id` (Number) The ID of the owner associated with the vpn tunnel. Needs NetBox 4.5.0 or later.
 - `tags` (Set of String) Tags assigned to the object, by name.
 - `tenant_id` (Number) The ID of the tenant associated with the vpn tunnel.
+- `tunnel_group_id` (Number) The ID of the tunnel group associated with the vpn tunnel.
 - `tunnel_id` (Number) The ID of the tunnel associated with the vpn tunnel.
 
 ### Read-Only

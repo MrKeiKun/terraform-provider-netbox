@@ -47,6 +47,8 @@ netbox_custom_field_choice_set
 netbox_custom_field_choice_sets
 netbox_custom_fields
 netbox_custom_links
+netbox_data_file
+netbox_data_files
 netbox_data_sources
 netbox_device
 netbox_device_bay

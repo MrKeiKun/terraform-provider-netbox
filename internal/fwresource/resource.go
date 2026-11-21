@@ -112,7 +112,9 @@ func (r *Resource) UpgradeState(_ context.Context) map[int64]resource.StateUpgra
 func (r *Resource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
 	zero := map[string]bool{}
 	for _, a := range r.spec.Attrs {
-		if a.zero {
+		// the value an attribute has while it is not set does not count as set: its zero value, or a
+		// default that is the zero value (auto_sync_enabled = false)
+		if a.zero || defaultIsZero(a.Default) {
 			zero[a.Name] = true
 		}
 	}
@@ -129,6 +131,11 @@ func (r *Resource) ConfigValidators(_ context.Context) []resource.ConfigValidato
 	for _, g := range r.spec.RequiredWith {
 		if len(g) == 2 {
 			v = append(v, requiredWith{attr: g[0], other: g[1], zero: zero})
+		}
+	}
+	for _, g := range r.spec.SameValues {
+		if len(g) == 2 {
+			v = append(v, sameValues{a: g[0], b: g[1]})
 		}
 	}
 	return v
@@ -258,6 +265,10 @@ func (r *Resource) body(ctx context.Context, plan, prior Values) (map[string]any
 	virtual := r.spec.virtualAttrs()
 	for _, a := range r.spec.Attrs {
 		if virtual[a.Name] || a.NoSend || a.Local || (a.Computed && !a.Optional && !a.Required && a.Default == nil) {
+			continue
+		}
+		if a.WriteOnly && (plan[a.Name] == nil || plan[a.Name].IsNull()) {
+			// NetBox rejects null for a write-only flag, and there is nothing to clear
 			continue
 		}
 		var priorValue attr.Value
@@ -441,7 +452,14 @@ func (r *Resource) ModifyPlan(ctx context.Context, req resource.ModifyPlanReques
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		for name, v := range r.spec.ModifyPlan(config, plan) {
+		var prior Values
+		if !req.State.Raw.IsNull() {
+			var d diag.Diagnostics
+			if prior, d = r.spec.load(ctx, req.State); d.HasError() {
+				prior = nil
+			}
+		}
+		for name, v := range r.spec.ModifyPlan(config, plan, prior) {
 			resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root(name), v)...)
 		}
 	}
@@ -821,6 +839,13 @@ func (v requiredWith) ValidateResource(ctx context.Context, req resource.Validat
 	if !a.IsKnown() || !isSetValue(a, v.zero[v.attr]) {
 		return
 	}
+	// a switch that is off needs nothing else
+	if a.Type().Is(tftypes.Bool) {
+		var on bool
+		if a.As(&on) == nil && !on {
+			return
+		}
+	}
 	if !b.IsKnown() {
 		return
 	}
@@ -846,4 +871,21 @@ func (r *Resource) configured(ctx context.Context, cfg getter, plan Values) Valu
 	}
 	out[customFieldsKey] = cf
 	return out
+}
+
+// defaultIsZero tells whether the default of an attribute is the zero value of its type.
+func defaultIsZero(d any) bool {
+	switch x := d.(type) {
+	case bool:
+		return !x
+	case string:
+		return x == ""
+	case int64:
+		return x == 0
+	case int:
+		return x == 0
+	case float64:
+		return x == 0
+	}
+	return false
 }

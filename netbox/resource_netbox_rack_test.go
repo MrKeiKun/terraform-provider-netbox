@@ -190,10 +190,10 @@ resource "netbox_rack" "test" {
 }`, testName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair("netbox_rack.test", "rack_type_id", "netbox_rack_type.test", "id"),
-					// dimensions are inherited from the rack type
-					resource.TestCheckResourceAttr("netbox_rack.test", "width", "19"),
-					resource.TestCheckResourceAttr("netbox_rack.test", "u_height", "47"),
-					resource.TestCheckResourceAttr("netbox_rack.test", "form_factor", "4-post-frame"),
+					// NetBox takes the dimensions from the rack type, so the provider leaves them out of the state
+					resource.TestCheckNoResourceAttr("netbox_rack.test", "width"),
+					resource.TestCheckNoResourceAttr("netbox_rack.test", "u_height"),
+					resource.TestCheckNoResourceAttr("netbox_rack.test", "form_factor"),
 				),
 			},
 			{

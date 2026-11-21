@@ -155,8 +155,9 @@ resource "netbox_wireless_lan" "test" {
 			{
 				Config: testAccNetboxWirelessLANDependencies(testName) + fmt.Sprintf(`
 resource "netbox_wireless_lan" "test" {
-  ssid   = "%[1]s"
-  status = "active"
+  ssid     = "%[1]s"
+  status   = "active"
+  auth_psk = "" // a secret that is only removed from the configuration is kept, so it is cleared with ""
 }`, testName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("netbox_wireless_lan.test", "status", "active"),

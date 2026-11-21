@@ -163,6 +163,9 @@ type Spec struct {
 	AtLeastOneOf [][]string
 	// Conflicts lists groups of attributes of which at most one may be set.
 	Conflicts [][]string
+	// SameValues lists pairs of attributes that name the same thing, an old name and a new one. When
+	// both are written they must have the same value.
+	SameValues [][]string
 	// RequiredWith lists pairs of attributes: when the first is set, the second must be set too.
 	// Groups of any other size are ignored.
 	RequiredWith [][]string
@@ -193,9 +196,9 @@ type Spec struct {
 	// Set it for an object whose response differs, for example one that reports a value wrongly on
 	// some NetBox versions. The state must hold what a read returns, or the next refresh shows a change.
 	Reload bool
-	// ModifyPlan returns planned values to replace, given the configuration and the plan. It lets a
+	// ModifyPlan returns planned values to replace, given the configuration, the plan and the state (nil while the object is created). It lets a
 	// computed attribute become null when nothing in the configuration can set it any more.
-	ModifyPlan func(config, plan Values) map[string]attr.Value
+	ModifyPlan func(config, plan, prior Values) map[string]attr.Value
 	// ModifyState changes the values taken from the API response before they go into the state.
 	ModifyState func(ctx context.Context, obj map[string]any, prior Values, out Values) error
 }
