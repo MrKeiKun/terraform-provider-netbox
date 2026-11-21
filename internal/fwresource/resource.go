@@ -454,9 +454,8 @@ func (r *Resource) ModifyPlan(ctx context.Context, req resource.ModifyPlanReques
 		}
 		var prior Values
 		if !req.State.Raw.IsNull() {
-			var d diag.Diagnostics
-			if prior, d = r.spec.load(ctx, req.State); d.HasError() {
-				prior = nil
+			if p, d := r.spec.load(ctx, req.State); !d.HasError() {
+				prior = p
 			}
 		}
 		for name, v := range r.spec.ModifyPlan(config, plan, prior) {

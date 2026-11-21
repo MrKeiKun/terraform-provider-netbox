@@ -2,10 +2,12 @@ package fwresource
 
 import (
 	"context"
+	"math"
 	"math/big"
 	"strconv"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
@@ -75,9 +77,36 @@ func TestLooseJSONKeepsAQuotedString(t *testing.T) {
 }
 
 func TestDefaultIsZero(t *testing.T) {
-	for d, want := range map[any]bool{false: true, true: false, "": true, "x": false, int64(0): true, int64(2): false, 0.0: true, nil: false} {
+	for d, want := range map[any]bool{false: true, true: false, "": true, "x": false, int64(0): true, int64(2): false, 0: true, 3: false, 0.0: true, nil: false} {
 		if got := defaultIsZero(d); got != want {
 			t.Errorf("defaultIsZero(%v) = %v, want %v", d, got, want)
+		}
+	}
+}
+
+func TestFloat64ValueKeepsInfinity(t *testing.T) {
+	if v := float64Value(math.Inf(1)); !math.IsInf(v.ValueFloat64(), 1) {
+		t.Errorf("infinity became %v", v)
+	}
+}
+
+// A value that equals the default of its attribute is not something the configuration asks for.
+func TestIsConfiguredIgnoresTheDefaultOfEveryKind(t *testing.T) {
+	for name, tc := range map[string]struct {
+		a       Attr
+		same    attr.Value
+		differs attr.Value
+	}{
+		"bool":   {Attr{Kind: Bool, Optional: true, Default: true}, types.BoolValue(true), types.BoolValue(false)},
+		"int":    {Attr{Kind: Int, Optional: true, Default: int64(5)}, types.Int64Value(5), types.Int64Value(6)},
+		"float":  {Attr{Kind: Float, Optional: true, Default: 1.5}, types.Float64Value(1.5), types.Float64Value(2.5)},
+		"string": {Attr{Kind: String, Optional: true, Default: "x"}, types.StringValue("x"), types.StringValue("y")},
+	} {
+		if isConfigured(tc.a, tc.same) {
+			t.Errorf("%s: the default counted as configured", name)
+		}
+		if !isConfigured(tc.a, tc.differs) {
+			t.Errorf("%s: another value did not count", name)
 		}
 	}
 }

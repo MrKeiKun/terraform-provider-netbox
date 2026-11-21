@@ -125,3 +125,72 @@ func TestAliasPlanFollowsTheNameThatIsWritten(t *testing.T) {
 		t.Errorf("both written, nothing to follow: %v", got)
 	}
 }
+
+func TestDataFileBodyLeavesOutANullDataFile(t *testing.T) {
+	create := map[string]any{"data_file": nil, "name": "a"}
+	if err := dataFileBody(context.Background(), nil, nil, create); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := create["data_file"]; ok {
+		t.Fatalf("a create must not send data_file: null, got %v", create)
+	}
+
+	hadFile := fwresource.Values{"data_file_id": types.Int64Value(7)}
+	update := map[string]any{"data_file": nil}
+	if err := dataFileBody(context.Background(), nil, hadFile, update); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := update["data_file"]; !ok {
+		t.Fatal("taking a data file away must still send null")
+	}
+}
+
+func TestUserKeepsStaffWhenNetBoxHasNoIsStaff(t *testing.T) {
+	s := specOf(t, "netbox_user")
+	prior := fwresource.Values{"staff": types.BoolValue(true)}
+	out := fwresource.Values{"staff": types.BoolValue(false)}
+	if err := s.ModifyState(context.Background(), map[string]any{"username": "a"}, prior, out); err != nil {
+		t.Fatal(err)
+	}
+	if v, _ := out["staff"].(types.Bool); !v.ValueBool() {
+		t.Error("staff = true was not kept when NetBox returns no is_staff")
+	}
+	out = fwresource.Values{"staff": types.BoolValue(false)}
+	if err := s.ModifyState(context.Background(), map[string]any{"is_staff": false}, prior, out); err != nil {
+		t.Fatal(err)
+	}
+	if v, _ := out["staff"].(types.Bool); v.ValueBool() {
+		t.Error("the value NetBox returns was overwritten")
+	}
+}
+
+func TestDataFileBodyKeepsOtherValues(t *testing.T) {
+	body := map[string]any{"data_file": float64(5)}
+	if err := dataFileBody(context.Background(), nil, nil, body); err != nil {
+		t.Fatal(err)
+	}
+	if body["data_file"] != float64(5) {
+		t.Errorf("a data file was changed: %v", body)
+	}
+	empty := map[string]any{"name": "a"}
+	if err := dataFileBody(context.Background(), nil, nil, empty); err != nil || len(empty) != 1 {
+		t.Errorf("a body without data_file was changed: %v", empty)
+	}
+}
+
+func TestDataFileStateKeepsDataSourceAtZeroWithoutOne(t *testing.T) {
+	out := fwresource.Values{"data_source_id": types.Int64Value(3)}
+	if err := dataFileState(context.Background(), map[string]any{"data_source": nil}, nil, out); err != nil {
+		t.Fatal(err)
+	}
+	if v, _ := out["data_source_id"].(types.Int64); v.ValueInt64() != 0 {
+		t.Errorf("data_source_id = %v, want 0", out["data_source_id"])
+	}
+	out = fwresource.Values{"data_source_id": types.Int64Value(3)}
+	if err := dataFileState(context.Background(), map[string]any{"data_source": map[string]any{"id": 3}}, nil, out); err != nil {
+		t.Fatal(err)
+	}
+	if v, _ := out["data_source_id"].(types.Int64); v.ValueInt64() != 3 {
+		t.Errorf("a data source was dropped: %v", out["data_source_id"])
+	}
+}

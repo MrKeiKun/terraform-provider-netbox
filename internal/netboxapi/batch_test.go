@@ -341,6 +341,11 @@ func TestSingleReadIsNotHeldBack(t *testing.T) {
 }
 
 func TestMoreReadsThanABatchHolds(t *testing.T) {
+	// The reads must all arrive inside the gather window, however slowly the goroutines start.
+	// With a short window a busy machine splits them into more batches than the test expects.
+	window := gatherWindow
+	gatherWindow = 200 * time.Millisecond
+	t.Cleanup(func() { gatherWindow = window })
 	s := newBatchServer(t)
 	c := s.client(t, true)
 	for id, err := range readAll(t, c, ids(1, 100)) {
@@ -348,7 +353,25 @@ func TestMoreReadsThanABatchHolds(t *testing.T) {
 			t.Errorf("object %d: %v", id, err)
 		}
 	}
-	if n := s.lists.Load() + s.singles.Load(); n > 10 {
+	// Two batches of 50 leave at once. A few reads can be left over for a third and fourth.
+	if n := s.lists.Load() + s.singles.Load(); n > 3 {
 		t.Errorf("100 reads took %d requests", n)
+	}
+}
+
+// The reads that do not fit in a full batch wait for more to join, and go out when the window ends.
+func TestLeftoverReadsGoOutAfterTheWindow(t *testing.T) {
+	window := gatherWindow
+	gatherWindow = 100 * time.Millisecond
+	t.Cleanup(func() { gatherWindow = window })
+	s := newBatchServer(t)
+	c := s.client(t, true)
+	for id, err := range readAll(t, c, ids(1, 60)) {
+		if err != nil {
+			t.Errorf("object %d: %v", id, err)
+		}
+	}
+	if n := s.lists.Load() + s.singles.Load(); n > 3 {
+		t.Errorf("60 reads took %d requests", n)
 	}
 }

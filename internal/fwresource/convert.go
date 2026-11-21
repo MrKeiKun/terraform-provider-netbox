@@ -595,21 +595,16 @@ func (a Attr) pick(obj map[string]any) any {
 // the configuration are then different values, and every plan after an import shows an update
 // with no visible change. A value made from the shortest text of the number is the same.
 func float64Value(n float64) types.Float64 {
-	if math.IsNaN(n) || math.IsInf(n, 0) {
+	if math.IsInf(n, 0) {
 		return types.Float64Value(n)
 	}
 	// 512 bits is the precision Terraform parses numbers with
-	bf, _, err := big.ParseFloat(strconv.FormatFloat(n, 'g', -1, 64), 10, 512, big.ToNearestEven)
-	if err != nil {
-		return types.Float64Value(n)
+	if bf, _, err := big.ParseFloat(strconv.FormatFloat(n, 'g', -1, 64), 10, 512, big.ToNearestEven); err == nil {
+		if v, err := types.Float64Type.ValueFromTerraform(context.Background(), tftypes.NewValue(tftypes.Number, bf)); err == nil {
+			if f, ok := v.(types.Float64); ok {
+				return f
+			}
+		}
 	}
-	v, err := types.Float64Type.ValueFromTerraform(context.Background(), tftypes.NewValue(tftypes.Number, bf))
-	if err != nil {
-		return types.Float64Value(n)
-	}
-	f, ok := v.(types.Float64)
-	if !ok {
-		return types.Float64Value(n)
-	}
-	return f
+	return types.Float64Value(n)
 }

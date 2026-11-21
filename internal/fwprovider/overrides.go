@@ -107,18 +107,22 @@ var overrides = map[string]func(s *fwresource.Spec){
 		}
 	},
 	"netbox_config_context": func(s *fwresource.Spec) {
+		s.ModifyBody = dataFileBody
 		s.ModifyPlan = dataFilePlan
 		s.ModifyState = dataFileState
 	},
 	"netbox_config_context_profile": func(s *fwresource.Spec) {
+		s.ModifyBody = dataFileBody
 		s.ModifyPlan = dataFilePlan
 		s.ModifyState = dataFileState
 	},
 	"netbox_config_template": func(s *fwresource.Spec) {
+		s.ModifyBody = dataFileBody
 		s.ModifyPlan = dataFilePlan
 		s.ModifyState = dataFileState
 	},
 	"netbox_export_template": func(s *fwresource.Spec) {
+		s.ModifyBody = dataFileBody
 		s.ModifyPlan = dataFilePlan
 		s.ModifyState = dataFileState
 	},
@@ -426,6 +430,19 @@ func legacyPortsPlan(config, plan, prior fwresource.Values) map[string]attr.Valu
 			return map[string]attr.Value{"port_mappings": types.SetUnknown(types.StringType)}
 		}
 	}
+	return nil
+}
+
+// dataFileBody leaves out a data file that is null. NetBox before 4.7.5 refuses null on create, and
+// there is nothing to clear unless the object had a data file before.
+func dataFileBody(_ context.Context, _, prior fwresource.Values, body map[string]any) error {
+	if v, ok := body["data_file"]; !ok || v != nil {
+		return nil
+	}
+	if f, ok := prior["data_file_id"].(types.Int64); ok && !f.IsNull() && f.ValueInt64() != 0 {
+		return nil
+	}
+	delete(body, "data_file")
 	return nil
 }
 

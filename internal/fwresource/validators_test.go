@@ -142,3 +142,15 @@ func TestSameValuesRejectsDifferentValues(t *testing.T) {
 		t.Error("an attribute that is not written was compared")
 	}
 }
+
+func TestSameValuesDescribesItselfAndIgnoresConfigItCannotRead(t *testing.T) {
+	v := sameValues{a: "a", b: "b"}
+	if v.MarkdownDescription(context.Background()) != v.Description(context.Background()) {
+		t.Error("the markdown description differs")
+	}
+	var resp resource.ValidateConfigResponse
+	v.ValidateResource(context.Background(), resource.ValidateConfigRequest{Config: tfsdk.Config{Raw: tftypes.NewValue(tftypes.String, "not an object")}}, &resp)
+	if resp.Diagnostics.HasError() {
+		t.Error("a config that is not an object was reported")
+	}
+}
