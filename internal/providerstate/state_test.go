@@ -208,3 +208,21 @@ func TestConnectNamesAnUntrustedCertificate(t *testing.T) {
 		assert.Contains(t, diags[0].Detail, "Original error:")
 	}
 }
+
+func TestConnectNamesATimeout(t *testing.T) {
+	release := make(chan struct{})
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		<-release
+	}))
+	defer ts.Close()
+	defer close(release)
+
+	state, diags := Connect(context.Background(), Settings{ServerURL: ts.URL, APIToken: "0123456789abcdef0123456789abcdef01234567", RequestTimeout: 1, MaxRetries: 0})
+	assert.Nil(t, state)
+	if assert.NotEmpty(t, diags) {
+		assert.Equal(t, "Netbox did not answer in time", diags[0].Summary)
+		assert.Contains(t, diags[0].Detail, "request_timeout")
+		assert.Contains(t, diags[0].Detail, "`request_timeout` is 1 seconds")
+		assert.Contains(t, diags[0].Detail, "Original error:")
+	}
+}

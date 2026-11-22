@@ -123,3 +123,57 @@ resource "netbox_custom_field_choice_set" "test" {
 		},
 	})
 }
+
+// NetBox keeps the choices sorted by their value when order_alphabetically is on, so a list in another
+// order is refused before anything is created, and a sorted list works.
+func TestAccNetboxCustomFieldChoiceSet_orderAlphabetically(t *testing.T) {
+	testName := strings.ReplaceAll(testAccGetTestName("cfields_choiceset_order"), "-", "_")
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+resource "netbox_custom_field_choice_set" "test" {
+  name                 = "%s"
+  order_alphabetically = true
+  extra_choices = [
+    ["pci", "PCI"],
+    ["hipaa", "HIPAA"],
+  ]
+}`, testName),
+				ExpectError: regexp.MustCompile(`not in the order NetBox`),
+			},
+			{
+				Config: fmt.Sprintf(`
+resource "netbox_custom_field_choice_set" "test" {
+  name                 = "%s"
+  order_alphabetically = true
+  extra_choices = [
+    ["hipaa", "HIPAA"],
+    ["pci", "PCI"],
+  ]
+}`, testName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_custom_field_choice_set.test", "order_alphabetically", "true"),
+					resource.TestCheckResourceAttr("netbox_custom_field_choice_set.test", "extra_choices.0.0", "hipaa"),
+					resource.TestCheckResourceAttr("netbox_custom_field_choice_set.test", "extra_choices.1.0", "pci"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+resource "netbox_custom_field_choice_set" "test" {
+  name                 = "%s"
+  order_alphabetically = false
+  extra_choices = [
+    ["pci", "PCI"],
+    ["hipaa", "HIPAA"],
+  ]
+}`, testName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_custom_field_choice_set.test", "extra_choices.0.0", "pci"),
+				),
+			},
+		},
+	})
+}

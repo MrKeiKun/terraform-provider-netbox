@@ -27,7 +27,7 @@ func extrasResources() []*fwresource.Spec {
 		{
 			TypeName:    "netbox_notification",
 			Path:        "extras/notifications/",
-			Description: ":meta:subcategory:Extras:A notification tells a user about an event of an object.",
+			Description: ":meta:subcategory:Extras:A notification tells a user about an event of an object.\n\nNetBox makes notifications itself. When an object that users subscribed to changes, NetBox deletes all notifications about that object and creates new ones for the subscribers, with new IDs. A notification that you manage here for such an object then disappears, and Terraform plans to create it again. Notifications that an event rule makes for a notification group keep their ID.",
 			Attrs: []fwresource.Attr{
 				{Name: "event_type", Kind: fwresource.String, Required: true, Description: "The kind of event. One of [object_created, object_updated, object_deleted, job_started, job_completed, job_failed, job_errored].", OneOf: []string{"job_completed", "job_errored", "job_failed", "job_started", "object_created", "object_deleted", "object_updated"}},
 				{Name: "object_id", Kind: fwresource.Int, Required: true, ForceNew: true, Description: "The ID of the object the notification is about."},

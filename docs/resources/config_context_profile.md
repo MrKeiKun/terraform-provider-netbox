@@ -31,7 +31,7 @@ resource "netbox_config_context_profile" "example" {
 ### Optional
 
 - `comments` (String) Free-form comments about the config context profile.
-- `data_file_id` (Number) The ID of the data file the config context profile takes its content from. NetBox sets `data_source_id` and `data_path` from it and keeps the content in sync with the file, so write the same content as the file has. Data files are created when a data source is synced in NetBox, and the data source `netbox_data_file` finds one.
+- `data_file_id` (Number) The ID of the data file the config context profile takes its content from. NetBox sets `data_source_id` and `data_path` from it and keeps the content in sync with the file, so write the same content as the file has. Data files are created when a data source is synced in NetBox, and the data source `netbox_data_file` finds one. NetBox 4.7.0 and older do not allow removing a data file from an object, so replace the object instead.
 - `data_source_id` (Number, Deprecated) The ID of the data source of the data file. NetBox sets it from `data_file_id`, so do not set it. It is 0 while there is no data file.
 - `description` (String) A description of the config context profile.
 - `owner_id` (Number) The ID of the owner associated with the config context profile. Needs NetBox 4.5.0 or later.

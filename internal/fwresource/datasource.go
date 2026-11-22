@@ -571,6 +571,15 @@ func (d *DataSource) outputValue(a Attr, obj map[string]any, cfg attr.Value) att
 	return a.fromJSON(a.pick(obj), nil)
 }
 
+// unorderedEndpoints are the list endpoints of NetBox that page badly. The tagged objects are sorted by
+// values that many of them share, so the pages of one read can repeat some objects and leave out others
+// (seen from 4.4.0 to 4.7.5, with a page size below the number of objects or more than 1000 objects).
+// They are asked for in the order of their ID instead. The other endpoints keep the order that they have.
+// This is a NetBox bug, reported as netbox-community/netbox#23767.
+var unorderedEndpoints = map[string]bool{
+	"extras/tagged-objects/": true,
+}
+
 func (d *DataSource) readPlural(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse, cfg Values) {
 	p := d.spec.Plural
 
@@ -579,6 +588,9 @@ func (d *DataSource) readPlural(ctx context.Context, req datasource.ReadRequest,
 		for _, v := range vs {
 			query.Add(k, v)
 		}
+	}
+	if unorderedEndpoints[d.spec.Path] && query.Get("ordering") == "" {
+		query.Set("ordering", "id")
 	}
 
 	for _, a := range d.spec.ExtraFilters {

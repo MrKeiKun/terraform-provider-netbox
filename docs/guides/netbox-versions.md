@@ -55,11 +55,24 @@ Creating a `netbox_device` can fail with `403 Forbidden`, even with a token that
 
 NetBox creates the inventory items of a new device before it saves any of them, so a child item cannot find its parent. NetBox then reports the failed lookup as a permission error.
 
-- We saw it on NetBox 4.6.10 and 4.7.5. NetBox 4.4.0 is not affected.
+- It happens on NetBox 4.6.0 to 4.7.5. NetBox 4.4.0 to 4.5.10 are not affected. We did not test 4.6.1 to 4.6.9 and 4.7.1 to 4.7.4.
 - The failed lookup is tracked in [netbox-community/netbox#23743](https://github.com/netbox-community/netbox/issues/23743). The wrong 403 error is tracked in [netbox-community/netbox#23765](https://github.com/netbox-community/netbox/issues/23765).
 - Until NetBox fixes it, you can use a device type whose inventory item templates have no parent, or a NetBox version that is not affected.
 
 If you get a 403 on a device create, check this first before you change the token permissions.
+
+### A deleted object can come back
+
+When two requests delete a rack and its location at the same moment, NetBox can create the rack again with the same ID, and without its location. The same happens with a LAG interface and its member interfaces. Terraform deletes objects in parallel, so it can run into this when it deletes objects that are not linked to each other in the configuration, for example imported objects that use plain IDs.
+
+- It happens on NetBox 4.4.0 to 4.7.5. It is rare on 4.4.0 and common on newer versions.
+- It is tracked in [netbox-community/netbox#23766](https://github.com/netbox-community/netbox/issues/23766).
+- When a delete reports that other objects depend on an object, run `terraform destroy` again. If the object came back, delete it in NetBox.
+- Objects that refer to each other with references in the configuration are deleted in the right order, so they are not affected.
+
+### The list of tagged objects can repeat and miss objects
+
+NetBox does not give the list `extras/tagged-objects/` a stable order. When a read needs more than one page, NetBox can return some objects twice and leave others out. The data source `netbox_tagged_objects` asks for the order of the IDs, so it is not affected. It is tracked in [netbox-community/netbox#23767](https://github.com/netbox-community/netbox/issues/23767).
 
 ## Upgrading NetBox
 

@@ -41,7 +41,7 @@ resource "netbox_custom_field_choice_set" "test" {
 - `custom_fields` (Map of String) Custom field values of the object, as a map of field name to value.
 - `description` (String) A description of the custom field choice set.
 - `extra_choices` (List of List of String) This length of the inner lists must be exactly two, where the first value is the value of a choice and the second value is the label of the choice. With `order_alphabetically` NetBox sorts the choices, so write them in that order.
-- `order_alphabetically` (Boolean) experimental
+- `order_alphabetically` (Boolean) NetBox keeps `extra_choices` sorted by the value of each choice. Write the choices in that order, or the plan stops with an error.
 - `owner_id` (Number) The ID of the owner associated with the custom field choice set. Needs NetBox 4.5.0 or later.
 
 ### Read-Only

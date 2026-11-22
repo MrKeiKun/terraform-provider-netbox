@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	rschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
@@ -152,5 +153,64 @@ func TestSameValuesDescribesItselfAndIgnoresConfigItCannotRead(t *testing.T) {
 	v.ValidateResource(context.Background(), resource.ValidateConfigRequest{Config: tfsdk.Config{Raw: tftypes.NewValue(tftypes.String, "not an object")}}, &resp)
 	if resp.Diagnostics.HasError() {
 		t.Error("a config that is not an object was reported")
+	}
+}
+
+// A configuration generated from an object that has no data file writes the file as 0. That does not
+// satisfy "auto sync needs a file": NetBox would switch the sync off again.
+func TestRequiredWithNeedsARealValueNotZero(t *testing.T) {
+	obj := tftypes.Object{AttributeTypes: map[string]tftypes.Type{"on": tftypes.Bool, "file": tftypes.Number}}
+	run := func(on bool, file tftypes.Value, zero bool) bool {
+		cfg := tfsdk.Config{Raw: tftypes.NewValue(obj, map[string]tftypes.Value{"on": tftypes.NewValue(tftypes.Bool, on), "file": file})}
+		var resp resource.ValidateConfigResponse
+		requiredWith{attr: "on", other: "file", realOther: zero}.ValidateResource(context.Background(), resource.ValidateConfigRequest{Config: cfg}, &resp)
+		return resp.Diagnostics.HasError()
+	}
+	if !run(true, tftypes.NewValue(tftypes.Number, 0), true) {
+		t.Error("a file of 0 satisfied the rule")
+	}
+	if run(true, tftypes.NewValue(tftypes.Number, 7), true) {
+		t.Error("a real file was rejected")
+	}
+	if run(false, tftypes.NewValue(tftypes.Number, 0), true) {
+		t.Error("a switch that is off needed a file")
+	}
+	if run(true, tftypes.NewValue(tftypes.Number, 0), false) {
+		t.Error("0 was rejected for an attribute where 0 is a real value")
+	}
+	if !run(true, tftypes.NewValue(tftypes.Number, nil), true) {
+		t.Error("a missing file was accepted")
+	}
+}
+
+func TestZeroIsUnsetOnlyForIDsAndTexts(t *testing.T) {
+	s := (&Spec{Attrs: []Attr{
+		{Name: "file_id", Kind: Int, Ref: true, Optional: true},
+		{Name: "unit", Kind: String, Optional: true},
+		{Name: "length", Kind: Float, Optional: true},
+		{Name: "count", Kind: Int, Optional: true},
+		{Name: "needed", Kind: Int, Ref: true, Required: true},
+	}}).withZeroDefaults()
+	for name, want := range map[string]bool{"file_id": true, "unit": true, "length": false, "count": false, "needed": false, "missing": false} {
+		if got := s.zeroIsUnset(name); got != want {
+			t.Errorf("zeroIsUnset(%s) = %v, want %v", name, got, want)
+		}
+	}
+}
+
+func TestSpecValidatorDescribesItselfAndIgnoresConfigItCannotRead(t *testing.T) {
+	v := specValidator{spec: (&Spec{TypeName: "netbox_x", Attrs: []Attr{{Name: "name", Kind: String, Optional: true}}}).withZeroDefaults()}
+	if v.MarkdownDescription(context.Background()) != v.Description(context.Background()) {
+		t.Error("the markdown description differs")
+	}
+	// the schema says text, the value is a number: reading the configuration fails, and the attribute
+	// validators report that, not this one
+	sch := rschema.Schema{Attributes: map[string]rschema.Attribute{"name": rschema.StringAttribute{Optional: true}}}
+	raw := tftypes.NewValue(tftypes.Object{AttributeTypes: map[string]tftypes.Type{"name": tftypes.Number}},
+		map[string]tftypes.Value{"name": tftypes.NewValue(tftypes.Number, 1)})
+	var resp resource.ValidateConfigResponse
+	v.ValidateResource(context.Background(), resource.ValidateConfigRequest{Config: tfsdk.Config{Schema: sch, Raw: raw}}, &resp)
+	if resp.Diagnostics.HasError() {
+		t.Error("a configuration that could not be read was reported by this validator")
 	}
 }

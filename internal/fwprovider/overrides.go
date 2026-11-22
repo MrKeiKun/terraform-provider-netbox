@@ -2,7 +2,10 @@ package fwprovider
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
+	"reflect"
 
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/fwresource"
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/providerstate"
@@ -107,21 +110,25 @@ var overrides = map[string]func(s *fwresource.Spec){
 		}
 	},
 	"netbox_config_context": func(s *fwresource.Spec) {
+		s.CheckWritten = dataFileWritten("data", true)
 		s.ModifyBody = dataFileBody
 		s.ModifyPlan = dataFilePlan
 		s.ModifyState = dataFileState
 	},
 	"netbox_config_context_profile": func(s *fwresource.Spec) {
+		s.CheckWritten = dataFileWritten("schema", true)
 		s.ModifyBody = dataFileBody
 		s.ModifyPlan = dataFilePlan
 		s.ModifyState = dataFileState
 	},
 	"netbox_config_template": func(s *fwresource.Spec) {
+		s.CheckWritten = dataFileWritten("template_code", false)
 		s.ModifyBody = dataFileBody
 		s.ModifyPlan = dataFilePlan
 		s.ModifyState = dataFileState
 	},
 	"netbox_export_template": func(s *fwresource.Spec) {
+		s.CheckWritten = dataFileWritten("template_code", false)
 		s.ModifyBody = dataFileBody
 		s.ModifyPlan = dataFilePlan
 		s.ModifyState = dataFileState
@@ -453,6 +460,9 @@ func dataFilePlan(config, plan, prior fwresource.Values) map[string]attr.Value {
 	if prior == nil {
 		return nil
 	}
+	if out := dataFileLinkPlan(plan, prior); out != nil {
+		return out
+	}
 	// only a data file that is taken away changes anything. An object that has a data source and no
 	// data file (older NetBox versions keep it) is left as it is.
 	if f, ok := prior["data_file_id"].(types.Int64); !ok || f.IsNull() || f.ValueInt64() == 0 {
@@ -477,12 +487,88 @@ func dataFilePlan(config, plan, prior fwresource.Values) map[string]attr.Value {
 	return out
 }
 
+// dataFileWritten reports content that NetBox replaced with the content of the data file. From NetBox
+// 4.7.5 on, a write with a data file sets the content (template_code, data, schema) from the file, and
+// the plan holds the text of the configuration. The plan cannot know the file, because the API does not
+// return its content, so the difference only shows after the write.
+func dataFileWritten(name string, isJSON bool) func(plan fwresource.Values, obj map[string]any) error {
+	return func(plan fwresource.Values, obj map[string]any) error {
+		file, ok := plan["data_file_id"].(types.Int64)
+		if !ok || file.IsNull() || file.IsUnknown() || file.ValueInt64() == 0 || obj["data_file"] == nil {
+			return nil
+		}
+		want, ok := plan[name].(types.String)
+		if !ok || want.IsNull() || want.IsUnknown() {
+			return nil
+		}
+		got := obj[name]
+		same := false
+		if isJSON {
+			var a any
+			same = json.Unmarshal([]byte(want.ValueString()), &a) == nil && reflect.DeepEqual(a, got)
+		} else {
+			s, _ := got.(string)
+			same = s == want.ValueString()
+		}
+		if same {
+			return nil
+		}
+		filePath, _ := obj["data_path"].(string)
+		return fmt.Errorf("with data_file_id NetBox keeps %s equal to the content of the data file%s, and replaced the text of the configuration. "+
+			"Write the content of the data file in %s, or remove data_file_id. "+
+			"NetBox already stored the object with the content of the file, so change the configuration and apply again", name, quotedPath(filePath), name)
+	}
+}
+
+func quotedPath(path string) string {
+	if path == "" {
+		return ""
+	}
+	return " (`" + path + "`)"
+}
+
+// dataFileLinkPlan predicts that NetBox sets the data source when an update links a data file. The
+// update runs the sync of the data file, which sets the data source, even when the object was created
+// with the file and has no data source yet (NetBox before 4.7 does not sync on create). Without this,
+// the plan keeps the old data source and the apply ends with "inconsistent result".
+//
+// It only acts when the update happens anyway: the framework has marked last_updated as unknown then.
+func dataFileLinkPlan(plan, prior fwresource.Values) map[string]attr.Value {
+	if lu, ok := plan["last_updated"]; !ok || !lu.IsUnknown() {
+		return nil
+	}
+	if _, ok := plan["data_source_id"]; !ok {
+		return nil
+	}
+	file, ok := plan["data_file_id"].(types.Int64)
+	if !ok || file.IsNull() || file.IsUnknown() || file.ValueInt64() == 0 {
+		return nil
+	}
+	priorFile, _ := prior["data_file_id"].(types.Int64)
+	priorSource, _ := prior["data_source_id"].(types.Int64)
+	if priorFile.ValueInt64() == file.ValueInt64() && priorSource.ValueInt64() != 0 {
+		return nil
+	}
+	return map[string]attr.Value{"data_source_id": types.Int64Unknown()}
+}
+
 // dataFileState keeps data_source_id at 0 while the object has no data file, as it was before the
 // data file could be set, so a configuration that says 0 stays valid.
-func dataFileState(_ context.Context, obj map[string]any, _, out fwresource.Values) error {
+func dataFileState(_ context.Context, obj map[string]any, prior, out fwresource.Values) error {
 	if obj["data_source"] == nil {
 		if _, ok := out["data_source_id"]; ok {
 			out["data_source_id"] = types.Int64Value(0)
+		}
+	}
+	// NetBox 4.4 has no automatic sync, and the response has no auto_sync_enabled. The state then keeps
+	// what the configuration said (false, as nothing can be synced), or false when it said nothing.
+	if _, has := obj["auto_sync_enabled"]; !has {
+		if _, ok := out["auto_sync_enabled"]; ok {
+			keep := types.BoolValue(false)
+			if v, isBool := prior["auto_sync_enabled"].(types.Bool); isBool && !v.IsNull() && !v.IsUnknown() {
+				keep = v
+			}
+			out["auto_sync_enabled"] = keep
 		}
 	}
 	return nil

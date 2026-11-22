@@ -2,6 +2,7 @@ package netbox
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -94,6 +95,28 @@ func init() {
 		Dependencies: []string{},
 		F: func(region string) error {
 			return sweepByName(region, "extras/export-templates/", "name")
+		},
+	})
+}
+
+// Automatic sync needs a data file, and an ID of 0 does not count as one.
+func TestAccNetboxExportTemplate_autoSyncNeedsADataFile(t *testing.T) {
+	testName := testAccGetTestName("export_template_autosync")
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+resource "netbox_export_template" "test" {
+  name              = "%s"
+  object_types      = ["dcim.site"]
+  template_code     = "x"
+  data_file_id      = 0
+  auto_sync_enabled = true
+}`, testName),
+				ExpectError: regexp.MustCompile(`(?s)Missing attribute configuration.*real\s+value`),
+			},
 		},
 	})
 }

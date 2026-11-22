@@ -23,6 +23,8 @@ type fakeNetBox struct {
 	objects map[string]map[int]map[string]any // collection path -> id -> object
 	calls   []string
 	fails   []failRule
+	// rewrite changes an object after a create or an update, like NetBox does when it replaces what was written.
+	rewrite map[string]func(obj map[string]any)
 }
 
 // failRule makes the fake answer with an error status for matching requests.
@@ -155,6 +157,9 @@ func (f *fakeNetBox) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		for k, v := range body {
 			obj[k] = v
 		}
+		if fn := f.rewrite[collection]; fn != nil {
+			fn(obj)
+		}
 		objs[f.next] = obj
 		f.next++
 		w.WriteHeader(http.StatusCreated)
@@ -210,6 +215,9 @@ func (f *fakeNetBox) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					continue
 				}
 				obj[k] = v
+			}
+			if fn := f.rewrite[collection]; fn != nil {
+				fn(obj)
 			}
 		case http.MethodDelete:
 			delete(objs, id)

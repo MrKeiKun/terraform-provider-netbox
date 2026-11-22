@@ -130,7 +130,7 @@ func (r *Resource) ConfigValidators(_ context.Context) []resource.ConfigValidato
 	}
 	for _, g := range r.spec.RequiredWith {
 		if len(g) == 2 {
-			v = append(v, requiredWith{attr: g[0], other: g[1], zero: zero})
+			v = append(v, requiredWith{attr: g[0], other: g[1], zero: zero, realOther: r.spec.zeroIsUnset(g[1])})
 		}
 	}
 	for _, g := range r.spec.SameValues {
@@ -138,7 +138,28 @@ func (r *Resource) ConfigValidators(_ context.Context) []resource.ConfigValidato
 			v = append(v, sameValues{a: g[0], b: g[1]})
 		}
 	}
+	if r.spec.ValidateConfig != nil {
+		v = append(v, specValidator{spec: r.spec})
+	}
 	return v
+}
+
+// specValidator runs the ValidateConfig check of a spec.
+type specValidator struct {
+	spec *Spec
+}
+
+func (v specValidator) Description(context.Context) string { return "the configuration is valid" }
+
+func (v specValidator) MarkdownDescription(ctx context.Context) string { return v.Description(ctx) }
+
+func (v specValidator) ValidateResource(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	cfg, diags := v.spec.load(ctx, req.Config)
+	if diags.HasError() {
+		// the attribute validators report what is wrong with the values
+		return
+	}
+	resp.Diagnostics.Append(v.spec.ValidateConfig(ctx, cfg)...)
 }
 
 type getter interface {
@@ -559,6 +580,11 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 	resp.Diagnostics.Append(r.spec.store(ctx, &resp.State, vals)...)
+	if r.spec.CheckWritten != nil {
+		if err := r.spec.CheckWritten(plan, *obj); err != nil {
+			resp.Diagnostics.AddError("NetBox changed what was written to "+r.spec.TypeName, err.Error())
+		}
+	}
 }
 
 // afterWrite runs the hook that follows a write and reads the object again when it changed it.
@@ -716,6 +742,11 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 		return
 	}
 	resp.Diagnostics.Append(r.spec.store(ctx, &resp.State, vals)...)
+	if r.spec.CheckWritten != nil {
+		if err := r.spec.CheckWritten(plan, *obj); err != nil {
+			resp.Diagnostics.AddError("NetBox changed what was written to "+r.spec.TypeName, err.Error())
+		}
+	}
 }
 
 func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -815,10 +846,13 @@ func (r *Resource) importByName(ctx context.Context, name string) (string, error
 }
 
 // requiredWith is the validator for an attribute that needs another one: when attr is set in the
-// configuration, other has to be set too.
+// configuration, other has to be set too. Zero values do not count as set, on either side.
 type requiredWith struct {
 	attr, other string
 	zero        map[string]bool
+	// realOther is set when other cannot hold 0 or "" as a real value (an ID, a unit), so a zero value
+	// does not satisfy the rule.
+	realOther bool
 }
 
 func (v requiredWith) Description(context.Context) string {
@@ -850,6 +884,14 @@ func (v requiredWith) ValidateResource(ctx context.Context, req resource.Validat
 	}
 	if b.IsNull() {
 		resp.Diagnostics.AddAttributeError(path.Root(v.attr), "Missing attribute configuration", fmt.Sprintf("Attribute %q must be specified when %q is specified", v.other, v.attr))
+		return
+	}
+	// An ID of 0 or an empty unit does not satisfy the rule. The API treats it as not set, so NetBox
+	// would clear what needs it, and the next plan would differ. A configuration generated from an
+	// object that has none writes exactly this. A number such as a length can really be 0, so it is
+	// left alone.
+	if v.realOther && !isSetValue(b, true) {
+		resp.Diagnostics.AddAttributeError(path.Root(v.attr), "Missing attribute configuration", fmt.Sprintf("Attribute %q must be set to a real value (not 0 or \"\") when %q is specified", v.other, v.attr))
 	}
 }
 
