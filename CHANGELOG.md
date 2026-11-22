@@ -1,3 +1,25 @@
+# 1.0.0-rc3 (November 2026)
+
+NOTES
+
+* This release fixes the small findings of the rc2 tests, which ran on NetBox 4.4.0, 4.4.10, 4.5.1, 4.5.10, 4.6.0, 4.6.10, 4.7.0 and 4.7.5 (#33).
+* NetBox 4.7.0 and older do not allow removing a data file from an object. Replace the object instead. The guide "NetBox versions" now says so, and lists two more NetBox bugs the tests found: a deleted object that can come back (netbox-community/netbox#23766) and a list of tagged objects that can repeat and miss objects (netbox-community/netbox#23767) (#33).
+
+ENHANCEMENTS
+
+* The data source `netbox_tagged_objects` sends a stable order, so a long list no longer repeats or misses objects while it is read in pages (#33).
+* `netbox_custom_field_choice_set` gives an error at plan time when `order_alphabetically` is true and `extra_choices` is not in the order NetBox sorts them. Before, it gave "inconsistent result" after the apply (#33).
+* The guide "NetBox versions" now covers the device 403 on NetBox 4.6.0 to 4.7.5 (#33).
+* Add a docs note that NetBox creates a new notification, with a new id, when an object it follows changes (#33).
+
+BUG FIXES
+
+* `auto_sync_enabled = true` without `data_file_id` on config contexts, config context profiles, config templates and export templates gives a clear error at plan time. NetBox silently turned it off before (#33).
+* `data_source_id` is set after a data file is linked on NetBox before 4.7.5 (#33).
+* `auto_sync_enabled = false` no longer gives "inconsistent result" on NetBox 4.4 (#33).
+* When NetBox replaces the content of a template with the content of its data file, the error now names the file. Before it said "inconsistent result" (#33).
+* The message for a timeout while the provider checks the NetBox version now names `request_timeout` (#33).
+
 # 1.0.0-rc2 (November 2026)
 
 NOTES
