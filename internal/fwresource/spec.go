@@ -10,6 +10,7 @@ import (
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/providerstate"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 )
 
 // Kind is the type of an attribute.
@@ -196,6 +197,13 @@ type Spec struct {
 	// Set it for an object whose response differs, for example one that reports a value wrongly on
 	// some NetBox versions. The state must hold what a read returns, or the next refresh shows a change.
 	Reload bool
+	// CheckWritten runs after an object was created or updated, with the plan and what NetBox returned. It
+	// reports a value that NetBox changed, which the plan could not know. The state then holds what
+	// NetBox has, and the error tells what to change in the configuration.
+	CheckWritten func(plan Values, obj map[string]any) error
+	// ValidateConfig checks the configuration as a whole, for a rule that the attribute validators cannot
+	// say. Values that are not known yet are unknown in config, and the check has to leave them alone.
+	ValidateConfig func(ctx context.Context, config Values) diag.Diagnostics
 	// ModifyPlan returns planned values to replace, given the configuration, the plan and the state (nil while the object is created). It lets a
 	// computed attribute become null when nothing in the configuration can set it any more.
 	ModifyPlan func(config, plan, prior Values) map[string]attr.Value
@@ -209,6 +217,17 @@ type emptyCollection struct{}
 // zeroDefault tells whether an attribute reads as its zero value while it is not set.
 func (a Attr) zeroDefault() bool {
 	return a.Optional && !a.Required && !a.Computed && a.Default == nil && !a.NoZero && !a.WriteOnly && !a.Local && a.Kind != JSON && a.Kind != NestedSet && a.Kind != NestedList
+}
+
+// zeroIsUnset tells whether the attribute with this name reads as 0 or "" while it is not set and
+// cannot have that as a real value: an ID of another object, or a text such as a unit.
+func (s *Spec) zeroIsUnset(name string) bool {
+	for _, a := range s.Attrs {
+		if a.Name == name {
+			return a.zero && (a.Kind == String || (a.Kind == Int && a.Ref))
+		}
+	}
+	return false
 }
 
 // withZeroDefaults returns a copy of the spec in which optional attributes that are not set read as

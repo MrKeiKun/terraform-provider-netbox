@@ -135,3 +135,118 @@ func TestPluralDataSourceLimitStopsPaging(t *testing.T) {
 		t.Errorf("limit 0 returned %d tenants, want all 5000", len(ids))
 	}
 }
+
+// NetBox returns the tagged objects in no fixed order, so the pages of one read can repeat objects and
+// leave others out. The data source asks for the order of the IDs, and every object comes back once.
+func TestTaggedObjectsAreReadInTheOrderOfTheirIDs(t *testing.T) {
+	const count, maxPage = 250, 100
+	var orderings atomic.Int32
+	var other atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/status/") {
+			_, _ = w.Write([]byte(`{"netbox-version": "4.7.5"}`))
+			return
+		}
+		if !strings.Contains(r.URL.Path, "tagged-objects") {
+			other.Add(1)
+		}
+		limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+		offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
+		if limit <= 0 || limit > maxPage {
+			limit = maxPage
+		}
+		ordered := r.URL.Query().Get("ordering") == "id"
+		if ordered {
+			orderings.Add(1)
+		}
+		var objs []string
+		for i := offset; i < offset+limit && i < count; i++ {
+			id := i + 1
+			if !ordered {
+				// without an order, every page starts at another place and some objects are repeated
+				id = (i*7+offset)%count + 1
+			}
+			objs = append(objs, fmt.Sprintf(`{"id": %d, "object": {"id": %d}, "object_id": %d, "object_type": "dcim.site", "tag": {"id": 1}}`, id, id, id))
+		}
+		next := "null"
+		if offset+limit < count {
+			next = `"http://elsewhere.example/api/extras/tagged-objects/?limit=` + strconv.Itoa(limit) + `&offset=` + strconv.Itoa(offset+limit) + `"`
+		}
+		_, _ = fmt.Fprintf(w, `{"count": %d, "next": %s, "results": [%s]}`, count, next, strings.Join(objs, ","))
+	}))
+	defer srv.Close()
+	h := newHarness(t, srv.URL)
+
+	typ := h.schemas.DataSourceSchemas["netbox_tagged_objects"].ValueType()
+	resp, err := h.server.ReadDataSource(context.Background(), &tfprotov6.ReadDataSourceRequest{TypeName: "netbox_tagged_objects", Config: h.dynamic(h.object(typ, nil))})
+	if err != nil {
+		t.Fatal(err)
+	}
+	h.noErrors("read", resp.Diagnostics)
+	var list []tftypes.Value
+	if err := h.decode(typ, resp.State)["tagged_objects"].As(&list); err != nil {
+		t.Fatal(err)
+	}
+	seen := map[int64]bool{}
+	for _, v := range list {
+		var obj map[string]tftypes.Value
+		if err := v.As(&obj); err != nil {
+			t.Fatal(err)
+		}
+		var n big.Float
+		if err := obj["id"].As(&n); err != nil {
+			t.Fatal(err)
+		}
+		id, _ := n.Int64()
+		if seen[id] {
+			t.Fatalf("tagged object %d came back twice", id)
+		}
+		seen[id] = true
+	}
+	if len(seen) != count {
+		t.Errorf("got %d tagged objects, want %d", len(seen), count)
+	}
+	if orderings.Load() == 0 {
+		t.Error("the tagged objects were not asked for in the order of their IDs")
+	}
+}
+
+// The endpoints that NetBox leaves unsorted are asked for in the order of their IDs, the others are not.
+func TestUnorderedEndpointsAskForTheOrderOfTheirIDs(t *testing.T) {
+	for typeName, want := range map[string]bool{
+		"netbox_tagged_objects": true,
+		"netbox_clusters":       false,
+		"netbox_groups":         false,
+		"netbox_tenants":        false,
+		"netbox_sites":          false,
+	} {
+		t.Run(typeName, func(t *testing.T) {
+			var asked, ordered atomic.Int32
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if strings.HasSuffix(r.URL.Path, "/status/") {
+					_, _ = w.Write([]byte(`{"netbox-version": "4.7.5"}`))
+					return
+				}
+				asked.Add(1)
+				if r.URL.Query().Get("ordering") == "id" {
+					ordered.Add(1)
+				}
+				_, _ = w.Write([]byte(`{"count": 0, "next": null, "results": []}`))
+			}))
+			defer srv.Close()
+			h := newHarness(t, srv.URL)
+			typ := h.schemas.DataSourceSchemas[typeName].ValueType()
+			resp, err := h.server.ReadDataSource(context.Background(), &tfprotov6.ReadDataSourceRequest{TypeName: typeName, Config: h.dynamic(h.object(typ, nil))})
+			if err != nil {
+				t.Fatal(err)
+			}
+			h.noErrors("read", resp.Diagnostics)
+			if asked.Load() == 0 {
+				t.Fatal("NetBox was not asked for the list")
+			}
+			if got := ordered.Load() > 0; got != want {
+				t.Errorf("asked for the order of the IDs = %v, want %v", got, want)
+			}
+		})
+	}
+}

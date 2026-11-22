@@ -2,10 +2,13 @@ package fwprovider
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/fwresource"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
 func specOf(t *testing.T, name string) *fwresource.Spec {
@@ -192,5 +195,236 @@ func TestDataFileStateKeepsDataSourceAtZeroWithoutOne(t *testing.T) {
 	}
 	if v, _ := out["data_source_id"].(types.Int64); v.ValueInt64() != 3 {
 		t.Errorf("a data source was dropped: %v", out["data_source_id"])
+	}
+}
+
+// An update that links a data file sets the data source in NetBox, also when the object was created
+// with the file and has no data source yet.
+func TestDataFilePlanExpectsTheDataSourceAfterALinkingUpdate(t *testing.T) {
+	updating := func(file, source int64) (fwresource.Values, fwresource.Values) {
+		plan := fwresource.Values{
+			"data_file_id":   types.Int64Value(file),
+			"data_source_id": types.Int64Value(source),
+			"last_updated":   types.StringUnknown(),
+		}
+		return plan, fwresource.Values{"data_file_id": types.Int64Value(file), "data_source_id": types.Int64Value(source)}
+	}
+	cfg := fwresource.Values{"data_file_id": types.Int64Value(1)}
+
+	// linked, but never synced (data source 0): NetBox sets it
+	plan, prior := updating(1, 0)
+	if got := dataFilePlan(cfg, plan, prior); got["data_source_id"] == nil || !got["data_source_id"].IsUnknown() {
+		t.Errorf("the data source was not marked unknown: %v", got)
+	}
+	// linked and synced already: nothing changes
+	plan, prior = updating(1, 4)
+	if got := dataFilePlan(cfg, plan, prior); got != nil {
+		t.Errorf("a synced object was changed: %v", got)
+	}
+	// another file: the source can change
+	plan, prior = updating(2, 4)
+	prior["data_file_id"] = types.Int64Value(1)
+	if got := dataFilePlan(cfg, plan, prior); got["data_source_id"] == nil || !got["data_source_id"].IsUnknown() {
+		t.Errorf("a new file did not mark the data source unknown: %v", got)
+	}
+	// no update planned (last_updated is not unknown): nothing may change, or the plan would never settle
+	plan, prior = updating(1, 0)
+	plan["last_updated"] = types.StringValue("2026-01-01T00:00:00Z")
+	if got := dataFilePlan(cfg, plan, prior); got != nil {
+		t.Errorf("a plan without an update was changed: %v", got)
+	}
+	// no file: nothing to link
+	plan, prior = updating(0, 0)
+	if got := dataFilePlan(fwresource.Values{"data_file_id": types.Int64Value(0)}, plan, prior); got != nil {
+		t.Errorf("an object without a file was changed: %v", got)
+	}
+}
+
+func choiceList(values ...string) types.List {
+	inner := types.ListType{ElemType: types.StringType}
+	var elems []attr.Value
+	for _, v := range values {
+		l, _ := types.ListValue(types.StringType, []attr.Value{types.StringValue(v), types.StringValue("label " + v)})
+		elems = append(elems, l)
+	}
+	l, _ := types.ListValue(inner, elems)
+	return l
+}
+
+// With order_alphabetically NetBox sorts the choices by their value, so a list in another order has to
+// be refused before the apply.
+func TestChoiceSetOrder(t *testing.T) {
+	on, off := types.BoolValue(true), types.BoolValue(false)
+	for name, tc := range map[string]struct {
+		alpha   attr.Value
+		choices attr.Value
+		bad     bool
+	}{
+		"sorted":                   {on, choiceList("a", "b", "c"), false},
+		"unsorted":                 {on, choiceList("b", "a"), true},
+		"unsorted but not ordered": {off, choiceList("b", "a"), false},
+		"capitals before letters":  {on, choiceList("A", "B", "a"), false},
+		"letters before capitals":  {on, choiceList("a", "B"), true},
+		"digits are text":          {on, choiceList("10", "2", "9"), false},
+		"equal values keep order":  {on, choiceList("a", "a"), false},
+		"alpha not set":            {types.BoolNull(), choiceList("b", "a"), false},
+		"alpha unknown":            {types.BoolUnknown(), choiceList("b", "a"), false},
+		"choices unknown":          {on, types.ListUnknown(types.ListType{ElemType: types.StringType}), false},
+		"choices not set":          {on, types.ListNull(types.ListType{ElemType: types.StringType}), false},
+		"single choice":            {on, choiceList("z"), false},
+	} {
+		d := choiceSetOrder(context.Background(), fwresource.Values{"order_alphabetically": tc.alpha, "extra_choices": tc.choices})
+		if d.HasError() != tc.bad {
+			t.Errorf("%s: error = %v, want %v (%v)", name, d.HasError(), tc.bad, d)
+		}
+	}
+	d := choiceSetOrder(context.Background(), fwresource.Values{"order_alphabetically": on, "extra_choices": choiceList("c", "a", "b")})
+	if len(d) != 1 || !strings.Contains(d[0].Detail(), "a, b, c") {
+		t.Errorf("the message does not give the order: %v", d)
+	}
+}
+
+// NetBox 4.4 does not return auto_sync_enabled, so the state keeps what was written instead of null.
+func TestDataFileStateKeepsAutoSyncWhenNetBoxHasNone(t *testing.T) {
+	out := fwresource.Values{"auto_sync_enabled": types.BoolNull(), "data_source_id": types.Int64Value(0)}
+	prior := fwresource.Values{"auto_sync_enabled": types.BoolValue(false)}
+	if err := dataFileState(context.Background(), map[string]any{"data_source": nil}, prior, out); err != nil {
+		t.Fatal(err)
+	}
+	if v, _ := out["auto_sync_enabled"].(types.Bool); v.IsNull() || v.ValueBool() {
+		t.Errorf("auto_sync_enabled = %v, want false", out["auto_sync_enabled"])
+	}
+	// nothing written yet (unknown while the object is created): false
+	out = fwresource.Values{"auto_sync_enabled": types.BoolNull()}
+	if err := dataFileState(context.Background(), map[string]any{}, fwresource.Values{"auto_sync_enabled": types.BoolUnknown()}, out); err != nil {
+		t.Fatal(err)
+	}
+	if v, _ := out["auto_sync_enabled"].(types.Bool); v.IsNull() || v.ValueBool() {
+		t.Errorf("an unknown value became %v, want false", out["auto_sync_enabled"])
+	}
+	// a NetBox that returns the field keeps what it says
+	out = fwresource.Values{"auto_sync_enabled": types.BoolValue(true)}
+	if err := dataFileState(context.Background(), map[string]any{"auto_sync_enabled": true}, nil, out); err != nil {
+		t.Fatal(err)
+	}
+	if v, _ := out["auto_sync_enabled"].(types.Bool); !v.ValueBool() {
+		t.Errorf("the value of NetBox was overwritten: %v", out["auto_sync_enabled"])
+	}
+}
+
+// NetBox 4.7.5 and later replace the content with the text of the data file. The error names what
+// happened, and nothing is said when the text is the same.
+func TestDataFileWrittenReportsReplacedContent(t *testing.T) {
+	plan := func(file int64, text string) fwresource.Values {
+		return fwresource.Values{"data_file_id": types.Int64Value(file), "template_code": types.StringValue(text)}
+	}
+	check := dataFileWritten("template_code", false)
+	obj := map[string]any{"data_file": map[string]any{"id": 3.0}, "data_path": "t.j2", "template_code": "FILE\n"}
+
+	if err := check(plan(3, "FILE\n"), obj); err != nil {
+		t.Errorf("the same text was reported: %v", err)
+	}
+	err := check(plan(3, "MINE\n"), obj)
+	if err == nil || !strings.Contains(err.Error(), "t.j2") || !strings.Contains(err.Error(), "remove data_file_id") {
+		t.Errorf("a replaced text was not explained: %v", err)
+	}
+	if err := check(plan(0, "MINE\n"), obj); err != nil {
+		t.Errorf("an object without a file was reported: %v", err)
+	}
+	if err := check(plan(3, "MINE\n"), map[string]any{"data_file": nil, "template_code": "other"}); err != nil {
+		t.Errorf("an object that is not linked was reported: %v", err)
+	}
+	if err := check(fwresource.Values{"data_file_id": types.Int64Value(3), "template_code": types.StringNull()}, obj); err != nil {
+		t.Errorf("a text that is not written was reported: %v", err)
+	}
+
+	asJSON := dataFileWritten("data", true)
+	jobj := map[string]any{"data_file": map[string]any{"id": 3.0}, "data": map[string]any{"a": 1.0, "b": []any{"x"}}}
+	same := fwresource.Values{"data_file_id": types.Int64Value(3), "data": types.StringValue(`{ "b": ["x"], "a": 1 }`)}
+	if err := asJSON(same, jobj); err != nil {
+		t.Errorf("the same JSON in another layout was reported: %v", err)
+	}
+	other := fwresource.Values{"data_file_id": types.Int64Value(3), "data": types.StringValue(`{"a": 2}`)}
+	if err := asJSON(other, jobj); err == nil {
+		t.Error("another JSON was not reported")
+	}
+}
+
+// NetBox 4.7.5 replaces the text of a template with the content of its data file. The error says so,
+// for a create and for an update.
+func TestEngineReportsContentThatNetBoxReplaced(t *testing.T) {
+	fake, srv := newFakeNetBox()
+	defer srv.Close()
+	h := newHarness(t, srv.URL)
+	const name = "netbox_config_template"
+	fake.rewrite = map[string]func(map[string]any){
+		"extras/config-templates": func(obj map[string]any) {
+			if obj["data_file"] != nil {
+				obj["template_code"] = "FILE\n"
+				obj["data_path"] = "t.j2"
+			}
+		},
+	}
+	set := map[string]tftypes.Value{
+		"name":          str("t"),
+		"template_code": str("MINE\n"),
+		"data_file_id":  tftypes.NewValue(tftypes.Number, 3),
+	}
+	diags, _ := h.tryApply(name, nullObject(), set)
+	h.wantError("a create that NetBox changed", diags)
+	found := false
+	for _, d := range diags {
+		if strings.Contains(d.Summary, "NetBox changed what was written") && strings.Contains(d.Detail, "t.j2") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("the error does not explain what changed: %v", diags)
+	}
+
+	// an object that exists without a file, then linked to one by an update
+	delete(fake.rewrite, "extras/config-templates")
+	plain := h.apply(name, nullObject(), map[string]tftypes.Value{"name": str("u"), "template_code": str("MINE\n")})
+	fake.rewrite["extras/config-templates"] = func(obj map[string]any) {
+		if obj["data_file"] != nil {
+			obj["template_code"] = "FILE\n"
+			obj["data_path"] = "t.j2"
+		}
+	}
+	diags, _ = h.tryApply(name, plain, map[string]tftypes.Value{
+		"name":          str("u"),
+		"template_code": str("MINE\n"),
+		"data_file_id":  tftypes.NewValue(tftypes.Number, 3),
+	})
+	h.wantError("an update that NetBox changed", diags)
+}
+
+func TestDataFileLinkPlanNeedsADataSourceAttribute(t *testing.T) {
+	plan := fwresource.Values{
+		"last_updated": types.StringUnknown(),
+		"data_file_id": types.Int64Value(3),
+	}
+	if got := dataFileLinkPlan(plan, fwresource.Values{}); got != nil {
+		t.Errorf("a plan without data_source_id was changed: %v", got)
+	}
+}
+
+func TestChoiceSetOrderIgnoresListsItCannotRead(t *testing.T) {
+	str := func(s string) attr.Value { return types.StringValue(s) }
+	inner := func(vals ...attr.Value) attr.Value { return types.ListValueMust(types.StringType, vals) }
+	list := func(items ...attr.Value) attr.Value {
+		return types.ListValueMust(types.ListType{ElemType: types.StringType}, items)
+	}
+	on := types.BoolValue(true)
+	for name, choices := range map[string]attr.Value{
+		"an empty choice":     list(inner()),
+		"an unknown choice":   list(types.ListUnknown(types.StringType)),
+		"a null value inside": list(inner(types.StringNull(), str("L"))),
+		"an unknown value":    list(inner(types.StringUnknown(), str("L"))),
+	} {
+		cfg := fwresource.Values{"order_alphabetically": on, "extra_choices": choices}
+		if diags := choiceSetOrder(context.Background(), cfg); diags.HasError() {
+			t.Errorf("%s was reported: %v", name, diags)
+		}
 	}
 }

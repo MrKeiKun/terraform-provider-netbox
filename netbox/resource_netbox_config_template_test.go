@@ -2,6 +2,7 @@ package netbox
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -104,6 +105,40 @@ func init() {
 		Dependencies: []string{},
 		F: func(region string) error {
 			return sweepByName(region, "extras/config-templates/", "name")
+		},
+	})
+}
+
+// Automatic sync needs a data file. An ID of 0 is what a generated configuration holds for an object
+// that has none, and it does not count: NetBox would switch the sync off or answer with an error.
+func TestAccNetboxConfigTemplate_autoSyncNeedsADataFile(t *testing.T) {
+	testName := testAccGetTestName("config_template_autosync")
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+resource "netbox_config_template" "test" {
+  name              = "%s"
+  template_code     = "x"
+  data_file_id      = 0
+  auto_sync_enabled = true
+}`, testName),
+				ExpectError: regexp.MustCompile(`(?s)Missing attribute configuration.*real\s+value`),
+			},
+			{
+				Config: fmt.Sprintf(`
+resource "netbox_config_template" "test" {
+  name              = "%s"
+  template_code     = "x"
+  data_file_id      = 0
+  auto_sync_enabled = false
+}`, testName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("netbox_config_template.test", "name", testName),
+				),
+			},
 		},
 	})
 }

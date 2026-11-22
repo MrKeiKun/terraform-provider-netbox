@@ -124,7 +124,7 @@ func Connect(ctx context.Context, s Settings) (*State, []Diag) {
 	serverVersion := ""
 	if !s.SkipVersionCheck {
 		var d []Diag
-		if serverVersion, d = checkVersion(ctx, rest, serverURL); d != nil {
+		if serverVersion, d = checkVersion(ctx, rest, serverURL, s.RequestTimeout); d != nil {
 			diags = append(diags, d...)
 			for _, x := range d {
 				if x.Error {
@@ -171,7 +171,7 @@ func isLoopback(host string) bool {
 	return ip != nil && ip.IsLoopback()
 }
 
-func checkVersion(ctx context.Context, rest *netboxapi.Client, serverURL string) (string, []Diag) {
+func checkVersion(ctx context.Context, rest *netboxapi.Client, serverURL string, requestTimeout int) (string, []Diag) {
 	// The client already sends the request again when the connection fails or NetBox answers 502,
 	// 503 or 504, and stops when the context is cancelled. A wrong URL or token is reported at once.
 	res, err := netboxapi.Request[map[string]interface{}](ctx, rest, http.MethodGet, "status/", nil, nil)
@@ -202,6 +202,20 @@ func checkVersion(ctx context.Context, rest *netboxapi.Client, serverURL string)
 					"A certificate that has expired, or a host name that is not in the certificate, gives the same error.\n\n"+
 					"Original error: %s",
 				serverURL, err,
+			),
+		}}
+	}
+	var netErr net.Error
+	if errors.Is(err, context.DeadlineExceeded) || (errors.As(err, &netErr) && netErr.Timeout()) {
+		return "", []Diag{{
+			Error:   true,
+			Summary: "Netbox did not answer in time",
+			Detail: fmt.Sprintf(
+				"The provider asked `%s/api/status/` for the Netbox version, and got no answer in time (`request_timeout` is %d seconds).\n\n"+
+					"If Netbox is slow or far away, raise `request_timeout` (or `NETBOX_REQUEST_TIMEOUT`) on the provider. "+
+					"Otherwise check that Netbox is running and that `server_url` is right, because a wrong host or port can time out too.\n\n"+
+					"Original error: %s",
+				serverURL, requestTimeout, err,
 			),
 		}}
 	}

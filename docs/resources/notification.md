@@ -4,11 +4,14 @@ page_title: "netbox_notification Resource - terraform-provider-netbox"
 subcategory: "Extras"
 description: |-
   A notification tells a user about an event of an object.
+  NetBox makes notifications itself. When an object that users subscribed to changes, NetBox deletes all notifications about that object and creates new ones for the subscribers, with new IDs. A notification that you manage here for such an object then disappears, and Terraform plans to create it again. Notifications that an event rule makes for a notification group keep their ID.
 ---
 
 # netbox_notification (Resource)
 
 A notification tells a user about an event of an object.
+
+NetBox makes notifications itself. When an object that users subscribed to changes, NetBox deletes all notifications about that object and creates new ones for the subscribers, with new IDs. A notification that you manage here for such an object then disappears, and Terraform plans to create it again. Notifications that an event rule makes for a notification group keep their ID.
 
 ## Example Usage
 
