@@ -1,3 +1,40 @@
+# 1.0.0-rc2 (November 2026)
+
+NOTES
+
+* This release fixes what real-data tests of rc1 found: an import of about 2,700 objects of 130 resource types with generated configuration, followed by apply, update, drift, move and destroy. It was tested on NetBox 4.4.0, 4.4.10, 4.5.1, 4.5.10, 4.6.0, 4.6.10, 4.7.0 and 4.7.5 (#30, #31).
+* The new guide [Importing existing objects](https://registry.terraform.io/providers/mrkeikun/netbox/latest/docs/guides/importing-existing-objects) explains what to expect from `-generate-config-out`, and how secrets and zero values behave (#31).
+* A secret that NetBox returns (`preshared_key` of an IKE policy, `auth_key` of an FHRP group, `additional_headers` of a webhook, `auth_psk` of a wireless LAN or link, `parameters` of a data source) is now kept when it is not in the configuration. Before, an apply after an import cleared it. To clear one, set it to `""` (#31).
+* A rack with a `rack_type_id` no longer shows `form_factor`, `width` and `u_height` in the state, because NetBox takes them from the rack type. Read them from the rack type instead (#31).
+* `data_source_id` on `netbox_config_context`, `netbox_config_context_profile`, `netbox_config_template` and `netbox_export_template` is deprecated and read only. NetBox links a data source through the data file, so use the new `data_file_id` (#31).
+* `content_types` on `netbox_custom_field` and `netbox_event_rule` is deprecated in favour of `object_types`, the name NetBox uses. Both work, and they must have the same value when both are written (#31).
+* The attributes `color`, `email` and `link` of data sources are plain strings. They were JSON strings with quotes around them before, so a `jsondecode` of one of them has to be removed (#31).
+
+ENHANCEMENTS
+
+* Add `data_file_id` on `netbox_config_context`, `netbox_config_context_profile`, `netbox_config_template` and `netbox_export_template`, and the data sources `netbox_data_file` and `netbox_data_files` (#31).
+* Add `object_types` on `netbox_custom_field` and `netbox_event_rule` (#31).
+* A configuration written by `-generate-config-out` is valid and plans without changes. Zero values count as not set in the conflict and required-with rules, and the check for a NetBox that is too old ignores zero and default values. On NetBox 4.4 a generated configuration gave 281 such errors before (#30, #31).
+* `netbox_device` works without a `name`, as NetBox allows. `netbox_user` can be imported without a password, which is only needed to create a user. `netbox_vpn_tunnel` works without a tunnel group. `netbox_module_bay_template` can belong to a module type (#31).
+* `netbox_rack` and `netbox_rack_type` ask for `weight_unit` or `outer_unit` when a weight or an outer size is set, and no longer the other way round (#30, #31).
+* A filter name that a plural data source does not have gets a "Did you mean" suggestion (#30).
+* A bad API token gets its own message, "Netbox rejected the API token". A certificate that is not trusted also gets one, which names `ca_cert_file` and `allow_insecure_https` (#30, #31).
+* Add the guide "Importing existing objects", and a section in "NetBox versions" about the 403 that NetBox 4.6.10 and 4.7.5 give when a device is created from a device type with inventory item templates that have a parent. It is a NetBox bug, tracked in netbox-community/netbox#23743 and #23765 (#31).
+
+BUG FIXES
+
+* Fix `custom_fields` being cleared in NetBox by the first apply after an upgrade from rc1. A key that is not in the configuration is kept (#30).
+* The plan after an import showed updates without a visible change, for example on sites with a latitude or longitude, and on config templates with `environment_params`. Decimal numbers are now compared at full precision, and an empty JSON default is kept (#31).
+* Fix changing `ports` or `protocol` of `netbox_service` and `netbox_service_template`. NetBox refuses `port_mappings` together with them, and the provider sent both (#31).
+* Fix `conditions` of `netbox_event_rule`, which was sent as a string and not as an object (#31).
+* Fix `staff = true` on `netbox_user` with NetBox 4.5 and later, which reported an inconsistent result (#31).
+* Changing `device_id` of a device component now replaces it, because NetBox cannot move a component to another device (#31).
+* `adopt_components` and `replicate_components` of `netbox_module` are write-only. They no longer end up null after an apply, and no longer fail an update with "This field may not be null" (#31).
+* Creating a config context, config context profile, config template or export template failed on NetBox before 4.7.5 with "This field may not be null" for `data_file` (#31).
+* A text custom field with a default written as a JSON string no longer shows a difference after the apply (#31).
+* A configuration for `netbox_service`, `netbox_service_template` and `netbox_device_front_port` made by `-generate-config-out` no longer fails on conflicting attributes (#31).
+* Batched reads sent many small requests when more than 50 objects were read at once, and a failed batch could be tried again by the reads that came after it (#31).
+
 # 1.0.0-rc1 (November 2026)
 
 NOTES
