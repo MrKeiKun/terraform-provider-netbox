@@ -3,6 +3,7 @@ package fwprovider
 import (
 	"context"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/fwresource"
@@ -427,4 +428,33 @@ func TestChoiceSetOrderIgnoresListsItCannotRead(t *testing.T) {
 			t.Errorf("%s was reported: %v", name, diags)
 		}
 	}
+}
+
+// A PUT without master makes NetBox clear the master of a virtual chassis, so updating the chassis
+// has to be a PATCH. The master is set from the device or from netbox_virtual_chassis_master.
+func TestVirtualChassisUpdateKeepsTheMaster(t *testing.T) {
+	fake, srv := newFakeNetBox()
+	defer srv.Close()
+	h := newHarness(t, srv.URL)
+	const name = "netbox_virtual_chassis"
+	created := h.apply(name, nullObject(), map[string]tftypes.Value{"name": str("vc")})
+	h.apply(name, created, map[string]tftypes.Value{"name": str("vc2")})
+	for _, call := range fake.calls {
+		if strings.HasPrefix(call, "PUT ") && strings.Contains(call, "virtual-chassis") {
+			t.Errorf("the chassis was updated with %s, which clears its master", call)
+		}
+	}
+}
+
+// Several providers can be created at the same time, for example by the acceptance tests.
+func TestDataSourcesAreSafeToListConcurrently(t *testing.T) {
+	var wg sync.WaitGroup
+	for i := 0; i < 8; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			(&Provider{}).DataSources(context.Background())
+		}()
+	}
+	wg.Wait()
 }

@@ -2008,7 +2008,6 @@ var standardResources = []*fwresource.Spec{
 		Description:  ":meta:subcategory:Data Center Inventory Management (DCIM):From the [official documentation](https://docs.netbox.dev/en/stable/features/devices-cabling/#virtual-chassis):\n\n\t\t> Sometimes it is necessary to model a set of physical devices as sharing a single management plane. Perhaps the most common example of such a scenario is stackable switches. These can be modeled as virtual chassis in NetBox, with one device acting as the chassis master and the rest as members. All components of member devices will appear on the master.",
 		Tags:         true,
 		CustomFields: true,
-		Put:          true,
 		Attrs: []fwresource.Attr{
 			{Name: "comments", Kind: fwresource.String, Optional: true, Description: "Free-form comments about the virtual chassis."},
 			{Name: "description", Kind: fwresource.String, Optional: true, Description: "A description of the virtual chassis.", MaxLen: 200},
