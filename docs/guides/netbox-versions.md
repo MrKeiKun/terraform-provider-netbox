@@ -63,7 +63,7 @@ If you get a 403 on a device create, check this first before you change the toke
 
 ### A deleted object can come back
 
-When two requests delete a rack and its location at the same moment, NetBox can create the rack again with the same ID, and without its location. The same happens with a LAG interface and its member interfaces. Terraform deletes objects in parallel, so it can run into this when it deletes objects that are not linked to each other in the configuration, for example imported objects that use plain IDs.
+When two requests delete a rack and its location at the same moment, NetBox can create the rack again with the same ID, and without its location. The same happens with a LAG interface and its member interfaces, and with a device that is deleted together with its virtual chassis, platform or other objects it points to. Terraform deletes objects in parallel, so it can run into this when it deletes objects that are not linked to each other in the configuration, for example imported objects that use plain IDs.
 
 - It happens on NetBox 4.4.0 to 4.7.5. It is rare on 4.4.0 and common on newer versions.
 - It is tracked in [netbox-community/netbox#23766](https://github.com/netbox-community/netbox/issues/23766).

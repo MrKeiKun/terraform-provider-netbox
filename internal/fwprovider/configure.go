@@ -181,24 +181,30 @@ func (p *Provider) DataSources(_ context.Context) []func() datasource.DataSource
 }
 
 // withLookups gives a plural data source the lookup expressions of its list endpoint, so that a
-// filter block can use name__ic or status__n, and the id filter.
+// filter block can use name__ic or status__n, and the id filter. It works on a copy, because the
+// specs are shared and several providers can be created at the same time.
 func withLookups(spec *fwresource.DataSourceSpec) *fwresource.DataSourceSpec {
 	byParam := generatedLookups[spec.Path]
 	if spec.Plural == nil || spec.Plural.NoFilter || spec.Plural.Lookups != nil || len(byParam) == 0 {
 		return spec
 	}
+	specCopy := *spec
+	plural := *spec.Plural
+	specCopy.Plural = &plural
 	// Every list of NetBox can be filtered by ID, and takes several of them.
-	if _, ok := spec.Plural.Filters["id"]; !ok {
+	if _, ok := plural.Filters["id"]; !ok {
 		if _, known := byParam["id"]; known {
-			if spec.Plural.Filters == nil {
-				spec.Plural.Filters = map[string]string{}
+			filters := make(map[string]string, len(plural.Filters)+1)
+			for k, v := range plural.Filters {
+				filters[k] = v
 			}
-			spec.Plural.Filters["id"] = "id[]"
+			filters["id"] = "id[]"
+			plural.Filters = filters
 		}
 	}
-	spec.Plural.Lookups = make(map[string][]string, len(byParam))
+	plural.Lookups = make(map[string][]string, len(byParam))
 	for param, set := range byParam {
-		spec.Plural.Lookups[param] = generatedLookupSets[set]
+		plural.Lookups[param] = generatedLookupSets[set]
 	}
-	return spec
+	return &specCopy
 }
