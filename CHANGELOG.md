@@ -1,3 +1,15 @@
+# 1.0.0-rc4 (November 2026)
+
+NOTES
+
+* This release fixes what the rc3 tests found. The tests ran on NetBox 4.4.0, 4.4.10, 4.5.1, 4.5.10, 4.6.0, 4.6.10, 4.7.0 and 4.7.5 (#36).
+* A deleted device can come back in NetBox, as a rack or a LAG interface can. It happens when a device is deleted at the same moment as its virtual chassis, platform or other objects it points to. We saw it on every NetBox version from 4.4.0 to 4.7.5 that we tried. The guide "NetBox versions" now says so. It is tracked in netbox-community/netbox#23766 (#36).
+
+BUG FIXES
+
+* `netbox_virtual_chassis` no longer loses its master when it is updated. It was sent as a full replacement, which makes NetBox clear the master, so renaming a chassis removed its master (#36).
+* The provider no longer stops with "concurrent map writes" when more than one provider starts in the same process. This only happened in tests that start several providers together (#36).
+
 # 1.0.0-rc3 (November 2026)
 
 NOTES
