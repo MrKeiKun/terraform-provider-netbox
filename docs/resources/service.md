@@ -47,7 +47,7 @@ resource "netbox_service" "ssh" {
 - `ipaddresses` (Set of Number) The IDs of the IP addresses the service is bound to.
 - `owner_id` (Number) The ID of the owner associated with the service. Needs NetBox 4.5.0 or later.
 - `port` (Number, Deprecated) The port of the service. At least one of `port`, `ports` or `port_mappings` must be given.
-- `port_mappings` (Set of String) The ports of the service as `protocol/port` strings, for example `tcp/80`. Use this for a service that spans more than one protocol. Needs NetBox 4.6 or newer. At least one of `port`, `ports` or `port_mappings` must be given. NetBox rejects `protocol` and `ports` that do not match `port_mappings`.
+- `port_mappings` (Set of String) The ports of the service as `protocol/port` strings, for example `tcp/80`. Use this for a service that spans more than one protocol. Needs NetBox 4.7 or newer. At least one of `port`, `ports` or `port_mappings` must be given. NetBox rejects `protocol` and `ports` that do not match `port_mappings`.
 - `ports` (Set of Number) The ports of the service. At least one of `port`, `ports` or `port_mappings` must be given.
 - `protocol` (String) Valid values are `tcp`, `udp` and `sctp`. Together with `port_mappings` it must match them.
 - `tags` (Set of String) Tags assigned to the object, by name.

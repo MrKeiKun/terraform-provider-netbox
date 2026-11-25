@@ -6,10 +6,14 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strconv"
+	"strings"
 
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/fwresource"
 	"github.com/MrKeiKun/terraform-provider-netbox/internal/providerstate"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -91,10 +95,12 @@ var overrides = map[string]func(s *fwresource.Spec){
 		}}
 		s.ModifyBody = legacyPortsOrMappings
 		s.ModifyPlan = legacyPortsPlan
+		s.ValidateConfig = protocolMatchesMappings
 	},
 	"netbox_service_template": func(s *fwresource.Spec) {
 		s.ModifyBody = legacyPortsOrMappings
 		s.ModifyPlan = legacyPortsPlan
+		s.ValidateConfig = protocolMatchesMappings
 	},
 	"netbox_rack": func(s *fwresource.Spec) {
 		// A rack with a rack type gets its form factor, width and height from the type, and NetBox
@@ -419,6 +425,61 @@ func legacyPortsOrMappings(_ context.Context, plan, prior fwresource.Values, bod
 	delete(body, "protocol")
 	delete(body, "ports")
 	return nil
+}
+
+// protocolMatchesMappings rejects a protocol or ports that differ from port_mappings when both are
+// set. NetBox works protocol and ports out from the mappings, so it would otherwise return other
+// values than the plan and Terraform would stop with an inconsistent result. Mappings with more
+// than one protocol are left to NetBox.
+func protocolMatchesMappings(_ context.Context, config fwresource.Values) diag.Diagnostics {
+	var diags diag.Diagnostics
+	m, ok := config["port_mappings"].(types.Set)
+	if !ok || m.IsNull() || m.IsUnknown() || len(m.Elements()) == 0 {
+		return diags
+	}
+	seen := ""
+	mapped := map[string]bool{}
+	for _, e := range m.Elements() {
+		s, ok := e.(types.String)
+		if !ok || s.IsNull() || s.IsUnknown() {
+			return diags
+		}
+		p, port, _ := strings.Cut(s.ValueString(), "/")
+		if seen != "" && seen != p {
+			return diags
+		}
+		seen = p
+		mapped[port] = true
+	}
+	if protocol := stringValue(config, "protocol"); protocol != "" && seen != protocol {
+		diags.AddAttributeError(path.Root("protocol"), "protocol does not match port_mappings",
+			fmt.Sprintf("protocol is %q, but port_mappings only holds %q ports. NetBox works the protocol out from port_mappings, so they must match. Change one of them, or leave protocol out.", protocol, seen))
+	}
+	configured := map[string]bool{}
+	name := "ports"
+	if ports, ok := config["ports"].(types.Set); ok && !ports.IsNull() {
+		if ports.IsUnknown() {
+			return diags
+		}
+		for _, e := range ports.Elements() {
+			n, ok := e.(types.Int64)
+			if !ok || n.IsNull() || n.IsUnknown() {
+				return diags
+			}
+			configured[strconv.FormatInt(n.ValueInt64(), 10)] = true
+		}
+	} else if port, ok := config["port"].(types.Int64); ok && !port.IsNull() {
+		if port.IsUnknown() {
+			return diags
+		}
+		name = "port"
+		configured[strconv.FormatInt(port.ValueInt64(), 10)] = true
+	}
+	if len(configured) > 0 && !reflect.DeepEqual(configured, mapped) {
+		diags.AddAttributeError(path.Root(name), name+" does not match port_mappings",
+			fmt.Sprintf("%s and port_mappings hold different ports. NetBox works the ports out from port_mappings, so they must match. Change one of them, or leave %s out.", name, name))
+	}
+	return diags
 }
 
 // legacyPortsPlan lets NetBox work out port_mappings again when protocol or ports change and
