@@ -1,3 +1,18 @@
+# 1.0.0-rc5 (November 2026)
+
+NOTES
+
+* This release fixes what the rc4 tests found. The tests ran on NetBox 4.4.0, 4.4.10, 4.5.1, 4.5.10, 4.6.0, 4.6.10, 4.7.0 and 4.7.5 (#38).
+* The attribute `port_mappings` of `netbox_service` and `netbox_service_template` needs NetBox 4.7 or newer. The docs said 4.6 (#38).
+
+BUG FIXES
+
+* `netbox_user` can be updated without a password in the configuration, for example after an import. It was sent as a full replacement, which NetBox only accepts with a password, so every update failed with `400 password is required` (#38).
+
+ENHANCEMENTS
+
+* `netbox_service` and `netbox_service_template` give an error at plan time when `protocol`, `ports` or `port` does not match `port_mappings`. Before, it gave "inconsistent result" after the apply (#38).
+
 # 1.0.0-rc4 (November 2026)
 
 NOTES
