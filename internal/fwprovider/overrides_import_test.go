@@ -458,3 +458,82 @@ func TestDataSourcesAreSafeToListConcurrently(t *testing.T) {
 	}
 	wg.Wait()
 }
+
+// A PUT to a user needs the password. An update without it must be a PATCH.
+func TestUserUpdateIsAPatch(t *testing.T) {
+	fake, srv := newFakeNetBox()
+	defer srv.Close()
+	h := newHarness(t, srv.URL)
+	const name = "netbox_user"
+	created := h.apply(name, nullObject(), map[string]tftypes.Value{"username": str("u"), "password": str("a-long-password-1")})
+	h.apply(name, created, map[string]tftypes.Value{"username": str("u"), "email": str("u@example.com")})
+	for _, call := range fake.calls {
+		if strings.HasPrefix(call, "PUT ") && strings.Contains(call, "users/users") {
+			t.Errorf("the user was updated with %s, which needs the password", call)
+		}
+	}
+}
+
+func TestProtocolMustMatchMappings(t *testing.T) {
+	mappings := func(v ...string) types.Set {
+		elems := make([]attr.Value, len(v))
+		for i, s := range v {
+			elems[i] = types.StringValue(s)
+		}
+		return types.SetValueMust(types.StringType, elems)
+	}
+	for _, c := range []struct {
+		protocol string
+		mappings types.Set
+		wantErr  bool
+	}{
+		{"tcp", mappings("tcp/80"), false},
+		{"udp", mappings("tcp/80", "tcp/443"), true},
+		{"udp", mappings("tcp/80", "udp/53"), false},
+		{"", mappings("tcp/80"), false},
+		{"udp", types.SetNull(types.StringType), false},
+		{"udp", types.SetUnknown(types.StringType), false},
+	} {
+		got := protocolMatchesMappings(context.Background(), fwresource.Values{"protocol": types.StringValue(c.protocol), "port_mappings": c.mappings})
+		if got.HasError() != c.wantErr {
+			t.Errorf("protocol %q, mappings %v: error = %v, want %v", c.protocol, c.mappings, got.HasError(), c.wantErr)
+		}
+	}
+}
+
+func TestPortsMustMatchMappings(t *testing.T) {
+	strs := func(v ...string) types.Set {
+		elems := make([]attr.Value, len(v))
+		for i, s := range v {
+			elems[i] = types.StringValue(s)
+		}
+		return types.SetValueMust(types.StringType, elems)
+	}
+	ints := func(v ...int64) types.Set {
+		elems := make([]attr.Value, len(v))
+		for i, n := range v {
+			elems[i] = types.Int64Value(n)
+		}
+		return types.SetValueMust(types.Int64Type, elems)
+	}
+	for _, c := range []struct {
+		name    string
+		config  fwresource.Values
+		wantErr bool
+	}{
+		{"same ports", fwresource.Values{"port_mappings": strs("tcp/80", "tcp/443"), "ports": ints(80, 443)}, false},
+		{"other ports", fwresource.Values{"port_mappings": strs("tcp/80", "tcp/443"), "ports": ints(80, 8443)}, true},
+		{"other single port", fwresource.Values{"port_mappings": strs("tcp/80"), "port": types.Int64Value(81)}, true},
+		{"same single port", fwresource.Values{"port_mappings": strs("tcp/80"), "port": types.Int64Value(80)}, false},
+		{"mixed protocols are left to NetBox", fwresource.Values{"port_mappings": strs("tcp/80", "udp/53"), "ports": ints(80)}, false},
+		{"no mappings", fwresource.Values{"port_mappings": types.SetNull(types.StringType), "ports": ints(80)}, false},
+		{"unknown ports", fwresource.Values{"port_mappings": strs("tcp/80"), "ports": types.SetUnknown(types.Int64Type)}, false},
+		{"unknown single port", fwresource.Values{"port_mappings": strs("tcp/80"), "port": types.Int64Unknown()}, false},
+		{"unknown port in the set", fwresource.Values{"port_mappings": strs("tcp/80"), "ports": types.SetValueMust(types.Int64Type, []attr.Value{types.Int64Unknown()})}, false},
+		{"unknown mapping in the set", fwresource.Values{"port_mappings": types.SetValueMust(types.StringType, []attr.Value{types.StringUnknown()}), "ports": ints(80)}, false},
+	} {
+		if got := protocolMatchesMappings(context.Background(), c.config); got.HasError() != c.wantErr {
+			t.Errorf("%s: error = %v, want %v", c.name, got.HasError(), c.wantErr)
+		}
+	}
+}
