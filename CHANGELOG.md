@@ -1,3 +1,14 @@
+# 1.0.0 (November 2026)
+
+NOTES
+
+* This is the first stable release. It has the same code as 1.0.0-rc5.
+* The release was tested on NetBox 4.4.0, 4.4.10, 4.5.1, 4.5.10, 4.6.0, 4.6.10, 4.7.0 and 4.7.5. On each of them about 2,500 existing objects were imported with generated configuration and planned again with no changes, and the data sources were read. On 4.7.5 we also tested updates, drift, `moved` blocks, `terraform state mv`, `removed` blocks and `-replace`.
+* It was also tested with Terraform 1.0.11, 1.5.7 and 1.13.4 and OpenTofu 1.13.9, with a read-only token, with NetBox down, with a NetBox outage in the middle of an apply, behind a proxy that answers some requests with 502, and with a self-signed certificate.
+* A deleted rack, device, tenant or site can come back in NetBox when it is deleted at the same moment as the objects it points to, so a destroy can leave a few objects behind. We saw it on every NetBox version from 4.4.0 to 4.7.5. They are not in the Terraform state any more, so delete them in NetBox. It is tracked in netbox-community/netbox#23766.
+* NetBox 4.4.x lets you save an event rule without an action object. Newer NetBox versions do not. The provider needs `action_object_id`, so such a rule cannot be imported.
+* A request that creates an object and gets a 502 or 504 answer is not sent again, because NetBox may have created the object. The error says so. Check NetBox, then apply again.
+
 # 1.0.0-rc5 (November 2026)
 
 NOTES
